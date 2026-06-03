@@ -1,0 +1,1264 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Baggio Travel — Database Schema</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#07090d;
+  --s1:#0e1117;
+  --s2:#141820;
+  --s3:#1a2030;
+  --border:#1e2840;
+  --border2:#263452;
+  --text:#c8d8f0;
+  --text2:#5a7090;
+  --text3:#2a3850;
+  --users:#3b82f6;
+  --users-dim:rgba(59,130,246,.12);
+  --tours:#10b981;
+  --tours-dim:rgba(16,185,129,.12);
+  --bookings:#f59e0b;
+  --bookings-dim:rgba(245,158,11,.12);
+  --payments:#8b5cf6;
+  --payments-dim:rgba(139,92,246,.12);
+  --guides:#ef4444;
+  --guides-dim:rgba(239,68,68,.12);
+  --reviews:#06b6d4;
+  --reviews-dim:rgba(6,182,212,.12);
+  --notifications:#f97316;
+  --notifications-dim:rgba(249,115,22,.12);
+  --font:'IBM Plex Sans',sans-serif;
+  --mono:'IBM Plex Mono',monospace;
+}
+html,body{height:100%}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:13px;line-height:1.6;display:grid;grid-template-columns:200px 1fr;overflow:hidden}
+
+/* ── SIDEBAR ── */
+.sb{background:var(--s1);border-right:1px solid var(--border);display:flex;flex-direction:column;height:100vh;overflow:hidden}
+.sb-top{padding:1rem;border-bottom:1px solid var(--border)}
+.sb-logo{font-family:var(--mono);font-size:.8rem;font-weight:600;color:var(--text);letter-spacing:-.01em}
+.sb-logo span{color:var(--tours)}
+.sb-tag{font-size:.6rem;color:var(--text3);font-family:var(--mono);letter-spacing:.1em;margin-top:.15rem}
+.sb-nav{flex:1;overflow-y:auto;padding:.5rem 0}
+.sb-group{font-family:var(--mono);font-size:.55rem;letter-spacing:.2em;text-transform:uppercase;color:var(--text3);padding:.6rem 1rem .2rem}
+.sb-item{display:flex;align-items:center;gap:.6rem;padding:.45rem 1rem;font-size:.75rem;color:var(--text2);cursor:pointer;border-left:2px solid transparent;transition:all .15s}
+.sb-item:hover{color:var(--text);background:rgba(255,255,255,.03)}
+.sb-item.active{color:var(--text);border-left-color:currentColor;background:rgba(255,255,255,.04)}
+.sb-item.active.users{color:var(--users);border-left-color:var(--users);background:var(--users-dim)}
+.sb-item.active.tours{color:var(--tours);border-left-color:var(--tours);background:var(--tours-dim)}
+.sb-item.active.bookings{color:var(--bookings);border-left-color:var(--bookings);background:var(--bookings-dim)}
+.sb-item.active.payments{color:var(--payments);border-left-color:var(--payments);background:var(--payments-dim)}
+.sb-item.active.guides{color:var(--guides);border-left-color:var(--guides);background:var(--guides-dim)}
+.sb-item.active.reviews{color:var(--reviews);border-left-color:var(--reviews);background:var(--reviews-dim)}
+.sb-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.sb-count{margin-left:auto;font-family:var(--mono);font-size:.58rem;color:var(--text3)}
+
+/* ── MAIN ── */
+.main{display:flex;flex-direction:column;height:100vh;overflow:hidden}
+.topbar{background:var(--s1);border-bottom:1px solid var(--border);padding:.7rem 1.5rem;display:flex;align-items:center;gap:1rem;flex-shrink:0}
+.tb-tabs{display:flex;gap:0}
+.tb-tab{font-family:var(--mono);font-size:.65rem;letter-spacing:.06em;padding:.5rem .9rem;cursor:pointer;color:var(--text2);border-bottom:2px solid transparent;transition:all .15s;background:none;border-top:none;border-left:none;border-right:none}
+.tb-tab:hover{color:var(--text)}
+.tb-tab.active{color:var(--tours);border-bottom-color:var(--tours)}
+.tb-right{margin-left:auto;display:flex;gap:.5rem}
+.tb-btn{font-family:var(--mono);font-size:.6rem;letter-spacing:.08em;padding:.3rem .7rem;border:1px solid var(--border);background:none;color:var(--text2);cursor:pointer;border-radius:3px;transition:all .15s;text-transform:uppercase}
+.tb-btn:hover{border-color:var(--border2);color:var(--text)}
+.tb-btn.active{background:var(--tours-dim);border-color:rgba(16,185,129,.4);color:var(--tours)}
+
+/* ── TAB PANELS ── */
+.panels{flex:1;overflow:hidden;position:relative}
+.panel{position:absolute;inset:0;overflow-y:auto;display:none;padding:1.5rem}
+.panel.active{display:block}
+
+/* ── ERD VIEW ── */
+.erd-wrap{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;align-items:start}
+.erd-table{border-radius:6px;overflow:hidden;transition:box-shadow .2s;cursor:pointer}
+.erd-table:hover{box-shadow:0 0 0 1px var(--border2)}
+.erd-table.users{border:1px solid rgba(59,130,246,.3)}
+.erd-table.tours{border:1px solid rgba(16,185,129,.3)}
+.erd-table.bookings{border:1px solid rgba(245,158,11,.3)}
+.erd-table.payments{border:1px solid rgba(139,92,246,.3)}
+.erd-table.guides{border:1px solid rgba(239,68,68,.3)}
+.erd-table.reviews{border:1px solid rgba(6,182,212,.3)}
+.erd-table.notifications{border:1px solid rgba(249,115,22,.3)}
+.erd-table.sessions{border:1px solid rgba(100,116,139,.3)}
+.erd-head{padding:.55rem .8rem;display:flex;align-items:center;gap:.5rem;font-family:var(--mono);font-size:.7rem;font-weight:600;letter-spacing:.04em}
+.erd-head.users{background:var(--users-dim);color:var(--users)}
+.erd-head.tours{background:var(--tours-dim);color:var(--tours)}
+.erd-head.bookings{background:var(--bookings-dim);color:var(--bookings)}
+.erd-head.payments{background:var(--payments-dim);color:var(--payments)}
+.erd-head.guides{background:var(--guides-dim);color:var(--guides)}
+.erd-head.reviews{background:var(--reviews-dim);color:var(--reviews)}
+.erd-head.notifications{background:var(--notifications-dim);color:var(--notifications)}
+.erd-head.sessions{background:rgba(100,116,139,.1);color:#94a3b8}
+.erd-body{background:var(--s2)}
+.erd-row{display:flex;align-items:center;gap:.5rem;padding:.35rem .8rem;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:.65rem}
+.erd-row:last-child{border-bottom:none}
+.erd-row:hover{background:var(--s3)}
+.erd-pk{color:#f59e0b;font-size:.55rem;width:14px;flex-shrink:0;text-align:center}
+.erd-fk{color:#8b5cf6;font-size:.55rem;width:14px;flex-shrink:0;text-align:center}
+.erd-field{flex:1;color:var(--text)}
+.erd-type{color:var(--text3);font-size:.6rem;margin-left:auto}
+.erd-req{color:var(--guides);font-size:.55rem;margin-left:.3rem}
+.erd-idx{color:var(--text3);font-size:.55rem;margin-left:.2rem}
+.erd-rel-label{font-family:var(--mono);font-size:.55rem;color:var(--text3);letter-spacing:.04em}
+
+/* ── SCHEMA PANEL ── */
+.schema-layout{display:grid;grid-template-columns:1fr 1fr;gap:1rem;height:100%}
+.schema-select{background:var(--s2);border:1px solid var(--border);border-radius:6px;overflow:hidden;display:flex;flex-direction:column}
+.schema-select-header{padding:.6rem 1rem;border-bottom:1px solid var(--border);font-family:var(--mono);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text3)}
+.table-btn{display:flex;align-items:center;gap:.75rem;padding:.55rem 1rem;cursor:pointer;border:none;background:none;width:100%;text-align:left;transition:background .15s;border-bottom:1px solid var(--border)}
+.table-btn:last-child{border-bottom:none}
+.table-btn:hover{background:var(--s3)}
+.table-btn.selected{background:rgba(16,185,129,.06)}
+.tb-dot{width:9px;height:9px;border-radius:50%}
+.tb-name{font-family:var(--mono);font-size:.72rem;font-weight:600;color:var(--text)}
+.tb-cols{font-size:.65rem;color:var(--text3);margin-left:auto;font-family:var(--mono)}
+.schema-detail{background:var(--s2);border:1px solid var(--border);border-radius:6px;overflow:hidden;display:flex;flex-direction:column}
+.sd-header{padding:.6rem 1rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:.5rem}
+.sd-title{font-family:var(--mono);font-size:.75rem;font-weight:600;color:var(--text)}
+.sd-badge{font-family:var(--mono);font-size:.55rem;letter-spacing:.08em;text-transform:uppercase;padding:.15rem .45rem;border-radius:2px}
+.sd-body{flex:1;overflow-y:auto;padding:1rem}
+.field-row{display:grid;grid-template-columns:120px 90px 1fr;gap:.75rem;padding:.45rem 0;border-bottom:1px solid rgba(255,255,255,.04);align-items:start}
+.field-row:last-child{border-bottom:none}
+.field-name{font-family:var(--mono);font-size:.72rem;color:var(--text);font-weight:500}
+.field-name.pk{color:var(--bookings)}
+.field-name.fk{color:var(--payments)}
+.field-type{font-family:var(--mono);font-size:.66rem;color:var(--reviews)}
+.field-desc{font-size:.72rem;color:var(--text2);font-weight:300;line-height:1.5}
+.field-tags{display:flex;gap:.25rem;flex-wrap:wrap;margin-top:.2rem}
+.ftag{font-family:var(--mono);font-size:.55rem;letter-spacing:.06em;padding:.1rem .35rem;border-radius:2px;text-transform:uppercase}
+.ftag-pk{background:rgba(245,158,11,.12);color:var(--bookings);border:1px solid rgba(245,158,11,.25)}
+.ftag-fk{background:var(--payments-dim);color:var(--payments);border:1px solid rgba(139,92,246,.25)}
+.ftag-idx{background:var(--reviews-dim);color:var(--reviews);border:1px solid rgba(6,182,212,.25)}
+.ftag-uniq{background:rgba(52,211,153,.1);color:#34d399;border:1px solid rgba(52,211,153,.25)}
+.ftag-null{background:var(--s3);color:var(--text3);border:1px solid var(--border2)}
+.ftag-def{background:rgba(100,116,139,.1);color:#94a3b8;border:1px solid rgba(100,116,139,.25)}
+
+/* ── PRISMA CODE PANEL ── */
+.code-panel{height:100%;display:flex;flex-direction:column}
+.code-controls{display:flex;gap:.5rem;padding-bottom:.75rem;flex-shrink:0;flex-wrap:wrap}
+.code-tab-btn{font-family:var(--mono);font-size:.62rem;letter-spacing:.06em;padding:.35rem .75rem;border:1px solid var(--border);background:none;color:var(--text3);cursor:pointer;border-radius:3px;transition:all .15s;text-transform:uppercase}
+.code-tab-btn:hover{border-color:var(--border2);color:var(--text2)}
+.code-tab-btn.active{background:var(--tours-dim);border-color:rgba(16,185,129,.4);color:var(--tours)}
+.code-block{flex:1;background:var(--s1);border:1px solid var(--border);border-radius:6px;overflow:hidden;display:flex;flex-direction:column}
+.code-header{background:var(--s2);border-bottom:1px solid var(--border);padding:.5rem 1rem;display:flex;align-items:center;justify-content:space-between}
+.code-filename{font-family:var(--mono);font-size:.65rem;color:var(--text2)}
+.copy-btn{font-family:var(--mono);font-size:.58rem;color:var(--text3);background:none;border:1px solid var(--border);padding:.2rem .5rem;cursor:pointer;border-radius:2px;transition:all .15s;letter-spacing:.05em;text-transform:uppercase}
+.copy-btn:hover{border-color:var(--border2);color:var(--text2)}
+.copy-btn.ok{color:var(--tours);border-color:var(--tours)}
+pre{flex:1;overflow:auto;padding:1rem;font-family:var(--mono);font-size:.72rem;line-height:1.8;color:var(--text2);margin:0;background:var(--s1)}
+pre::-webkit-scrollbar{width:4px;height:4px}
+pre::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.kw{color:#c084fc}
+.str{color:#34d399}
+.cmt{color:var(--text3);font-style:italic}
+.fn{color:#60a5fa}
+.type{color:#fb923c}
+.dec{color:#f472b6}
+.num{color:#fbbf24}
+.op{color:#94a3b8}
+
+/* ── RELATIONS PANEL ── */
+.relations-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.rel-card{background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:1rem;overflow:hidden}
+.rel-title{font-family:var(--mono);font-size:.65rem;font-weight:600;color:var(--text);margin-bottom:.75rem;letter-spacing:.04em;display:flex;align-items:center;gap:.5rem}
+.rel-row{display:flex;align-items:center;gap:.5rem;padding:.35rem 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:.75rem}
+.rel-row:last-child{border-bottom:none}
+.rel-from{font-family:var(--mono);font-size:.7rem;font-weight:600;color:var(--text);min-width:90px}
+.rel-type{font-family:var(--mono);font-size:.6rem;padding:.15rem .4rem;border-radius:3px;flex-shrink:0}
+.rt-1n{background:var(--tours-dim);color:var(--tours)}
+.rt-nn{background:var(--payments-dim);color:var(--payments)}
+.rt-11{background:var(--reviews-dim);color:var(--reviews)}
+.rel-to{font-family:var(--mono);font-size:.7rem;color:var(--text2)}
+.rel-note{font-size:.68rem;color:var(--text3);font-weight:300;flex:1;text-align:right}
+
+/* ── INDEX PANEL ── */
+.idx-table{width:100%;border-collapse:collapse}
+.idx-table th{font-family:var(--mono);font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);padding:.5rem .9rem;text-align:left;border-bottom:1px solid var(--border);background:var(--s2);font-weight:400}
+.idx-table td{padding:.55rem .9rem;border-bottom:1px solid rgba(255,255,255,.04);font-size:.75rem;vertical-align:middle}
+.idx-table tr:last-child td{border-bottom:none}
+.idx-table tr:hover td{background:rgba(255,255,255,.02)}
+.idx-name{font-family:var(--mono);font-size:.68rem;color:var(--reviews)}
+.idx-table-name{font-family:var(--mono);font-size:.68rem;color:var(--text2)}
+.idx-cols{font-family:var(--mono);font-size:.65rem;color:var(--tours)}
+.idx-type-badge{font-family:var(--mono);font-size:.58rem;padding:.15rem .45rem;border-radius:2px;text-transform:uppercase;letter-spacing:.06em}
+.it-pk{background:rgba(245,158,11,.12);color:var(--bookings)}
+.it-uniq{background:rgba(52,211,153,.1);color:#34d399}
+.it-perf{background:var(--reviews-dim);color:var(--reviews)}
+.it-full{background:var(--purple-dim,rgba(139,92,246,.12));color:var(--payments)}
+.idx-reason{font-size:.7rem;color:var(--text2);font-weight:300}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sb">
+  <div class="sb-top">
+    <div class="sb-logo">Baggio<span>.</span>DB</div>
+    <div class="sb-tag">POSTGRESQL · PRISMA ORM</div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-group">Tables</div>
+    <div class="sb-item users active" onclick="selectTable('users',this)">
+      <div class="sb-dot" style="background:var(--users)"></div>users
+      <span class="sb-count">18</span>
+    </div>
+    <div class="sb-item tours" onclick="selectTable('tours',this)">
+      <div class="sb-dot" style="background:var(--tours)"></div>tours
+      <span class="sb-count">14</span>
+    </div>
+    <div class="sb-item bookings" onclick="selectTable('bookings',this)">
+      <div class="sb-dot" style="background:var(--bookings)"></div>bookings
+      <span class="sb-count">20</span>
+    </div>
+    <div class="sb-item payments" onclick="selectTable('payments',this)">
+      <div class="sb-dot" style="background:var(--payments)"></div>payments
+      <span class="sb-count">15</span>
+    </div>
+    <div class="sb-item guides" onclick="selectTable('guides',this)">
+      <div class="sb-dot" style="background:var(--guides)"></div>guides
+      <span class="sb-count">16</span>
+    </div>
+    <div class="sb-item reviews" onclick="selectTable('reviews',this)">
+      <div class="sb-dot" style="background:var(--reviews)"></div>reviews
+      <span class="sb-count">10</span>
+    </div>
+    <div class="sb-item" onclick="selectTable('tour_schedules',this)" style="color:var(--text2)">
+      <div class="sb-dot" style="background:#64748b"></div>tour_schedules
+      <span class="sb-count">8</span>
+    </div>
+    <div class="sb-item" onclick="selectTable('tour_addons',this)" style="color:var(--text2)">
+      <div class="sb-dot" style="background:#64748b"></div>tour_addons
+      <span class="sb-count">7</span>
+    </div>
+    <div class="sb-item" onclick="selectTable('booking_addons',this)" style="color:var(--text2)">
+      <div class="sb-dot" style="background:#64748b"></div>booking_addons
+      <span class="sb-count">4</span>
+    </div>
+    <div class="sb-item notifications" onclick="selectTable('notifications',this)">
+      <div class="sb-dot" style="background:var(--notifications)"></div>notifications
+      <span class="sb-count">8</span>
+    </div>
+  </nav>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="tb-tabs">
+      <button class="tb-tab active" onclick="switchPanel('erd',this)">ERD Overview</button>
+      <button class="tb-tab" onclick="switchPanel('schema',this)">Table Detail</button>
+      <button class="tb-tab" onclick="switchPanel('prisma',this)">Prisma Schema</button>
+      <button class="tb-tab" onclick="switchPanel('relations',this)">Relations</button>
+      <button class="tb-tab" onclick="switchPanel('indexes',this)">Indexes</button>
+    </div>
+    <div class="tb-right">
+      <button class="tb-btn" onclick="copyPrisma()">Copy Schema</button>
+      <button class="tb-btn active">PostgreSQL</button>
+    </div>
+  </div>
+
+  <div class="panels">
+
+    <!-- ── ERD PANEL ── -->
+    <div class="panel active" id="panel-erd">
+      <div class="erd-wrap">
+
+        <!-- users -->
+        <div class="erd-table users" onclick="switchPanel('schema',null);selectTable('users',null)">
+          <div class="erd-head users">👤 users</div>
+          <div class="erd-body">
+            <div class="erd-row"><span class="erd-pk">PK</span><span class="erd-field">id</span><span class="erd-type">uuid</span></div>
+            <div class="erd-row"><span class="erd-pk"></span><span class="erd-field">email</span><span class="erd-type">varchar</span><span class="erd-idx">◈</span></div>
+            <div class="erd-row"><span class="erd-pk"></span><span class="erd-field">full_name</span><span class="erd-type">varchar</span></div>
+            <div class="erd-row"><span class="erd-pk"></span><span class="erd-field">phone</span><span class="erd-type">varchar</span><span class="erd-idx">◈</span></div>
+            <div class="erd-row"><span class="erd-pk"></span><span class="erd-field">role</span><span class="erd-type">enum</span></div>
+            <div class="erd-row"><span class="erd-pk"></span><span class="erd-field">avatar_url</span><span class="erd-type">text</span></div>
+            <div class="erd-row"><span class="erd-pk"></span><span class="erd-field">loyalty_points</span><span class="erd-type">int</span></div>
+            <div class="erd-row"><span class="erd-pk"></span><span class="erd-field">is_verified</span><span class="erd-type">bool</span></div>
+            <div class="erd-row"><span class="erd-pk"></span><span class="erd-field">created_at</span><span class="erd-type">timestamptz</span></div>
+          </div>
+          <div style="padding:.4rem .8rem;background:var(--s3);font-family:var(--mono);font-size:.56rem;color:var(--text3)">→ bookings · reviews · notifications</div>
+        </div>
+
+        <!-- tours -->
+        <div class="erd-table tours" onclick="switchPanel('schema',null);selectTable('tours',null)">
+          <div class="erd-head tours">🗺️ tours</div>
+          <div class="erd-body">
+            <div class="erd-row"><span class="erd-pk">PK</span><span class="erd-field">id</span><span class="erd-type">uuid</span></div>
+            <div class="erd-row"><span class="erd-pk"></span><span class="erd-field">name</span><span class="erd-type">varchar</span></div>
+            <div class="erd-row"><span class="erd-pk"></span><span class="erd-field">slug</span><span class="erd-type">varchar</span><span class="erd-idx">◈</span></div>
+            <div class="erd-row"><span class="erd-pk"></span><span class="erd-field">destination</span><span class="erd-type">varchar</span><span class="erd-idx">⊙</span></div>
+            <div class="erd-row"><span class="erd-pk"></span><span class="erd-field">duration_days</span><span class="erd-type">int</span></div>
+            <div class="erd-row"><span class="erd-pk"></span><span class="erd-field">base_price</span><span class="erd-type">numeric</span></div>
+            <div class="erd-row"><span class="erd-pk"></span><span class="erd-field">max_pax</span><span class="erd-type">int</span></div>
+            <div class="erd-row"><span class="erd-pk"></span><span class="erd-field">status</span><span class="erd-type">enum</span><span class="erd-idx">⊙</span></div>
+            <div class="erd-row"><span class="erd-pk"></span><span class="erd-field">includes</span><span class="erd-type">jsonb</span></div>
+            <div class="erd-row"><span class="erd-pk"></span><span class="erd-field">itinerary</span><span class="erd-type">jsonb</span></div>
+          </div>
+          <div style="padding:.4rem .8rem;background:var(--s3);font-family:var(--mono);font-size:.56rem;color:var(--text3)">→ bookings · tour_schedules · tour_addons · reviews</div>
+        </div>
+
+        <!-- bookings -->
+        <div class="erd-table bookings" onclick="switchPanel('schema',null);selectTable('bookings',null)">
+          <div class="erd-head bookings">📋 bookings</div>
+          <div class="erd-body">
+            <div class="erd-row"><span class="erd-pk">PK</span><span class="erd-field">id</span><span class="erd-type">uuid</span></div>
+            <div class="erd-row"><span class="erd-pk"></span><span class="erd-field">booking_ref</span><span class="erd-type">varchar</span><span class="erd-idx">◈</span></div>
+            <div class="erd-row"><span class="erd-fk">FK</span><span class="erd-field">user_id</span><span class="erd-type">uuid</span></div>
+            <div class="erd-row"><span class="erd-fk">FK</span><span class="erd-field">tour_id</span><span class="erd-type">uuid</span></div>
+            <div class="erd-row"><span class="erd-fk">FK</span><span class="erd-field">guide_id</span><span class="erd-type">uuid</span></div>
+            <div class="erd-row"><span class="erd-fk">FK</span><span class="erd-field">schedule_id</span><span class="erd-type">uuid</span></div>
+            <div class="erd-row"><span class="erd-pk"></span><span class="erd-field">status</span><span class="erd-type">enum</span><span class="erd-idx">⊙</span></div>
+            <div class="erd-row"><span class="erd-pk"></span><span class="erd-field">adult_count</span><span class="erd-type">int</span></div>
+            <div class="erd-row"><span class="erd-pk"></span><span class="erd-field">total_price</span><span class="erd-type">numeric</span></div>
+            <div class="erd-row"><span class="erd-pk"></span><span class="erd-field">deposit_paid</span><span class="erd-type">numeric</span></div>
+            <div class="erd-row"><span class="erd-pk"></span><span class="erd-field">special_requests</span><span class="erd-type">text</span></div>
+          </div>
+          <div style="padding:.4rem .8rem;background:var(--s3);font-family:var(--mono);font-size:.56rem;color:var(--text3)">→ payments · booking_addons · reviews</div>
+        </div>
+
+        <!-- payments -->
+        <div class="erd-table payments" onclick="switchPanel('schema',null);selectTable('payments',null)">
+          <div class="erd-head payments">💳 payments</div>
+          <div class="erd-body">
+            <div class="erd-row"><span class="erd-pk">PK</span><span class="erd-field">id</span><span class="erd-type">uuid</span></div>
+            <div class="erd-fk FK"></div>
+            <div class="erd-row"><span class="erd-fk">FK</span><span class="erd-field">booking_id</span><span class="erd-type">uuid</span></div>
+            <div class="erd-row"><span class="erd-pk"></span><span class="erd-field">provider</span><span class="erd-type">enum</span></div>
+            <div class="erd-row"><span class="erd-pk"></span><span class="erd-field">provider_order_id</span><span class="erd-type">varchar</span><span class="erd-idx">◈</span></div>
+            <div class="erd-row"><span class="erd-pk"></span><span class="erd-field">provider_trans_id</span><span class="erd-type">varchar</span><span class="erd-idx">◈</span></div>
+            <div class="erd-row"><span class="erd-pk"></span><span class="erd-field">amount</span><span class="erd-type">numeric</span></div>
+            <div class="erd-row"><span class="erd-pk"></span><span class="erd-field">status</span><span class="erd-type">enum</span><span class="erd-idx">⊙</span></div>
+            <div class="erd-row"><span class="erd-pk"></span><span class="erd-field">payment_type</span><span class="erd-type">enum</span></div>
+            <div class="erd-row"><span class="erd-pk"></span><span class="erd-field">webhook_payload</span><span class="erd-type">jsonb</span></div>
+            <div class="erd-row"><span class="erd-pk"></span><span class="erd-field">paid_at</span><span class="erd-type">timestamptz</span></div>
+          </div>
+          <div style="padding:.4rem .8rem;background:var(--s3);font-family:var(--mono);font-size:.56rem;color:var(--text3)">← bookings (1:N)</div>
+        </div>
+
+        <!-- guides -->
+        <div class="erd-table guides" onclick="switchPanel('schema',null);selectTable('guides',null)">
+          <div class="erd-head guides">🧑‍💼 guides</div>
+          <div class="erd-body">
+            <div class="erd-row"><span class="erd-pk">PK</span><span class="erd-field">id</span><span class="erd-type">uuid</span></div>
+            <div class="erd-fk FK"></div>
+            <div class="erd-row"><span class="erd-fk">FK</span><span class="erd-field">user_id</span><span class="erd-type">uuid</span></div>
+            <div class="erd-row"><span class="erd-pk"></span><span class="erd-field">license_number</span><span class="erd-type">varchar</span><span class="erd-idx">◈</span></div>
+            <div class="erd-row"><span class="erd-pk"></span><span class="erd-field">languages</span><span class="erd-type">text[]</span></div>
+            <div class="erd-row"><span class="erd-pk"></span><span class="erd-field">specialties</span><span class="erd-type">text[]</span></div>
+            <div class="erd-row"><span class="erd-pk"></span><span class="erd-field">rating_avg</span><span class="erd-type">numeric</span></div>
+            <div class="erd-row"><span class="erd-pk"></span><span class="erd-field">total_tours</span><span class="erd-type">int</span></div>
+            <div class="erd-row"><span class="erd-pk"></span><span class="erd-field">status</span><span class="erd-type">enum</span><span class="erd-idx">⊙</span></div>
+            <div class="erd-row"><span class="erd-pk"></span><span class="erd-field">daily_rate</span><span class="erd-type">numeric</span></div>
+          </div>
+          <div style="padding:.4rem .8rem;background:var(--s3);font-family:var(--mono);font-size:.56rem;color:var(--text3)">→ bookings · reviews</div>
+        </div>
+
+        <!-- reviews -->
+        <div class="erd-table reviews" onclick="switchPanel('schema',null);selectTable('reviews',null)">
+          <div class="erd-head reviews">⭐ reviews</div>
+          <div class="erd-body">
+            <div class="erd-row"><span class="erd-pk">PK</span><span class="erd-field">id</span><span class="erd-type">uuid</span></div>
+            <div class="erd-row"><span class="erd-fk">FK</span><span class="erd-field">booking_id</span><span class="erd-type">uuid</span><span class="erd-idx">◈</span></div>
+            <div class="erd-row"><span class="erd-fk">FK</span><span class="erd-field">user_id</span><span class="erd-type">uuid</span></div>
+            <div class="erd-row"><span class="erd-fk">FK</span><span class="erd-field">tour_id</span><span class="erd-type">uuid</span></div>
+            <div class="erd-row"><span class="erd-fk">FK</span><span class="erd-field">guide_id</span><span class="erd-type">uuid</span></div>
+            <div class="erd-row"><span class="erd-pk"></span><span class="erd-field">rating</span><span class="erd-type">int</span></div>
+            <div class="erd-row"><span class="erd-pk"></span><span class="erd-field">guide_rating</span><span class="erd-type">int</span></div>
+            <div class="erd-row"><span class="erd-pk"></span><span class="erd-field">comment</span><span class="erd-type">text</span></div>
+            <div class="erd-row"><span class="erd-pk"></span><span class="erd-field">is_published</span><span class="erd-type">bool</span></div>
+          </div>
+          <div style="padding:.4rem .8rem;background:var(--s3);font-family:var(--mono);font-size:.56rem;color:var(--text3)">← users · bookings · tours · guides</div>
+        </div>
+
+        <!-- tour_schedules -->
+        <div class="erd-table" style="border:1px solid rgba(100,116,139,.3)" onclick="switchPanel('schema',null);selectTable('tour_schedules',null)">
+          <div class="erd-head sessions">📅 tour_schedules</div>
+          <div class="erd-body">
+            <div class="erd-row"><span class="erd-pk">PK</span><span class="erd-field">id</span><span class="erd-type">uuid</span></div>
+            <div class="erd-row"><span class="erd-fk">FK</span><span class="erd-field">tour_id</span><span class="erd-type">uuid</span></div>
+            <div class="erd-row"><span class="erd-pk"></span><span class="erd-field">depart_date</span><span class="erd-type">date</span><span class="erd-idx">⊙</span></div>
+            <div class="erd-row"><span class="erd-pk"></span><span class="erd-field">return_date</span><span class="erd-type">date</span></div>
+            <div class="erd-row"><span class="erd-pk"></span><span class="erd-field">available_slots</span><span class="erd-type">int</span></div>
+            <div class="erd-row"><span class="erd-pk"></span><span class="erd-field">price_override</span><span class="erd-type">numeric</span></div>
+            <div class="erd-row"><span class="erd-pk"></span><span class="erd-field">status</span><span class="erd-type">enum</span></div>
+          </div>
+        </div>
+
+        <!-- notifications -->
+        <div class="erd-table notifications" onclick="switchPanel('schema',null);selectTable('notifications',null)">
+          <div class="erd-head notifications">🔔 notifications</div>
+          <div class="erd-body">
+            <div class="erd-row"><span class="erd-pk">PK</span><span class="erd-field">id</span><span class="erd-type">uuid</span></div>
+            <div class="erd-row"><span class="erd-fk">FK</span><span class="erd-field">user_id</span><span class="erd-type">uuid</span><span class="erd-idx">⊙</span></div>
+            <div class="erd-row"><span class="erd-pk"></span><span class="erd-field">type</span><span class="erd-type">enum</span></div>
+            <div class="erd-row"><span class="erd-pk"></span><span class="erd-field">title</span><span class="erd-type">varchar</span></div>
+            <div class="erd-row"><span class="erd-pk"></span><span class="erd-field">body</span><span class="erd-type">text</span></div>
+            <div class="erd-row"><span class="erd-pk"></span><span class="erd-field">is_read</span><span class="erd-type">bool</span><span class="erd-idx">⊙</span></div>
+            <div class="erd-row"><span class="erd-pk"></span><span class="erd-field">channels</span><span class="erd-type">text[]</span></div>
+            <div class="erd-row"><span class="erd-pk"></span><span class="erd-field">sent_at</span><span class="erd-type">timestamptz</span></div>
+          </div>
+        </div>
+
+      </div>
+      <div style="margin-top:1rem;font-family:var(--mono);font-size:.6rem;color:var(--text3);display:flex;gap:1.5rem;flex-wrap:wrap">
+        <span><span style="color:var(--bookings)">PK</span> = Primary Key</span>
+        <span><span style="color:var(--payments)">FK</span> = Foreign Key</span>
+        <span><span style="color:var(--reviews)">◈</span> = Unique Index</span>
+        <span><span style="color:var(--text2)">⊙</span> = Performance Index</span>
+        <span>Click bất kỳ bảng nào để xem chi tiết</span>
+      </div>
+    </div>
+
+    <!-- ── SCHEMA DETAIL PANEL ── -->
+    <div class="panel" id="panel-schema">
+      <div class="schema-layout">
+        <div class="schema-select">
+          <div class="schema-select-header">Chọn bảng</div>
+          <div id="tableList"></div>
+        </div>
+        <div class="schema-detail">
+          <div class="sd-header">
+            <div class="sd-title" id="sdTitle">users</div>
+            <div class="sd-badge" id="sdBadge" style="background:var(--users-dim);color:var(--users);border:1px solid rgba(59,130,246,.3)">18 fields</div>
+          </div>
+          <div class="sd-body" id="sdBody"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── PRISMA PANEL ── -->
+    <div class="panel" id="panel-prisma">
+      <div class="code-panel">
+        <div class="code-controls">
+          <button class="code-tab-btn active" onclick="showCode('schema',this)">schema.prisma</button>
+          <button class="code-tab-btn" onclick="showCode('migration',this)">migration.sql</button>
+          <button class="code-tab-btn" onclick="showCode('seed',this)">seed.ts</button>
+          <button class="code-tab-btn" onclick="showCode('queries',this)">queries.ts</button>
+        </div>
+        <div class="code-block">
+          <div class="code-header">
+            <span class="code-filename" id="codeFilename">prisma/schema.prisma</span>
+            <button class="copy-btn" onclick="copyCode()">Copy</button>
+          </div>
+          <pre id="codeContent"></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── RELATIONS PANEL ── -->
+    <div class="panel" id="panel-relations">
+      <div class="relations-grid">
+        <div class="rel-card">
+          <div class="rel-title">🔗 Core Relations</div>
+          <div class="rel-row"><span class="rel-from">users</span><span class="rel-type rt-1n">1:N</span><span class="rel-to">bookings</span><span class="rel-note">1 user nhiều đơn</span></div>
+          <div class="rel-row"><span class="rel-from">tours</span><span class="rel-type rt-1n">1:N</span><span class="rel-to">bookings</span><span class="rel-note">1 tour nhiều đơn</span></div>
+          <div class="rel-row"><span class="rel-from">bookings</span><span class="rel-type rt-1n">1:N</span><span class="rel-to">payments</span><span class="rel-note">1 booking nhiều payment</span></div>
+          <div class="rel-row"><span class="rel-from">bookings</span><span class="rel-type rt-11">1:1</span><span class="rel-to">reviews</span><span class="rel-note">1 booking 1 review</span></div>
+          <div class="rel-row"><span class="rel-from">guides</span><span class="rel-type rt-11">1:1</span><span class="rel-to">users</span><span class="rel-note">Guide là 1 user</span></div>
+        </div>
+        <div class="rel-card">
+          <div class="rel-title">📦 Tour Relations</div>
+          <div class="rel-row"><span class="rel-from">tours</span><span class="rel-type rt-1n">1:N</span><span class="rel-to">tour_schedules</span><span class="rel-note">Nhiều lịch khởi hành</span></div>
+          <div class="rel-row"><span class="rel-from">tours</span><span class="rel-type rt-1n">1:N</span><span class="rel-to">tour_addons</span><span class="rel-note">Nhiều dịch vụ thêm</span></div>
+          <div class="rel-row"><span class="rel-from">bookings</span><span class="rel-type rt-nn">N:N</span><span class="rel-to">tour_addons</span><span class="rel-note">Qua booking_addons</span></div>
+          <div class="rel-row"><span class="rel-from">tour_schedules</span><span class="rel-type rt-1n">1:N</span><span class="rel-to">bookings</span><span class="rel-note">1 lịch nhiều đặt chỗ</span></div>
+          <div class="rel-row"><span class="rel-from">guides</span><span class="rel-type rt-1n">1:N</span><span class="rel-to">bookings</span><span class="rel-note">1 HDV nhiều tour</span></div>
+        </div>
+        <div class="rel-card">
+          <div class="rel-title">⭐ Reviews Relations</div>
+          <div class="rel-row"><span class="rel-from">users</span><span class="rel-type rt-1n">1:N</span><span class="rel-to">reviews</span><span class="rel-note">User viết review</span></div>
+          <div class="rel-row"><span class="rel-from">tours</span><span class="rel-type rt-1n">1:N</span><span class="rel-to">reviews</span><span class="rel-note">Tour nhận review</span></div>
+          <div class="rel-row"><span class="rel-from">guides</span><span class="rel-type rt-1n">1:N</span><span class="rel-to">reviews</span><span class="rel-note">HDV nhận review</span></div>
+          <div class="rel-row"><span class="rel-from">bookings</span><span class="rel-type rt-11">1:1</span><span class="rel-to">reviews</span><span class="rel-note">Unique per booking</span></div>
+        </div>
+        <div class="rel-card">
+          <div class="rel-title">🔔 Notification Relations</div>
+          <div class="rel-row"><span class="rel-from">users</span><span class="rel-type rt-1n">1:N</span><span class="rel-to">notifications</span><span class="rel-note">Push/email/SMS</span></div>
+          <div class="rel-row"><span class="rel-from">bookings</span><span class="rel-type rt-1n">1:N</span><span class="rel-to">notifications</span><span class="rel-note">Trigger từ booking events</span></div>
+          <div style="margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border)">
+            <div style="font-family:var(--mono);font-size:.6rem;color:var(--text3);margin-bottom:.5rem">Enum Types</div>
+            <div style="display:flex;flex-wrap:wrap;gap:.3rem">
+              <span style="font-family:var(--mono);font-size:.58rem;padding:.15rem .4rem;background:var(--users-dim);color:var(--users);border-radius:2px">UserRole</span>
+              <span style="font-family:var(--mono);font-size:.58rem;padding:.15rem .4rem;background:var(--bookings-dim);color:var(--bookings);border-radius:2px">BookingStatus</span>
+              <span style="font-family:var(--mono);font-size:.58rem;padding:.15rem .4rem;background:var(--payments-dim);color:var(--payments);border-radius:2px">PaymentProvider</span>
+              <span style="font-family:var(--mono);font-size:.58rem;padding:.15rem .4rem;background:var(--tours-dim);color:var(--tours);border-radius:2px">TourStatus</span>
+              <span style="font-family:var(--mono);font-size:.58rem;padding:.15rem .4rem;background:var(--guides-dim);color:var(--guides);border-radius:2px">GuideStatus</span>
+              <span style="font-family:var(--mono);font-size:.58rem;padding:.15rem .4rem;background:var(--reviews-dim);color:var(--reviews);border-radius:2px">RoomType</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── INDEXES PANEL ── -->
+    <div class="panel" id="panel-indexes">
+      <table class="idx-table">
+        <thead><tr><th>Index name</th><th>Table</th><th>Columns</th><th>Type</th><th>Lý do cần thiết</th></tr></thead>
+        <tbody>
+          <tr><td><span class="idx-name">users_pkey</span></td><td><span class="idx-table-name">users</span></td><td><span class="idx-cols">id</span></td><td><span class="idx-type-badge it-pk">PRIMARY</span></td><td><span class="idx-reason">Row lookup mặc định</span></td></tr>
+          <tr><td><span class="idx-name">users_email_key</span></td><td><span class="idx-table-name">users</span></td><td><span class="idx-cols">email</span></td><td><span class="idx-type-badge it-uniq">UNIQUE</span></td><td><span class="idx-reason">Đăng nhập / kiểm tra trùng email — query mỗi login</span></td></tr>
+          <tr><td><span class="idx-name">users_phone_key</span></td><td><span class="idx-table-name">users</span></td><td><span class="idx-cols">phone</span></td><td><span class="idx-type-badge it-uniq">UNIQUE</span></td><td><span class="idx-reason">SMS OTP lookup</span></td></tr>
+          <tr><td><span class="idx-name">tours_slug_key</span></td><td><span class="idx-table-name">tours</span></td><td><span class="idx-cols">slug</span></td><td><span class="idx-type-badge it-uniq">UNIQUE</span></td><td><span class="idx-reason">SEO URL lookup — /tour/ha-long-5n4d</span></td></tr>
+          <tr><td><span class="idx-name">tours_destination_idx</span></td><td><span class="idx-table-name">tours</span></td><td><span class="idx-cols">destination, status</span></td><td><span class="idx-type-badge it-perf">PERF</span></td><td><span class="idx-reason">Filter tour theo điểm đến và trạng thái — trang danh sách</span></td></tr>
+          <tr><td><span class="idx-name">tours_price_idx</span></td><td><span class="idx-table-name">tours</span></td><td><span class="idx-cols">base_price</span></td><td><span class="idx-type-badge it-perf">PERF</span></td><td><span class="idx-reason">Sort by price, filter theo ngân sách</span></td></tr>
+          <tr><td><span class="idx-name">tours_fts_idx</span></td><td><span class="idx-table-name">tours</span></td><td><span class="idx-cols">name, description</span></td><td><span class="idx-type-badge it-full">FULLTEXT</span></td><td><span class="idx-reason">Tìm kiếm full-text tour — search bar</span></td></tr>
+          <tr><td><span class="idx-name">bookings_ref_key</span></td><td><span class="idx-table-name">bookings</span></td><td><span class="idx-cols">booking_ref</span></td><td><span class="idx-type-badge it-uniq">UNIQUE</span></td><td><span class="idx-reason">Lookup đơn hàng theo mã BT-XXXX</span></td></tr>
+          <tr><td><span class="idx-name">bookings_user_idx</span></td><td><span class="idx-table-name">bookings</span></td><td><span class="idx-cols">user_id, status</span></td><td><span class="idx-type-badge it-perf">PERF</span></td><td><span class="idx-reason">Lịch sử đặt tour của user — trang "Đơn của tôi"</span></td></tr>
+          <tr><td><span class="idx-name">bookings_tour_idx</span></td><td><span class="idx-table-name">bookings</span></td><td><span class="idx-cols">tour_id, status</span></td><td><span class="idx-type-badge it-perf">PERF</span></td><td><span class="idx-reason">Admin xem đơn theo từng tour</span></td></tr>
+          <tr><td><span class="idx-name">bookings_guide_idx</span></td><td><span class="idx-table-name">bookings</span></td><td><span class="idx-cols">guide_id, status</span></td><td><span class="idx-type-badge it-perf">PERF</span></td><td><span class="idx-reason">HDV xem lịch tour của mình</span></td></tr>
+          <tr><td><span class="idx-name">payments_booking_idx</span></td><td><span class="idx-table-name">payments</span></td><td><span class="idx-cols">booking_id</span></td><td><span class="idx-type-badge it-perf">PERF</span></td><td><span class="idx-reason">Join payments khi xem chi tiết booking</span></td></tr>
+          <tr><td><span class="idx-name">payments_provider_order_key</span></td><td><span class="idx-table-name">payments</span></td><td><span class="idx-cols">provider_order_id</span></td><td><span class="idx-type-badge it-uniq">UNIQUE</span></td><td><span class="idx-reason">Idempotency — tránh xử lý webhook 2 lần</span></td></tr>
+          <tr><td><span class="idx-name">schedules_depart_idx</span></td><td><span class="idx-table-name">tour_schedules</span></td><td><span class="idx-cols">tour_id, depart_date</span></td><td><span class="idx-type-badge it-perf">PERF</span></td><td><span class="idx-reason">Calendar picker — lịch còn chỗ của tour</span></td></tr>
+          <tr><td><span class="idx-name">notif_user_read_idx</span></td><td><span class="idx-table-name">notifications</span></td><td><span class="idx-cols">user_id, is_read</span></td><td><span class="idx-type-badge it-perf">PERF</span></td><td><span class="idx-reason">Badge thông báo chưa đọc — query mỗi page load</span></td></tr>
+          <tr><td><span class="idx-name">reviews_tour_pub_idx</span></td><td><span class="idx-table-name">reviews</span></td><td><span class="idx-cols">tour_id, is_published</span></td><td><span class="idx-type-badge it-perf">PERF</span></td><td><span class="idx-reason">Hiển thị review đã duyệt trên trang tour</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div><!-- /panels -->
+</div><!-- /main -->
+
+<script>
+// ── TABLE DATA ───────────────────────────────────────
+const tableColors={users:['#3b82f6','var(--users-dim)'],tours:['#10b981','var(--tours-dim)'],bookings:['#f59e0b','var(--bookings-dim)'],payments:['#8b5cf6','var(--payments-dim)'],guides:['#ef4444','var(--guides-dim)'],reviews:['#06b6d4','var(--reviews-dim)'],tour_schedules:['#64748b','rgba(100,116,139,.1)'],tour_addons:['#64748b','rgba(100,116,139,.1)'],booking_addons:['#64748b','rgba(100,116,139,.1)'],notifications:['#f97316','var(--notifications-dim)']};
+
+const tableFields={
+  users:[
+    {n:'id',t:'UUID',d:'Primary key — dùng gen_random_uuid()',tags:['PK','DEFAULT']},
+    {n:'email',t:'VARCHAR(255)',d:'Email đăng nhập — unique, lowercase',tags:['UNIQUE','NOT NULL']},
+    {n:'full_name',t:'VARCHAR(100)',d:'Họ và tên đầy đủ',tags:['NOT NULL']},
+    {n:'phone',t:'VARCHAR(20)',d:'Số điện thoại Việt Nam (+84...)',tags:['UNIQUE']},
+    {n:'password_hash',t:'TEXT',d:'bcrypt hash — không lưu plain text',tags:['NOT NULL']},
+    {n:'role',t:'UserRole ENUM',d:'CUSTOMER | STAFF | GUIDE | ADMIN',tags:['NOT NULL','DEFAULT']},
+    {n:'avatar_url',t:'TEXT',d:'URL ảnh đại diện — lưu trên Cloudinary/S3',tags:['NULLABLE']},
+    {n:'date_of_birth',t:'DATE',d:'Ngày sinh — dùng tính tuổi cho giá vé',tags:['NULLABLE']},
+    {n:'nationality',t:'VARCHAR(2)',d:'ISO 3166 country code (VN, US, KR...)',tags:['NULLABLE']},
+    {n:'loyalty_points',t:'INTEGER',d:'Điểm tích lũy — 1đ = 1 point',tags:['DEFAULT 0']},
+    {n:'total_spent',t:'NUMERIC(12,0)',d:'Tổng chi tiêu — cập nhật sau mỗi booking',tags:['DEFAULT 0']},
+    {n:'is_verified',t:'BOOLEAN',d:'Email/phone đã xác thực chưa',tags:['DEFAULT false']},
+    {n:'is_active',t:'BOOLEAN',d:'Tài khoản có hoạt động không',tags:['DEFAULT true']},
+    {n:'last_login_at',t:'TIMESTAMPTZ',d:'Lần đăng nhập cuối',tags:['NULLABLE']},
+    {n:'reset_token',t:'VARCHAR(64)',d:'Token đặt lại mật khẩu',tags:['NULLABLE']},
+    {n:'reset_token_exp',t:'TIMESTAMPTZ',d:'Hết hạn reset token',tags:['NULLABLE']},
+    {n:'created_at',t:'TIMESTAMPTZ',d:'Thời điểm tạo tài khoản',tags:['DEFAULT NOW()']},
+    {n:'updated_at',t:'TIMESTAMPTZ',d:'Cập nhật tự động qua trigger',tags:['DEFAULT NOW()']},
+  ],
+  tours:[
+    {n:'id',t:'UUID',d:'Primary key',tags:['PK']},
+    {n:'name',t:'VARCHAR(200)',d:'Tên tour hiển thị',tags:['NOT NULL']},
+    {n:'slug',t:'VARCHAR(200)',d:'URL-friendly — ha-long-5n4d',tags:['UNIQUE','NOT NULL']},
+    {n:'destination',t:'VARCHAR(100)',d:'Tỉnh/thành phố chính',tags:['NOT NULL','IDX']},
+    {n:'region',t:'VARCHAR(20)',d:'north | central | south',tags:['NOT NULL']},
+    {n:'duration_days',t:'SMALLINT',d:'Số ngày tour',tags:['NOT NULL']},
+    {n:'duration_nights',t:'SMALLINT',d:'Số đêm tour',tags:['NOT NULL']},
+    {n:'base_price',t:'NUMERIC(12,0)',d:'Giá gốc người lớn (VND)',tags:['NOT NULL']},
+    {n:'child_price_ratio',t:'NUMERIC(3,2)',d:'Hệ số giá trẻ em — mặc định 0.70',tags:['DEFAULT 0.70']},
+    {n:'max_pax',t:'SMALLINT',d:'Số khách tối đa mỗi lượt',tags:['NOT NULL']},
+    {n:'min_pax',t:'SMALLINT',d:'Số khách tối thiểu để khởi hành',tags:['DEFAULT 1']},
+    {n:'status',t:'TourStatus ENUM',d:'ACTIVE | PAUSED | DRAFT | ARCHIVED',tags:['NOT NULL','IDX']},
+    {n:'includes',t:'JSONB',d:'Dịch vụ bao gồm: {flights, hotel, guide, meals...}',tags:['NOT NULL']},
+    {n:'itinerary',t:'JSONB',d:'Lịch trình từng ngày: [{day:1, activities:[...]}]',tags:['NOT NULL']},
+  ],
+  bookings:[
+    {n:'id',t:'UUID',d:'Primary key',tags:['PK']},
+    {n:'booking_ref',t:'VARCHAR(20)',d:'Mã đặt tour hiển thị — BT-0891',tags:['UNIQUE','NOT NULL']},
+    {n:'user_id',t:'UUID',d:'Khách đặt tour',tags:['FK → users','NOT NULL','IDX']},
+    {n:'tour_id',t:'UUID',d:'Tour được đặt',tags:['FK → tours','NOT NULL','IDX']},
+    {n:'schedule_id',t:'UUID',d:'Lịch khởi hành cụ thể',tags:['FK → tour_schedules','NOT NULL']},
+    {n:'guide_id',t:'UUID',d:'HDV được phân công',tags:['FK → guides','NULLABLE']},
+    {n:'status',t:'BookingStatus ENUM',d:'PENDING | CONFIRMED | ONGOING | COMPLETED | CANCELLED',tags:['NOT NULL','IDX']},
+    {n:'adult_count',t:'SMALLINT',d:'Số người lớn',tags:['NOT NULL']},
+    {n:'child_count',t:'SMALLINT',d:'Số trẻ em',tags:['DEFAULT 0']},
+    {n:'infant_count',t:'SMALLINT',d:'Số em bé (miễn phí)',tags:['DEFAULT 0']},
+    {n:'room_type',t:'RoomType ENUM',d:'STANDARD | DELUXE | SUITE',tags:['DEFAULT STANDARD']},
+    {n:'total_price',t:'NUMERIC(12,0)',d:'Tổng tiền = base + addons + room upgrade',tags:['NOT NULL']},
+    {n:'deposit_amount',t:'NUMERIC(12,0)',d:'Số tiền đặt cọc (30%)',tags:['NOT NULL']},
+    {n:'deposit_paid',t:'NUMERIC(12,0)',d:'Số tiền cọc đã nhận thực tế',tags:['DEFAULT 0']},
+    {n:'payment_status',t:'PaymentStatus ENUM',d:'UNPAID | DEPOSIT_PAID | FULLY_PAID | REFUNDED',tags:['NOT NULL','IDX']},
+    {n:'special_requests',t:'TEXT',d:'Yêu cầu đặc biệt của khách',tags:['NULLABLE']},
+    {n:'cancel_reason',t:'TEXT',d:'Lý do huỷ tour',tags:['NULLABLE']},
+    {n:'cancelled_at',t:'TIMESTAMPTZ',d:'Thời điểm huỷ',tags:['NULLABLE']},
+    {n:'confirmed_at',t:'TIMESTAMPTZ',d:'Thời điểm xác nhận',tags:['NULLABLE']},
+    {n:'created_at',t:'TIMESTAMPTZ',d:'Thời điểm đặt',tags:['DEFAULT NOW()']},
+  ],
+  payments:[
+    {n:'id',t:'UUID',d:'Primary key',tags:['PK']},
+    {n:'booking_id',t:'UUID',d:'Đơn hàng liên quan',tags:['FK → bookings','NOT NULL','IDX']},
+    {n:'provider',t:'PaymentProvider ENUM',d:'MOMO | VNPAY | STRIPE | BANK_TRANSFER | CASH',tags:['NOT NULL']},
+    {n:'payment_type',t:'PaymentType ENUM',d:'DEPOSIT | REMAINING | FULL | REFUND',tags:['NOT NULL']},
+    {n:'provider_request_id',t:'VARCHAR(100)',d:'requestId gửi lên MoMo/VNPay — idempotency key',tags:['UNIQUE','NOT NULL']},
+    {n:'provider_order_id',t:'VARCHAR(100)',d:'orderId từ Baggio Travel gửi lên provider',tags:['UNIQUE']},
+    {n:'provider_trans_id',t:'VARCHAR(100)',d:'transId/GD trả về từ MoMo/VNPay sau khi thành công',tags:['UNIQUE','NULLABLE']},
+    {n:'amount',t:'NUMERIC(12,0)',d:'Số tiền giao dịch (VND)',tags:['NOT NULL']},
+    {n:'status',t:'PaymentStatus ENUM',d:'PENDING | SUCCESS | FAILED | CANCELLED | REFUNDED',tags:['NOT NULL','IDX']},
+    {n:'webhook_payload',t:'JSONB',d:'Raw IPN payload từ MoMo/VNPay — lưu để debug',tags:['NULLABLE']},
+    {n:'failure_reason',t:'TEXT',d:'Lý do thất bại (resultCode + message)',tags:['NULLABLE']},
+    {n:'paid_at',t:'TIMESTAMPTZ',d:'Thời điểm thanh toán thành công',tags:['NULLABLE']},
+    {n:'expires_at',t:'TIMESTAMPTZ',d:'Hết hạn link thanh toán (thường 15 phút)',tags:['NULLABLE']},
+    {n:'created_at',t:'TIMESTAMPTZ',d:'Thời điểm tạo request',tags:['DEFAULT NOW()']},
+    {n:'updated_at',t:'TIMESTAMPTZ',d:'Cập nhật sau mỗi webhook',tags:['DEFAULT NOW()']},
+  ],
+  guides:[
+    {n:'id',t:'UUID',d:'Primary key',tags:['PK']},
+    {n:'user_id',t:'UUID',d:'Liên kết với tài khoản user',tags:['FK → users','UNIQUE','NOT NULL']},
+    {n:'license_number',t:'VARCHAR(50)',d:'Số thẻ HDV do Bộ VHTTDL cấp',tags:['UNIQUE','NOT NULL']},
+    {n:'license_expires',t:'DATE',d:'Ngày hết hạn thẻ HDV',tags:['NOT NULL']},
+    {n:'languages',t:'TEXT[]',d:'Ngôn ngữ hỗ trợ: [vi, en, zh, ko, ja, fr]',tags:['NOT NULL']},
+    {n:'specialties',t:'TEXT[]',d:'Chuyên môn: [history, food, adventure, culture]',tags:['NOT NULL']},
+    {n:'regions',t:'TEXT[]',d:'Vùng hoạt động: [north, central, south]',tags:['NOT NULL']},
+    {n:'bio',t:'TEXT',d:'Giới thiệu bản thân cho khách xem',tags:['NULLABLE']},
+    {n:'rating_avg',t:'NUMERIC(3,2)',d:'Rating trung bình — cập nhật sau mỗi review',tags:['DEFAULT 0']},
+    {n:'total_tours',t:'INTEGER',d:'Tổng số tour đã dẫn',tags:['DEFAULT 0']},
+    {n:'status',t:'GuideStatus ENUM',d:'ACTIVE | ON_TOUR | ON_LEAVE | INACTIVE',tags:['NOT NULL','IDX']},
+    {n:'daily_rate',t:'NUMERIC(10,0)',d:'Thù lao theo ngày (VND)',tags:['NOT NULL']},
+    {n:'bank_account',t:'JSONB',d:'Thông tin tài khoản nhận lương — {bank, account, name}',tags:['NULLABLE']},
+    {n:'notes',t:'TEXT',d:'Ghi chú nội bộ của admin',tags:['NULLABLE']},
+    {n:'joined_at',t:'DATE',d:'Ngày bắt đầu làm việc',tags:['NOT NULL']},
+    {n:'updated_at',t:'TIMESTAMPTZ',d:'Cập nhật tự động',tags:['DEFAULT NOW()']},
+  ],
+  reviews:[
+    {n:'id',t:'UUID',d:'Primary key',tags:['PK']},
+    {n:'booking_id',t:'UUID',d:'Đặt tour được review — unique per booking',tags:['FK → bookings','UNIQUE','NOT NULL']},
+    {n:'user_id',t:'UUID',d:'Khách viết review',tags:['FK → users','NOT NULL']},
+    {n:'tour_id',t:'UUID',d:'Tour được đánh giá',tags:['FK → tours','NOT NULL','IDX']},
+    {n:'guide_id',t:'UUID',d:'HDV được đánh giá',tags:['FK → guides','NULLABLE']},
+    {n:'rating',t:'SMALLINT',d:'Điểm tổng — 1 đến 5 sao (CHECK constraint)',tags:['NOT NULL']},
+    {n:'guide_rating',t:'SMALLINT',d:'Điểm riêng cho HDV — 1 đến 5',tags:['NULLABLE']},
+    {n:'comment',t:'TEXT',d:'Nội dung review',tags:['NULLABLE']},
+    {n:'photos',t:'TEXT[]',d:'Mảng URL ảnh do khách upload',tags:['NULLABLE']},
+    {n:'is_published',t:'BOOLEAN',d:'Admin duyệt trước khi hiển thị',tags:['DEFAULT false','IDX']},
+    {n:'created_at',t:'TIMESTAMPTZ',d:'Thời điểm viết review',tags:['DEFAULT NOW()']},
+  ],
+  notifications:[
+    {n:'id',t:'UUID',d:'Primary key',tags:['PK']},
+    {n:'user_id',t:'UUID',d:'Người nhận thông báo',tags:['FK → users','NOT NULL','IDX']},
+    {n:'booking_id',t:'UUID',d:'Booking liên quan (nếu có)',tags:['FK → bookings','NULLABLE']},
+    {n:'type',t:'NotifType ENUM',d:'BOOKING_CONFIRMED | PAYMENT_SUCCESS | TOUR_REMINDER | REVIEW_REQUEST | PROMO',tags:['NOT NULL']},
+    {n:'title',t:'VARCHAR(200)',d:'Tiêu đề thông báo',tags:['NOT NULL']},
+    {n:'body',t:'TEXT',d:'Nội dung chi tiết',tags:['NOT NULL']},
+    {n:'channels',t:'TEXT[]',d:'Kênh gửi: [email, sms, push, in_app]',tags:['NOT NULL']},
+    {n:'is_read',t:'BOOLEAN',d:'Đã đọc chưa — badge counter',tags:['DEFAULT false','IDX']},
+    {n:'sent_at',t:'TIMESTAMPTZ',d:'Thời điểm gửi thực tế',tags:['NULLABLE']},
+  ],
+  tour_schedules:[
+    {n:'id',t:'UUID',d:'Primary key',tags:['PK']},
+    {n:'tour_id',t:'UUID',d:'Tour áp dụng lịch này',tags:['FK → tours','NOT NULL','IDX']},
+    {n:'depart_date',t:'DATE',d:'Ngày khởi hành',tags:['NOT NULL','IDX']},
+    {n:'return_date',t:'DATE',d:'Ngày về — tự tính từ depart + duration',tags:['NOT NULL']},
+    {n:'total_slots',t:'SMALLINT',d:'Tổng số chỗ của lịch này',tags:['NOT NULL']},
+    {n:'available_slots',t:'SMALLINT',d:'Số chỗ còn trống — giảm khi có booking',tags:['NOT NULL']},
+    {n:'price_override',t:'NUMERIC(12,0)',d:'Giá đặc biệt cho lịch này (override base_price)',tags:['NULLABLE']},
+    {n:'status',t:'ScheduleStatus ENUM',d:'OPEN | FULL | CANCELLED | COMPLETED',tags:['NOT NULL']},
+  ],
+};
+
+// ── CODE CONTENT ─────────────────────────────────────
+const codeFiles={
+  schema:{file:'prisma/schema.prisma',content:`<span class="cmt">// prisma/schema.prisma</span>
+<span class="cmt">// Baggio Travel — PostgreSQL + Prisma ORM</span>
+
+<span class="kw">generator</span> client {
+  provider = <span class="str">"prisma-client-js"</span>
+}
+
+<span class="kw">datasource</span> db {
+  provider = <span class="str">"postgresql"</span>
+  url      = <span class="fn">env</span>(<span class="str">"DATABASE_URL"</span>)
+}
+
+<span class="cmt">// ── ENUMS ──────────────────────────────</span>
+
+<span class="kw">enum</span> <span class="type">UserRole</span> {
+  CUSTOMER
+  STAFF
+  GUIDE
+  ADMIN
+}
+
+<span class="kw">enum</span> <span class="type">TourStatus</span> {
+  DRAFT
+  ACTIVE
+  PAUSED
+  ARCHIVED
+}
+
+<span class="kw">enum</span> <span class="type">BookingStatus</span> {
+  PENDING
+  CONFIRMED
+  ONGOING
+  COMPLETED
+  CANCELLED
+}
+
+<span class="kw">enum</span> <span class="type">PaymentStatus</span> {
+  PENDING
+  SUCCESS
+  FAILED
+  CANCELLED
+  REFUNDED
+}
+
+<span class="kw">enum</span> <span class="type">PaymentProvider</span> {
+  MOMO
+  VNPAY
+  STRIPE
+  BANK_TRANSFER
+  CASH
+}
+
+<span class="kw">enum</span> <span class="type">GuideStatus</span> {
+  ACTIVE
+  ON_TOUR
+  ON_LEAVE
+  INACTIVE
+}
+
+<span class="kw">enum</span> <span class="type">RoomType</span> {
+  STANDARD
+  DELUXE
+  SUITE
+}
+
+<span class="cmt">// ── MODELS ─────────────────────────────</span>
+
+<span class="kw">model</span> <span class="type">User</span> {
+  id              <span class="type">String</span>    <span class="dec">@id</span> <span class="dec">@default</span>(<span class="fn">dbgenerated</span>(<span class="str">"gen_random_uuid()"</span>)) <span class="dec">@db.Uuid</span>
+  email           <span class="type">String</span>    <span class="dec">@unique</span>
+  full_name       <span class="type">String</span>
+  phone           <span class="type">String?</span>   <span class="dec">@unique</span>
+  password_hash   <span class="type">String</span>
+  role            <span class="type">UserRole</span>  <span class="dec">@default</span>(CUSTOMER)
+  avatar_url      <span class="type">String?</span>
+  loyalty_points  <span class="type">Int</span>       <span class="dec">@default</span>(<span class="num">0</span>)
+  total_spent     <span class="type">Decimal</span>   <span class="dec">@default</span>(<span class="num">0</span>) <span class="dec">@db.Decimal</span>(<span class="num">12</span>, <span class="num">0</span>)
+  is_verified     <span class="type">Boolean</span>   <span class="dec">@default</span>(<span class="num">false</span>)
+  is_active       <span class="type">Boolean</span>   <span class="dec">@default</span>(<span class="num">true</span>)
+  last_login_at   <span class="type">DateTime?</span>
+  created_at      <span class="type">DateTime</span>  <span class="dec">@default</span>(<span class="fn">now</span>())
+  updated_at      <span class="type">DateTime</span>  <span class="dec">@updatedAt</span>
+
+  <span class="cmt">// Relations</span>
+  bookings        <span class="type">Booking</span>[]
+  reviews         <span class="type">Review</span>[]
+  notifications   <span class="type">Notification</span>[]
+  guide_profile   <span class="type">Guide?</span>
+
+  <span class="dec">@@map</span>(<span class="str">"users"</span>)
+}
+
+<span class="kw">model</span> <span class="type">Tour</span> {
+  id                  <span class="type">String</span>      <span class="dec">@id</span> <span class="dec">@default</span>(<span class="fn">dbgenerated</span>(<span class="str">"gen_random_uuid()"</span>)) <span class="dec">@db.Uuid</span>
+  name                <span class="type">String</span>
+  slug                <span class="type">String</span>      <span class="dec">@unique</span>
+  destination         <span class="type">String</span>
+  region              <span class="type">String</span>
+  duration_days       <span class="type">Int</span>
+  duration_nights     <span class="type">Int</span>
+  base_price          <span class="type">Decimal</span>     <span class="dec">@db.Decimal</span>(<span class="num">12</span>, <span class="num">0</span>)
+  child_price_ratio   <span class="type">Decimal</span>     <span class="dec">@default</span>(<span class="num">0.70</span>) <span class="dec">@db.Decimal</span>(<span class="num">3</span>, <span class="num">2</span>)
+  max_pax             <span class="type">Int</span>
+  status              <span class="type">TourStatus</span>  <span class="dec">@default</span>(DRAFT)
+  includes            <span class="type">Json</span>
+  itinerary           <span class="type">Json</span>
+  cover_image         <span class="type">String?</span>
+  images              <span class="type">String[]</span>
+  created_at          <span class="type">DateTime</span>    <span class="dec">@default</span>(<span class="fn">now</span>())
+  updated_at          <span class="type">DateTime</span>    <span class="dec">@updatedAt</span>
+
+  bookings            <span class="type">Booking</span>[]
+  schedules           <span class="type">TourSchedule</span>[]
+  addons              <span class="type">TourAddon</span>[]
+  reviews             <span class="type">Review</span>[]
+
+  <span class="dec">@@index</span>([destination, status])
+  <span class="dec">@@index</span>([base_price])
+  <span class="dec">@@map</span>(<span class="str">"tours"</span>)
+}
+
+<span class="kw">model</span> <span class="type">Booking</span> {
+  id               <span class="type">String</span>         <span class="dec">@id</span> <span class="dec">@default</span>(<span class="fn">dbgenerated</span>(<span class="str">"gen_random_uuid()"</span>)) <span class="dec">@db.Uuid</span>
+  booking_ref      <span class="type">String</span>         <span class="dec">@unique</span>
+  user_id          <span class="type">String</span>         <span class="dec">@db.Uuid</span>
+  tour_id          <span class="type">String</span>         <span class="dec">@db.Uuid</span>
+  schedule_id      <span class="type">String</span>         <span class="dec">@db.Uuid</span>
+  guide_id         <span class="type">String?</span>        <span class="dec">@db.Uuid</span>
+  status           <span class="type">BookingStatus</span>  <span class="dec">@default</span>(PENDING)
+  payment_status   <span class="type">PaymentStatus</span>  <span class="dec">@default</span>(PENDING) <span class="cmt">// mirror from payments</span>
+  adult_count      <span class="type">Int</span>
+  child_count      <span class="type">Int</span>            <span class="dec">@default</span>(<span class="num">0</span>)
+  infant_count     <span class="type">Int</span>            <span class="dec">@default</span>(<span class="num">0</span>)
+  room_type        <span class="type">RoomType</span>       <span class="dec">@default</span>(STANDARD)
+  total_price      <span class="type">Decimal</span>        <span class="dec">@db.Decimal</span>(<span class="num">12</span>, <span class="num">0</span>)
+  deposit_amount   <span class="type">Decimal</span>        <span class="dec">@db.Decimal</span>(<span class="num">12</span>, <span class="num">0</span>)
+  deposit_paid     <span class="type">Decimal</span>        <span class="dec">@default</span>(<span class="num">0</span>) <span class="dec">@db.Decimal</span>(<span class="num">12</span>, <span class="num">0</span>)
+  special_requests <span class="type">String?</span>
+  cancel_reason    <span class="type">String?</span>
+  confirmed_at     <span class="type">DateTime?</span>
+  cancelled_at     <span class="type">DateTime?</span>
+  created_at       <span class="type">DateTime</span>       <span class="dec">@default</span>(<span class="fn">now</span>())
+  updated_at       <span class="type">DateTime</span>       <span class="dec">@updatedAt</span>
+
+  user             <span class="type">User</span>           <span class="dec">@relation</span>(fields: [user_id], references: [id])
+  tour             <span class="type">Tour</span>           <span class="dec">@relation</span>(fields: [tour_id], references: [id])
+  schedule         <span class="type">TourSchedule</span>   <span class="dec">@relation</span>(fields: [schedule_id], references: [id])
+  guide            <span class="type">Guide?</span>         <span class="dec">@relation</span>(fields: [guide_id], references: [id])
+  payments         <span class="type">Payment</span>[]
+  addons           <span class="type">BookingAddon</span>[]
+  review           <span class="type">Review?</span>
+  notifications    <span class="type">Notification</span>[]
+
+  <span class="dec">@@index</span>([user_id, status])
+  <span class="dec">@@index</span>([tour_id, status])
+  <span class="dec">@@index</span>([guide_id, status])
+  <span class="dec">@@map</span>(<span class="str">"bookings"</span>)
+}
+
+<span class="kw">model</span> <span class="type">Payment</span> {
+  id                   <span class="type">String</span>          <span class="dec">@id</span> <span class="dec">@default</span>(<span class="fn">dbgenerated</span>(<span class="str">"gen_random_uuid()"</span>)) <span class="dec">@db.Uuid</span>
+  booking_id           <span class="type">String</span>          <span class="dec">@db.Uuid</span>
+  provider             <span class="type">PaymentProvider</span>
+  payment_type         <span class="type">String</span>          <span class="cmt">// DEPOSIT | REMAINING | FULL | REFUND</span>
+  provider_request_id  <span class="type">String</span>          <span class="dec">@unique</span>   <span class="cmt">// idempotency key</span>
+  provider_order_id    <span class="type">String?</span>         <span class="dec">@unique</span>
+  provider_trans_id    <span class="type">String?</span>         <span class="dec">@unique</span>
+  amount               <span class="type">Decimal</span>         <span class="dec">@db.Decimal</span>(<span class="num">12</span>, <span class="num">0</span>)
+  status               <span class="type">PaymentStatus</span>   <span class="dec">@default</span>(PENDING)
+  webhook_payload      <span class="type">Json?</span>
+  failure_reason       <span class="type">String?</span>
+  paid_at              <span class="type">DateTime?</span>
+  expires_at           <span class="type">DateTime?</span>
+  created_at           <span class="type">DateTime</span>        <span class="dec">@default</span>(<span class="fn">now</span>())
+  updated_at           <span class="type">DateTime</span>        <span class="dec">@updatedAt</span>
+
+  booking              <span class="type">Booking</span>         <span class="dec">@relation</span>(fields: [booking_id], references: [id])
+
+  <span class="dec">@@index</span>([booking_id])
+  <span class="dec">@@index</span>([status])
+  <span class="dec">@@map</span>(<span class="str">"payments"</span>)
+}
+
+<span class="kw">model</span> <span class="type">Guide</span> {
+  id               <span class="type">String</span>       <span class="dec">@id</span> <span class="dec">@default</span>(<span class="fn">dbgenerated</span>(<span class="str">"gen_random_uuid()"</span>)) <span class="dec">@db.Uuid</span>
+  user_id          <span class="type">String</span>       <span class="dec">@unique</span> <span class="dec">@db.Uuid</span>
+  license_number   <span class="type">String</span>       <span class="dec">@unique</span>
+  license_expires  <span class="type">DateTime</span>     <span class="dec">@db.Date</span>
+  languages        <span class="type">String[]</span>
+  specialties      <span class="type">String[]</span>
+  regions          <span class="type">String[]</span>
+  bio              <span class="type">String?</span>
+  rating_avg       <span class="type">Decimal</span>      <span class="dec">@default</span>(<span class="num">0</span>) <span class="dec">@db.Decimal</span>(<span class="num">3</span>, <span class="num">2</span>)
+  total_tours      <span class="type">Int</span>          <span class="dec">@default</span>(<span class="num">0</span>)
+  status           <span class="type">GuideStatus</span>  <span class="dec">@default</span>(ACTIVE)
+  daily_rate       <span class="type">Decimal</span>      <span class="dec">@db.Decimal</span>(<span class="num">10</span>, <span class="num">0</span>)
+  joined_at        <span class="type">DateTime</span>     <span class="dec">@db.Date</span>
+  updated_at       <span class="type">DateTime</span>     <span class="dec">@updatedAt</span>
+
+  user             <span class="type">User</span>         <span class="dec">@relation</span>(fields: [user_id], references: [id])
+  bookings         <span class="type">Booking</span>[]
+  reviews          <span class="type">Review</span>[]
+
+  <span class="dec">@@index</span>([status])
+  <span class="dec">@@map</span>(<span class="str">"guides"</span>)
+}
+
+<span class="kw">model</span> <span class="type">Review</span> {
+  id            <span class="type">String</span>    <span class="dec">@id</span> <span class="dec">@default</span>(<span class="fn">dbgenerated</span>(<span class="str">"gen_random_uuid()"</span>)) <span class="dec">@db.Uuid</span>
+  booking_id    <span class="type">String</span>    <span class="dec">@unique</span> <span class="dec">@db.Uuid</span>
+  user_id       <span class="type">String</span>    <span class="dec">@db.Uuid</span>
+  tour_id       <span class="type">String</span>    <span class="dec">@db.Uuid</span>
+  guide_id      <span class="type">String?</span>   <span class="dec">@db.Uuid</span>
+  rating        <span class="type">Int</span>
+  guide_rating  <span class="type">Int?</span>
+  comment       <span class="type">String?</span>
+  photos        <span class="type">String[]</span>
+  is_published  <span class="type">Boolean</span>   <span class="dec">@default</span>(<span class="num">false</span>)
+  created_at    <span class="type">DateTime</span>  <span class="dec">@default</span>(<span class="fn">now</span>())
+
+  booking       <span class="type">Booking</span>   <span class="dec">@relation</span>(fields: [booking_id], references: [id])
+  user          <span class="type">User</span>      <span class="dec">@relation</span>(fields: [user_id], references: [id])
+  tour          <span class="type">Tour</span>      <span class="dec">@relation</span>(fields: [tour_id], references: [id])
+  guide         <span class="type">Guide?</span>    <span class="dec">@relation</span>(fields: [guide_id], references: [id])
+
+  <span class="dec">@@index</span>([tour_id, is_published])
+  <span class="dec">@@map</span>(<span class="str">"reviews"</span>)
+}`,
+  },
+  migration:{file:'prisma/migrations/init.sql',content:`<span class="cmt">-- Baggio Travel — Initial Migration</span>
+<span class="cmt">-- Run: prisma migrate deploy</span>
+
+<span class="kw">CREATE EXTENSION IF NOT EXISTS</span> <span class="str">"pgcrypto"</span>;
+
+<span class="cmt">-- Enums</span>
+<span class="kw">CREATE TYPE</span> <span class="type">"UserRole"</span>        <span class="kw">AS ENUM</span> (<span class="str">'CUSTOMER'</span>,<span class="str">'STAFF'</span>,<span class="str">'GUIDE'</span>,<span class="str">'ADMIN'</span>);
+<span class="kw">CREATE TYPE</span> <span class="type">"TourStatus"</span>       <span class="kw">AS ENUM</span> (<span class="str">'DRAFT'</span>,<span class="str">'ACTIVE'</span>,<span class="str">'PAUSED'</span>,<span class="str">'ARCHIVED'</span>);
+<span class="kw">CREATE TYPE</span> <span class="type">"BookingStatus"</span>    <span class="kw">AS ENUM</span> (<span class="str">'PENDING'</span>,<span class="str">'CONFIRMED'</span>,<span class="str">'ONGOING'</span>,<span class="str">'COMPLETED'</span>,<span class="str">'CANCELLED'</span>);
+<span class="kw">CREATE TYPE</span> <span class="type">"PaymentStatus"</span>    <span class="kw">AS ENUM</span> (<span class="str">'PENDING'</span>,<span class="str">'SUCCESS'</span>,<span class="str">'FAILED'</span>,<span class="str">'CANCELLED'</span>,<span class="str">'REFUNDED'</span>);
+<span class="kw">CREATE TYPE</span> <span class="type">"PaymentProvider"</span>  <span class="kw">AS ENUM</span> (<span class="str">'MOMO'</span>,<span class="str">'VNPAY'</span>,<span class="str">'STRIPE'</span>,<span class="str">'BANK_TRANSFER'</span>,<span class="str">'CASH'</span>);
+<span class="kw">CREATE TYPE</span> <span class="type">"GuideStatus"</span>      <span class="kw">AS ENUM</span> (<span class="str">'ACTIVE'</span>,<span class="str">'ON_TOUR'</span>,<span class="str">'ON_LEAVE'</span>,<span class="str">'INACTIVE'</span>);
+<span class="kw">CREATE TYPE</span> <span class="type">"RoomType"</span>         <span class="kw">AS ENUM</span> (<span class="str">'STANDARD'</span>,<span class="str">'DELUXE'</span>,<span class="str">'SUITE'</span>);
+
+<span class="cmt">-- users</span>
+<span class="kw">CREATE TABLE</span> users (
+  id              UUID        <span class="kw">PRIMARY KEY DEFAULT</span> gen_random_uuid(),
+  email           VARCHAR(<span class="num">255</span>) <span class="kw">NOT NULL UNIQUE</span>,
+  full_name       VARCHAR(<span class="num">100</span>) <span class="kw">NOT NULL</span>,
+  phone           VARCHAR(<span class="num">20</span>)  <span class="kw">UNIQUE</span>,
+  password_hash   TEXT        <span class="kw">NOT NULL</span>,
+  role            <span class="type">"UserRole"</span>  <span class="kw">NOT NULL DEFAULT</span> <span class="str">'CUSTOMER'</span>,
+  avatar_url      TEXT,
+  loyalty_points  INTEGER     <span class="kw">NOT NULL DEFAULT</span> <span class="num">0</span>,
+  total_spent     NUMERIC(<span class="num">12</span>,<span class="num">0</span>) <span class="kw">NOT NULL DEFAULT</span> <span class="num">0</span>,
+  is_verified     BOOLEAN     <span class="kw">NOT NULL DEFAULT</span> <span class="num">false</span>,
+  is_active       BOOLEAN     <span class="kw">NOT NULL DEFAULT</span> <span class="num">true</span>,
+  last_login_at   TIMESTAMPTZ,
+  created_at      TIMESTAMPTZ <span class="kw">NOT NULL DEFAULT</span> NOW(),
+  updated_at      TIMESTAMPTZ <span class="kw">NOT NULL DEFAULT</span> NOW()
+);
+
+<span class="cmt">-- auto-update updated_at trigger</span>
+<span class="kw">CREATE OR REPLACE FUNCTION</span> <span class="fn">set_updated_at</span>()
+<span class="kw">RETURNS TRIGGER AS</span> $$
+<span class="kw">BEGIN</span>
+  NEW.updated_at = NOW(); <span class="kw">RETURN</span> NEW;
+<span class="kw">END</span>; $$ <span class="kw">LANGUAGE</span> plpgsql;
+
+<span class="kw">CREATE TRIGGER</span> users_updated_at <span class="kw">BEFORE UPDATE ON</span> users
+  <span class="kw">FOR EACH ROW EXECUTE FUNCTION</span> <span class="fn">set_updated_at</span>();
+
+<span class="cmt">-- tours</span>
+<span class="kw">CREATE TABLE</span> tours (
+  id                UUID          <span class="kw">PRIMARY KEY DEFAULT</span> gen_random_uuid(),
+  name              VARCHAR(<span class="num">200</span>)  <span class="kw">NOT NULL</span>,
+  slug              VARCHAR(<span class="num">200</span>)  <span class="kw">NOT NULL UNIQUE</span>,
+  destination       VARCHAR(<span class="num">100</span>)  <span class="kw">NOT NULL</span>,
+  region            VARCHAR(<span class="num">20</span>)   <span class="kw">NOT NULL</span>,
+  duration_days     SMALLINT      <span class="kw">NOT NULL</span>,
+  duration_nights   SMALLINT      <span class="kw">NOT NULL</span>,
+  base_price        NUMERIC(<span class="num">12</span>,<span class="num">0</span>) <span class="kw">NOT NULL</span>,
+  child_price_ratio NUMERIC(<span class="num">3</span>,<span class="num">2</span>)  <span class="kw">NOT NULL DEFAULT</span> <span class="num">0.70</span>,
+  max_pax           SMALLINT      <span class="kw">NOT NULL</span>,
+  status            <span class="type">"TourStatus"</span> <span class="kw">NOT NULL DEFAULT</span> <span class="str">'DRAFT'</span>,
+  includes          JSONB         <span class="kw">NOT NULL DEFAULT</span> <span class="str">'{}'</span>,
+  itinerary         JSONB         <span class="kw">NOT NULL DEFAULT</span> <span class="str">'[]'</span>,
+  cover_image       TEXT,
+  images            TEXT[]        <span class="kw">DEFAULT</span> <span class="str">'{}'</span>,
+  created_at        TIMESTAMPTZ   <span class="kw">NOT NULL DEFAULT</span> NOW(),
+  updated_at        TIMESTAMPTZ   <span class="kw">NOT NULL DEFAULT</span> NOW()
+);
+<span class="kw">CREATE INDEX</span> tours_destination_status_idx <span class="kw">ON</span> tours (destination, status);
+<span class="kw">CREATE INDEX</span> tours_base_price_idx <span class="kw">ON</span> tours (base_price);
+<span class="cmt">-- Full-text search index</span>
+<span class="kw">CREATE INDEX</span> tours_fts_idx <span class="kw">ON</span> tours <span class="kw">USING</span> GIN (
+  to_tsvector(<span class="str">'simple'</span>, name || <span class="str">' '</span> || destination)
+);
+
+<span class="cmt">-- bookings — core junction table</span>
+<span class="kw">CREATE TABLE</span> bookings (
+  id               UUID            <span class="kw">PRIMARY KEY DEFAULT</span> gen_random_uuid(),
+  booking_ref      VARCHAR(<span class="num">20</span>)    <span class="kw">NOT NULL UNIQUE</span>,
+  user_id          UUID            <span class="kw">NOT NULL REFERENCES</span> users(id),
+  tour_id          UUID            <span class="kw">NOT NULL REFERENCES</span> tours(id),
+  guide_id         UUID            <span class="kw">REFERENCES</span> guides(id),
+  status           <span class="type">"BookingStatus"</span> <span class="kw">NOT NULL DEFAULT</span> <span class="str">'PENDING'</span>,
+  adult_count      SMALLINT        <span class="kw">NOT NULL CHECK</span> (adult_count >= <span class="num">1</span>),
+  total_price      NUMERIC(<span class="num">12</span>,<span class="num">0</span>)  <span class="kw">NOT NULL</span>,
+  deposit_amount   NUMERIC(<span class="num">12</span>,<span class="num">0</span>)  <span class="kw">NOT NULL</span>,
+  created_at       TIMESTAMPTZ     <span class="kw">NOT NULL DEFAULT</span> NOW(),
+  updated_at       TIMESTAMPTZ     <span class="kw">NOT NULL DEFAULT</span> NOW()
+);
+<span class="kw">CREATE INDEX</span> bookings_user_status_idx <span class="kw">ON</span> bookings (user_id, status);
+<span class="kw">CREATE INDEX</span> bookings_tour_status_idx <span class="kw">ON</span> bookings (tour_id, status);`,
+  },
+  seed:{file:'prisma/seed.ts',content:`<span class="kw">import</span> { PrismaClient } <span class="kw">from</span> <span class="str">'@prisma/client'</span>;
+<span class="kw">import</span> bcrypt <span class="kw">from</span> <span class="str">'bcrypt'</span>;
+
+<span class="kw">const</span> db = <span class="kw">new</span> <span class="fn">PrismaClient</span>();
+
+<span class="kw">async function</span> <span class="fn">main</span>() {
+  console.<span class="fn">log</span>(<span class="str">'🌱 Seeding Baggio Travel database...'</span>);
+
+  <span class="cmt">// 1. Tạo admin user</span>
+  <span class="kw">const</span> admin = <span class="kw">await</span> db.user.<span class="fn">upsert</span>({
+    where:  { email: <span class="str">'admin@baggiotravel.com'</span> },
+    update: {},
+    create: {
+      email:         <span class="str">'admin@baggiotravel.com'</span>,
+      full_name:     <span class="str">'Baggio Admin'</span>,
+      password_hash: <span class="kw">await</span> bcrypt.<span class="fn">hash</span>(<span class="str">'Admin@2025!'</span>, <span class="num">12</span>),
+      role:          <span class="str">'ADMIN'</span>,
+      is_verified:   <span class="num">true</span>,
+    },
+  });
+  console.<span class="fn">log</span>(<span class="str">'✅ Admin:'</span>, admin.email);
+
+  <span class="cmt">// 2. Seed tours</span>
+  <span class="kw">const</span> tours = [
+    {
+      name:           <span class="str">'Hội An – Phố Cổ & Ẩm Thực'</span>,
+      slug:           <span class="str">'hoi-an-pho-co-am-thuc-3n2d'</span>,
+      destination:    <span class="str">'Hội An'</span>,
+      region:         <span class="str">'central'</span>,
+      duration_days:  <span class="num">3</span>,
+      duration_nights:<span class="num">2</span>,
+      base_price:     <span class="num">2800000</span>,
+      max_pax:        <span class="num">20</span>,
+      status:         <span class="str">'ACTIVE'</span>,
+      includes: {
+        flights: <span class="num">true</span>, hotel: <span class="str">'3-star'</span>, guide: <span class="num">true</span>,
+        transfer: <span class="num">true</span>, meals: [<span class="str">'breakfast x2'</span>],
+      },
+      itinerary: [
+        { day: <span class="num">1</span>, title: <span class="str">'Bay vào Đà Nẵng, nhận phòng'</span>,
+          activities: [<span class="str">'Đón sân bay'</span>,<span class="str">'Check-in KS Hội An'</span>,<span class="str">'Tự do buổi tối'</span>] },
+        { day: <span class="num">2</span>, title: <span class="str">'Tham quan Phố Cổ'</span>,
+          activities: [<span class="str">'Chùa Cầu'</span>,<span class="str">'Làng rau Trà Quế'</span>,<span class="str">'Lớp học nấu ăn'</span>] },
+        { day: <span class="num">3</span>, title: <span class="str">'Mỹ Khê & Bay về'</span>,
+          activities: [<span class="str">'Biển Mỹ Khê buổi sáng'</span>,<span class="str">'Ra sân bay Đà Nẵng'</span>] },
+      ],
+    },
+    {
+      name:           <span class="str">'Hạ Long – Du Thuyền 5 Ngày'</span>,
+      slug:           <span class="str">'ha-long-du-thuyen-5n4d'</span>,
+      destination:    <span class="str">'Hạ Long'</span>,
+      region:         <span class="str">'north'</span>,
+      duration_days:  <span class="num">5</span>,
+      duration_nights:<span class="num">4</span>,
+      base_price:     <span class="num">5900000</span>,
+      max_pax:        <span class="num">30</span>,
+      status:         <span class="str">'ACTIVE'</span>,
+      includes: {
+        flights: <span class="num">true</span>, hotel: <span class="str">'4-star-cruise'</span>, guide: <span class="num">true</span>,
+        transfer: <span class="num">true</span>, meals: [<span class="str">'breakfast x4'</span>,<span class="str">'dinner x2'</span>],
+        activities: [<span class="str">'kayak'</span>,<span class="str">'cave-tour'</span>,<span class="str">'fishing'</span>],
+      },
+      itinerary: [],
+    },
+  ];
+
+  <span class="kw">for</span> (<span class="kw">const</span> tour <span class="kw">of</span> tours) {
+    <span class="kw">await</span> db.tour.<span class="fn">upsert</span>({
+      where:  { slug: tour.slug },
+      update: {},
+      create: tour,
+    });
+  }
+  console.<span class="fn">log</span>(<span class="str">\`✅ Seeded \${tours.length} tours\`</span>);
+
+  console.<span class="fn">log</span>(<span class="str">'🎉 Seed hoàn thành!'</span>);
+}
+
+<span class="fn">main</span>()
+  .<span class="fn">catch</span>(e => { console.<span class="fn">error</span>(e); <span class="fn">process</span>.<span class="fn">exit</span>(<span class="num">1</span>); })
+  .<span class="fn">finally</span>(<span class="kw">async</span> () => <span class="kw">await</span> db.<span class="fn">$disconnect</span>());`,
+  },
+  queries:{file:'src/lib/db-queries.ts',content:`<span class="kw">import</span> { db } <span class="kw">from</span> <span class="str">'./prisma'</span>;
+
+<span class="cmt">// 1. Tìm kiếm tour theo bộ lọc</span>
+<span class="kw">export async function</span> <span class="fn">searchTours</span>(filters: {
+  destination?: <span class="type">string</span>;
+  maxPrice?:    <span class="type">number</span>;
+  minDays?:     <span class="type">number</span>;
+  maxDays?:     <span class="type">number</span>;
+}) {
+  <span class="kw">return</span> db.tour.<span class="fn">findMany</span>({
+    where: {
+      status:     <span class="str">'ACTIVE'</span>,
+      destination: filters.destination ? { <span class="fn">contains</span>: filters.destination, <span class="fn">mode</span>: <span class="str">'insensitive'</span> } : <span class="kw">undefined</span>,
+      base_price:  filters.maxPrice   ? { <span class="fn">lte</span>: filters.maxPrice }                                   : <span class="kw">undefined</span>,
+      duration_days: {
+        gte: filters.minDays ?? <span class="num">1</span>,
+        lte: filters.maxDays ?? <span class="num">30</span>,
+      },
+    },
+    include: { schedules: { where: { status: <span class="str">'OPEN'</span>, depart_date: { <span class="fn">gte</span>: <span class="kw">new</span> <span class="fn">Date</span>() } } } },
+    orderBy: { base_price: <span class="str">'asc'</span> },
+  });
+}
+
+<span class="cmt">// 2. Tạo đơn đặt tour với booking_ref tự sinh</span>
+<span class="kw">export async function</span> <span class="fn">createBooking</span>(data: {
+  userId:      <span class="type">string</span>;
+  tourId:      <span class="type">string</span>;
+  scheduleId:  <span class="type">string</span>;
+  adultCount:  <span class="type">number</span>;
+  childCount:  <span class="type">number</span>;
+  totalPrice:  <span class="type">number</span>;
+}) {
+  <span class="kw">const</span> ref = <span class="str">\`BT-\${Date.now().toString(36).toUpperCase()}\`</span>;
+  <span class="kw">return</span> db.<span class="fn">$transaction</span>(<span class="kw">async</span> tx => {
+    <span class="kw">const</span> booking = <span class="kw">await</span> tx.booking.<span class="fn">create</span>({
+      data: {
+        booking_ref:    ref,
+        user_id:        data.userId,
+        tour_id:        data.tourId,
+        schedule_id:    data.scheduleId,
+        adult_count:    data.adultCount,
+        child_count:    data.childCount,
+        total_price:    data.totalPrice,
+        deposit_amount: Math.<span class="fn">round</span>(data.totalPrice * <span class="num">0.3</span>),
+      },
+    });
+    <span class="cmt">// Giảm available_slots</span>
+    <span class="kw">await</span> tx.tourSchedule.<span class="fn">update</span>({
+      where: { id: data.scheduleId },
+      data:  { available_slots: { <span class="fn">decrement</span>: data.adultCount + data.childCount } },
+    });
+    <span class="kw">return</span> booking;
+  });
+}
+
+<span class="cmt">// 3. Xử lý webhook thanh toán — idempotent</span>
+<span class="kw">export async function</span> <span class="fn">handlePaymentWebhook</span>(payload: {
+  requestId:  <span class="type">string</span>;
+  bookingId:  <span class="type">string</span>;
+  transId:    <span class="type">string</span>;
+  amount:     <span class="type">number</span>;
+  resultCode: <span class="type">number</span>;
+}) {
+  <span class="kw">return</span> db.<span class="fn">$transaction</span>(<span class="kw">async</span> tx => {
+    <span class="cmt">// Idempotency check</span>
+    <span class="kw">const</span> existing = <span class="kw">await</span> tx.payment.<span class="fn">findUnique</span>({
+      where: { provider_request_id: payload.requestId }
+    });
+    <span class="kw">if</span> (existing?.status === <span class="str">'SUCCESS'</span>) <span class="kw">return</span> existing;
+
+    <span class="kw">const</span> status = payload.resultCode === <span class="num">0</span> ? <span class="str">'SUCCESS'</span> : <span class="str">'FAILED'</span>;
+    <span class="kw">const</span> payment = <span class="kw">await</span> tx.payment.<span class="fn">update</span>({
+      where: { provider_request_id: payload.requestId },
+      data:  { status, provider_trans_id: payload.transId, paid_at: <span class="kw">new</span> <span class="fn">Date</span>() },
+    });
+    <span class="kw">if</span> (status === <span class="str">'SUCCESS'</span>) {
+      <span class="kw">await</span> tx.booking.<span class="fn">update</span>({
+        where: { id: payload.bookingId },
+        data:  { payment_status: <span class="str">'DEPOSIT_PAID'</span>, status: <span class="str">'CONFIRMED'</span>, confirmed_at: <span class="kw">new</span> <span class="fn">Date</span>() },
+      });
+    }
+    <span class="kw">return</span> payment;
+  });
+}
+
+<span class="cmt">// 4. Dashboard admin — thống kê tổng quan</span>
+<span class="kw">export async function</span> <span class="fn">getDashboardStats</span>() {
+  <span class="kw">const</span> [bookings, revenue, guides, newUsers] = <span class="kw">await</span> Promise.<span class="fn">all</span>([
+    db.booking.<span class="fn">count</span>({ where: { created_at: { <span class="fn">gte</span>: <span class="kw">new</span> <span class="fn">Date</span>(Date.<span class="fn">now</span>() - <span class="num">30</span>*<span class="num">24</span>*<span class="num">60</span>*<span class="num">60</span>*<span class="num">1000</span>) } } }),
+    db.payment.<span class="fn">aggregate</span>({ _sum: { amount: <span class="num">true</span> }, where: { status: <span class="str">'SUCCESS'</span> } }),
+    db.guide.<span class="fn">count</span>({ where: { status: { <span class="fn">in</span>: [<span class="str">'ACTIVE'</span>,<span class="str">'ON_TOUR'</span>] } } }),
+    db.user.<span class="fn">count</span>({ where: { created_at: { <span class="fn">gte</span>: <span class="kw">new</span> <span class="fn">Date</span>(Date.<span class="fn">now</span>() - <span class="num">30</span>*<span class="num">24</span>*<span class="num">60</span>*<span class="num">60</span>*<span class="num">1000</span>) } } }),
+  ]);
+  <span class="kw">return</span> { bookings, revenue: revenue._sum.amount, guides, newUsers };
+}`,
+  },
+};
+
+// ── UI LOGIC ─────────────────────────────────────────
+function switchPanel(id,btn){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  document.querySelectorAll('.tb-tab').forEach(t=>t.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  else document.querySelectorAll('.tb-tab').forEach((t,i)=>{
+    if(['erd','schema','prisma','relations','indexes'][i]===id)t.classList.add('active');
+  });
+}
+
+let currentTable='users';
+const allTables=Object.keys(tableFields);
+
+function buildTableList(){
+  document.getElementById('tableList').innerHTML=allTables.map(t=>{
+    const [color]=tableColors[t]||['#64748b',''];
+    const fields=tableFields[t];
+    return `<button class="table-btn${t===currentTable?' selected':''}" onclick="selectTable('${t}',null)">
+      <div class="tb-dot" style="background:${color}"></div>
+      <span class="tb-name">${t}</span>
+      ${fields?`<span class="tb-cols">${fields.length} cols</span>`:''}
+    </button>`;
+  }).join('');
+}
+
+function selectTable(name,sbEl){
+  currentTable=name;
+  if(sbEl){
+    document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active','users','tours','bookings','payments','guides','reviews','notifications'));
+    sbEl.classList.add('active');
+    ['users','tours','bookings','payments','guides','reviews','notifications'].forEach(c=>{
+      if(sbEl.querySelector(`.sb-dot[style*="${tableColors[c]?.[0]}"]`))sbEl.classList.add(c);
+    });
+  }
+  buildTableList();
+  renderDetail(name);
+}
+
+function renderDetail(name){
+  const fields=tableFields[name];
+  if(!fields)return;
+  const [color,bg]=tableColors[name]||['#64748b','rgba(100,116,139,.1)'];
+  document.getElementById('sdTitle').textContent=name;
+  document.getElementById('sdBadge').textContent=fields.length+' fields';
+  document.getElementById('sdBadge').style.cssText=`background:${bg};color:${color};border:1px solid ${color}44`;
+  document.getElementById('sdBody').innerHTML=`
+    <div style="display:grid;grid-template-columns:120px 100px 1fr;gap:.75rem;padding:.35rem 0;border-bottom:1px solid var(--border);margin-bottom:.25rem">
+      <div style="font-family:var(--mono);font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text3)">Column</div>
+      <div style="font-family:var(--mono);font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text3)">Type</div>
+      <div style="font-family:var(--mono);font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text3)">Description</div>
+    </div>
+    ${fields.map(f=>`
+    <div class="field-row">
+      <div class="field-name ${f.tags.includes('PK')?'pk':f.tags.some(t=>t.startsWith('FK'))?'fk':''}">${f.n}</div>
+      <div class="field-type">${f.t}</div>
+      <div>
+        <div class="field-desc">${f.d}</div>
+        <div class="field-tags">${f.tags.map(tag=>{
+          let cls='';
+          if(tag==='PK')cls='ftag-pk';
+          else if(tag.startsWith('FK'))cls='ftag-fk';
+          else if(tag==='UNIQUE'||tag.includes('◈'))cls='ftag-uniq';
+          else if(tag==='IDX'||tag.includes('⊙'))cls='ftag-idx';
+          else if(tag.includes('NULL'))cls='ftag-null';
+          else cls='ftag-def';
+          return `<span class="ftag ${cls}">${tag}</span>`;
+        }).join('')}</div>
+      </div>
+    </div>`).join('')}`;
+}
+
+let currentCodeFile='schema';
+function showCode(key,btn){
+  currentCodeFile=key;
+  document.querySelectorAll('.code-tab-btn').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  const f=codeFiles[key];
+  document.getElementById('codeFilename').textContent=f.file;
+  document.getElementById('codeContent').innerHTML=f.content;
+}
+
+function copyCode(){
+  const pre=document.getElementById('codeContent');
+  navigator.clipboard.writeText(pre.innerText).then(()=>{
+    const btn=document.querySelector('.copy-btn');
+    btn.textContent='Copied!';btn.classList.add('ok');
+    setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('ok')},2000);
+  });
+}
+
+function copyPrisma(){
+  navigator.clipboard.writeText(document.getElementById('codeContent').innerText)
+    .then(()=>alert('Đã copy Prisma schema!'));
+}
+
+// Init
+buildTableList();
+renderDetail('users');
+showCode('schema',null);
+document.querySelector('.code-tab-btn').classList.add('active');
+</script>
+</body>
+</html>

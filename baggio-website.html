@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Baggio — Brand & Creative</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Be Vietnam Pro: best Vietnamese font support, rarely breaks diacritics -->
+<!-- Epilogue: bold display headings -->
+<!-- Space Mono: monospace labels -->
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400&family=Epilogue:wght@700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --black: #090909;
+    --white: #f4f0e8;
+    --accent: #ff4422;
+    --accent2: #ffd84d;
+    --accent3: #0affb2;
+    --muted: #888;
+    --font-display: 'Epilogue', sans-serif;
+    --font-body: 'Be Vietnam Pro', sans-serif;
+    --font-mono: 'Space Mono', monospace;
+  }
+
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.65;
+    cursor: none;
+    overflow-x: hidden;
+  }
+
+  /* ── CURSOR ── */
+  .cursor {
+    width: 10px; height: 10px;
+    background: var(--accent);
+    border-radius: 50%;
+    position: fixed; top: 0; left: 0;
+    pointer-events: none;
+    z-index: 9999;
+    mix-blend-mode: exclusion;
+    transition: width .2s, height .2s, opacity .2s;
+  }
+  .cursor-ring {
+    width: 38px; height: 38px;
+    border: 1.5px solid rgba(255,255,255,0.35);
+    border-radius: 50%;
+    position: fixed; top: 0; left: 0;
+    pointer-events: none;
+    z-index: 9998;
+    transition: transform 0.38s cubic-bezier(0.23,1,0.32,1);
+  }
+
+  /* ── NAV ── */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.4rem 3rem;
+  }
+  nav::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(to bottom, rgba(9,9,9,0.92) 0%, transparent 100%);
+    pointer-events: none;
+    z-index: -1;
+  }
+  .nav-logo {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: 1.5rem;
+    letter-spacing: -0.03em;
+    color: var(--white);
+    text-decoration: none;
+  }
+  .nav-logo span { color: var(--accent); }
+  .nav-links { display: flex; gap: 2.5rem; list-style: none; }
+  .nav-links a {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgba(244,240,232,0.55);
+    text-decoration: none;
+    transition: color .2s;
+  }
+  .nav-links a:hover { color: var(--accent); }
+
+  /* ── HERO ── */
+  #hero {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    position: relative;
+    overflow: hidden;
+  }
+  /* Background image layer — tech/food collage */
+  .hero-bg {
+    position: absolute; inset: 0;
+    z-index: 0;
+  }
+  .hero-bg-img {
+    position: absolute; inset: 0;
+    background-image: url('https://images.unsplash.com/photo-1518770660439-4636190af475?w=1600&q=80&auto=format&fit=crop');
+    background-size: cover;
+    background-position: center;
+    opacity: 0.18;
+    filter: grayscale(30%);
+  }
+  .hero-bg-grad {
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(9,9,9,0.97) 0%, rgba(9,9,9,0.75) 45%, rgba(9,9,9,0.92) 100%);
+  }
+  .hero-left {
+    display: flex; flex-direction: column; justify-content: flex-end;
+    padding: 9rem 3rem 5.5rem;
+    position: relative; z-index: 2;
+  }
+  .hero-tag {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 1.5rem;
+    opacity: 0;
+    animation: fadeUp 0.6s 0.2s forwards;
+  }
+  .hero-name {
+    font-family: var(--font-display);
+    font-size: clamp(5rem, 9.5vw, 9rem);
+    font-weight: 900;
+    line-height: 0.88;
+    letter-spacing: -0.05em;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.4s forwards;
+  }
+  .hero-name .stroke {
+    -webkit-text-stroke: 2px var(--white);
+    color: transparent;
+  }
+  .hero-desc {
+    margin-top: 2.5rem;
+    font-size: 1.05rem;
+    font-weight: 300;
+    line-height: 1.8;
+    color: rgba(244,240,232,0.6);
+    max-width: 420px;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.65s forwards;
+  }
+  .hero-desc strong { color: var(--white); font-weight: 600; }
+  .hero-cta {
+    margin-top: 3rem;
+    display: flex; gap: 1.2rem; align-items: center;
+    opacity: 0;
+    animation: fadeUp 0.8s 0.85s forwards;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: var(--white);
+    font-family: var(--font-body);
+    font-weight: 700;
+    font-size: 0.9rem;
+    letter-spacing: 0.03em;
+    padding: 1rem 2.2rem;
+    border: none;
+    text-decoration: none;
+    display: inline-block;
+    transition: transform .2s, box-shadow .2s;
+  }
+  .btn-primary:hover { transform: translate(-4px,-4px); box-shadow: 7px 7px 0 var(--accent2); }
+  .btn-outline {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(244,240,232,0.5);
+    text-decoration: none;
+    border-bottom: 1px solid currentColor;
+    padding-bottom: 2px;
+    transition: color .2s;
+  }
+  .btn-outline:hover { color: var(--white); }
+
+  .hero-right {
+    position: relative; z-index: 2;
+    display: flex; align-items: center; justify-content: center;
+  }
+  /* Floating cards */
+  .float-stack {
+    position: relative;
+    width: 300px; height: 380px;
+  }
+  .float-card {
+    position: absolute;
+    background: rgba(244,240,232,0.04);
+    border: 1px solid rgba(244,240,232,0.1);
+    backdrop-filter: blur(16px);
+    overflow: hidden;
+  }
+  .float-card-a {
+    width: 280px; top: 0; right: 0;
+    animation: floatA 7s ease-in-out infinite;
+  }
+  .float-card-b {
+    width: 220px; bottom: 0; left: 0;
+    animation: floatB 8s ease-in-out infinite 0.5s;
+  }
+  .float-card-img {
+    width: 100%; aspect-ratio: 16/9;
+    object-fit: cover;
+    display: block;
+    opacity: 0.85;
+  }
+  .float-card-body { padding: 1rem 1.2rem; }
+  .float-card-tag {
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.4rem;
+  }
+  .float-card-title {
+    font-family: var(--font-body);
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--white);
+  }
+
+  .hero-accent-line {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent) 0%, var(--accent2) 40%, transparent 100%);
+    z-index: 10;
+  }
+  .hero-scroll-hint {
+    position: absolute;
+    bottom: 2rem; left: 3rem;
+    z-index: 10;
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: rgba(244,240,232,0.25);
+    display: flex; align-items: center; gap: 0.75rem;
+    opacity: 0;
+    animation: fadeUp 1s 1.2s forwards;
+  }
+  .scroll-line {
+    width: 40px; height: 1px;
+    background: rgba(244,240,232,0.2);
+    animation: scrollPulse 2s ease-in-out infinite;
+  }
+
+  /* ── MARQUEE ── */
+  .marquee-wrap {
+    background: var(--accent);
+    overflow: hidden; padding: 0.9rem 0; white-space: nowrap;
+  }
+  .marquee-track {
+    display: inline-flex;
+    animation: marquee 20s linear infinite;
+  }
+  .marquee-item {
+    font-family: var(--font-display);
+    font-weight: 800;
+    font-size: 1rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--black);
+    padding: 0 2rem;
+  }
+  .marquee-sep { color: rgba(0,0,0,0.3); }
+
+  /* ── IMAGE STRIP ── */
+  #image-strip {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    height: 380px;
+    overflow: hidden;
+  }
+  .strip-img {
+    overflow: hidden; position: relative;
+  }
+  .strip-img img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.6s cubic-bezier(0.23,1,0.32,1), filter 0.4s;
+    filter: grayscale(20%) brightness(0.75);
+  }
+  .strip-img:hover img { transform: scale(1.06); filter: grayscale(0%) brightness(0.9); }
+  .strip-img-label {
+    position: absolute; bottom: 1.2rem; left: 1.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(244,240,232,0.55);
+    z-index: 2;
+  }
+  .strip-img::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(9,9,9,0.6) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  /* ── SECTION BASE ── */
+  .section-label {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 0.9rem;
+  }
+  .section-title {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: clamp(2.4rem, 4.5vw, 3.8rem);
+    line-height: 1.02;
+    letter-spacing: -0.04em;
+  }
+
+  /* ── ABOUT ── */
+  #about {
+    padding: 7rem 3rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5rem;
+    align-items: center;
+  }
+  .about-body {
+    margin-top: 1.5rem;
+    font-size: 1.05rem;
+    font-weight: 300;
+    line-height: 1.85;
+    color: rgba(244,240,232,0.6);
+  }
+  .about-body p + p { margin-top: 1rem; }
+  .about-body strong { color: var(--white); font-weight: 600; }
+  .about-body em { color: var(--accent2); font-style: italic; }
+  .about-links {
+    margin-top: 2.5rem;
+    display: flex; flex-wrap: wrap; gap: 0.6rem;
+  }
+  .social-chip {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.55rem 1.1rem;
+    border: 1px solid rgba(244,240,232,0.15);
+    color: rgba(244,240,232,0.6);
+    text-decoration: none;
+    transition: border-color .2s, color .2s, background .2s;
+    display: inline-flex; align-items: center; gap: 0.4rem;
+  }
+  .social-chip:hover { border-color: var(--accent); color: var(--accent); background: rgba(255,68,34,0.06); }
+  .about-nums {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 2px;
+  }
+  .num-box {
+    background: rgba(244,240,232,0.03);
+    border: 1px solid rgba(244,240,232,0.07);
+    padding: 2.5rem 2rem;
+    transition: background .3s;
+  }
+  .num-box:hover { background: rgba(244,240,232,0.06); }
+  .num-value {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: 2.8rem;
+    line-height: 1;
+    color: var(--white);
+  }
+  .num-value span { color: var(--accent); }
+  .num-label { margin-top: 0.4rem; font-size: 0.82rem; color: rgba(244,240,232,0.35); font-weight: 300; }
+
+  /* ── SERVICES ── */
+  #services {
+    padding: 7rem 3rem;
+    border-top: 1px solid rgba(244,240,232,0.07);
+  }
+  .services-header {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    margin-bottom: 3.5rem;
+  }
+  .services-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 2px; }
+  .service-card {
+    background: rgba(244,240,232,0.03);
+    border: 1px solid rgba(244,240,232,0.06);
+    padding: 3rem 2.5rem;
+    position: relative; overflow: hidden;
+    transition: background .3s; cursor: pointer;
+  }
+  .service-card::after {
+    content: '';
+    position: absolute; bottom: 0; left: 0;
+    width: 0; height: 2px;
+    background: var(--accent);
+    transition: width .5s cubic-bezier(0.23,1,0.32,1);
+  }
+  .service-card:hover::after { width: 100%; }
+  .service-card:hover { background: rgba(244,240,232,0.055); }
+  .service-num {
+    font-family: var(--font-mono);
+    font-size: 0.65rem; letter-spacing: 0.18em;
+    color: rgba(255,68,34,0.45);
+    margin-bottom: 2rem;
+  }
+  .service-icon { font-size: 2.2rem; margin-bottom: 1.5rem; display: block; }
+  .service-name {
+    font-family: var(--font-display);
+    font-weight: 800; font-size: 1.35rem;
+    margin-bottom: 1rem; color: var(--white);
+  }
+  .service-desc {
+    font-size: 0.9rem; line-height: 1.75;
+    color: rgba(244,240,232,0.48); font-weight: 300;
+  }
+  .service-price {
+    margin-top: 2rem;
+    font-family: var(--font-mono);
+    font-size: 0.72rem; color: var(--accent2); letter-spacing: 0.1em;
+  }
+
+  /* ── PRODUCTS ── */
+  #products {
+    padding: 7rem 3rem;
+    background: var(--white);
+    color: var(--black);
+  }
+  #products .section-label { color: var(--accent); }
+  #products .section-title { color: var(--black); }
+  .products-header {
+    display: flex; align-items: flex-end; justify-content: space-between;
+    margin-bottom: 3.5rem;
+  }
+  .products-intro {
+    font-size: 1rem; font-weight: 300; line-height: 1.8;
+    color: rgba(9,9,9,0.5); max-width: 440px; margin-top: 0.8rem;
+  }
+  .products-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.5rem; }
+  .product-card {
+    background: #ede8df;
+    border: 1px solid rgba(9,9,9,0.08);
+    overflow: hidden;
+    transition: transform .35s cubic-bezier(0.23,1,0.32,1), box-shadow .35s;
+  }
+  .product-card:hover { transform: translateY(-8px); box-shadow: 0 20px 50px rgba(9,9,9,0.12); }
+  .product-img-wrap {
+    width: 100%; aspect-ratio: 4/3;
+    overflow: hidden; position: relative;
+  }
+  .product-img-wrap img {
+    width: 100%; height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform .6s cubic-bezier(0.23,1,0.32,1);
+    filter: brightness(0.88);
+  }
+  .product-card:hover .product-img-wrap img { transform: scale(1.07); }
+  .product-body { padding: 1.7rem; }
+  .product-tag {
+    font-family: var(--font-mono);
+    font-size: 0.62rem; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--accent); margin-bottom: 0.65rem;
+  }
+  .product-name {
+    font-family: var(--font-display);
+    font-weight: 800; font-size: 1.2rem; color: var(--black); margin-bottom: 0.5rem;
+  }
+  .product-desc { font-size: 0.88rem; color: rgba(9,9,9,0.5); line-height: 1.7; font-weight: 300; }
+  .product-footer {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1rem 1.7rem 1.5rem;
+    border-top: 1px solid rgba(9,9,9,0.07);
+  }
+  .product-price {
+    font-family: var(--font-display);
+    font-weight: 800; font-size: 1.2rem; color: var(--black);
+  }
+  .btn-buy {
+    background: var(--black); color: var(--white);
+    font-family: var(--font-mono);
+    font-size: 0.68rem; letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 0.65rem 1.2rem; border: none; cursor: pointer;
+    transition: background .2s; text-decoration: none; display: inline-block;
+  }
+  .btn-buy:hover { background: var(--accent); }
+
+  /* ── CONTACT ── */
+  #contact {
+    padding: 7rem 3rem;
+    border-top: 1px solid rgba(244,240,232,0.07);
+    display: grid; grid-template-columns: 1.2fr 1fr; gap: 5rem; align-items: center;
+  }
+  .contact-headline {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: clamp(2.8rem, 5.5vw, 5rem);
+    line-height: 0.95; letter-spacing: -0.05em;
+  }
+  .contact-headline em {
+    font-style: normal;
+    -webkit-text-stroke: 1.5px var(--white);
+    color: transparent;
+  }
+  .contact-sub {
+    margin-top: 2rem; font-size: 1rem;
+    color: rgba(244,240,232,0.45); font-weight: 300; line-height: 1.8;
+  }
+  .contact-links { margin-top: 2.5rem; display: flex; flex-wrap: wrap; gap: 0.6rem; }
+  .contact-form { display: flex; flex-direction: column; gap: 1.2rem; }
+  .form-group { display: flex; flex-direction: column; gap: 0.4rem; }
+  .form-label {
+    font-family: var(--font-mono);
+    font-size: 0.62rem; letter-spacing: 0.16em;
+    text-transform: uppercase; color: rgba(244,240,232,0.35);
+  }
+  .form-input, .form-textarea {
+    background: rgba(244,240,232,0.05);
+    border: 1px solid rgba(244,240,232,0.1);
+    color: var(--white);
+    font-family: var(--font-body);
+    font-size: 0.95rem; font-weight: 400;
+    padding: 0.9rem 1.1rem; outline: none;
+    transition: border-color .2s, background .2s;
+    width: 100%; resize: vertical;
+  }
+  .form-input::placeholder, .form-textarea::placeholder { color: rgba(244,240,232,0.18); }
+  .form-input:focus, .form-textarea:focus {
+    border-color: var(--accent); background: rgba(255,68,34,0.04);
+  }
+  .form-textarea { min-height: 120px; }
+  .btn-send {
+    background: var(--accent); color: var(--white);
+    font-family: var(--font-body); font-weight: 700; font-size: 1rem;
+    padding: 1.1rem 2.5rem; border: none; cursor: pointer;
+    transition: transform .2s, box-shadow .2s; align-self: flex-start;
+  }
+  .btn-send:hover { transform: translate(-4px,-4px); box-shadow: 7px 7px 0 var(--accent2); }
+
+  /* ── FOOTER ── */
+  footer {
+    background: #050505;
+    padding: 2.5rem 3rem;
+    display: flex; align-items: center; justify-content: space-between;
+    border-top: 1px solid rgba(244,240,232,0.05);
+  }
+  .footer-logo {
+    font-family: var(--font-display);
+    font-weight: 900; font-size: 1.2rem; color: var(--white);
+  }
+  .footer-logo span { color: var(--accent); }
+  .footer-copy {
+    font-family: var(--font-mono);
+    font-size: 0.62rem; color: rgba(244,240,232,0.2); letter-spacing: 0.1em;
+  }
+  .footer-links { display: flex; gap: 1.5rem; }
+  .footer-links a {
+    font-family: var(--font-mono); font-size: 0.62rem;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: rgba(244,240,232,0.25); text-decoration: none; transition: color .2s;
+  }
+  .footer-links a:hover { color: var(--accent); }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(28px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes marquee {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+  @keyframes floatA {
+    0%,100% { transform: translateY(0) rotate(-1deg); }
+    50% { transform: translateY(-14px) rotate(0.5deg); }
+  }
+  @keyframes floatB {
+    0%,100% { transform: translateY(0) rotate(1.5deg); }
+    50% { transform: translateY(-10px) rotate(0deg); }
+  }
+  @keyframes scrollPulse {
+    0%,100% { opacity: 0.2; transform: scaleX(1); }
+    50% { opacity: 0.6; transform: scaleX(1.3); }
+  }
+
+  /* scroll reveal */
+  .reveal { opacity: 0; transform: translateY(36px); transition: opacity 0.75s, transform 0.75s cubic-bezier(0.23,1,0.32,1); }
+  .reveal.visible { opacity: 1; transform: none; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    nav { padding: 1.1rem 1.5rem; }
+    .nav-links { display: none; }
+    #hero { grid-template-columns: 1fr; }
+    .hero-left { padding: 7rem 1.5rem 4rem; }
+    .hero-right { display: none; }
+    #image-strip { grid-template-columns: 1fr 1fr; height: 240px; }
+    #image-strip .strip-img:last-child { display: none; }
+    #about { grid-template-columns: 1fr; gap: 3rem; padding: 4rem 1.5rem; }
+    .about-nums { grid-template-columns: 1fr 1fr; }
+    #services { padding: 4rem 1.5rem; }
+    .services-grid { grid-template-columns: 1fr; }
+    .services-header { flex-direction: column; gap: 1rem; }
+    #products { padding: 4rem 1.5rem; }
+    .products-grid { grid-template-columns: 1fr; }
+    .products-header { flex-direction: column; gap: 1rem; }
+    #contact { grid-template-columns: 1fr; gap: 3rem; padding: 4rem 1.5rem; }
+    footer { flex-direction: column; gap: 1rem; text-align: center; padding: 2rem 1.5rem; }
+    body { cursor: auto; }
+    .cursor, .cursor-ring { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursor-ring"></div>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">Baggio<span>.</span></a>
+  <ul class="nav-links">
+    <li><a href="#about">Về tôi</a></li>
+    <li><a href="#services">Dịch vụ</a></li>
+    <li><a href="#products">Sản phẩm</a></li>
+    <li><a href="#contact">Liên hệ</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-bg">
+    <!-- Tech circuit board background -->
+    <div class="hero-bg-img"></div>
+    <div class="hero-bg-grad"></div>
+  </div>
+
+  <div class="hero-left">
+    <p class="hero-tag">✦ Thương hiệu cá nhân &amp; Sáng tạo</p>
+    <h1 class="hero-name">
+      BAG<br>
+      <span class="stroke">GIO</span>
+    </h1>
+    <p class="hero-desc">
+      Tôi xây dựng thương hiệu, tạo ra sản phẩm và dịch vụ 
+      <strong>thực sự có giá trị</strong> — không chỉ bán hàng, 
+      mà kết nối con người với những điều họ cần.
+    </p>
+    <div class="hero-cta">
+      <a href="#products" class="btn-primary">Khám phá →</a>
+      <a href="#contact" class="btn-outline">Hợp tác cùng tôi</a>
+    </div>
+  </div>
+
+  <div class="hero-right">
+    <div class="float-stack">
+      <!-- Tech image card -->
+      <div class="float-card float-card-a">
+        <img class="float-card-img"
+          src="https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?w=600&q=80&auto=format&fit=crop"
+          alt="Tech workspace">
+        <div class="float-card-body">
+          <div class="float-card-tag">✦ Công nghệ</div>
+          <div class="float-card-title">Giải pháp số hiện đại</div>
+        </div>
+      </div>
+      <!-- Food image card -->
+      <div class="float-card float-card-b">
+        <img class="float-card-img"
+          src="https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=600&q=80&auto=format&fit=crop"
+          alt="Gourmet food">
+        <div class="float-card-body">
+          <div class="float-card-tag">✦ Ẩm thực</div>
+          <div class="float-card-title">Trải nghiệm đỉnh cao</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-accent-line"></div>
+  <div class="hero-scroll-hint">
+    <div class="scroll-line"></div>
+    Cuộn để khám phá
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-wrap" aria-hidden="true">
+  <div class="marquee-track">
+    <span class="marquee-item">Thương Hiệu <span class="marquee-sep">✦</span></span>
+    <span class="marquee-item">Sản Phẩm <span class="marquee-sep">✦</span></span>
+    <span class="marquee-item">Dịch Vụ <span class="marquee-sep">✦</span></span>
+    <span class="marquee-item">Sáng Tạo <span class="marquee-sep">✦</span></span>
+    <span class="marquee-item">Kết Nối <span class="marquee-sep">✦</span></span>
+    <span class="marquee-item">Baggio <span class="marquee-sep">✦</span></span>
+    <span class="marquee-item">Thương Hiệu <span class="marquee-sep">✦</span></span>
+    <span class="marquee-item">Sản Phẩm <span class="marquee-sep">✦</span></span>
+    <span class="marquee-item">Dịch Vụ <span class="marquee-sep">✦</span></span>
+    <span class="marquee-item">Sáng Tạo <span class="marquee-sep">✦</span></span>
+    <span class="marquee-item">Kết Nối <span class="marquee-sep">✦</span></span>
+    <span class="marquee-item">Baggio <span class="marquee-sep">✦</span></span>
+  </div>
+</div>
+
+<!-- IMAGE STRIP -->
+<div id="image-strip">
+  <div class="strip-img">
+    <!-- Gourmet food overhead -->
+    <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=900&q=80&auto=format&fit=crop" alt="Ẩm thực cao cấp" loading="lazy">
+    <span class="strip-img-label">Ẩm thực</span>
+  </div>
+  <div class="strip-img">
+    <!-- Tech / code setup -->
+    <img src="https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&q=80&auto=format&fit=crop" alt="Công nghệ" loading="lazy">
+    <span class="strip-img-label">Công nghệ</span>
+  </div>
+  <div class="strip-img">
+    <!-- Modern dark kitchen / chef -->
+    <img src="https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=600&q=80&auto=format&fit=crop" alt="Sản phẩm" loading="lazy">
+    <span class="strip-img-label">Sản phẩm</span>
+  </div>
+</div>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="about-text reveal">
+    <p class="section-label">✦ Về tôi</p>
+    <h2 class="section-title">Tôi là<br>Baggio</h2>
+    <div class="about-body">
+      <p>Tôi là một <strong>founder, người xây dựng thương hiệu</strong> với niềm đam mê tạo ra những sản phẩm và dịch vụ mang lại giá trị thực sự cho cộng đồng.</p>
+      <p>Mỗi thứ tôi làm đều bắt đầu từ câu hỏi: <em>"Người dùng thực sự cần gì?"</em> — từ đó thiết kế, xây dựng và đưa đến tay họ một cách trọn vẹn nhất.</p>
+    </div>
+    <div class="about-links">
+      <a href="#" class="social-chip">🔗 Website</a>
+      <a href="#" class="social-chip">📘 Facebook</a>
+      <a href="#" class="social-chip">📸 Instagram</a>
+      <a href="#" class="social-chip">💼 LinkedIn</a>
+      <a href="#" class="social-chip">🎵 TikTok</a>
+      <a href="#" class="social-chip">▶ YouTube</a>
+    </div>
+  </div>
+  <div class="about-nums reveal">
+    <div class="num-box">
+      <div class="num-value">5<span>+</span></div>
+      <div class="num-label">Năm kinh nghiệm</div>
+    </div>
+    <div class="num-box">
+      <div class="num-value">100<span>+</span></div>
+      <div class="num-label">Khách hàng tin tưởng</div>
+    </div>
+    <div class="num-box">
+      <div class="num-value">20<span>+</span></div>
+      <div class="num-label">Dự án hoàn thành</div>
+    </div>
+    <div class="num-box">
+      <div class="num-value" style="color:var(--accent)">∞</div>
+      <div class="num-label">Ý tưởng không giới hạn</div>
+    </div>
+  </div>
+</section>
+
+<!-- SERVICES -->
+<section id="services">
+  <div class="services-header reveal">
+    <div>
+      <p class="section-label">✦ Dịch vụ</p>
+      <h2 class="section-title">Tôi có thể<br>giúp bạn</h2>
+    </div>
+    <a href="#contact" style="font-family:var(--font-mono);font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;color:rgba(244,240,232,0.4);text-decoration:none;border-bottom:1px solid currentColor;padding-bottom:2px;transition:color .2s" onmouseover="this.style.color='var(--white)'" onmouseout="this.style.color='rgba(244,240,232,0.4)'">Xem tất cả →</a>
+  </div>
+  <div class="services-grid">
+    <div class="service-card reveal">
+      <div class="service-num">01</div>
+      <span class="service-icon">🎯</span>
+      <div class="service-name">Xây dựng thương hiệu</div>
+      <p class="service-desc">Từ định vị, bộ nhận diện đến chiến lược nội dung — tôi giúp bạn có một thương hiệu đáng nhớ và nhất quán.</p>
+      <div class="service-price">Liên hệ để báo giá</div>
+    </div>
+    <div class="service-card reveal">
+      <div class="service-num">02</div>
+      <span class="service-icon">🛒</span>
+      <div class="service-name">Kinh doanh online</div>
+      <p class="service-desc">Thiết lập hệ thống bán hàng, landing page, quảng cáo và vận hành store để bạn tập trung vào sản phẩm.</p>
+      <div class="service-price">Liên hệ để báo giá</div>
+    </div>
+    <div class="service-card reveal">
+      <div class="service-num">03</div>
+      <span class="service-icon">💡</span>
+      <div class="service-name">Tư vấn &amp; Coaching</div>
+      <p class="service-desc">Phiên 1-1 cho founders và cá nhân muốn bứt phá — từ ý tưởng đến hành động cụ thể, đo được kết quả.</p>
+      <div class="service-price">Liên hệ để báo giá</div>
+    </div>
+  </div>
+</section>
+
+<!-- PRODUCTS -->
+<section id="products">
+  <div class="products-header reveal">
+    <div>
+      <p class="section-label">✦ Sản phẩm</p>
+      <h2 class="section-title">Chọn cho<br>bạn</h2>
+      <p class="products-intro">Những sản phẩm và chương trình tôi tâm huyết tạo ra — sẵn sàng để bạn bắt đầu ngay hôm nay.</p>
+    </div>
+  </div>
+  <div class="products-grid">
+    <div class="product-card reveal">
+      <div class="product-img-wrap">
+        <!-- Food product -->
+        <img src="https://images.unsplash.com/photo-1563379091339-03246963d651?w=600&q=80&auto=format&fit=crop" alt="Sản phẩm A" loading="lazy">
+      </div>
+      <div class="product-body">
+        <div class="product-tag">Sản phẩm</div>
+        <div class="product-name">Sản phẩm A</div>
+        <p class="product-desc">Mô tả ngắn về sản phẩm — lợi ích chính, đặc điểm nổi bật và ai phù hợp để sử dụng.</p>
+      </div>
+      <div class="product-footer">
+        <div class="product-price">Liên hệ</div>
+        <a href="#contact" class="btn-buy">Đặt mua →</a>
+      </div>
+    </div>
+    <div class="product-card reveal">
+      <div class="product-img-wrap">
+        <!-- Tech / laptop -->
+        <img src="https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=600&q=80&auto=format&fit=crop" alt="Khóa học B" loading="lazy">
+      </div>
+      <div class="product-body">
+        <div class="product-tag">Khóa học</div>
+        <div class="product-name">Khóa học B</div>
+        <p class="product-desc">Chương trình đào tạo chuyên sâu — học theo lộ trình rõ ràng, có hỗ trợ 1-1 trực tiếp từ tôi.</p>
+      </div>
+      <div class="product-footer">
+        <div class="product-price">Liên hệ</div>
+        <a href="#contact" class="btn-buy">Đăng ký →</a>
+      </div>
+    </div>
+    <div class="product-card reveal">
+      <div class="product-img-wrap">
+        <!-- Food / modern plating -->
+        <img src="https://images.unsplash.com/photo-1476224203421-9ac39bcb3327?w=600&q=80&auto=format&fit=crop" alt="Gói dịch vụ C" loading="lazy">
+      </div>
+      <div class="product-body">
+        <div class="product-tag">Dịch vụ</div>
+        <div class="product-name">Gói dịch vụ C</div>
+        <p class="product-desc">Giải pháp trọn gói cho doanh nghiệp hoặc cá nhân — nhanh, gọn và hiệu quả thực sự.</p>
+      </div>
+      <div class="product-footer">
+        <div class="product-price">Liên hệ</div>
+        <a href="#contact" class="btn-buy">Tìm hiểu →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="reveal">
+    <p class="section-label">✦ Liên hệ</p>
+    <h2 class="contact-headline">Hãy cùng<br><em>làm gì đó</em><br>tuyệt vời</h2>
+    <p class="contact-sub">Dù bạn cần tư vấn, mua sản phẩm hay muốn hợp tác — hãy nhắn cho tôi, tôi sẽ phản hồi trong 24h.</p>
+    <div class="contact-links">
+      <a href="mailto:baggio@email.com" class="social-chip">✉️ baggio@email.com</a>
+      <a href="tel:+84000000000" class="social-chip">📞 +84 000 000 000</a>
+    </div>
+  </div>
+  <form class="contact-form reveal" onsubmit="handleSubmit(event)">
+    <div class="form-group">
+      <label class="form-label" for="name">Tên của bạn</label>
+      <input class="form-input" type="text" id="name" placeholder="Nguyễn Văn A" required>
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="email">Email</label>
+      <input class="form-input" type="email" id="email" placeholder="ban@email.com" required>
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="message">Bạn muốn nói gì?</label>
+      <textarea class="form-textarea" id="message" placeholder="Tôi muốn tìm hiểu về dịch vụ / sản phẩm của bạn..." required></textarea>
+    </div>
+    <button type="submit" class="btn-send">Gửi ngay →</button>
+  </form>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Baggio<span>.</span></div>
+  <div class="footer-copy">© 2025 Baggio. All rights reserved.</div>
+  <div class="footer-links">
+    <a href="#about">Về tôi</a>
+    <a href="#services">Dịch vụ</a>
+    <a href="#products">Sản phẩm</a>
+    <a href="#contact">Liên hệ</a>
+  </div>
+</footer>
+
+<script>
+  // Custom cursor
+  const cursor = document.getElementById('cursor');
+  const ring = document.getElementById('cursor-ring');
+  let mx=0,my=0,rx=0,ry=0;
+  document.addEventListener('mousemove', e => {
+    mx = e.clientX; my = e.clientY;
+    cursor.style.transform = `translate(${mx-5}px,${my-5}px)`;
+  });
+  (function animateRing(){
+    rx += (mx-rx-19)*0.12;
+    ry += (my-ry-19)*0.12;
+    ring.style.transform = `translate(${rx}px,${ry}px)`;
+    requestAnimationFrame(animateRing);
+  })();
+  document.querySelectorAll('a,button,.service-card,.product-card').forEach(el => {
+    el.addEventListener('mouseenter',()=>{ cursor.style.width='22px'; cursor.style.height='22px'; cursor.style.opacity='0.5'; });
+    el.addEventListener('mouseleave',()=>{ cursor.style.width='10px'; cursor.style.height='10px'; cursor.style.opacity='1'; });
+  });
+
+  // Scroll reveal
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach((e,i) => {
+      if(e.isIntersecting){ setTimeout(()=>e.target.classList.add('visible'),i*90); obs.unobserve(e.target); }
+    });
+  },{ threshold: 0.1 });
+  document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+  // Form submit
+  function handleSubmit(e) {
+    e.preventDefault();
+    const btn = e.target.querySelector('.btn-send');
+    btn.textContent = 'Đã gửi! ✓';
+    btn.style.background = '#0d9669';
+    setTimeout(() => { btn.textContent = 'Gửi ngay →'; btn.style.background = ''; e.target.reset(); }, 3000);
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Baggio Travel — Admin Panel</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0f1117;
+  --surface:#181c27;
+  --surface2:#1e2333;
+  --surface3:#252a3d;
+  --border:#2a3050;
+  --border2:#333a5a;
+  --text:#e8eaf6;
+  --text2:#8892b0;
+  --text3:#4a5580;
+  --accent:#4f8ef7;
+  --accent-dim:rgba(79,142,247,.12);
+  --green:#22c55e;
+  --green-dim:rgba(34,197,94,.1);
+  --red:#ef4444;
+  --red-dim:rgba(239,68,68,.1);
+  --amber:#f59e0b;
+  --amber-dim:rgba(245,158,11,.1);
+  --purple:#a78bfa;
+  --purple-dim:rgba(167,139,250,.1);
+  --teal:#2dd4bf;
+  --teal-dim:rgba(45,212,191,.1);
+  --font:'Be Vietnam Pro',sans-serif;
+  --mono:'Space Mono',monospace;
+  --sidebar:240px;
+  --topbar:56px;
+}
+html,body{height:100%}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;line-height:1.5;display:flex;overflow:hidden}
+
+/* ── SIDEBAR ── */
+.sidebar{width:var(--sidebar);background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;height:100vh;position:relative;z-index:50}
+.sb-logo{padding:1.1rem 1.25rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:.75rem}
+.sb-logo-icon{width:32px;height:32px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:.85rem;color:#fff;font-weight:700;font-family:var(--mono);flex-shrink:0}
+.sb-logo-text{font-weight:700;font-size:.95rem;letter-spacing:-.01em}
+.sb-logo-text span{color:var(--accent)}
+.sb-logo-badge{font-size:.6rem;background:var(--green-dim);color:var(--green);border:1px solid var(--green);padding:.15rem .4rem;font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase;margin-left:auto}
+
+.sb-nav{flex:1;overflow-y:auto;padding:.75rem 0}
+.sb-group-label{font-family:var(--mono);font-size:.58rem;letter-spacing:.15em;text-transform:uppercase;color:var(--text3);padding:.6rem 1.25rem .3rem;margin-top:.5rem}
+.sb-item{display:flex;align-items:center;gap:.75rem;padding:.65rem 1.25rem;cursor:pointer;transition:background .15s,color .15s;color:var(--text2);border-left:2px solid transparent;position:relative}
+.sb-item:hover{background:rgba(255,255,255,.04);color:var(--text)}
+.sb-item.active{background:var(--accent-dim);color:var(--accent);border-left-color:var(--accent)}
+.sb-item-icon{width:18px;text-align:center;font-size:1rem;flex-shrink:0}
+.sb-item-label{font-size:.82rem;font-weight:500}
+.sb-badge{margin-left:auto;background:var(--red);color:#fff;font-family:var(--mono);font-size:.58rem;padding:.15rem .45rem;border-radius:20px;min-width:18px;text-align:center}
+.sb-badge.amber{background:var(--amber)}
+.sb-badge.green{background:var(--green)}
+
+.sb-bottom{border-top:1px solid var(--border);padding:.75rem 1.25rem}
+.sb-user{display:flex;align-items:center;gap:.75rem;padding:.5rem 0;cursor:pointer}
+.sb-avatar{width:32px;height:32px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.8rem;color:#fff;flex-shrink:0}
+.sb-user-info{}
+.sb-user-name{font-size:.82rem;font-weight:600;color:var(--text)}
+.sb-user-role{font-size:.7rem;color:var(--text3)}
+.role-switcher{display:flex;gap:.3rem;margin-top:.75rem}
+.role-btn{flex:1;padding:.35rem .3rem;font-family:var(--mono);font-size:.58rem;letter-spacing:.06em;text-transform:uppercase;border:1px solid var(--border);background:none;color:var(--text3);cursor:pointer;transition:all .15s;text-align:center}
+.role-btn:hover{border-color:var(--border2);color:var(--text2)}
+.role-btn.active{background:var(--accent-dim);border-color:var(--accent);color:var(--accent)}
+
+/* ── MAIN ── */
+.main{flex:1;display:flex;flex-direction:column;height:100vh;overflow:hidden}
+
+/* TOPBAR */
+.topbar{height:var(--topbar);background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:1rem;padding:0 1.5rem;flex-shrink:0}
+.topbar-title{font-weight:700;font-size:1rem;letter-spacing:-.01em}
+.topbar-sub{font-size:.75rem;color:var(--text3);font-family:var(--mono)}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:.75rem}
+.topbar-search{background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:var(--font);font-size:.82rem;padding:.45rem .9rem;outline:none;width:220px;transition:border-color .2s}
+.topbar-search:focus{border-color:var(--accent)}
+.topbar-search::placeholder{color:var(--text3)}
+.tb-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text2);padding:.4rem .75rem;font-family:var(--font);font-size:.78rem;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:.4rem}
+.tb-btn:hover{border-color:var(--border2);color:var(--text)}
+.tb-btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.tb-btn.primary:hover{background:#3d7de8}
+.notif-dot{width:8px;height:8px;background:var(--red);border-radius:50%;position:absolute;top:6px;right:6px}
+.tb-notif{position:relative}
+
+/* CONTENT */
+.content{flex:1;overflow-y:auto;padding:1.5rem}
+
+/* ── PANELS (views) ── */
+.panel{display:none}
+.panel.active{display:block}
+
+/* ── DASHBOARD ── */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem}
+.kpi{background:var(--surface);border:1px solid var(--border);padding:1.25rem;position:relative;overflow:hidden;transition:border-color .2s}
+.kpi:hover{border-color:var(--border2)}
+.kpi-label{font-family:var(--mono);font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-bottom:.65rem}
+.kpi-val{font-size:1.8rem;font-weight:700;line-height:1;letter-spacing:-.02em}
+.kpi-change{font-size:.72rem;margin-top:.5rem;display:flex;align-items:center;gap:.3rem}
+.kpi-change.up{color:var(--green)}
+.kpi-change.down{color:var(--red)}
+.kpi-icon{position:absolute;right:1rem;top:1rem;font-size:1.6rem;opacity:.18}
+.kpi-bar{position:absolute;bottom:0;left:0;height:2px}
+
+.dash-grid{display:grid;grid-template-columns:2fr 1fr;gap:1rem;margin-bottom:1rem}
+.dash-grid2{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+
+.card{background:var(--surface);border:1px solid var(--border);overflow:hidden}
+.card-header{padding:.9rem 1.25rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.card-title{font-size:.82rem;font-weight:600}
+.card-action{font-family:var(--mono);font-size:.62rem;color:var(--accent);cursor:pointer;letter-spacing:.06em;text-transform:uppercase;background:none;border:none}
+.card-body{padding:1.25rem}
+
+/* Chart placeholder (CSS-only) */
+.chart-bars{display:flex;align-items:flex-end;gap:6px;height:120px;padding:0 .5rem}
+.bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:.3rem}
+.bar{width:100%;background:var(--accent-dim);border-top:2px solid var(--accent);border-radius:1px 1px 0 0;transition:height .5s cubic-bezier(.23,1,.32,1)}
+.bar-label{font-family:var(--mono);font-size:.58rem;color:var(--text3)}
+
+/* Recent orders mini table */
+.mini-table{width:100%;border-collapse:collapse}
+.mini-table th{font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);padding:.5rem .75rem;text-align:left;border-bottom:1px solid var(--border);font-weight:400}
+.mini-table td{padding:.6rem .75rem;font-size:.8rem;border-bottom:1px solid rgba(255,255,255,.03);vertical-align:middle}
+.mini-table tr:last-child td{border-bottom:none}
+.mini-table tr:hover td{background:rgba(255,255,255,.02)}
+
+/* Status badges */
+.badge{display:inline-flex;align-items:center;gap:.3rem;font-family:var(--mono);font-size:.62rem;letter-spacing:.06em;text-transform:uppercase;padding:.25rem .6rem;border-radius:2px}
+.badge-green{background:var(--green-dim);color:var(--green);border:1px solid rgba(34,197,94,.25)}
+.badge-amber{background:var(--amber-dim);color:var(--amber);border:1px solid rgba(245,158,11,.25)}
+.badge-red{background:var(--red-dim);color:var(--red);border:1px solid rgba(239,68,68,.25)}
+.badge-blue{background:var(--accent-dim);color:var(--accent);border:1px solid rgba(79,142,247,.25)}
+.badge-purple{background:var(--purple-dim);color:var(--purple);border:1px solid rgba(167,139,250,.25)}
+.badge-teal{background:var(--teal-dim);color:var(--teal);border:1px solid rgba(45,212,191,.25)}
+
+/* Destination mini list */
+.dest-list{display:flex;flex-direction:column;gap:.1rem}
+.dest-row{display:flex;align-items:center;gap:.75rem;padding:.6rem 0;border-bottom:1px solid rgba(255,255,255,.03)}
+.dest-row:last-child{border-bottom:none}
+.dest-rank{font-family:var(--mono);font-size:.65rem;color:var(--text3);width:20px;text-align:center}
+.dest-name{font-size:.82rem;font-weight:500;flex:1}
+.dest-bar-wrap{flex:2;background:var(--surface3);height:5px}
+.dest-bar-fill{height:100%;background:var(--accent);transition:width .8s cubic-bezier(.23,1,.32,1)}
+.dest-count{font-family:var(--mono);font-size:.68rem;color:var(--text3);width:40px;text-align:right}
+
+/* Guide activity */
+.guide-row{display:flex;align-items:center;gap:.75rem;padding:.55rem 0;border-bottom:1px solid rgba(255,255,255,.03)}
+.guide-row:last-child{border-bottom:none}
+.guide-av{width:28px;height:28px;border-radius:50%;background:var(--surface3);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700;flex-shrink:0}
+.guide-info{flex:1}
+.guide-name{font-size:.8rem;font-weight:600}
+.guide-tour{font-size:.72rem;color:var(--text3);margin-top:.1rem}
+.guide-status{}
+
+/* ── ORDERS ── */
+.toolbar{display:flex;gap:.6rem;align-items:center;margin-bottom:1rem;flex-wrap:wrap}
+.filter-btn{padding:.4rem .9rem;font-family:var(--mono);font-size:.65rem;letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--border);background:none;color:var(--text3);cursor:pointer;transition:all .15s}
+.filter-btn:hover,.filter-btn.active{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.search-box{background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:var(--font);font-size:.82rem;padding:.42rem .9rem;outline:none;width:200px;transition:border-color .2s;margin-left:auto}
+.search-box:focus{border-color:var(--accent)}
+.search-box::placeholder{color:var(--text3)}
+
+.table-wrap{background:var(--surface);border:1px solid var(--border);overflow:auto}
+table{width:100%;border-collapse:collapse;min-width:800px}
+thead tr{border-bottom:1px solid var(--border)}
+th{font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);padding:.8rem 1rem;text-align:left;font-weight:400;white-space:nowrap;user-select:none;cursor:pointer}
+th:hover{color:var(--text2)}
+th .sort{opacity:.4;margin-left:.3rem;font-size:.55rem}
+td{padding:.75rem 1rem;font-size:.82rem;border-bottom:1px solid rgba(255,255,255,.03);vertical-align:middle;white-space:nowrap}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.02)}
+.td-mono{font-family:var(--mono);font-size:.72rem;color:var(--text3)}
+.td-name{font-weight:600;color:var(--text)}
+.td-sub{font-size:.72rem;color:var(--text3);margin-top:.1rem;font-weight:400}
+.action-btns{display:flex;gap:.3rem}
+.act-btn{padding:.3rem .6rem;font-family:var(--mono);font-size:.6rem;border:1px solid var(--border);background:none;color:var(--text3);cursor:pointer;transition:all .15s;letter-spacing:.04em}
+.act-btn:hover{border-color:var(--border2);color:var(--text)}
+.act-btn.danger:hover{border-color:var(--red);color:var(--red)}
+.act-btn.success:hover{border-color:var(--green);color:var(--green)}
+
+/* ── TOURS ── */
+.tour-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+.tour-card{background:var(--surface);border:1px solid var(--border);overflow:hidden;transition:border-color .2s}
+.tour-card:hover{border-color:var(--border2)}
+.tour-img{width:100%;height:130px;object-fit:cover;display:block;filter:brightness(.75)}
+.tour-body{padding:1rem}
+.tour-dest{font-family:var(--mono);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--teal);margin-bottom:.35rem}
+.tour-name{font-size:.9rem;font-weight:700;margin-bottom:.6rem;line-height:1.3;color:var(--text)}
+.tour-meta{display:flex;gap:.75rem;font-size:.72rem;color:var(--text3);margin-bottom:.9rem;flex-wrap:wrap}
+.tour-meta span{display:flex;align-items:center;gap:.25rem}
+.tour-footer{display:flex;align-items:center;justify-content:space-between;padding-top:.75rem;border-top:1px solid var(--border)}
+.tour-price{font-size:.95rem;font-weight:700;color:var(--text)}
+.tour-price sub{font-size:.65rem;font-weight:400;color:var(--text3)}
+
+/* ── GUIDES ── */
+.guides-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem}
+.guide-card{background:var(--surface);border:1px solid var(--border);padding:1.25rem;text-align:center;transition:border-color .2s}
+.guide-card:hover{border-color:var(--border2)}
+.gc-avatar{width:52px;height:52px;border-radius:50%;margin:0 auto .75rem;object-fit:cover;border:2px solid var(--border2)}
+.gc-name{font-size:.88rem;font-weight:700;margin-bottom:.2rem}
+.gc-lang{font-family:var(--mono);font-size:.62rem;color:var(--text3);letter-spacing:.06em;margin-bottom:.6rem}
+.gc-stats{display:flex;gap:.5rem;justify-content:center;margin-bottom:.9rem}
+.gc-stat{background:var(--surface2);padding:.3rem .6rem;font-size:.7rem;text-align:center}
+.gc-stat-val{font-weight:700;color:var(--text);font-size:.85rem}
+.gc-stat-lbl{font-family:var(--mono);font-size:.55rem;color:var(--text3);letter-spacing:.06em;text-transform:uppercase;margin-top:.1rem}
+.gc-schedule{font-size:.72rem;color:var(--text3);margin-bottom:.75rem;line-height:1.5}
+.gc-actions{display:flex;gap:.4rem;justify-content:center}
+
+/* ── REVENUE ── */
+.rev-kpi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.25rem}
+.rev-chart-wrap{background:var(--surface);border:1px solid var(--border);padding:1.25rem;margin-bottom:1rem}
+.chart-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem}
+.chart-legend{display:flex;gap:1rem}
+.legend-item{display:flex;align-items:center;gap:.4rem;font-size:.72rem;color:var(--text3)}
+.legend-dot{width:8px;height:8px;border-radius:50%}
+/* Monthly bars chart */
+.monthly-chart{display:flex;align-items:flex-end;gap:8px;height:150px}
+.month-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:.3rem}
+.month-bars{display:flex;gap:2px;align-items:flex-end;flex:1;width:100%}
+.month-bar{flex:1;border-radius:1px 1px 0 0;transition:height .6s cubic-bezier(.23,1,.32,1)}
+.month-lbl{font-family:var(--mono);font-size:.55rem;color:var(--text3);white-space:nowrap}
+.rev-tables{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+
+/* ── MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:1000;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);width:100%;max-width:520px;max-height:88vh;overflow-y:auto}
+.modal-header{padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-size:.95rem;font-weight:700}
+.modal-close{background:none;border:none;color:var(--text3);cursor:pointer;font-size:1.2rem;transition:color .15s}
+.modal-close:hover{color:var(--text)}
+.modal-body{padding:1.5rem}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:.9rem;margin-bottom:.9rem}
+.form-group{margin-bottom:.9rem}
+.form-label{font-family:var(--mono);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);display:block;margin-bottom:.4rem}
+.form-input,.form-select,.form-textarea{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:var(--font);font-size:.85rem;padding:.6rem .9rem;outline:none;transition:border-color .2s;-webkit-appearance:none}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--accent)}
+.form-input::placeholder{color:var(--text3)}
+.form-select option{background:var(--surface)}
+.form-textarea{resize:vertical;min-height:80px}
+.modal-footer{padding:1rem 1.5rem;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:.6rem}
+.btn{padding:.55rem 1.1rem;font-family:var(--font);font-size:.82rem;font-weight:600;cursor:pointer;border:1px solid transparent;transition:all .15s}
+.btn-default{background:var(--surface2);border-color:var(--border);color:var(--text2)}
+.btn-default:hover{border-color:var(--border2);color:var(--text)}
+.btn-accent{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn-accent:hover{background:#3d7de8}
+.btn-danger{background:var(--red-dim);color:var(--red);border-color:rgba(239,68,68,.3)}
+.btn-danger:hover{background:var(--red);color:#fff}
+.btn-green{background:var(--green-dim);color:var(--green);border-color:rgba(34,197,94,.3)}
+.btn-green:hover{background:var(--green);color:#fff}
+
+/* ── TOAST ── */
+.toast-wrap{position:fixed;bottom:1.5rem;right:1.5rem;z-index:2000;display:flex;flex-direction:column;gap:.5rem}
+.toast{background:var(--surface2);border:1px solid var(--border);padding:.75rem 1.1rem;font-size:.82rem;display:flex;align-items:center;gap:.6rem;min-width:260px;animation:slideIn .25s ease;box-shadow:0 8px 24px rgba(0,0,0,.3)}
+.toast.success{border-color:rgba(34,197,94,.3)}
+.toast.error{border-color:rgba(239,68,68,.3)}
+@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+::-webkit-scrollbar-thumb:hover{background:var(--text3)}
+
+/* ── PAGINATION ── */
+.pagination{display:flex;align-items:center;gap:.3rem;margin-top:1rem;justify-content:flex-end}
+.page-btn{padding:.35rem .65rem;font-family:var(--mono);font-size:.65rem;border:1px solid var(--border);background:none;color:var(--text3);cursor:pointer;transition:all .15s}
+.page-btn:hover,.page-btn.active{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.page-info{font-family:var(--mono);font-size:.65rem;color:var(--text3);margin:0 .5rem}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-icon">BT</div>
+    <div class="sb-logo-text">Baggio<span>.</span>Travel</div>
+    <div class="sb-logo-badge">Live</div>
+  </div>
+
+  <nav class="sb-nav">
+    <div class="sb-group-label">Tổng quan</div>
+    <div class="sb-item active" onclick="showPanel('dashboard',this)">
+      <div class="sb-item-icon">📊</div>
+      <div class="sb-item-label">Dashboard</div>
+    </div>
+
+    <div class="sb-group-label">Vận hành</div>
+    <div class="sb-item" onclick="showPanel('orders',this)">
+      <div class="sb-item-icon">📋</div>
+      <div class="sb-item-label">Đơn hàng</div>
+      <div class="sb-badge">8</div>
+    </div>
+    <div class="sb-item" onclick="showPanel('tours',this)">
+      <div class="sb-item-icon">🗺️</div>
+      <div class="sb-item-label">Quản lý Tour</div>
+    </div>
+    <div class="sb-item" onclick="showPanel('customers',this)">
+      <div class="sb-item-icon">👥</div>
+      <div class="sb-item-label">Khách hàng</div>
+    </div>
+
+    <div class="sb-group-label">Nhân sự</div>
+    <div class="sb-item" onclick="showPanel('guides',this)">
+      <div class="sb-item-icon">🧑‍💼</div>
+      <div class="sb-item-label">Hướng dẫn viên</div>
+      <div class="sb-badge amber">2</div>
+    </div>
+    <div class="sb-item" onclick="showPanel('schedule',this)">
+      <div class="sb-item-icon">📅</div>
+      <div class="sb-item-label">Lịch phân công</div>
+    </div>
+
+    <div class="sb-group-label">Tài chính</div>
+    <div class="sb-item" onclick="showPanel('revenue',this)">
+      <div class="sb-item-icon">💰</div>
+      <div class="sb-item-label">Doanh thu & Báo cáo</div>
+    </div>
+
+    <div class="sb-group-label">Hệ thống</div>
+    <div class="sb-item" onclick="showToast('Tính năng đang phát triển','amber')">
+      <div class="sb-item-icon">⚙️</div>
+      <div class="sb-item-label">Cài đặt</div>
+    </div>
+  </nav>
+
+  <div class="sb-bottom">
+    <div class="sb-user">
+      <div class="sb-avatar" id="userAvatar">B</div>
+      <div class="sb-user-info">
+        <div class="sb-user-name" id="userName">Baggio Admin</div>
+        <div class="sb-user-role" id="userRole">Super Admin</div>
+      </div>
+    </div>
+    <div class="role-switcher">
+      <button class="role-btn active" onclick="switchRole('admin',this)">Admin</button>
+      <button class="role-btn" onclick="switchRole('staff',this)">Staff</button>
+      <button class="role-btn" onclick="switchRole('hdv',this)">HDV</button>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div>
+      <div class="topbar-title" id="topbarTitle">Dashboard</div>
+      <div class="topbar-sub" id="topbarSub">Thứ Hai, 02/06/2025 · Mùa hè cao điểm</div>
+    </div>
+    <div class="topbar-right">
+      <input class="topbar-search" type="text" placeholder="🔍  Tìm kiếm...">
+      <button class="tb-btn tb-notif" title="Thông báo">
+        🔔 <span style="font-size:.72rem">3</span>
+        <div class="notif-dot"></div>
+      </button>
+      <button class="tb-btn primary" onclick="openModal('addOrder')">+ Tạo đơn mới</button>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- ══ DASHBOARD ══ -->
+    <div class="panel active" id="panel-dashboard">
+      <div class="kpi-grid">
+        <div class="kpi">
+          <div class="kpi-label">Doanh thu tháng này</div>
+          <div class="kpi-val" style="color:var(--green)">₫ 284,5M</div>
+          <div class="kpi-change up">▲ 18,4% so với tháng trước</div>
+          <div class="kpi-icon">💰</div>
+          <div class="kpi-bar" style="width:72%;background:var(--green)"></div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Đơn hàng mới</div>
+          <div class="kpi-val" style="color:var(--accent)">143</div>
+          <div class="kpi-change up">▲ 24 đơn so với tuần trước</div>
+          <div class="kpi-icon">📋</div>
+          <div class="kpi-bar" style="width:58%;background:var(--accent)"></div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Khách hàng mới</div>
+          <div class="kpi-val" style="color:var(--purple)">89</div>
+          <div class="kpi-change up">▲ 12,1% tháng này</div>
+          <div class="kpi-icon">👥</div>
+          <div class="kpi-bar" style="width:45%;background:var(--purple)"></div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">HDV đang hoạt động</div>
+          <div class="kpi-val" style="color:var(--teal)">18</div>
+          <div class="kpi-change down">▼ 2 nghỉ phép tuần này</div>
+          <div class="kpi-icon">🧑‍💼</div>
+          <div class="kpi-bar" style="width:82%;background:var(--teal)"></div>
+        </div>
+      </div>
+
+      <div class="dash-grid">
+        <!-- Revenue chart -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Doanh thu 7 ngày gần nhất</div>
+            <button class="card-action">Xem thêm →</button>
+          </div>
+          <div class="card-body">
+            <div class="chart-bars" id="revenueChart"></div>
+          </div>
+        </div>
+        <!-- Top destinations -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Điểm đến phổ biến</div>
+            <button class="card-action">Tháng này</button>
+          </div>
+          <div class="card-body" style="padding:.75rem 1.25rem">
+            <div class="dest-list">
+              <div class="dest-row"><div class="dest-rank">1</div><div class="dest-name">Hội An</div><div class="dest-bar-wrap"><div class="dest-bar-fill" style="width:88%"></div></div><div class="dest-count">44</div></div>
+              <div class="dest-row"><div class="dest-rank">2</div><div class="dest-name">Hạ Long</div><div class="dest-bar-wrap"><div class="dest-bar-fill" style="width:72%"></div></div><div class="dest-count">36</div></div>
+              <div class="dest-row"><div class="dest-rank">3</div><div class="dest-name">Phú Quốc</div><div class="dest-bar-wrap"><div class="dest-bar-fill" style="width:61%"></div></div><div class="dest-count">31</div></div>
+              <div class="dest-row"><div class="dest-rank">4</div><div class="dest-name">Đà Lạt</div><div class="dest-bar-wrap"><div class="dest-bar-fill" style="width:42%"></div></div><div class="dest-count">21</div></div>
+              <div class="dest-row"><div class="dest-rank">5</div><div class="dest-name">Sa Pa</div><div class="dest-bar-wrap"><div class="dest-bar-fill" style="width:28%"></div></div><div class="dest-count">14</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dash-grid2">
+        <!-- Recent orders -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Đơn hàng mới nhất</div>
+            <button class="card-action" onclick="showPanel('orders',null)">Xem tất cả →</button>
+          </div>
+          <div class="card-body" style="padding:0">
+            <table class="mini-table">
+              <thead><tr><th>Mã đơn</th><th>Khách hàng</th><th>Tour</th><th>Trạng thái</th><th>Giá trị</th></tr></thead>
+              <tbody>
+                <tr><td class="td-mono">#BT-0891</td><td><div class="td-name">Nguyễn Thanh Hà</div></td><td>Hạ Long 4N3Đ</td><td><span class="badge badge-amber">⏳ Chờ xác nhận</span></td><td style="color:var(--green);font-weight:600">5,9M</td></tr>
+                <tr><td class="td-mono">#BT-0890</td><td><div class="td-name">Trần Minh Tuấn</div></td><td>Phú Quốc Premium</td><td><span class="badge badge-green">✓ Đã xác nhận</span></td><td style="color:var(--green);font-weight:600">15,5M</td></tr>
+                <tr><td class="td-mono">#BT-0889</td><td><div class="td-name">Phạm Lan Anh</div></td><td>Hội An 3N2Đ</td><td><span class="badge badge-blue">✈ Đang đi</span></td><td style="color:var(--green);font-weight:600">2,8M</td></tr>
+                <tr><td class="td-mono">#BT-0888</td><td><div class="td-name">Lê Văn Đức</div></td><td>Sa Pa 2N1Đ</td><td><span class="badge badge-purple">✓ Hoàn thành</span></td><td style="color:var(--green);font-weight:600">2,2M</td></tr>
+                <tr><td class="td-mono">#BT-0887</td><td><div class="td-name">Vũ Thị Mai</div></td><td>Đà Lạt 3N2Đ</td><td><span class="badge badge-red">✕ Đã huỷ</span></td><td style="color:var(--red)">1,9M</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <!-- Guide activity -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Hoạt động HDV hôm nay</div>
+            <button class="card-action" onclick="showPanel('guides',null)">Quản lý HDV →</button>
+          </div>
+          <div class="card-body" style="padding:.75rem 1.25rem">
+            <div class="guide-row"><div class="guide-av" style="background:var(--teal-dim);color:var(--teal)">TH</div><div class="guide-info"><div class="guide-name">Trần Hoài Nam</div><div class="guide-tour">Hội An · 12 khách · 08:00</div></div><span class="badge badge-teal">🟢 Đang dẫn</span></div>
+            <div class="guide-row"><div class="guide-av" style="background:var(--accent-dim);color:var(--accent)">NL</div><div class="guide-info"><div class="guide-name">Nguyễn Linh Chi</div><div class="guide-tour">Hạ Long · Du thuyền · 06:30</div></div><span class="badge badge-teal">🟢 Đang dẫn</span></div>
+            <div class="guide-row"><div class="guide-av" style="background:var(--purple-dim);color:var(--purple)">PH</div><div class="guide-info"><div class="guide-name">Phan Hữu Tài</div><div class="guide-tour">Phú Quốc · nghỉ chiều</div></div><span class="badge badge-green">✓ Sẵn sàng</span></div>
+            <div class="guide-row"><div class="guide-av" style="background:var(--amber-dim);color:var(--amber)">LT</div><div class="guide-info"><div class="guide-name">Lê Thu Hương</div><div class="guide-tour">Chờ phân công</div></div><span class="badge badge-amber">⏳ Chờ tour</span></div>
+            <div class="guide-row"><div class="guide-av" style="background:var(--red-dim);color:var(--red)">BM</div><div class="guide-info"><div class="guide-name">Bùi Minh Quân</div><div class="guide-tour">Xin nghỉ phép</div></div><span class="badge badge-red">✕ Nghỉ phép</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ ORDERS ══ -->
+    <div class="panel" id="panel-orders">
+      <div class="toolbar">
+        <button class="filter-btn active" onclick="filterOrders('all',this)">Tất cả (143)</button>
+        <button class="filter-btn" onclick="filterOrders('pending',this)">⏳ Chờ xác nhận (8)</button>
+        <button class="filter-btn" onclick="filterOrders('confirmed',this)">✓ Đã xác nhận (52)</button>
+        <button class="filter-btn" onclick="filterOrders('ongoing',this)">✈ Đang đi (31)</button>
+        <button class="filter-btn" onclick="filterOrders('done',this)">✓ Hoàn thành (44)</button>
+        <button class="filter-btn" onclick="filterOrders('cancelled',this)">✕ Đã huỷ (8)</button>
+        <input class="search-box" type="text" placeholder="🔍 Tìm mã đơn, tên KH...">
+        <button class="tb-btn primary" onclick="openModal('addOrder')">+ Tạo đơn</button>
+      </div>
+      <div class="table-wrap">
+        <table id="ordersTable">
+          <thead>
+            <tr>
+              <th>Mã đơn <span class="sort">↕</span></th>
+              <th>Khách hàng</th>
+              <th>Tour</th>
+              <th>Ngày đi</th>
+              <th>Khách</th>
+              <th>HDV</th>
+              <th>Trạng thái</th>
+              <th>Thanh toán</th>
+              <th>Tổng tiền</th>
+              <th>Thao tác</th>
+            </tr>
+          </thead>
+          <tbody id="ordersBody"></tbody>
+        </table>
+      </div>
+      <div class="pagination">
+        <button class="page-btn">‹</button>
+        <button class="page-btn active">1</button>
+        <button class="page-btn">2</button>
+        <button class="page-btn">3</button>
+        <span class="page-info">Trang 1 / 15 · 143 đơn</span>
+        <button class="page-btn">›</button>
+      </div>
+    </div>
+
+    <!-- ══ TOURS ══ -->
+    <div class="panel" id="panel-tours">
+      <div class="toolbar">
+        <button class="filter-btn active">Tất cả (24)</button>
+        <button class="filter-btn">🟢 Đang bán (18)</button>
+        <button class="filter-btn">⏸ Tạm dừng (4)</button>
+        <button class="filter-btn">🆕 Mới (2)</button>
+        <input class="search-box" type="text" placeholder="🔍 Tìm tên tour...">
+        <button class="tb-btn primary" onclick="openModal('addTour')">+ Thêm tour</button>
+      </div>
+      <div class="tour-grid" id="tourGrid"></div>
+    </div>
+
+    <!-- ══ CUSTOMERS ══ -->
+    <div class="panel" id="panel-customers">
+      <div class="toolbar">
+        <button class="filter-btn active">Tất cả (1.248)</button>
+        <button class="filter-btn">⭐ VIP (87)</button>
+        <button class="filter-btn">🔁 Khách quay lại (312)</button>
+        <button class="filter-btn">🆕 Khách mới (89)</button>
+        <input class="search-box" type="text" placeholder="🔍 Tên, SĐT, email...">
+        <button class="tb-btn primary" onclick="openModal('addCustomer')">+ Thêm khách</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>ID</th><th>Họ tên</th><th>Liên hệ</th><th>Số tour đã đặt</th><th>Tổng chi tiêu</th><th>Lần cuối đặt</th><th>Phân loại</th><th>Thao tác</th></tr></thead>
+          <tbody id="customersBody"></tbody>
+        </table>
+      </div>
+      <div class="pagination">
+        <button class="page-btn">‹</button>
+        <button class="page-btn active">1</button><button class="page-btn">2</button><button class="page-btn">3</button>
+        <span class="page-info">Trang 1 / 125 · 1.248 khách</span>
+        <button class="page-btn">›</button>
+      </div>
+    </div>
+
+    <!-- ══ GUIDES ══ -->
+    <div class="panel" id="panel-guides">
+      <div class="toolbar">
+        <button class="filter-btn active">Tất cả (24)</button>
+        <button class="filter-btn">🟢 Đang hoạt động (18)</button>
+        <button class="filter-btn">⏳ Chờ tour (4)</button>
+        <button class="filter-btn">✕ Nghỉ phép (2)</button>
+        <input class="search-box" type="text" placeholder="🔍 Tìm tên HDV, ngôn ngữ...">
+        <button class="tb-btn primary" onclick="openModal('addGuide')">+ Thêm HDV</button>
+      </div>
+      <div class="guides-grid" id="guidesGrid"></div>
+    </div>
+
+    <!-- ══ SCHEDULE ══ -->
+    <div class="panel" id="panel-schedule">
+      <div class="toolbar">
+        <button class="filter-btn active">Tuần này</button>
+        <button class="filter-btn">Tuần tới</button>
+        <button class="filter-btn">Tháng</button>
+        <button class="tb-btn primary" onclick="openModal('assignGuide')" style="margin-left:auto">+ Phân công HDV</button>
+      </div>
+      <div class="card" style="margin-top:0">
+        <div class="card-header"><div class="card-title">📅 Lịch phân công tuần này (02–08/06/2025)</div></div>
+        <div class="card-body" style="overflow:auto">
+          <table style="min-width:900px">
+            <thead><tr><th>HDV</th><th>Thứ 2</th><th>Thứ 3</th><th>Thứ 4</th><th>Thứ 5</th><th>Thứ 6</th><th>Thứ 7</th><th>CN</th></tr></thead>
+            <tbody id="scheduleBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ REVENUE ══ -->
+    <div class="panel" id="panel-revenue">
+      <div class="rev-kpi-grid">
+        <div class="kpi">
+          <div class="kpi-label">Doanh thu tháng 6</div>
+          <div class="kpi-val" style="color:var(--green)">₫ 284,5M</div>
+          <div class="kpi-change up">▲ 18,4% so tháng 5</div>
+          <div class="kpi-icon">📈</div>
+          <div class="kpi-bar" style="width:72%;background:var(--green)"></div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Lợi nhuận ước tính</div>
+          <div class="kpi-val" style="color:var(--accent)">₫ 89,2M</div>
+          <div class="kpi-change up">▲ Margin 31,4%</div>
+          <div class="kpi-icon">💎</div>
+          <div class="kpi-bar" style="width:31%;background:var(--accent)"></div>
+        </div>
+        <div class="kpi">
+          <div class="kpi-label">Hoàn tiền / Huỷ tour</div>
+          <div class="kpi-val" style="color:var(--red)">₫ 12,3M</div>
+          <div class="kpi-change down">▼ 8 đơn huỷ tháng này</div>
+          <div class="kpi-icon">↩️</div>
+          <div class="kpi-bar" style="width:12%;background:var(--red)"></div>
+        </div>
+      </div>
+      <div class="rev-chart-wrap">
+        <div class="chart-header">
+          <div class="card-title">Doanh thu 6 tháng đầu năm 2025</div>
+          <div class="chart-legend">
+            <div class="legend-item"><div class="legend-dot" style="background:var(--accent)"></div>Doanh thu</div>
+            <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>Lợi nhuận</div>
+          </div>
+        </div>
+        <div class="monthly-chart" id="monthlyChart"></div>
+      </div>
+      <div class="rev-tables">
+        <div class="card">
+          <div class="card-header"><div class="card-title">Doanh thu theo gói tour</div></div>
+          <div class="card-body" style="padding:0">
+            <table class="mini-table">
+              <thead><tr><th>Gói tour</th><th>Đơn</th><th>Doanh thu</th><th>Tỷ trọng</th></tr></thead>
+              <tbody>
+                <tr><td>Phú Quốc Premium 7N6Đ</td><td>28</td><td style="color:var(--green);font-weight:600">₫ 96,4M</td><td><span class="badge badge-green">33,9%</span></td></tr>
+                <tr><td>Hạ Long 5N4Đ</td><td>42</td><td style="color:var(--green);font-weight:600">₫ 74,2M</td><td><span class="badge badge-blue">26,1%</span></td></tr>
+                <tr><td>Hội An 3N2Đ</td><td>56</td><td style="color:var(--green);font-weight:600">₫ 56,8M</td><td><span class="badge badge-blue">20%</span></td></tr>
+                <tr><td>Đà Lạt 3N2Đ</td><td>38</td><td style="color:var(--green);font-weight:600">₫ 32,1M</td><td><span class="badge badge-amber">11,3%</span></td></tr>
+                <tr><td>Các gói khác</td><td>31</td><td style="color:var(--green);font-weight:600">₫ 25,0M</td><td><span class="badge badge-amber">8,7%</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><div class="card-title">Phương thức thanh toán</div></div>
+          <div class="card-body" style="padding:0">
+            <table class="mini-table">
+              <thead><tr><th>Phương thức</th><th>Giao dịch</th><th>Giá trị</th><th>Tỷ lệ</th></tr></thead>
+              <tbody>
+                <tr><td>📱 MoMo</td><td>64</td><td style="color:var(--green);font-weight:600">₫ 98,2M</td><td><span class="badge badge-green">34,5%</span></td></tr>
+                <tr><td>🏦 Chuyển khoản</td><td>48</td><td style="color:var(--green);font-weight:600">₫ 84,7M</td><td><span class="badge badge-blue">29,8%</span></td></tr>
+                <tr><td>💳 VNPay</td><td>31</td><td style="color:var(--green);font-weight:600">₫ 62,3M</td><td><span class="badge badge-blue">21,9%</span></td></tr>
+                <tr><td>💳 Visa/Master</td><td>12</td><td style="color:var(--green);font-weight:600">₫ 39,3M</td><td><span class="badge badge-amber">13,8%</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
+  <div class="modal" id="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">Modal</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-footer" id="modalFooter"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────
+const orders = [
+  {id:'#BT-0891',name:'Nguyễn Thanh Hà',phone:'0901 234 567',tour:'Hạ Long 5N4Đ',date:'05/06/2025',pax:2,guide:'Trần Hoài Nam',status:'pending',payment:'deposit',total:'5.900.000'},
+  {id:'#BT-0890',name:'Trần Minh Tuấn',phone:'0912 345 678',tour:'Phú Quốc Premium',date:'08/06/2025',pax:5,guide:'Nguyễn Linh Chi',status:'confirmed',payment:'paid',total:'15.500.000'},
+  {id:'#BT-0889',name:'Phạm Lan Anh',phone:'0923 456 789',tour:'Hội An 3N2Đ',date:'02/06/2025',pax:3,guide:'Phan Hữu Tài',status:'ongoing',payment:'paid',total:'2.800.000'},
+  {id:'#BT-0888',name:'Lê Văn Đức',phone:'0934 567 890',tour:'Sa Pa 2N1Đ',date:'28/05/2025',pax:2,guide:'Lê Thu Hương',status:'done',payment:'paid',total:'2.200.000'},
+  {id:'#BT-0887',name:'Vũ Thị Mai',phone:'0945 678 901',tour:'Đà Lạt 3N2Đ',date:'25/05/2025',pax:2,guide:'—',status:'cancelled',payment:'refunded',total:'1.900.000'},
+  {id:'#BT-0886',name:'Hoàng Nam Khánh',phone:'0956 789 012',tour:'Hạ Long 5N4Đ',date:'10/06/2025',pax:4,guide:'Trần Hoài Nam',status:'confirmed',payment:'deposit',total:'11.800.000'},
+  {id:'#BT-0885',name:'Đinh Thu Ngân',phone:'0967 890 123',tour:'Hội An 3N2Đ',date:'12/06/2025',pax:2,guide:'—',status:'pending',payment:'pending',total:'5.600.000'},
+  {id:'#BT-0884',name:'Bùi Quang Hùng',phone:'0978 901 234',tour:'Phú Quốc Premium',date:'15/06/2025',pax:6,guide:'Nguyễn Linh Chi',status:'confirmed',payment:'paid',total:'18.600.000'},
+  {id:'#BT-0883',name:'Cao Thị Loan',phone:'0989 012 345',tour:'Sa Pa 2N1Đ',date:'18/06/2025',pax:3,guide:'—',status:'pending',payment:'pending',total:'3.300.000'},
+  {id:'#BT-0882',name:'Dương Minh Hải',phone:'0990 123 456',tour:'Đà Lạt 3N2Đ',date:'20/06/2025',pax:4,guide:'Lê Thu Hương',status:'confirmed',payment:'deposit',total:'7.600.000'},
+];
+
+const tours = [
+  {img:'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=400&q=70',dest:'Quảng Nam',name:'Hội An – Phố Cổ & Biển',days:'3N2Đ',pax:'2–20',status:'active',price:'2.800.000',bookings:56},
+  {img:'https://images.unsplash.com/photo-1557400128-9a431afe5ff5?w=400&q=70',dest:'Quảng Ninh',name:'Hạ Long – Du thuyền cao cấp',days:'5N4Đ',pax:'2–30',status:'active',price:'5.900.000',bookings:42},
+  {img:'https://images.unsplash.com/photo-1596422846543-75c6fc197f07?w=400&q=70',dest:'Kiên Giang',name:'Phú Quốc Premium Resort',days:'7N6Đ',pax:'1–10',status:'active',price:'15.500.000',bookings:28},
+  {img:'https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?w=400&q=70',dest:'Lào Cai',name:'Sa Pa – Trekking & Bản làng',days:'2N1Đ',pax:'2–15',status:'active',price:'2.200.000',bookings:24},
+  {img:'https://images.unsplash.com/photo-1555400038-63f5ba517a47?w=400&q=70',dest:'Lâm Đồng',name:'Đà Lạt – Thành phố ngàn hoa',days:'3N2Đ',pax:'2–20',status:'active',price:'1.900.000',bookings:38},
+  {img:'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&q=70',dest:'Thừa Thiên Huế',name:'Huế – Cố Đô Hoàng Triều',days:'2N1Đ',pax:'2–25',status:'paused',price:'1.800.000',bookings:11},
+];
+
+const customers = [
+  {id:'KH-001',name:'Nguyễn Thanh Hà',phone:'0901 234 567',email:'ha@email.com',tours:5,spent:'24.500.000',last:'02/06/2025',type:'vip'},
+  {id:'KH-002',name:'Trần Minh Tuấn',phone:'0912 345 678',email:'tuan@email.com',tours:3,spent:'31.000.000',last:'01/06/2025',type:'vip'},
+  {id:'KH-003',name:'Phạm Lan Anh',phone:'0923 456 789',email:'anh@email.com',tours:2,spent:'8.400.000',last:'02/06/2025',type:'loyal'},
+  {id:'KH-004',name:'Lê Văn Đức',phone:'0934 567 890',email:'duc@email.com',tours:1,spent:'2.200.000',last:'28/05/2025',type:'new'},
+  {id:'KH-005',name:'Vũ Thị Mai',phone:'0945 678 901',email:'mai@email.com',tours:2,spent:'4.100.000',last:'25/05/2025',type:'loyal'},
+  {id:'KH-006',name:'Hoàng Nam Khánh',phone:'0956 789 012',email:'khanh@email.com',tours:4,spent:'18.700.000',last:'31/05/2025',type:'vip'},
+  {id:'KH-007',name:'Đinh Thu Ngân',phone:'0967 890 123',email:'ngan@email.com',tours:1,spent:'5.600.000',last:'01/06/2025',type:'new'},
+  {id:'KH-008',name:'Bùi Quang Hùng',phone:'0978 901 234',email:'hung@email.com',tours:6,spent:'42.300.000',last:'30/05/2025',type:'vip'},
+];
+
+const guides = [
+  {initials:'TH',color:'var(--teal)',name:'Trần Hoài Nam',lang:'Việt · Anh · Nhật',tours:28,rating:'4.9',status:'active',schedule:'Hội An 02–04/06'},
+  {initials:'NL',color:'var(--accent)',name:'Nguyễn Linh Chi',lang:'Việt · Anh · Hàn',tours:22,rating:'4.8',status:'active',schedule:'Hạ Long 02–06/06'},
+  {initials:'PH',color:'var(--purple)',name:'Phan Hữu Tài',lang:'Việt · Anh',tours:19,rating:'4.7',status:'available',schedule:'Trống từ 03/06'},
+  {initials:'LT',color:'var(--amber)',name:'Lê Thu Hương',lang:'Việt · Trung · Anh',tours:31,rating:'5.0',status:'available',schedule:'Trống hôm nay'},
+  {initials:'BM',color:'var(--red)',name:'Bùi Minh Quân',lang:'Việt · Anh',tours:15,rating:'4.6',status:'off',schedule:'Nghỉ đến 07/06'},
+  {initials:'VK',color:'var(--green)',name:'Võ Kim Thành',lang:'Việt · Anh · Pháp',tours:24,rating:'4.9',status:'active',schedule:'Sa Pa 02–03/06'},
+  {initials:'DL',color:'var(--teal)',name:'Đặng Lan Phương',lang:'Việt · Anh',tours:17,rating:'4.8',status:'available',schedule:'Trống từ 04/06'},
+  {initials:'HB',color:'var(--accent)',name:'Hồ Bảo Long',lang:'Việt · Anh · Đức',tours:11,rating:'4.7',status:'active',schedule:'Đà Lạt 02–04/06'},
+];
+
+const months = [
+  {m:'T1',rev:142,profit:38},{m:'T2',rev:98,profit:24},{m:'T3',rev:186,profit:58},
+  {m:'T4',rev:221,profit:68},{m:'T5',rev:240,profit:74},{m:'T6',rev:285,profit:89},
+];
+
+// ── RENDER ────────────────────────────────────────────
+const statusMap = {
+  pending:{cls:'badge-amber',txt:'⏳ Chờ XN'},
+  confirmed:{cls:'badge-green',txt:'✓ Đã XN'},
+  ongoing:{cls:'badge-blue',txt:'✈ Đang đi'},
+  done:{cls:'badge-purple',txt:'✓ Hoàn thành'},
+  cancelled:{cls:'badge-red',txt:'✕ Đã huỷ'},
+};
+const payMap = {
+  paid:{cls:'badge-green',txt:'Đã thanh toán'},
+  deposit:{cls:'badge-amber',txt:'Đã cọc 30%'},
+  pending:{cls:'badge-red',txt:'Chưa thanh toán'},
+  refunded:{cls:'badge-red',txt:'Đã hoàn tiền'},
+};
+const typeMap = {
+  vip:{cls:'badge-amber',txt:'⭐ VIP'},
+  loyal:{cls:'badge-blue',txt:'🔁 Thân thiết'},
+  new:{cls:'badge-teal',txt:'🆕 Mới'},
+};
+const guideStatus = {
+  active:{cls:'badge-teal',txt:'🟢 Đang dẫn tour'},
+  available:{cls:'badge-green',txt:'✓ Sẵn sàng'},
+  off:{cls:'badge-red',txt:'✕ Nghỉ phép'},
+};
+
+function renderOrders(data){
+  document.getElementById('ordersBody').innerHTML = data.map(o=>`
+    <tr>
+      <td class="td-mono">${o.id}</td>
+      <td><div class="td-name">${o.name}</div><div class="td-sub">${o.phone}</div></td>
+      <td>${o.tour}</td>
+      <td class="td-mono">${o.date}</td>
+      <td style="text-align:center">${o.pax}</td>
+      <td>${o.guide}</td>
+      <td><span class="badge ${statusMap[o.status].cls}">${statusMap[o.status].txt}</span></td>
+      <td><span class="badge ${payMap[o.payment].cls}">${payMap[o.payment].txt}</span></td>
+      <td style="color:var(--green);font-weight:600">₫ ${o.total}</td>
+      <td><div class="action-btns">
+        <button class="act-btn" onclick="openModal('viewOrder')">👁</button>
+        <button class="act-btn success" onclick="confirmOrder('${o.id}')">✓</button>
+        <button class="act-btn danger" onclick="cancelOrder('${o.id}')">✕</button>
+      </div></td>
+    </tr>`).join('');
+}
+
+function renderTours(){
+  document.getElementById('tourGrid').innerHTML = tours.map(t=>`
+    <div class="tour-card">
+      <img class="tour-img" src="${t.img}" alt="${t.name}" loading="lazy">
+      <div class="tour-body">
+        <div class="tour-dest">${t.dest}</div>
+        <div class="tour-name">${t.name}</div>
+        <div class="tour-meta">
+          <span>📅 ${t.days}</span>
+          <span>👥 ${t.pax} khách</span>
+          <span>📦 ${t.bookings} đơn</span>
+          <span class="badge ${t.status==='active'?'badge-green':'badge-amber'}" style="margin:0">${t.status==='active'?'🟢 Đang bán':'⏸ Tạm dừng'}</span>
+        </div>
+        <div class="tour-footer">
+          <div class="tour-price">₫ ${t.price}<sub>/người</sub></div>
+          <div class="action-btns">
+            <button class="act-btn" onclick="openModal('editTour')">✏️</button>
+            <button class="act-btn" onclick="showToast('Đã sao chép tour','green')">📋</button>
+            <button class="act-btn danger" onclick="showToast('Đã tạm dừng tour','amber')">⏸</button>
+          </div>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function renderCustomers(){
+  document.getElementById('customersBody').innerHTML = customers.map(c=>`
+    <tr>
+      <td class="td-mono">${c.id}</td>
+      <td><div class="td-name">${c.name}</div></td>
+      <td><div class="td-sub">${c.phone}</div><div class="td-sub">${c.email}</div></td>
+      <td style="text-align:center;font-weight:600">${c.tours}</td>
+      <td style="color:var(--green);font-weight:600">₫ ${c.spent}</td>
+      <td class="td-mono">${c.last}</td>
+      <td><span class="badge ${typeMap[c.type].cls}">${typeMap[c.type].txt}</span></td>
+      <td><div class="action-btns">
+        <button class="act-btn" onclick="openModal('viewOrder')">👁 Xem</button>
+        <button class="act-btn" onclick="showToast('Đã gửi tin nhắn','green')">💬</button>
+      </div></td>
+    </tr>`).join('');
+}
+
+function renderGuides(){
+  document.getElementById('guidesGrid').innerHTML = guides.map(g=>`
+    <div class="guide-card">
+      <div class="guide-av" style="background:${g.color}22;color:${g.color};width:52px;height:52px;border-radius:50%;margin:0 auto .75rem;display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:700">${g.initials}</div>
+      <div class="gc-name">${g.name}</div>
+      <div class="gc-lang">${g.lang}</div>
+      <div class="gc-stats">
+        <div class="gc-stat"><div class="gc-stat-val">${g.tours}</div><div class="gc-stat-lbl">Tour</div></div>
+        <div class="gc-stat"><div class="gc-stat-val">${g.rating}★</div><div class="gc-stat-lbl">Đánh giá</div></div>
+      </div>
+      <div class="gc-schedule" style="margin-bottom:.75rem"><span class="badge ${guideStatus[g.status].cls}">${guideStatus[g.status].txt}</span><br><small style="color:var(--text3);margin-top:.35rem;display:block">${g.schedule}</small></div>
+      <div class="gc-actions">
+        <button class="act-btn" onclick="openModal('assignGuide')">📅 Phân công</button>
+        <button class="act-btn" onclick="showToast('Đã gửi tin nhắn cho ${g.name}','green')">💬</button>
+      </div>
+    </div>`).join('');
+}
+
+function renderSchedule(){
+  const days = ['Hội An','Hạ Long','Phú Quốc','—','Sa Pa','Đà Lạt','—'];
+  const colors = ['var(--teal)','var(--accent)','var(--purple)','var(--amber)','var(--red)','var(--green)','var(--teal)','var(--accent)'];
+  document.getElementById('scheduleBody').innerHTML = guides.slice(0,6).map((g,gi)=>`
+    <tr>
+      <td><div style="display:flex;align-items:center;gap:.6rem"><div style="width:26px;height:26px;border-radius:50%;background:${g.color}22;color:${g.color};display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700">${g.initials}</div>${g.name}</div></td>
+      ${[0,1,2,3,4,5,6].map(d=>{
+        const tour = (gi+d)%4===0 ? `<span class="badge badge-teal" style="font-size:.58rem">${days[(gi+d)%days.length]}</span>` : (gi+d)%5===0?`<span class="badge badge-amber" style="font-size:.58rem">Nghỉ phép</span>`:'<span style="color:var(--text3);font-size:.75rem">—</span>';
+        return `<td style="text-align:center">${tour}</td>`;
+      }).join('')}
+    </tr>`).join('');
+}
+
+function renderRevenueChart(){
+  const el = document.getElementById('revenueChart');
+  const revs=[42,38,67,52,88,74,95];
+  const days=['T2','T3','T4','T5','T6','T7','CN'];
+  const max=Math.max(...revs);
+  el.innerHTML = revs.map((v,i)=>`
+    <div class="bar-wrap">
+      <div class="bar" style="height:${Math.round(v/max*100)}%;min-height:4px"></div>
+      <div class="bar-label">${days[i]}</div>
+    </div>`).join('');
+}
+
+function renderMonthlyChart(){
+  const el = document.getElementById('monthlyChart');
+  const max=Math.max(...months.map(m=>m.rev));
+  el.innerHTML = months.map(m=>`
+    <div class="month-col">
+      <div class="month-bars">
+        <div class="month-bar" style="height:${Math.round(m.rev/max*140)}px;background:var(--accent);opacity:.7"></div>
+        <div class="month-bar" style="height:${Math.round(m.profit/max*140)}px;background:var(--green)"></div>
+      </div>
+      <div class="month-lbl">${m.m}</div>
+    </div>`).join('');
+}
+
+// ── NAV ───────────────────────────────────────────────
+const panelTitles = {
+  dashboard:['Dashboard','Tổng quan hoạt động hôm nay'],
+  orders:['Quản lý Đơn hàng','Tất cả đơn đặt tour · Cập nhật thời gian thực'],
+  tours:['Quản lý Tour','Danh sách tour đang kinh doanh'],
+  customers:['Khách hàng','Danh sách & phân loại khách hàng'],
+  guides:['Hướng dẫn viên','Quản lý đội ngũ HDV'],
+  schedule:['Lịch phân công','Phân công HDV theo tuần/tháng'],
+  revenue:['Doanh thu & Báo cáo','Phân tích tài chính chi tiết'],
+};
+
+function showPanel(id, el){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+id).classList.add('active');
+  if(el){
+    document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'));
+    el.classList.add('active');
+  }
+  const t=panelTitles[id]||[id,''];
+  document.getElementById('topbarTitle').textContent=t[0];
+  document.getElementById('topbarSub').textContent=t[1];
+}
+
+function filterOrders(type, btn){
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const filtered = type==='all' ? orders : orders.filter(o=>o.status===type);
+  renderOrders(filtered);
+  showToast(`Lọc: ${btn.textContent.trim()}`,'blue');
+}
+
+// ── ROLE SWITCH ───────────────────────────────────────
+function switchRole(role,btn){
+  document.querySelectorAll('.role-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  const roles={
+    admin:{name:'Baggio Admin',role:'Super Admin',avatar:'B'},
+    staff:{name:'Nguyễn Staff',role:'Nhân viên tư vấn',avatar:'S'},
+    hdv:{name:'Trần Hoài Nam',role:'Hướng dẫn viên',avatar:'T'},
+  };
+  const r=roles[role];
+  document.getElementById('userName').textContent=r.name;
+  document.getElementById('userRole').textContent=r.role;
+  document.getElementById('userAvatar').textContent=r.avatar;
+  showToast(`Đang xem với vai trò: ${r.role}`,'blue');
+}
+
+// ── MODAL ─────────────────────────────────────────────
+const modals = {
+  addOrder:{
+    title:'+ Tạo đơn hàng mới',
+    body:`<div class="form-row"><div><label class="form-label">Họ tên khách</label><input class="form-input" placeholder="Nguyễn Văn A"></div><div><label class="form-label">Số điện thoại</label><input class="form-input" placeholder="0900 000 000"></div></div>
+    <div class="form-group"><label class="form-label">Email</label><input class="form-input" type="email" placeholder="khach@email.com"></div>
+    <div class="form-row"><div><label class="form-label">Gói tour</label><select class="form-select"><option>Hội An 3N2Đ</option><option>Hạ Long 5N4Đ</option><option>Phú Quốc Premium</option><option>Sa Pa 2N1Đ</option></select></div><div><label class="form-label">Ngày khởi hành</label><input class="form-input" type="date"></div></div>
+    <div class="form-row"><div><label class="form-label">Số khách</label><input class="form-input" type="number" placeholder="2" min="1"></div><div><label class="form-label">Phân công HDV</label><select class="form-select"><option>Trần Hoài Nam</option><option>Nguyễn Linh Chi</option><option>Phan Hữu Tài</option><option>Lê Thu Hương</option></select></div></div>
+    <div class="form-group"><label class="form-label">Ghi chú đặc biệt</label><textarea class="form-textarea" placeholder="Yêu cầu đặc biệt của khách..."></textarea></div>`,
+    footer:`<button class="btn btn-default" onclick="closeModal()">Huỷ</button><button class="btn btn-accent" onclick="submitModal('Đã tạo đơn hàng mới!')">Tạo đơn hàng</button>`
+  },
+  addTour:{
+    title:'+ Thêm tour mới',
+    body:`<div class="form-group"><label class="form-label">Tên tour</label><input class="form-input" placeholder="VD: Hội An – Phố Cổ 3N2Đ"></div>
+    <div class="form-row"><div><label class="form-label">Điểm đến</label><select class="form-select"><option>Hội An</option><option>Hạ Long</option><option>Phú Quốc</option><option>Sa Pa</option><option>Đà Lạt</option></select></div><div><label class="form-label">Số ngày</label><input class="form-input" placeholder="VD: 3N2Đ"></div></div>
+    <div class="form-row"><div><label class="form-label">Giá từ (đ/người)</label><input class="form-input" type="number" placeholder="2800000"></div><div><label class="form-label">Số khách tối đa</label><input class="form-input" type="number" placeholder="20"></div></div>
+    <div class="form-group"><label class="form-label">Dịch vụ bao gồm</label><textarea class="form-textarea" placeholder="Vé máy bay, khách sạn 3★, HDV, xe đưa đón..."></textarea></div>`,
+    footer:`<button class="btn btn-default" onclick="closeModal()">Huỷ</button><button class="btn btn-accent" onclick="submitModal('Đã thêm tour mới!')">Lưu tour</button>`
+  },
+  addCustomer:{
+    title:'+ Thêm khách hàng',
+    body:`<div class="form-row"><div><label class="form-label">Họ tên</label><input class="form-input" placeholder="Nguyễn Văn A"></div><div><label class="form-label">Điện thoại</label><input class="form-input" placeholder="0900 000 000"></div></div>
+    <div class="form-group"><label class="form-label">Email</label><input class="form-input" type="email" placeholder="khach@email.com"></div>
+    <div class="form-row"><div><label class="form-label">Ngày sinh</label><input class="form-input" type="date"></div><div><label class="form-label">Phân loại</label><select class="form-select"><option>🆕 Khách mới</option><option>🔁 Thân thiết</option><option>⭐ VIP</option></select></div></div>`,
+    footer:`<button class="btn btn-default" onclick="closeModal()">Huỷ</button><button class="btn btn-accent" onclick="submitModal('Đã thêm khách hàng!')">Lưu khách</button>`
+  },
+  addGuide:{
+    title:'+ Thêm hướng dẫn viên',
+    body:`<div class="form-row"><div><label class="form-label">Họ tên</label><input class="form-input" placeholder="Trần Văn A"></div><div><label class="form-label">Điện thoại</label><input class="form-input" placeholder="0900 000 000"></div></div>
+    <div class="form-group"><label class="form-label">Ngôn ngữ</label><input class="form-input" placeholder="VD: Việt, Anh, Hàn"></div>
+    <div class="form-row"><div><label class="form-label">Kinh nghiệm (năm)</label><input class="form-input" type="number" placeholder="3"></div><div><label class="form-label">Chuyên môn vùng</label><select class="form-select"><option>Miền Trung</option><option>Miền Bắc</option><option>Miền Nam</option><option>Tây Bắc</option></select></div></div>`,
+    footer:`<button class="btn btn-default" onclick="closeModal()">Huỷ</button><button class="btn btn-accent" onclick="submitModal('Đã thêm HDV mới!')">Lưu HDV</button>`
+  },
+  assignGuide:{
+    title:'📅 Phân công HDV vào tour',
+    body:`<div class="form-group"><label class="form-label">Chọn tour</label><select class="form-select"><option>Hội An 3N2Đ – 05/06/2025 · 12 khách</option><option>Hạ Long 5N4Đ – 08/06/2025 · 6 khách</option><option>Phú Quốc Premium – 10/06/2025 · 4 khách</option></select></div>
+    <div class="form-group"><label class="form-label">Chọn HDV</label><select class="form-select"><option>✓ Trần Hoài Nam (Việt·Anh·Nhật) – Sẵn sàng</option><option>✓ Phan Hữu Tài (Việt·Anh) – Sẵn sàng</option><option>✓ Lê Thu Hương (Việt·Trung·Anh) – Sẵn sàng</option></select></div>
+    <div class="form-row"><div><label class="form-label">Ngày bắt đầu</label><input class="form-input" type="date"></div><div><label class="form-label">Ngày kết thúc</label><input class="form-input" type="date"></div></div>
+    <div class="form-group"><label class="form-label">Ghi chú cho HDV</label><textarea class="form-textarea" placeholder="Nhóm gia đình, có trẻ em 5 tuổi. Yêu cầu chụp ảnh nhiều..."></textarea></div>`,
+    footer:`<button class="btn btn-default" onclick="closeModal()">Huỷ</button><button class="btn btn-green" onclick="submitModal('Đã phân công HDV thành công!')">✓ Xác nhận phân công</button>`
+  },
+  viewOrder:{
+    title:'👁 Chi tiết đơn hàng #BT-0890',
+    body:`<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+      <div><div class="form-label">Khách hàng</div><div style="font-weight:600;font-size:.9rem">Trần Minh Tuấn</div><div style="color:var(--text3);font-size:.78rem">0912 345 678 · tuan@email.com</div></div>
+      <div><div class="form-label">Trạng thái</div><span class="badge badge-green">✓ Đã xác nhận</span></div>
+    </div>
+    <div style="background:var(--surface2);border:1px solid var(--border);padding:1rem;margin-bottom:1rem">
+      <div class="form-label" style="margin-bottom:.6rem">Chi tiết tour</div>
+      <div style="display:flex;flex-direction:column;gap:.4rem;font-size:.83rem">
+        <div style="display:flex;justify-content:space-between"><span style="color:var(--text3)">Tour</span><span>Phú Quốc Premium 7N6Đ</span></div>
+        <div style="display:flex;justify-content:space-between"><span style="color:var(--text3)">Ngày đi</span><span>08/06/2025</span></div>
+        <div style="display:flex;justify-content:space-between"><span style="color:var(--text3)">Số khách</span><span>5 người</span></div>
+        <div style="display:flex;justify-content:space-between"><span style="color:var(--text3)">HDV</span><span>Nguyễn Linh Chi</span></div>
+        <div style="display:flex;justify-content:space-between;border-top:1px solid var(--border);padding-top:.5rem;margin-top:.3rem"><span style="font-weight:600">Tổng tiền</span><span style="color:var(--green);font-weight:700;font-size:1rem">₫ 15.500.000</span></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:.5rem">
+      <button class="btn btn-green" onclick="submitModal('Đã gửi email xác nhận!')">📧 Gửi email KH</button>
+      <button class="btn btn-accent" onclick="submitModal('Đã in voucher!')">🖨️ In voucher</button>
+      <button class="btn btn-danger" onclick="submitModal('Đã huỷ đơn!')">✕ Huỷ đơn</button>
+    </div>`,
+    footer:`<button class="btn btn-default" onclick="closeModal()">Đóng</button>`
+  },
+  editTour:{
+    title:'✏️ Chỉnh sửa tour',
+    body:`<div class="form-group"><label class="form-label">Tên tour</label><input class="form-input" value="Hội An – Phố Cổ & Biển"></div>
+    <div class="form-row"><div><label class="form-label">Giá từ (đ/người)</label><input class="form-input" value="2800000"></div><div><label class="form-label">Trạng thái</label><select class="form-select"><option>🟢 Đang bán</option><option>⏸ Tạm dừng</option></select></div></div>
+    <div class="form-group"><label class="form-label">Dịch vụ bao gồm</label><textarea class="form-textarea">Vé máy bay khứ hồi, Khách sạn 3★, HDV tiếng Anh, Xe đưa đón, 2 bữa sáng</textarea></div>`,
+    footer:`<button class="btn btn-default" onclick="closeModal()">Huỷ</button><button class="btn btn-accent" onclick="submitModal('Đã cập nhật tour!')">Lưu thay đổi</button>`
+  },
+};
+
+function openModal(key){
+  const m=modals[key];
+  if(!m)return;
+  document.getElementById('modalTitle').textContent=m.title;
+  document.getElementById('modalBody').innerHTML=m.body;
+  document.getElementById('modalFooter').innerHTML=m.footer;
+  document.getElementById('modalOverlay').classList.add('open');
+}
+function closeModal(){document.getElementById('modalOverlay').classList.remove('open')}
+function closeModalOutside(e){if(e.target===document.getElementById('modalOverlay'))closeModal()}
+function submitModal(msg){closeModal();showToast(msg,'green')}
+function confirmOrder(id){showToast(`Đã xác nhận đơn ${id}`,'green')}
+function cancelOrder(id){showToast(`Đã huỷ đơn ${id}`,'amber')}
+
+// ── TOAST ─────────────────────────────────────────────
+function showToast(msg,type='green'){
+  const icons={green:'✅',amber:'⚠️',blue:'ℹ️',red:'❌'};
+  const wrap=document.getElementById('toastWrap');
+  const t=document.createElement('div');
+  t.className=`toast ${type==='green'?'success':type==='red'?'error':''}`;
+  t.innerHTML=`<span>${icons[type]||'ℹ️'}</span><span>${msg}</span>`;
+  wrap.appendChild(t);
+  setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity .3s';setTimeout(()=>t.remove(),300)},2800);
+}
+
+// ── INIT ──────────────────────────────────────────────
+renderOrders(orders);
+renderTours();
+renderCustomers();
+renderGuides();
+renderSchedule();
+renderRevenueChart();
+renderMonthlyChart();
+</script>
+</body>
+</html>

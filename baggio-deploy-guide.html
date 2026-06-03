@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Baggio Travel — Deploy Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0c0f14;
+  --surface:#13171f;
+  --surface2:#191e28;
+  --surface3:#1e2535;
+  --border:#252d3d;
+  --border2:#2e3a50;
+  --text:#dde4f0;
+  --text2:#7a8aa8;
+  --text3:#3a4560;
+  --green:#34c97a;
+  --green-dim:rgba(52,201,122,.1);
+  --blue:#4d9eff;
+  --blue-dim:rgba(77,158,255,.1);
+  --amber:#f0a830;
+  --amber-dim:rgba(240,168,48,.1);
+  --red:#f05252;
+  --red-dim:rgba(240,82,82,.1);
+  --purple:#a78bfa;
+  --purple-dim:rgba(167,139,250,.1);
+  --teal:#2dd4bf;
+  --teal-dim:rgba(45,212,191,.1);
+  --vercel:#fff;
+  --font:'Be Vietnam Pro',sans-serif;
+  --mono:'Space Mono',monospace;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;line-height:1.65;display:grid;grid-template-columns:240px 1fr;min-height:100vh}
+
+/* ── SIDEBAR ── */
+.sidebar{background:var(--surface);border-right:1px solid var(--border);padding:0;position:sticky;top:0;height:100vh;overflow-y:auto;display:flex;flex-direction:column}
+.sb-brand{padding:1.25rem 1.25rem 1rem;border-bottom:1px solid var(--border)}
+.sb-brand-name{font-family:var(--mono);font-size:.88rem;font-weight:700;color:var(--text);letter-spacing:-.01em}
+.sb-brand-name span{color:var(--green)}
+.sb-brand-tag{font-size:.65rem;color:var(--text3);margin-top:.2rem;font-family:var(--mono);letter-spacing:.08em}
+.sb-nav{flex:1;padding:.75rem 0;overflow-y:auto}
+.sb-section{font-family:var(--mono);font-size:.56rem;letter-spacing:.18em;text-transform:uppercase;color:var(--text3);padding:.5rem 1.25rem .3rem;margin-top:.5rem}
+.sb-link{display:flex;align-items:center;gap:.6rem;padding:.5rem 1.25rem;font-size:.78rem;color:var(--text2);text-decoration:none;border-left:2px solid transparent;transition:all .15s;cursor:pointer}
+.sb-link:hover{color:var(--text);background:rgba(255,255,255,.03)}
+.sb-link.active{color:var(--green);border-left-color:var(--green);background:var(--green-dim)}
+.sb-link-num{font-family:var(--mono);font-size:.6rem;width:18px;height:18px;border-radius:50%;border:1px solid currentColor;display:flex;align-items:center;justify-content:center;flex-shrink:0;opacity:.6}
+.sb-link.done .sb-link-num{background:var(--green);border-color:var(--green);color:#0c0f14;opacity:1}
+.sb-progress{padding:1rem 1.25rem;border-top:1px solid var(--border)}
+.sb-prog-label{font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:.5rem;display:flex;justify-content:space-between}
+.sb-prog-bar{height:3px;background:var(--border);border-radius:2px;overflow:hidden}
+.sb-prog-fill{height:100%;background:var(--green);border-radius:2px;transition:width .4s;width:0%}
+
+/* ── MAIN ── */
+.main{overflow-y:auto;min-height:100vh}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:.9rem 2rem;display:flex;align-items:center;gap:1rem;position:sticky;top:0;z-index:50}
+.topbar-title{font-size:.95rem;font-weight:600;color:var(--text)}
+.topbar-sub{font-size:.72rem;color:var(--text3);font-family:var(--mono)}
+.topbar-pill{margin-left:auto;font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;padding:.3rem .75rem;border-radius:20px;background:var(--green-dim);color:var(--green);border:1px solid rgba(52,201,122,.3)}
+
+.content{padding:2rem;max-width:860px}
+
+/* ── SECTIONS ── */
+.step-section{margin-bottom:3.5rem;scroll-margin-top:72px}
+.step-header{display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem}
+.step-num{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:.75rem;font-weight:700;flex-shrink:0}
+.step-num.green{background:var(--green-dim);border:1.5px solid rgba(52,201,122,.4);color:var(--green)}
+.step-num.blue{background:var(--blue-dim);border:1.5px solid rgba(77,158,255,.4);color:var(--blue)}
+.step-num.amber{background:var(--amber-dim);border:1.5px solid rgba(240,168,48,.4);color:var(--amber)}
+.step-num.purple{background:var(--purple-dim);border:1.5px solid rgba(167,139,250,.4);color:var(--purple)}
+.step-num.teal{background:var(--teal-dim);border:1.5px solid rgba(45,212,191,.4);color:var(--teal)}
+.step-title{font-size:1.25rem;font-weight:700;letter-spacing:-.02em;color:var(--text)}
+.step-sub{font-size:.85rem;color:var(--text2);margin-top:.2rem;font-weight:300;line-height:1.65}
+
+/* ── CARDS ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:1rem}
+.card-header{background:var(--surface2);border-bottom:1px solid var(--border);padding:.7rem 1.1rem;display:flex;align-items:center;justify-content:space-between}
+.card-title{font-family:var(--mono);font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text2)}
+.card-body{padding:1.1rem}
+
+/* ── CODE ── */
+.code-wrap{border-radius:7px;border:1px solid var(--border);overflow:hidden;margin:.75rem 0}
+.code-top{background:var(--surface2);border-bottom:1px solid var(--border);padding:.5rem 1rem;display:flex;align-items:center;justify-content:space-between}
+.code-file{font-family:var(--mono);font-size:.68rem;color:var(--text2)}
+.code-lang{font-family:var(--mono);font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:.1em}
+.copy-btn{font-family:var(--mono);font-size:.58rem;color:var(--text3);background:none;border:1px solid var(--border);padding:.22rem .55rem;cursor:pointer;border-radius:3px;transition:all .15s;letter-spacing:.05em}
+.copy-btn:hover{border-color:var(--border2);color:var(--text2)}
+.copy-btn.ok{color:var(--green);border-color:var(--green)}
+pre{background:var(--surface);padding:1rem;overflow-x:auto;font-family:var(--mono);font-size:.76rem;line-height:1.75;color:var(--text2);margin:0}
+.kw{color:var(--purple)}
+.str{color:var(--green)}
+.cmt{color:var(--text3);font-style:italic}
+.fn{color:var(--blue)}
+.num{color:var(--amber)}
+.key{color:var(--teal)}
+.op{color:var(--text2)}
+
+/* ── TERMINAL ── */
+.terminal{background:#070a0e;border:1px solid var(--border);border-radius:7px;overflow:hidden;margin:.75rem 0}
+.terminal-bar{background:var(--surface2);border-bottom:1px solid var(--border);padding:.5rem 1rem;display:flex;align-items:center;gap:.5rem}
+.t-dot{width:10px;height:10px;border-radius:50%}
+.terminal-title{font-family:var(--mono);font-size:.62rem;color:var(--text3);margin-left:.5rem;letter-spacing:.06em}
+.terminal-body{padding:.9rem 1.1rem;font-family:var(--mono);font-size:.75rem;line-height:1.85}
+.t-prompt{color:var(--green)}
+.t-cmd{color:var(--text)}
+.t-out{color:var(--text3)}
+.t-success{color:var(--green)}
+.t-warn{color:var(--amber)}
+.t-url{color:var(--blue);text-decoration:underline;cursor:pointer}
+
+/* ── ALERTS ── */
+.alert{border-radius:7px;padding:.9rem 1rem;margin:.75rem 0;display:flex;gap:.75rem;font-size:.82rem;line-height:1.65}
+.alert-icon{flex-shrink:0;font-size:1rem;margin-top:.05rem}
+.alert.info{background:var(--blue-dim);border:1px solid rgba(77,158,255,.25)}
+.alert.info .alert-title{color:var(--blue)}
+.alert.success{background:var(--green-dim);border:1px solid rgba(52,201,122,.25)}
+.alert.success .alert-title{color:var(--green)}
+.alert.warning{background:var(--amber-dim);border:1px solid rgba(240,168,48,.25)}
+.alert.warning .alert-title{color:var(--amber)}
+.alert.danger{background:var(--red-dim);border:1px solid rgba(240,82,82,.25)}
+.alert.danger .alert-title{color:var(--red)}
+.alert-title{font-weight:600;margin-bottom:.2rem}
+
+/* ── GRID CARDS ── */
+.option-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem;margin:.75rem 0}
+.opt-card{background:var(--surface2);border:1px solid var(--border);border-radius:7px;padding:.9rem;transition:border-color .2s;cursor:default}
+.opt-card.recommended{border-color:rgba(52,201,122,.4)}
+.opt-badge{font-family:var(--mono);font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;padding:.2rem .5rem;border-radius:3px;display:inline-block;margin-bottom:.5rem}
+.badge-rec{background:var(--green-dim);color:var(--green);border:1px solid rgba(52,201,122,.3)}
+.badge-alt{background:var(--blue-dim);color:var(--blue);border:1px solid rgba(77,158,255,.3)}
+.badge-paid{background:var(--amber-dim);color:var(--amber);border:1px solid rgba(240,168,48,.3)}
+.opt-name{font-size:.9rem;font-weight:600;color:var(--text);margin-bottom:.3rem}
+.opt-desc{font-size:.75rem;color:var(--text2);line-height:1.6;font-weight:300}
+.opt-price{font-family:var(--mono);font-size:.7rem;color:var(--text3);margin-top:.5rem}
+
+/* ── ENV TABLE ── */
+.env-table{width:100%;border-collapse:collapse;font-size:.8rem}
+.env-table th{font-family:var(--mono);font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);padding:.55rem .9rem;text-align:left;border-bottom:1px solid var(--border);background:var(--surface2);font-weight:400}
+.env-table td{padding:.6rem .9rem;border-bottom:1px solid rgba(255,255,255,.04);vertical-align:top}
+.env-table tr:last-child td{border-bottom:none}
+.env-key{font-family:var(--mono);font-size:.72rem;color:var(--teal)}
+.env-val{font-family:var(--mono);font-size:.7rem;color:var(--text3)}
+.env-desc{font-size:.78rem;color:var(--text2);font-weight:300}
+
+/* ── PIPELINE ── */
+.pipeline{display:flex;align-items:center;gap:0;margin:.75rem 0;overflow-x:auto;padding:.5rem 0}
+.pipe-step{display:flex;flex-direction:column;align-items:center;gap:.4rem;min-width:90px}
+.pipe-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.2rem}
+.pipe-label{font-size:.7rem;font-weight:500;color:var(--text2);text-align:center;line-height:1.3;font-family:var(--mono)}
+.pipe-arrow{color:var(--text3);font-size:1.1rem;margin:0 .3rem;padding-bottom:.8rem;flex-shrink:0}
+
+/* ── CHECKLIST ── */
+.checklist{display:flex;flex-direction:column;gap:.4rem}
+.check-row{display:flex;align-items:flex-start;gap:.75rem;font-size:.82rem;color:var(--text2);padding:.4rem 0;cursor:pointer}
+.check-box{width:17px;height:17px;border-radius:3px;border:1.5px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.6rem;margin-top:.15rem;transition:all .2s}
+.check-box.done{background:var(--green);border-color:var(--green);color:#0c0f14}
+.check-prog{margin-top:1rem;font-family:var(--mono);font-size:.65rem;color:var(--text3);padding:.5rem .75rem;background:var(--surface2);border-radius:5px;display:flex;justify-content:space-between}
+
+/* ── DOMAIN FLOW ── */
+.domain-flow{display:grid;grid-template-columns:repeat(4,1fr);gap:2px;margin:.75rem 0}
+.df-box{background:var(--surface2);padding:.9rem;text-align:center}
+.df-icon{font-size:1.5rem;margin-bottom:.4rem}
+.df-name{font-size:.78rem;font-weight:600;color:var(--text);margin-bottom:.15rem}
+.df-desc{font-size:.68rem;color:var(--text2);line-height:1.5;font-weight:300}
+.df-arrow{display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:1rem;background:var(--surface2);padding:.9rem 0}
+
+@media(max-width:900px){
+  body{grid-template-columns:1fr}
+  .sidebar{display:none}
+  .option-grid{grid-template-columns:1fr}
+  .domain-flow{grid-template-columns:1fr 1fr}
+  .pipeline{flex-wrap:wrap}
+}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sb-brand">
+    <div class="sb-brand-name">Baggio<span>.</span>Travel</div>
+    <div class="sb-brand-tag">DEPLOY GUIDE · 2025</div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-section">Chuẩn bị</div>
+    <div class="sb-link active" onclick="goto('s1',this)"><span class="sb-link-num">1</span>Chọn domain</div>
+    <div class="sb-link" onclick="goto('s2',this)"><span class="sb-link-num">2</span>Cấu trúc project</div>
+    <div class="sb-section">Deploy</div>
+    <div class="sb-link" onclick="goto('s3',this)"><span class="sb-link-num">3</span>Deploy lên Vercel</div>
+    <div class="sb-link" onclick="goto('s4',this)"><span class="sb-link-num">4</span>Kết nối domain & SSL</div>
+    <div class="sb-link" onclick="goto('s5',this)"><span class="sb-link-num">5</span>Biến môi trường (.env)</div>
+    <div class="sb-section">CI/CD</div>
+    <div class="sb-link" onclick="goto('s6',this)"><span class="sb-link-num">6</span>GitHub Actions CI/CD</div>
+    <div class="sb-link" onclick="goto('s7',this)"><span class="sb-link-num">7</span>Preview deployments</div>
+    <div class="sb-section">Production</div>
+    <div class="sb-link" onclick="goto('s8',this)"><span class="sb-link-num">8</span>Monitoring & Logs</div>
+    <div class="sb-link" onclick="goto('s9',this)"><span class="sb-link-num">9</span>Checklist go-live</div>
+  </nav>
+  <div class="sb-progress">
+    <div class="sb-prog-label"><span>Tiến độ</span><span id="progTxt">0 / 9</span></div>
+    <div class="sb-prog-bar"><div class="sb-prog-fill" id="progFill"></div></div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div class="topbar-title">Hướng dẫn Deploy — Baggio Travel</div>
+      <div class="topbar-sub">Vercel · Custom Domain · SSL tự động · GitHub Actions CI/CD</div>
+    </div>
+    <div class="topbar-pill">Từng bước · có lệnh chạy ngay</div>
+  </div>
+
+  <div class="content">
+
+    <!-- ── STEP 1: DOMAIN ── -->
+    <div class="step-section" id="s1">
+      <div class="step-header">
+        <div class="step-num green">1</div>
+        <div>
+          <div class="step-title">Đăng ký domain</div>
+          <div class="step-sub">Chọn tên miền phù hợp với thương hiệu — nên dùng .com hoặc .vn cho uy tín</div>
+        </div>
+      </div>
+
+      <div class="option-grid">
+        <div class="opt-card recommended">
+          <div class="opt-badge badge-rec">Khuyên dùng</div>
+          <div class="opt-name">Namecheap</div>
+          <div class="opt-desc">Giá rẻ, UI dễ dùng, DNS management tốt. Hỗ trợ .com từ ~$10/năm</div>
+          <div class="opt-price">namecheap.com · ~$10–15/năm</div>
+        </div>
+        <div class="opt-card">
+          <div class="opt-badge badge-alt">Phổ biến</div>
+          <div class="opt-name">Cloudflare Registrar</div>
+          <div class="opt-desc">Giá at-cost (rẻ nhất), tích hợp DNS + CDN + SSL sẵn. Cần account Cloudflare</div>
+          <div class="opt-price">cloudflare.com · ~$9–11/năm</div>
+        </div>
+        <div class="opt-card">
+          <div class="opt-badge badge-alt">Việt Nam</div>
+          <div class="opt-name">PA Vietnam / VNPT</div>
+          <div class="opt-desc">Đăng ký .vn dễ, hỗ trợ tiếng Việt. Tốt nếu target thị trường Việt Nam</div>
+          <div class="opt-price">pavietnam.vn · ~200k–500k/năm</div>
+        </div>
+      </div>
+
+      <div class="alert info">
+        <div class="alert-icon">💡</div>
+        <div>
+          <div class="alert-title">Gợi ý tên domain cho Baggio Travel</div>
+          <code>baggio.travel</code> (premium) · <code>baggiotravel.com</code> · <code>baggiotravel.vn</code> · <code>baggio-travel.com</code><br>
+          Kiểm tra availability tại <strong>instantdomainsearch.com</strong> — tránh dấu gạch ngang nếu có thể.
+        </div>
+      </div>
+
+      <div class="domain-flow">
+        <div class="df-box"><div class="df-icon">🛒</div><div class="df-name">Mua domain</div><div class="df-desc">Namecheap / Cloudflare</div></div>
+        <div class="df-arrow">→</div>
+        <div class="df-box"><div class="df-icon">⚙️</div><div class="df-name">Cấu hình DNS</div><div class="df-desc">Trỏ về Vercel nameservers</div></div>
+        <div class="df-arrow">→</div>
+        <div class="df-box"><div class="df-icon">🔒</div><div class="df-name">SSL tự động</div><div class="df-desc">Vercel cấp Let's Encrypt</div></div>
+        <div class="df-arrow">→</div>
+        <div class="df-box"><div class="df-icon">✅</div><div class="df-name">Live!</div><div class="df-desc">https://baggiotravel.com</div></div>
+      </div>
+    </div>
+
+    <!-- ── STEP 2: PROJECT STRUCTURE ── -->
+    <div class="step-section" id="s2">
+      <div class="step-header">
+        <div class="step-num blue">2</div>
+        <div>
+          <div class="step-title">Cấu trúc project & package.json</div>
+          <div class="step-sub">Tổ chức files trước khi push lên GitHub — Vercel cần đọc được cấu trúc này</div>
+        </div>
+      </div>
+
+      <div class="code-wrap">
+        <div class="code-top"><span class="code-file">Cấu trúc thư mục</span><span class="code-lang">tree</span></div>
+        <pre><span class="text2">baggio-travel/</span>
+├── <span class="str">public/</span>               <span class="cmt"># static files (ảnh, fonts)</span>
+│   ├── images/
+│   └── favicon.ico
+├── <span class="str">src/</span>
+│   ├── <span class="str">pages/</span>            <span class="cmt"># Next.js pages (hoặc HTML files)</span>
+│   │   ├── index.html    <span class="cmt"># baggio-travel.html → đổi tên</span>
+│   │   ├── booking.html  <span class="cmt"># baggio-booking-engine.html</span>
+│   │   └── admin.html    <span class="cmt"># baggio-admin.html</span>
+│   ├── <span class="str">api/</span>              <span class="cmt"># Vercel serverless functions</span>
+│   │   ├── payment/
+│   │   │   ├── momo.js   <span class="cmt"># MoMo API handler</span>
+│   │   │   └── webhook.js
+│   │   └── booking.js
+│   └── <span class="str">components/</span>
+│       └── chatbot.html  <span class="cmt"># baggio-chatbot.html</span>
+├── <span class="key">.env.local</span>            <span class="cmt"># secrets — KHÔNG commit lên git</span>
+├── <span class="key">.env.example</span>          <span class="cmt"># template — COMMIT lên git</span>
+├── <span class="key">.gitignore</span>
+├── <span class="key">vercel.json</span>           <span class="cmt"># cấu hình Vercel</span>
+└── <span class="key">package.json</span></pre>
+      </div>
+
+      <div class="code-wrap">
+        <div class="code-top"><span class="code-file">vercel.json</span><span class="code-lang">json</span><button class="copy-btn" onclick="cp(this)">Copy</button></div>
+        <pre>{
+  <span class="key">"version"</span>: <span class="num">2</span>,
+  <span class="key">"name"</span>: <span class="str">"baggio-travel"</span>,
+  <span class="key">"builds"</span>: [
+    { <span class="key">"src"</span>: <span class="str">"src/api/**/*.js"</span>, <span class="key">"use"</span>: <span class="str">"@vercel/node"</span> },
+    { <span class="key">"src"</span>: <span class="str">"public/**"</span>, <span class="key">"use"</span>: <span class="str">"@vercel/static"</span> }
+  ],
+  <span class="key">"routes"</span>: [
+    { <span class="key">"src"</span>: <span class="str">"/api/(.*)"</span>, <span class="key">"dest"</span>: <span class="str">"/src/api/$1"</span> },
+    { <span class="key">"src"</span>: <span class="str">"/booking"</span>, <span class="key">"dest"</span>: <span class="str">"/src/pages/booking.html"</span> },
+    { <span class="key">"src"</span>: <span class="str">"/admin"</span>, <span class="key">"dest"</span>: <span class="str">"/src/pages/admin.html"</span> },
+    { <span class="key">"src"</span>: <span class="str">"/(.*)"</span>, <span class="key">"dest"</span>: <span class="str">"/src/pages/index.html"</span> }
+  ],
+  <span class="key">"headers"</span>: [
+    {
+      <span class="key">"source"</span>: <span class="str">"/api/(.*)"</span>,
+      <span class="key">"headers"</span>: [
+        { <span class="key">"key"</span>: <span class="str">"Access-Control-Allow-Origin"</span>, <span class="key">"value"</span>: <span class="str">"https://baggiotravel.com"</span> },
+        { <span class="key">"key"</span>: <span class="str">"X-Frame-Options"</span>, <span class="key">"value"</span>: <span class="str">"DENY"</span> }
+      ]
+    }
+  ]
+}</pre>
+      </div>
+
+      <div class="code-wrap">
+        <div class="code-top"><span class="code-file">.gitignore</span><span class="code-lang">gitignore</span><button class="copy-btn" onclick="cp(this)">Copy</button></div>
+        <pre><span class="cmt"># Environment secrets — KHÔNG BAO GIỜ commit</span>
+.env
+.env.local
+.env.production
+
+<span class="cmt"># Dependencies</span>
+node_modules/
+.next/
+dist/
+
+<span class="cmt"># OS files</span>
+.DS_Store
+Thumbs.db</pre>
+      </div>
+    </div>
+
+    <!-- ── STEP 3: VERCEL DEPLOY ── -->
+    <div class="step-section" id="s3">
+      <div class="step-header">
+        <div class="step-num amber">3</div>
+        <div>
+          <div class="step-title">Deploy lên Vercel</div>
+          <div class="step-sub">3 cách deploy — CLI nhanh nhất cho lần đầu, GitHub tốt hơn cho CI/CD</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><span class="card-title">Cách 1 — Vercel CLI (nhanh nhất, 3 lệnh)</span></div>
+        <div class="card-body">
+          <div class="terminal">
+            <div class="terminal-bar">
+              <div class="t-dot" style="background:#ff5f56"></div>
+              <div class="t-dot" style="background:#ffbd2e"></div>
+              <div class="t-dot" style="background:#27c93f"></div>
+              <div class="terminal-title">Terminal</div>
+            </div>
+            <div class="terminal-body">
+<span class="cmt"># Bước 1: Cài Vercel CLI</span>
+<span class="t-prompt">$</span> <span class="t-cmd">npm install -g vercel</span>
+<span class="t-out">added 1 package in 3s</span>
+
+<span class="cmt"># Bước 2: Login vào Vercel (mở browser tự động)</span>
+<span class="t-prompt">$</span> <span class="t-cmd">vercel login</span>
+<span class="t-out">? Log in to Vercel</span>
+<span class="t-out">> Continue with GitHub</span>
+<span class="t-success">✓ Logged in as baggio@email.com</span>
+
+<span class="cmt"># Bước 3: Deploy từ thư mục project</span>
+<span class="t-prompt">$</span> <span class="t-cmd">cd baggio-travel && vercel --prod</span>
+<span class="t-out">? Set up and deploy "baggio-travel"? [Y/n] y</span>
+<span class="t-out">? Which scope? Baggio</span>
+<span class="t-out">? Link to existing project? [y/N] n</span>
+<span class="t-out">? What's your project's name? baggio-travel</span>
+<span class="t-out">? In which directory is your code located? ./</span>
+<span class="t-success">✓ Linked to baggio/baggio-travel</span>
+<span class="t-success">✓ Production: <span class="t-url">https://baggio-travel.vercel.app</span> [42s]</span>
+<span class="t-success">✓ Deployed to production!</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><span class="card-title">Cách 2 — Import từ GitHub (tốt hơn cho CI/CD)</span></div>
+        <div class="card-body">
+          <div class="terminal">
+            <div class="terminal-bar">
+              <div class="t-dot" style="background:#ff5f56"></div>
+              <div class="t-dot" style="background:#ffbd2e"></div>
+              <div class="t-dot" style="background:#27c93f"></div>
+              <div class="terminal-title">Terminal — Push code lên GitHub trước</div>
+            </div>
+            <div class="terminal-body">
+<span class="t-prompt">$</span> <span class="t-cmd">git init && git add .</span>
+<span class="t-prompt">$</span> <span class="t-cmd">git commit -m "feat: initial Baggio Travel deploy"</span>
+<span class="t-prompt">$</span> <span class="t-cmd">git remote add origin git@github.com:baggio/baggio-travel.git</span>
+<span class="t-prompt">$</span> <span class="t-cmd">git push -u origin main</span>
+<span class="t-success">✓ Code đã lên GitHub</span>
+
+<span class="cmt"># Sau đó vào vercel.com → New Project → Import from GitHub</span>
+<span class="cmt"># Chọn repo baggio-travel → Deploy</span>
+<span class="cmt"># Vercel tự build mỗi khi push code từ đây trở đi</span></div>
+          </div>
+          <div class="alert success" style="margin-top:.75rem">
+            <div class="alert-icon">✅</div>
+            <div><div class="alert-title">Sau khi import GitHub</div>Mỗi lần <code>git push</code> → Vercel tự động build và deploy. Branch <code>main</code> → production. Các branch khác → preview URL riêng.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── STEP 4: DOMAIN & SSL ── -->
+    <div class="step-section" id="s4">
+      <div class="step-header">
+        <div class="step-num purple">4</div>
+        <div>
+          <div class="step-title">Kết nối domain & SSL tự động</div>
+          <div class="step-sub">Vercel cấp SSL miễn phí qua Let's Encrypt — chỉ cần trỏ DNS đúng</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><span class="card-title">Trỏ DNS — Namecheap / bất kỳ registrar nào</span></div>
+        <div class="card-body">
+          <div class="alert info" style="margin-bottom:.75rem">
+            <div class="alert-icon">ℹ️</div>
+            <div><div class="alert-title">Vào Vercel Dashboard → Project → Settings → Domains</div>Nhập <code>baggiotravel.com</code> → Vercel sẽ cho bạn DNS records cần thêm vào registrar.</div>
+          </div>
+          <table class="env-table" style="margin:0">
+            <thead><tr><th>Type</th><th>Name / Host</th><th>Value</th><th>Mục đích</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><span class="env-key">A</span></td>
+                <td><span class="env-val">@</span></td>
+                <td><span class="env-val">76.76.21.21</span></td>
+                <td><span class="env-desc">Root domain → Vercel IP</span></td>
+              </tr>
+              <tr>
+                <td><span class="env-key">CNAME</span></td>
+                <td><span class="env-val">www</span></td>
+                <td><span class="env-val">cname.vercel-dns.com</span></td>
+                <td><span class="env-desc">www subdomain → Vercel</span></td>
+              </tr>
+              <tr>
+                <td><span class="env-key">CNAME</span></td>
+                <td><span class="env-val">api</span></td>
+                <td><span class="env-val">cname.vercel-dns.com</span></td>
+                <td><span class="env-desc">api.baggiotravel.com (optional)</span></td>
+              </tr>
+            </tbody>
+          </table>
+          <div style="margin-top:.75rem;font-size:.75rem;color:var(--text2);font-family:var(--mono)">
+            ⏱ DNS propagation thường mất 5–60 phút. Kiểm tra tại <span style="color:var(--blue)">dnschecker.org</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="alert success">
+        <div class="alert-icon">🔒</div>
+        <div>
+          <div class="alert-title">SSL tự động — không cần làm gì thêm</div>
+          Sau khi DNS propagate, Vercel tự cấp chứng chỉ SSL từ Let's Encrypt và renew tự động mỗi 90 ngày. URL của bạn sẽ là <code>https://baggiotravel.com</code> với ổ khóa xanh.
+        </div>
+      </div>
+    </div>
+
+    <!-- ── STEP 5: ENV VARS ── -->
+    <div class="step-section" id="s5">
+      <div class="step-header">
+        <div class="step-num teal">5</div>
+        <div>
+          <div class="step-title">Biến môi trường (.env)</div>
+          <div class="step-sub">Tất cả secrets phải vào Vercel Environment Variables — không hardcode trong code</div>
+        </div>
+      </div>
+
+      <div class="code-wrap">
+        <div class="code-top"><span class="code-file">.env.example — commit file này lên git</span><span class="code-lang">env</span><button class="copy-btn" onclick="cp(this)">Copy</button></div>
+        <pre><span class="cmt"># ── MoMo Payment ──</span>
+<span class="key">MOMO_PARTNER_CODE</span>=<span class="str">MOMO</span>
+<span class="key">MOMO_ACCESS_KEY</span>=your_access_key_here
+<span class="key">MOMO_SECRET_KEY</span>=your_secret_key_here
+<span class="key">MOMO_API_URL</span>=<span class="str">test-payment.momo.vn</span>         <span class="cmt"># sandbox</span>
+
+<span class="cmt"># ── App ──</span>
+<span class="key">APP_URL</span>=<span class="str">https://baggiotravel.com</span>
+<span class="key">NODE_ENV</span>=<span class="str">production</span>
+
+<span class="cmt"># ── Database ──</span>
+<span class="key">DATABASE_URL</span>=postgresql://user:pass@host:5432/baggio
+<span class="key">REDIS_URL</span>=redis://...
+
+<span class="cmt"># ── Email ──</span>
+<span class="key">RESEND_API_KEY</span>=re_xxxxxx
+<span class="key">FROM_EMAIL</span>=<span class="str">noreply@baggiotravel.com</span>
+
+<span class="cmt"># ── Anthropic (chatbot) ──</span>
+<span class="key">ANTHROPIC_API_KEY</span>=sk-ant-...</pre>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><span class="card-title">Thêm vào Vercel Dashboard</span></div>
+        <div class="card-body">
+          <div class="terminal">
+            <div class="terminal-bar">
+              <div class="t-dot" style="background:#ff5f56"></div>
+              <div class="t-dot" style="background:#ffbd2e"></div>
+              <div class="t-dot" style="background:#27c93f"></div>
+              <div class="terminal-title">Cách 1 — Vercel CLI (nhanh)</div>
+            </div>
+            <div class="terminal-body">
+<span class="t-prompt">$</span> <span class="t-cmd">vercel env add MOMO_SECRET_KEY production</span>
+<span class="t-out">? What's the value of MOMO_SECRET_KEY? <span style="color:var(--text3)">[nhập secret key]</span></span>
+<span class="t-success">✓ Added Environment Variable MOMO_SECRET_KEY to Project baggio-travel</span>
+
+<span class="cmt"># Hoặc pull .env.local từ Vercel về máy để dev local:</span>
+<span class="t-prompt">$</span> <span class="t-cmd">vercel env pull .env.local</span>
+<span class="t-success">✓ Created .env.local file  [100ms]</span></div>
+          </div>
+          <div style="margin-top:.75rem;font-size:.78rem;color:var(--text2);font-weight:300;line-height:1.6">
+            Hoặc vào: <strong>Vercel Dashboard → Project → Settings → Environment Variables</strong> → thêm từng biến theo từng môi trường (Production / Preview / Development).
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── STEP 6: CI/CD ── -->
+    <div class="step-section" id="s6">
+      <div class="step-header">
+        <div class="step-num green">6</div>
+        <div>
+          <div class="step-title">GitHub Actions CI/CD</div>
+          <div class="step-sub">Tự động test → build → deploy mỗi khi push code — không bao giờ deploy code lỗi lên production</div>
+        </div>
+      </div>
+
+      <div class="pipeline">
+        <div class="pipe-step">
+          <div class="pipe-icon" style="background:var(--surface2);border:1px solid var(--border)">📝</div>
+          <div class="pipe-label">git push<br>main</div>
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-step">
+          <div class="pipe-icon" style="background:var(--amber-dim);border:1px solid rgba(240,168,48,.3)">🧪</div>
+          <div class="pipe-label">Test<br>linting</div>
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-step">
+          <div class="pipe-icon" style="background:var(--blue-dim);border:1px solid rgba(77,158,255,.3)">🔨</div>
+          <div class="pipe-label">Build<br>check</div>
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-step">
+          <div class="pipe-icon" style="background:var(--purple-dim);border:1px solid rgba(167,139,250,.3)">🔒</div>
+          <div class="pipe-label">Security<br>audit</div>
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-step">
+          <div class="pipe-icon" style="background:var(--green-dim);border:1px solid rgba(52,201,122,.3)">🚀</div>
+          <div class="pipe-label">Deploy<br>Vercel</div>
+        </div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-step">
+          <div class="pipe-icon" style="background:var(--teal-dim);border:1px solid rgba(45,212,191,.3)">🔔</div>
+          <div class="pipe-label">Notify<br>Slack</div>
+        </div>
+      </div>
+
+      <div class="code-wrap">
+        <div class="code-top"><span class="code-file">.github/workflows/deploy.yml</span><span class="code-lang">yaml</span><button class="copy-btn" onclick="cp(this)">Copy</button></div>
+        <pre><span class="key">name</span>: <span class="str">Deploy Baggio Travel</span>
+
+<span class="key">on</span>:
+  <span class="key">push</span>:
+    <span class="key">branches</span>: [<span class="str">main</span>]
+  <span class="key">pull_request</span>:
+    <span class="key">branches</span>: [<span class="str">main</span>]
+
+<span class="key">env</span>:
+  <span class="key">VERCEL_ORG_ID</span>: <span class="str">${{ secrets.VERCEL_ORG_ID }}</span>
+  <span class="key">VERCEL_PROJECT_ID</span>: <span class="str">${{ secrets.VERCEL_PROJECT_ID }}</span>
+
+<span class="key">jobs</span>:
+  <span class="key">test-and-deploy</span>:
+    <span class="key">runs-on</span>: <span class="str">ubuntu-latest</span>
+    <span class="key">steps</span>:
+
+      - <span class="key">name</span>: <span class="str">Checkout code</span>
+        <span class="key">uses</span>: <span class="str">actions/checkout@v4</span>
+
+      - <span class="key">name</span>: <span class="str">Setup Node.js 20</span>
+        <span class="key">uses</span>: <span class="str">actions/setup-node@v4</span>
+        <span class="key">with</span>:
+          <span class="key">node-version</span>: <span class="str">'20'</span>
+          <span class="key">cache</span>: <span class="str">'npm'</span>
+
+      - <span class="key">name</span>: <span class="str">Install dependencies</span>
+        <span class="key">run</span>: <span class="str">npm ci</span>
+
+      - <span class="key">name</span>: <span class="str">Lint check</span>
+        <span class="key">run</span>: <span class="str">npm run lint</span>
+
+      - <span class="key">name</span>: <span class="str">Security audit</span>
+        <span class="key">run</span>: <span class="str">npm audit --audit-level=high</span>
+
+      - <span class="key">name</span>: <span class="str">Install Vercel CLI</span>
+        <span class="key">run</span>: <span class="str">npm install -g vercel@latest</span>
+
+      <span class="cmt"># Pull env vars từ Vercel (dùng cho build)</span>
+      - <span class="key">name</span>: <span class="str">Pull Vercel Environment</span>
+        <span class="key">run</span>: <span class="str">vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}</span>
+
+      - <span class="key">name</span>: <span class="str">Build Project</span>
+        <span class="key">run</span>: <span class="str">vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}</span>
+
+      <span class="cmt"># Chỉ deploy production khi push vào main (không phải PR)</span>
+      - <span class="key">name</span>: <span class="str">Deploy to Production</span>
+        <span class="key">if</span>: <span class="str">github.ref == 'refs/heads/main' && github.event_name == 'push'</span>
+        <span class="key">run</span>: <span class="str">vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}</span>
+
+      <span class="cmt"># Notify Slack sau khi deploy thành công</span>
+      - <span class="key">name</span>: <span class="str">Notify Slack</span>
+        <span class="key">if</span>: <span class="str">success() && github.ref == 'refs/heads/main'</span>
+        <span class="key">uses</span>: <span class="str">slackapi/slack-github-action@v1.27</span>
+        <span class="key">with</span>:
+          <span class="key">payload</span>: <span class="str">|
+            {"text": "✅ Baggio Travel deployed to production!\nhttps://baggiotravel.com"}</span>
+        <span class="key">env</span>:
+          <span class="key">SLACK_WEBHOOK_URL</span>: <span class="str">${{ secrets.SLACK_WEBHOOK_URL }}</span></pre>
+      </div>
+
+      <div class="alert warning">
+        <div class="alert-icon">⚠️</div>
+        <div>
+          <div class="alert-title">Thêm GitHub Secrets</div>
+          Vào <strong>GitHub repo → Settings → Secrets → Actions</strong>, thêm 4 secrets:<br>
+          <code>VERCEL_TOKEN</code> (lấy tại vercel.com/account/tokens) · <code>VERCEL_ORG_ID</code> · <code>VERCEL_PROJECT_ID</code> (trong <code>.vercel/project.json</code> sau khi link) · <code>SLACK_WEBHOOK_URL</code>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── STEP 7: PREVIEW ── -->
+    <div class="step-section" id="s7">
+      <div class="step-header">
+        <div class="step-num blue">7</div>
+        <div>
+          <div class="step-title">Preview Deployments</div>
+          <div class="step-sub">Mỗi Pull Request tự động có URL preview riêng — test trước khi merge vào main</div>
+        </div>
+      </div>
+
+      <div class="terminal">
+        <div class="terminal-bar">
+          <div class="t-dot" style="background:#ff5f56"></div>
+          <div class="t-dot" style="background:#ffbd2e"></div>
+          <div class="t-dot" style="background:#27c93f"></div>
+          <div class="terminal-title">Workflow làm việc hằng ngày</div>
+        </div>
+        <div class="terminal-body">
+<span class="cmt"># Tạo branch mới để phát triển tính năng</span>
+<span class="t-prompt">$</span> <span class="t-cmd">git checkout -b feat/add-vnpay-payment</span>
+
+<span class="cmt"># Code, commit...</span>
+<span class="t-prompt">$</span> <span class="t-cmd">git add . && git commit -m "feat: add VNPay payment integration"</span>
+<span class="t-prompt">$</span> <span class="t-cmd">git push origin feat/add-vnpay-payment</span>
+
+<span class="cmt"># → Vercel tự tạo preview URL ngay lập tức</span>
+<span class="t-success">✓ Preview: https://baggio-travel-git-feat-add-vnpay.vercel.app</span>
+
+<span class="cmt"># Sau khi review OK → merge vào main</span>
+<span class="t-prompt">$</span> <span class="t-cmd">gh pr merge --squash</span>
+
+<span class="cmt"># → GitHub Actions chạy → test pass → deploy production</span>
+<span class="t-success">✓ Deployed to production: https://baggiotravel.com  [38s]</span></div>
+      </div>
+    </div>
+
+    <!-- ── STEP 8: MONITORING ── -->
+    <div class="step-section" id="s8">
+      <div class="step-header">
+        <div class="step-num amber">8</div>
+        <div>
+          <div class="step-title">Monitoring & Logs</div>
+          <div class="step-sub">Theo dõi uptime, lỗi và hiệu năng sau khi go-live</div>
+        </div>
+      </div>
+
+      <div class="option-grid">
+        <div class="opt-card recommended">
+          <div class="opt-badge badge-rec">Miễn phí</div>
+          <div class="opt-name">Vercel Analytics</div>
+          <div class="opt-desc">Built-in — xem traffic, Core Web Vitals, lỗi deployment ngay trong dashboard</div>
+          <div class="opt-price">Bật trong Vercel Dashboard → Analytics</div>
+        </div>
+        <div class="opt-card">
+          <div class="opt-badge badge-alt">Miễn phí</div>
+          <div class="opt-name">UptimeRobot</div>
+          <div class="opt-desc">Ping website mỗi 5 phút, alert qua email/Slack khi down. 50 monitors miễn phí</div>
+          <div class="opt-price">uptimerobot.com · free tier</div>
+        </div>
+        <div class="opt-card">
+          <div class="opt-badge badge-alt">Free tier</div>
+          <div class="opt-name">Sentry</div>
+          <div class="opt-desc">Error tracking realtime — tự động catch lỗi JS, API errors, gửi alert ngay</div>
+          <div class="opt-price">sentry.io · 5k errors/tháng free</div>
+        </div>
+      </div>
+
+      <div class="code-wrap">
+        <div class="code-top"><span class="code-file">Xem logs realtime — Vercel CLI</span><span class="code-lang">bash</span><button class="copy-btn" onclick="cp(this)">Copy</button></div>
+        <pre><span class="cmt"># Xem logs production realtime</span>
+<span class="t-prompt">$</span> <span class="fn">vercel</span> logs baggio-travel --prod <span class="kw">-f</span>
+
+<span class="cmt"># Xem logs của deployment cụ thể</span>
+<span class="t-prompt">$</span> <span class="fn">vercel</span> logs https://baggio-travel-abc123.vercel.app
+
+<span class="cmt"># List tất cả deployments</span>
+<span class="t-prompt">$</span> <span class="fn">vercel</span> ls baggio-travel</pre>
+      </div>
+    </div>
+
+    <!-- ── STEP 9: CHECKLIST ── -->
+    <div class="step-section" id="s9">
+      <div class="step-header">
+        <div class="step-num green">9</div>
+        <div>
+          <div class="step-title">Checklist Go-Live</div>
+          <div class="step-sub">Tick từng mục trước khi thông báo website chính thức ra mắt</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-body">
+          <div style="font-size:.72rem;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.12em;margin-bottom:1rem">Domain & SSL</div>
+          <div class="checklist" id="cl">
+            <div class="check-row" onclick="tick(this)"><div class="check-box"></div><span>Domain đã mua và DNS đã trỏ về Vercel</span></div>
+            <div class="check-row" onclick="tick(this)"><div class="check-box"></div><span>SSL certificate ✅ — URL hiển thị https://</span></div>
+            <div class="check-row" onclick="tick(this)"><div class="check-box"></div><span>www redirect về non-www (hoặc ngược lại) đã hoạt động</span></div>
+
+            <div style="font-size:.72rem;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.12em;margin:1rem 0 .5rem">Code & Deploy</div>
+            <div class="check-row" onclick="tick(this)"><div class="check-box"></div><span>Tất cả secrets trong Vercel env vars — không có gì hardcode</span></div>
+            <div class="check-row" onclick="tick(this)"><div class="check-box"></div><span>.env.local không có trong git (kiểm tra .gitignore)</span></div>
+            <div class="check-row" onclick="tick(this)"><div class="check-box"></div><span>GitHub Actions CI/CD chạy pass toàn bộ</span></div>
+            <div class="check-row" onclick="tick(this)"><div class="check-box"></div><span>Build production thành công không có warning nghiêm trọng</span></div>
+
+            <div style="font-size:.72rem;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.12em;margin:1rem 0 .5rem">Chức năng</div>
+            <div class="check-row" onclick="tick(this)"><div class="check-box"></div><span>Form đặt tour hoạt động end-to-end trên production</span></div>
+            <div class="check-row" onclick="tick(this)"><div class="check-box"></div><span>MoMo thanh toán test thành công 1 giao dịch thật</span></div>
+            <div class="check-row" onclick="tick(this)"><div class="check-box"></div><span>Webhook IPN nhận được và xử lý đúng</span></div>
+            <div class="check-row" onclick="tick(this)"><div class="check-box"></div><span>Chatbot AI trả lời bình thường</span></div>
+            <div class="check-row" onclick="tick(this)"><div class="check-box"></div><span>Mobile responsive — test trên iPhone và Android</span></div>
+
+            <div style="font-size:.72rem;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.12em;margin:1rem 0 .5rem">Monitoring</div>
+            <div class="check-row" onclick="tick(this)"><div class="check-box"></div><span>UptimeRobot đã setup — nhận alert nếu down</span></div>
+            <div class="check-row" onclick="tick(this)"><div class="check-box"></div><span>Google Analytics 4 đã nhận traffic</span></div>
+            <div class="check-row" onclick="tick(this)"><div class="check-box"></div><span>Sentry (hoặc Vercel Analytics) đang theo dõi lỗi</span></div>
+          </div>
+          <div class="check-prog" id="checkProg">
+            <span id="checkTxt">0 / 15 hoàn thành</span>
+            <span id="checkStatus" style="color:var(--text3)">Chưa bắt đầu</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="alert success" id="liveAlert" style="display:none">
+        <div class="alert-icon">🚀</div>
+        <div><div class="alert-title">Baggio Travel đã sẵn sàng go-live!</div>Tất cả checklist đã hoàn thành. Thông báo ra mắt thôi!</div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+const sections=['s1','s2','s3','s4','s5','s6','s7','s8','s9'];
+let doneSteps=new Set();
+
+function goto(id,el){
+  document.getElementById(id)?.scrollIntoView({behavior:'smooth',block:'start'});
+  document.querySelectorAll('.sb-link').forEach(l=>l.classList.remove('active'));
+  if(el)el.classList.add('active');
+  doneSteps.add(id);
+  updateProgress();
+}
+
+function updateProgress(){
+  const n=doneSteps.size;
+  document.getElementById('progTxt').textContent=n+' / '+sections.length;
+  document.getElementById('progFill').style.width=(n/sections.length*100)+'%';
+  document.querySelectorAll('.sb-link').forEach((l,i)=>{
+    if(doneSteps.has(sections[i]))l.querySelector('.sb-link-num').classList.add?.[0] || l.classList.add('done');
+  });
+}
+
+function cp(btn){
+  const pre=btn.closest('.code-wrap').querySelector('pre');
+  navigator.clipboard.writeText(pre.innerText).then(()=>{
+    btn.textContent='Copied!';btn.classList.add('ok');
+    setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('ok')},2000);
+  });
+}
+
+function tick(row){
+  const box=row.querySelector('.check-box');
+  box.classList.toggle('done');
+  box.textContent=box.classList.contains('done')?'✓':'';
+  const total=document.querySelectorAll('.check-box').length;
+  const done=document.querySelectorAll('.check-box.done').length;
+  document.getElementById('checkTxt').textContent=done+' / '+total+' hoàn thành';
+  const status=document.getElementById('checkStatus');
+  if(done===total){
+    status.textContent='✅ Sẵn sàng go-live!';
+    status.style.color='var(--green)';
+    document.getElementById('liveAlert').style.display='flex';
+  } else if(done>=total*0.7){
+    status.textContent='Gần xong rồi...';
+    status.style.color='var(--amber)';
+  } else {
+    status.textContent='Đang thực hiện';
+    status.style.color='var(--text3)';
+  }
+}
+
+// Scroll spy
+const obs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      const id=e.target.id;
+      document.querySelectorAll('.sb-link').forEach((l,i)=>{
+        l.classList.remove('active');
+        if(sections[i]===id)l.classList.add('active');
+      });
+    }
+  });
+},{threshold:.3,rootMargin:'-60px 0px -60% 0px'});
+sections.forEach(id=>document.getElementById(id)&&obs.observe(document.getElementById(id)));
+</script>
+</body>
+</html>

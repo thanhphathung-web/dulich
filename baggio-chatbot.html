@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Baggio Travel — AI Chatbot</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,700;1,600&family=Space+Mono&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#f7f4ef;
+  --card:#ffffff;
+  --ink:#1a1714;
+  --red:#c5372a;
+  --red2:#e84235;
+  --gold:#b07d2e;
+  --teal:#1a7060;
+  --muted:#8a8278;
+  --border:#e8e2d8;
+  --bubble-bot:#ffffff;
+  --bubble-user:#1a1714;
+  --font:'Be Vietnam Pro',sans-serif;
+  --serif:'Playfair Display',Georgia,serif;
+  --mono:'Space Mono',monospace;
+}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);font-family:var(--font);font-size:14px;color:var(--ink);display:flex;flex-direction:column}
+
+/* ── HEADER ── */
+.header{background:var(--card);border-bottom:1px solid var(--border);padding:.9rem 1.5rem;display:flex;align-items:center;gap:1rem;flex-shrink:0;box-shadow:0 1px 8px rgba(26,23,20,.06)}
+.header-avatar{width:40px;height:40px;background:var(--red);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;position:relative}
+.online-dot{position:absolute;bottom:1px;right:1px;width:10px;height:10px;background:#22c55e;border-radius:50%;border:2px solid var(--card)}
+.header-info{flex:1}
+.header-name{font-family:var(--serif);font-size:1rem;font-weight:700;color:var(--ink);letter-spacing:-.01em}
+.header-status{font-size:.72rem;color:var(--teal);font-weight:500;display:flex;align-items:center;gap:.3rem}
+.header-status::before{content:'';width:6px;height:6px;background:var(--teal);border-radius:50%}
+.header-actions{display:flex;gap:.5rem}
+.hdr-btn{background:none;border:1px solid var(--border);padding:.4rem .9rem;font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);cursor:pointer;border-radius:20px;transition:all .2s}
+.hdr-btn:hover{border-color:var(--red);color:var(--red)}
+.hdr-btn.primary{background:var(--red);border-color:var(--red);color:#fff}
+.hdr-btn.primary:hover{background:#a82d22}
+
+/* ── QUICK TOPICS BAR ── */
+.topics-bar{background:var(--card);border-bottom:1px solid var(--border);padding:.65rem 1.5rem;display:flex;gap:.5rem;overflow-x:auto;flex-shrink:0}
+.topics-bar::-webkit-scrollbar{display:none}
+.topic-chip{flex-shrink:0;font-size:.72rem;font-weight:500;padding:.35rem .85rem;border:1px solid var(--border);border-radius:20px;background:none;color:var(--muted);cursor:pointer;transition:all .2s;white-space:nowrap;font-family:var(--font)}
+.topic-chip:hover{border-color:var(--red);color:var(--red);background:rgba(197,55,42,.05)}
+
+/* ── MESSAGES ── */
+.messages{flex:1;overflow-y:auto;padding:1.25rem 1.5rem;display:flex;flex-direction:column;gap:1rem;scroll-behavior:smooth}
+.messages::-webkit-scrollbar{width:4px}
+.messages::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+/* message row */
+.msg-row{display:flex;gap:.65rem;align-items:flex-end;max-width:100%}
+.msg-row.user{flex-direction:row-reverse}
+.msg-avatar{width:28px;height:28px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.8rem;margin-bottom:2px}
+.bot-av{background:var(--red);color:#fff}
+.user-av{background:var(--ink);color:#fff;font-family:var(--mono);font-size:.65rem;font-weight:700}
+
+/* bubbles */
+.bubble-wrap{max-width:75%;display:flex;flex-direction:column;gap:.3rem}
+.msg-row.user .bubble-wrap{align-items:flex-end}
+.bubble{padding:.75rem 1rem;border-radius:14px;font-size:.88rem;line-height:1.65;font-weight:400;position:relative}
+.bubble-bot{background:var(--bubble-bot);color:var(--ink);border:1px solid var(--border);border-bottom-left-radius:4px;box-shadow:0 1px 4px rgba(26,23,20,.05)}
+.bubble-user{background:var(--bubble-user);color:#fff;border-bottom-right-radius:4px}
+.bubble-time{font-size:.65rem;color:var(--muted);font-family:var(--mono);padding:0 .3rem}
+.msg-row.user .bubble-time{text-align:right}
+
+/* tour card in bubble */
+.tour-cards-row{display:flex;gap:.65rem;overflow-x:auto;padding:.3rem 0;margin-top:.4rem}
+.tour-cards-row::-webkit-scrollbar{display:none}
+.mini-tour{flex-shrink:0;width:160px;border:1px solid var(--border);border-radius:10px;overflow:hidden;background:var(--card);cursor:pointer;transition:transform .2s,box-shadow .2s}
+.mini-tour:hover{transform:translateY(-3px);box-shadow:0 6px 18px rgba(26,23,20,.1)}
+.mini-tour-img{width:100%;height:88px;object-fit:cover;display:block;filter:brightness(.88)}
+.mini-tour-body{padding:.6rem .75rem}
+.mini-tour-dest{font-family:var(--mono);font-size:.55rem;letter-spacing:.12em;text-transform:uppercase;color:var(--teal);margin-bottom:.2rem}
+.mini-tour-name{font-size:.78rem;font-weight:600;color:var(--ink);line-height:1.3;margin-bottom:.35rem}
+.mini-tour-price{font-family:var(--serif);font-size:.95rem;font-weight:700;color:var(--red)}
+.mini-tour-cta{display:block;width:100%;margin-top:.5rem;background:var(--ink);color:#fff;border:none;padding:.4rem;font-family:var(--mono);font-size:.58rem;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;border-radius:5px;transition:background .2s}
+.mini-tour-cta:hover{background:var(--red)}
+
+/* quick reply chips inside chat */
+.qr-row{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.5rem}
+.qr-chip{font-size:.75rem;padding:.35rem .8rem;border:1px solid var(--border);border-radius:20px;background:none;color:var(--teal);cursor:pointer;font-family:var(--font);font-weight:500;transition:all .2s}
+.qr-chip:hover{background:var(--teal);color:#fff;border-color:var(--teal)}
+
+/* typing indicator */
+.typing-row{display:flex;gap:.65rem;align-items:flex-end}
+.typing-bubble{background:var(--bubble-bot);border:1px solid var(--border);border-radius:14px;border-bottom-left-radius:4px;padding:.65rem .9rem;display:flex;gap:.3rem;align-items:center}
+.typing-dot{width:7px;height:7px;border-radius:50%;background:var(--muted);animation:typingBounce 1.2s ease-in-out infinite}
+.typing-dot:nth-child(2){animation-delay:.2s}
+.typing-dot:nth-child(3){animation-delay:.4s}
+@keyframes typingBounce{0%,80%,100%{transform:translateY(0);opacity:.4}40%{transform:translateY(-5px);opacity:1}}
+
+/* markdown-like inside bubbles */
+.bubble strong{font-weight:700}
+.bubble em{font-style:italic;color:var(--gold)}
+.bubble ul{padding-left:1.1rem;margin:.3rem 0;display:flex;flex-direction:column;gap:.2rem}
+.bubble li{font-size:.87rem;line-height:1.6}
+.bubble a{color:var(--red);text-decoration:underline;cursor:pointer}
+.bubble code{font-family:var(--mono);font-size:.8rem;background:rgba(26,23,20,.07);padding:.1rem .35rem;border-radius:3px}
+.bubble hr{border:none;border-top:1px solid var(--border);margin:.6rem 0}
+.bubble .price-highlight{font-family:var(--serif);font-size:1.05rem;font-weight:700;color:var(--red)}
+.bubble .badge{display:inline-block;font-family:var(--mono);font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;padding:.2rem .5rem;border-radius:3px;background:rgba(26,112,96,.1);color:var(--teal);border:1px solid rgba(26,112,96,.2);margin:.1rem .1rem}
+
+/* ── INPUT AREA ── */
+.input-area{background:var(--card);border-top:1px solid var(--border);padding:.85rem 1.5rem;flex-shrink:0}
+.input-wrap{display:flex;gap:.65rem;align-items:flex-end;background:var(--bg);border:1.5px solid var(--border);border-radius:14px;padding:.5rem .5rem .5rem 1rem;transition:border-color .2s}
+.input-wrap:focus-within{border-color:var(--red)}
+.chat-input{flex:1;background:none;border:none;outline:none;font-family:var(--font);font-size:.9rem;color:var(--ink);resize:none;line-height:1.5;max-height:120px;padding:.2rem 0}
+.chat-input::placeholder{color:var(--muted)}
+.send-btn{width:38px;height:38px;border-radius:10px;background:var(--red);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0}
+.send-btn:hover{background:#a82d22;transform:scale(1.05)}
+.send-btn:disabled{background:var(--border);cursor:not-allowed;transform:none}
+.send-btn svg{width:18px;height:18px;fill:#fff}
+.input-hint{font-size:.68rem;color:var(--muted);text-align:center;margin-top:.5rem;font-family:var(--mono);letter-spacing:.04em}
+
+/* ── ANIMATIONS ── */
+.msg-row{animation:msgIn .25s cubic-bezier(.23,1,.32,1)}
+@keyframes msgIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* ── API KEY MODAL ── */
+.modal-bg{position:fixed;inset:0;background:rgba(26,23,20,.6);z-index:200;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:2rem;width:100%;max-width:420px;box-shadow:0 24px 64px rgba(26,23,20,.15)}
+.modal-logo{font-family:var(--serif);font-size:1.4rem;font-weight:700;margin-bottom:.3rem}
+.modal-logo span{color:var(--red)}
+.modal-sub{font-size:.85rem;color:var(--muted);font-weight:300;line-height:1.7;margin-bottom:1.5rem}
+.modal-label{font-family:var(--mono);font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:.4rem}
+.modal-input{width:100%;border:1.5px solid var(--border);border-radius:8px;padding:.75rem 1rem;font-family:var(--mono);font-size:.82rem;color:var(--ink);outline:none;transition:border-color .2s;background:var(--bg)}
+.modal-input:focus{border-color:var(--red)}
+.modal-btn{width:100%;background:var(--red);color:#fff;border:none;padding:.9rem;font-family:var(--font);font-weight:700;font-size:.95rem;border-radius:8px;cursor:pointer;margin-top:1rem;transition:background .2s}
+.modal-btn:hover{background:#a82d22}
+.modal-note{font-size:.72rem;color:var(--muted);text-align:center;margin-top:.85rem;line-height:1.6;font-weight:300}
+.modal-note a{color:var(--red);text-decoration:none}
+
+/* ── SIDEBAR (tour context panel) ── */
+.layout{display:flex;height:100vh;overflow:hidden}
+.chat-col{flex:1;display:flex;flex-direction:column;min-width:0}
+.side-panel{width:260px;background:var(--card);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;flex-shrink:0}
+.side-title{font-family:var(--mono);font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);padding:.9rem 1rem .5rem}
+.side-tours{flex:1;overflow-y:auto;padding:.5rem}
+.side-tour{border:1px solid var(--border);border-radius:8px;margin-bottom:.5rem;overflow:hidden;cursor:pointer;transition:border-color .2s}
+.side-tour:hover{border-color:var(--red)}
+.side-tour-img{width:100%;height:70px;object-fit:cover;display:block;filter:brightness(.82)}
+.side-tour-body{padding:.55rem .7rem}
+.side-tour-name{font-size:.78rem;font-weight:600;color:var(--ink);margin-bottom:.15rem;line-height:1.3}
+.side-tour-price{font-family:var(--serif);font-size:.88rem;font-weight:700;color:var(--red)}
+.side-cta{margin:.75rem;padding:.65rem;background:var(--red);color:#fff;border:none;border-radius:8px;font-family:var(--font);font-weight:700;font-size:.82rem;cursor:pointer;width:calc(100% - 1.5rem);transition:background .2s;letter-spacing:.02em}
+.side-cta:hover{background:#a82d22}
+.side-stats{border-top:1px solid var(--border);padding:.75rem 1rem;display:flex;flex-direction:column;gap:.5rem}
+.side-stat{display:flex;justify-content:space-between;font-size:.75rem}
+.side-stat-label{color:var(--muted);font-weight:300}
+.side-stat-val{font-weight:600;color:var(--ink)}
+
+@media(max-width:700px){
+  .side-panel{display:none}
+  .topics-bar{padding:.55rem 1rem}
+}
+</style>
+</head>
+<body>
+
+<!-- API KEY MODAL -->
+<div class="modal-bg" id="modalBg">
+  <div class="modal">
+    <div class="modal-logo">Baggio<span>.</span>Travel AI</div>
+    <div class="modal-sub">Chatbot tư vấn tour được vận hành bởi Claude AI. Nhập Anthropic API key của bạn để bắt đầu — key chỉ lưu trong session này, không gửi đi đâu.</div>
+    <label class="modal-label" for="apiKeyInput">Anthropic API Key</label>
+    <input class="modal-input" id="apiKeyInput" type="password" placeholder="sk-ant-api03-...">
+    <button class="modal-btn" onclick="startChat()">Bắt đầu tư vấn →</button>
+    <div class="modal-note">
+      Chưa có API key? <a href="https://console.anthropic.com" target="_blank">Tạo tại console.anthropic.com</a><br>
+      Key được dùng trực tiếp từ trình duyệt của bạn — không qua server trung gian.
+    </div>
+  </div>
+</div>
+
+<!-- MAIN LAYOUT -->
+<div class="layout">
+
+  <!-- CHAT COL -->
+  <div class="chat-col">
+
+    <!-- HEADER -->
+    <div class="header">
+      <div class="header-avatar">
+        🧭
+        <div class="online-dot"></div>
+      </div>
+      <div class="header-info">
+        <div class="header-name">Lan — Tư vấn viên AI</div>
+        <div class="header-status">Trực tuyến · phản hồi tức thì</div>
+      </div>
+      <div class="header-actions">
+        <button class="hdr-btn" onclick="clearChat()">Xoá chat</button>
+        <button class="hdr-btn primary" onclick="window.open('#','_blank')">Đặt tour ngay</button>
+      </div>
+    </div>
+
+    <!-- TOPICS -->
+    <div class="topics-bar">
+      <button class="topic-chip" onclick="sendQuick('Gợi ý tour cho gia đình 4 người cuối tuần này?')">🏠 Tour gia đình</button>
+      <button class="topic-chip" onclick="sendQuick('Tour lãng mạn cho cặp đôi dịp kỷ niệm?')">💑 Cặp đôi</button>
+      <button class="topic-chip" onclick="sendQuick('Tour phượt nhóm bạn ngân sách thấp?')">🎒 Nhóm bạn</button>
+      <button class="topic-chip" onclick="sendQuick('Điểm đến đẹp nhất miền Bắc tháng 6?')">🗺️ Miền Bắc</button>
+      <button class="topic-chip" onclick="sendQuick('Tour biển hè Phú Quốc có gì hot?')">🏖️ Biển hè</button>
+      <button class="topic-chip" onclick="sendQuick('Chi phí đặt tour Hội An 3 ngày hết bao nhiêu?')">💰 Báo giá</button>
+      <button class="topic-chip" onclick="sendQuick('Chính sách huỷ tour và hoàn tiền như thế nào?')">📋 Chính sách</button>
+      <button class="topic-chip" onclick="sendQuick('Hướng dẫn viên có nói tiếng Anh không?')">🌐 HDV ngoại ngữ</button>
+    </div>
+
+    <!-- MESSAGES -->
+    <div class="messages" id="messages"></div>
+
+    <!-- INPUT -->
+    <div class="input-area">
+      <div class="input-wrap">
+        <textarea class="chat-input" id="chatInput" placeholder="Hỏi về tour, giá, lịch trình..." rows="1"
+          onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+        <button class="send-btn" id="sendBtn" onclick="sendMessage()" disabled>
+          <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+        </button>
+      </div>
+      <div class="input-hint">Powered by Claude · Mọi thông tin tư vấn chỉ mang tính tham khảo</div>
+    </div>
+
+  </div>
+
+  <!-- SIDE PANEL -->
+  <div class="side-panel">
+    <div class="side-title">Tour đề xuất</div>
+    <div class="side-tours" id="sideTours"></div>
+    <div class="side-stats">
+      <div class="side-stat"><span class="side-stat-label">Điểm đến</span><span class="side-stat-val">63 tỉnh thành</span></div>
+      <div class="side-stat"><span class="side-stat-label">Gói tour</span><span class="side-stat-val">240+ gói</span></div>
+      <div class="side-stat"><span class="side-stat-label">Đánh giá TB</span><span class="side-stat-val" style="color:#b07d2e">★ 4.9 / 5</span></div>
+      <div class="side-stat"><span class="side-stat-label">Hỗ trợ 24/7</span><span class="side-stat-val" style="color:#1a7060">🟢 Online</span></div>
+    </div>
+    <button class="side-cta" onclick="sendQuick('Tôi muốn đặt tour ngay, bạn có thể hỗ trợ tôi không?')">🎒 Bắt đầu đặt tour</button>
+  </div>
+
+</div>
+
+<script>
+// ── CONFIG ────────────────────────────────────────────
+let API_KEY = '';
+let messages = []; // conversation history for Claude
+
+const SYSTEM_PROMPT = `Bạn là Lan — chuyên viên tư vấn du lịch AI của Baggio Travel, một nền tảng đặt tour trọn gói tại Việt Nam.
+
+NHIỆM VỤ:
+- Tư vấn và gợi ý tour du lịch phù hợp với nhu cầu khách hàng
+- Trả lời câu hỏi về lịch trình, giá cả, dịch vụ, chính sách
+- Dẫn dắt khách hàng đến quyết định đặt tour
+- Hỗ trợ bằng tiếng Việt (hoặc tiếng Anh nếu khách hỏi bằng tiếng Anh)
+
+CÁC GÓI TOUR BAGGIO TRAVEL đang có:
+1. **Hội An 3N2Đ** — từ 2.800.000đ/người | Vé bay + KS 3★ + HDV + 2 bữa sáng
+2. **Hạ Long 5N4Đ** — từ 5.900.000đ/người | Du thuyền 4★ + HDV song ngữ + Kayak
+3. **Phú Quốc Premium 7N6Đ** — từ 15.500.000đ/người | Vé bay hạng TM + Resort 5★ + All-inclusive
+4. **Sa Pa Trekking 2N1Đ** — từ 2.200.000đ/người | Tàu + KS 3★ + HDV trekking
+5. **Đà Lạt 3N2Đ** — từ 1.900.000đ/người | Vé bay + KS 3★ + HDV + 2 bữa sáng
+6. **Nha Trang 4N3Đ** — từ 3.800.000đ/người | Vé bay + KS 4★ + Tàu đảo + Lặn biển
+7. **Huế Cố Đô 2N1Đ** — từ 1.800.000đ/người | Vé bay + KS 3★ + HDV lịch sử
+8. **Xuyên Việt 14N13Đ** — từ 18.000.000đ/người | Trọn gói Bắc-Trung-Nam
+
+CHÍNH SÁCH:
+- Đặt cọc 30% để giữ chỗ, thanh toán 100% trước 7 ngày
+- Hoàn 100% nếu huỷ trước 7 ngày, hoàn 50% trước 3 ngày
+- Thanh toán: MoMo, VNPay, Visa/Master, chuyển khoản
+- HDV hỗ trợ: Việt, Anh, Trung, Hàn, Nhật, Pháp
+
+PHONG CÁCH TRẢ LỜI:
+- Thân thiện, nhiệt tình nhưng chuyên nghiệp
+- Dùng emoji phù hợp để tạo cảm giác gần gũi
+- Khi gợi ý tour: đề xuất 2-3 options phù hợp nhất với nhu cầu
+- Luôn hỏi thêm để hiểu nhu cầu: ngân sách, số người, ngày đi, sở thích
+- Khi khách sẵn sàng đặt: hướng dẫn bước tiếp theo (điền form, gọi hotline)
+- Ngắn gọn, súc tích — tránh câu trả lời dài hơn 200 từ
+- Dùng định dạng markdown đơn giản (bold, bullet) cho dễ đọc`;
+
+const TOURS_DATA = [
+  {dest:'Quảng Nam',name:'Hội An 3N2Đ',price:'2.800.000đ',img:'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=300&q=70'},
+  {dest:'Quảng Ninh',name:'Hạ Long 5N4Đ',price:'5.900.000đ',img:'https://images.unsplash.com/photo-1557400128-9a431afe5ff5?w=300&q=70'},
+  {dest:'Kiên Giang',name:'Phú Quốc Premium',price:'15.500.000đ',img:'https://images.unsplash.com/photo-1596422846543-75c6fc197f07?w=300&q=70'},
+  {dest:'Lào Cai',name:'Sa Pa Trekking',price:'2.200.000đ',img:'https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?w=300&q=70'},
+  {dest:'Lâm Đồng',name:'Đà Lạt 3N2Đ',price:'1.900.000đ',img:'https://images.unsplash.com/photo-1555400038-63f5ba517a47?w=300&q=70'},
+];
+
+// ── INIT ─────────────────────────────────────────────
+function startChat() {
+  const key = document.getElementById('apiKeyInput').value.trim();
+  if (!key.startsWith('sk-ant')) {
+    alert('Vui lòng nhập API key hợp lệ (bắt đầu bằng sk-ant-)');
+    return;
+  }
+  API_KEY = key;
+  document.getElementById('modalBg').style.display = 'none';
+  document.getElementById('sendBtn').disabled = false;
+  document.getElementById('chatInput').focus();
+  renderSideTours();
+  addWelcome();
+}
+
+function renderSideTours() {
+  document.getElementById('sideTours').innerHTML = TOURS_DATA.map(t => `
+    <div class="side-tour" onclick="sendQuick('Cho tôi biết thêm về tour ${t.name}')">
+      <img class="side-tour-img" src="${t.img}" alt="${t.name}" loading="lazy">
+      <div class="side-tour-body">
+        <div class="side-tour-name">${t.name}</div>
+        <div class="side-tour-price">Từ ${t.price}</div>
+      </div>
+    </div>`).join('');
+}
+
+function addWelcome() {
+  const welcomeHtml = `
+    Xin chào! Tôi là <strong>Lan</strong> — tư vấn viên AI của <strong>Baggio Travel</strong> 🧭<br><br>
+    Tôi có thể giúp bạn:
+    <ul>
+      <li>🗺️ Gợi ý tour phù hợp với nhu cầu & ngân sách</li>
+      <li>💰 Báo giá chi tiết và so sánh các gói</li>
+      <li>📅 Kiểm tra lịch khởi hành còn chỗ</li>
+      <li>🎒 Hướng dẫn đặt tour & thanh toán</li>
+    </ul>
+    <br>Bạn đang muốn đi đâu? Hoặc kể cho tôi nghe về chuyến đi mơ ước của bạn 😊
+  `;
+  appendBotMessage(welcomeHtml, [
+    'Gợi ý tour cho tôi với ngân sách 5 triệu',
+    'Tour nào đẹp nhất tháng 6?',
+    'Tôi muốn đi biển 3-4 ngày',
+  ]);
+}
+
+// ── MESSAGING ────────────────────────────────────────
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+}
+
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+
+async function sendMessage() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text || !API_KEY) return;
+
+  input.value = '';
+  input.style.height = 'auto';
+  appendUserMessage(text);
+  messages.push({ role: 'user', content: text });
+
+  showTyping();
+  document.getElementById('sendBtn').disabled = true;
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: SYSTEM_PROMPT,
+        messages: messages,
+      })
+    });
+
+    const data = await response.json();
+    hideTyping();
+
+    if (data.error) {
+      appendBotMessage(`❌ Lỗi API: ${data.error.message}`);
+      messages.pop();
+    } else {
+      const reply = data.content.find(b => b.type === 'text')?.text || '';
+      messages.push({ role: 'assistant', content: reply });
+      const formatted = formatMarkdown(reply);
+
+      // detect if reply mentions specific tours → show tour cards
+      const tourMentions = detectTours(reply);
+      appendBotMessage(formatted, suggestQuickReplies(reply), tourMentions);
+    }
+  } catch (err) {
+    hideTyping();
+    appendBotMessage('⚠️ Không kết nối được. Kiểm tra lại API key và kết nối mạng.');
+    messages.pop();
+  }
+
+  document.getElementById('sendBtn').disabled = false;
+  document.getElementById('chatInput').focus();
+}
+
+function sendQuick(text) {
+  document.getElementById('chatInput').value = text;
+  sendMessage();
+}
+
+// ── RENDER ───────────────────────────────────────────
+function appendUserMessage(text) {
+  const div = document.createElement('div');
+  div.className = 'msg-row user';
+  div.innerHTML = `
+    <div class="bubble-wrap">
+      <div class="bubble bubble-user">${escHtml(text)}</div>
+      <div class="bubble-time">${now()}</div>
+    </div>
+    <div class="msg-avatar user-av">B</div>`;
+  document.getElementById('messages').appendChild(div);
+  scrollBottom();
+}
+
+function appendBotMessage(html, quickReplies = [], tours = []) {
+  const div = document.createElement('div');
+  div.className = 'msg-row';
+
+  let tourHtml = '';
+  if (tours.length > 0) {
+    tourHtml = '<div class="tour-cards-row">' + tours.map(t => `
+      <div class="mini-tour" onclick="sendQuick('Tôi muốn đặt tour ${t.name}')">
+        <img class="mini-tour-img" src="${t.img}" alt="${t.name}" loading="lazy">
+        <div class="mini-tour-body">
+          <div class="mini-tour-dest">${t.dest}</div>
+          <div class="mini-tour-name">${t.name}</div>
+          <div class="mini-tour-price">Từ ${t.price}</div>
+          <button class="mini-tour-cta">Chọn tour này</button>
+        </div>
+      </div>`).join('') + '</div>';
+  }
+
+  let qrHtml = '';
+  if (quickReplies.length > 0) {
+    qrHtml = '<div class="qr-row">' + quickReplies.map(q =>
+      `<button class="qr-chip" onclick="sendQuick('${escAttr(q)}')">${escHtml(q)}</button>`
+    ).join('') + '</div>';
+  }
+
+  div.innerHTML = `
+    <div class="msg-avatar bot-av">🧭</div>
+    <div class="bubble-wrap">
+      <div class="bubble bubble-bot">${html}${tourHtml}${qrHtml}</div>
+      <div class="bubble-time">${now()}</div>
+    </div>`;
+  document.getElementById('messages').appendChild(div);
+  scrollBottom();
+}
+
+let typingEl = null;
+function showTyping() {
+  typingEl = document.createElement('div');
+  typingEl.className = 'msg-row typing-row';
+  typingEl.innerHTML = `
+    <div class="msg-avatar bot-av">🧭</div>
+    <div class="typing-bubble">
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+      <div class="typing-dot"></div>
+    </div>`;
+  document.getElementById('messages').appendChild(typingEl);
+  scrollBottom();
+}
+function hideTyping() {
+  if (typingEl) { typingEl.remove(); typingEl = null; }
+}
+
+// ── HELPERS ──────────────────────────────────────────
+function formatMarkdown(text) {
+  return text
+    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.*?)\*/g, '<em>$1</em>')
+    .replace(/`(.*?)`/g, '<code>$1</code>')
+    .replace(/^### (.+)$/gm, '<strong>$1</strong>')
+    .replace(/^## (.+)$/gm, '<strong style="font-size:1rem">$1</strong>')
+    .replace(/^- (.+)$/gm, '<li>$1</li>')
+    .replace(/(<li>.*<\/li>)/gs, m => `<ul>${m}</ul>`)
+    .replace(/\n\n/g, '<br><br>')
+    .replace(/\n/g, '<br>')
+    .replace(/(\d[\d.,]+đ)/g, '<span class="price-highlight">$1</span>');
+}
+
+function detectTours(text) {
+  return TOURS_DATA.filter(t =>
+    text.toLowerCase().includes(t.name.toLowerCase().split(' ')[0]) ||
+    text.toLowerCase().includes(t.dest.toLowerCase())
+  ).slice(0, 3);
+}
+
+function suggestQuickReplies(text) {
+  const low = text.toLowerCase();
+  if (low.includes('đặt') || low.includes('booking')) return ['Đặt cọc ngay', 'Xem chi tiết lịch trình', 'Hỏi thêm về HDV'];
+  if (low.includes('giá') || low.includes('phí')) return ['So sánh các gói', 'Gói nào phù hợp nhất?', 'Thanh toán bằng MoMo được không?'];
+  if (low.includes('hủy') || low.includes('hoàn')) return ['Điều kiện hoàn tiền?', 'Đổi ngày được không?', 'Liên hệ hotline'];
+  if (low.includes('hội an') || low.includes('đà nẵng')) return ['Xem tour Hội An', 'Có tour combo không?', 'HDV tiếng Anh không?'];
+  if (low.includes('hạ long') || low.includes('du thuyền')) return ['Xem tour Hạ Long', 'Du thuyền hạng mấy?', 'Thêm Ninh Bình được không?'];
+  return [];
+}
+
+function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function escAttr(s) { return s.replace(/'/g,"\\'"); }
+function now() { return new Date().toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'}); }
+function scrollBottom() { const m = document.getElementById('messages'); m.scrollTop = m.scrollHeight; }
+
+function clearChat() {
+  messages = [];
+  document.getElementById('messages').innerHTML = '';
+  addWelcome();
+}
+</script>
+</body>
+</html>

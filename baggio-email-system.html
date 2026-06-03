@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Baggio Travel — Email System</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0b0e14;--s1:#111520;--s2:#171c2a;--s3:#1c2235;--border:#1f2940;--border2:#283452;
+  --text:#d8e4f8;--text2:#5878a8;--text3:#28365a;
+  --green:#22c97a;--gdim:rgba(34,201,122,.1);--gbrd:rgba(34,201,122,.25);
+  --blue:#4d9eff;--bdim:rgba(77,158,255,.1);--bbrd:rgba(77,158,255,.25);
+  --amber:#f0a830;--adim:rgba(240,168,48,.1);--abrd:rgba(240,168,48,.25);
+  --red:#f05252;--rdim:rgba(240,82,82,.1);--rbrd:rgba(240,82,82,.25);
+  --purple:#a78bfa;--pdim:rgba(167,139,250,.1);--pbrd:rgba(167,139,250,.25);
+  --font:'Be Vietnam Pro',sans-serif;--mono:'Space Mono',monospace;
+}
+html,body{height:100%}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:13px;line-height:1.6;display:grid;grid-template-columns:200px 1fr;overflow:hidden}
+.sb{background:var(--s1);border-right:1px solid var(--border);height:100vh;display:flex;flex-direction:column;overflow:hidden}
+.sb-top{padding:1rem;border-bottom:1px solid var(--border)}
+.sb-logo{font-family:var(--mono);font-size:.82rem;font-weight:700;color:var(--text)}
+.sb-logo span{color:var(--green)}
+.sb-sub{font-size:.58rem;color:var(--text3);font-family:var(--mono);letter-spacing:.1em;margin-top:.2rem;text-transform:uppercase}
+.sb-nav{flex:1;padding:.5rem 0;overflow-y:auto}
+.sb-g{font-family:var(--mono);font-size:.55rem;letter-spacing:.18em;text-transform:uppercase;color:var(--text3);padding:.6rem 1rem .2rem}
+.sb-a{display:flex;align-items:center;gap:.6rem;padding:.45rem 1rem;font-size:.78rem;color:var(--text2);cursor:pointer;border-left:2px solid transparent;transition:all .15s}
+.sb-a:hover{color:var(--text);background:rgba(255,255,255,.03)}
+.sb-a.on{color:var(--green);border-left-color:var(--green);background:var(--gdim)}
+.main{display:flex;flex-direction:column;height:100vh;overflow:hidden}
+.topbar{background:var(--s1);border-bottom:1px solid var(--border);padding:.75rem 1.5rem;display:flex;align-items:center;gap:.75rem;flex-shrink:0}
+.tb-title{font-size:.9rem;font-weight:600;color:var(--text)}
+.tb-sub{font-size:.7rem;color:var(--text3);font-family:var(--mono)}
+.tb-right{margin-left:auto;display:flex;gap:.4rem}
+.tb-pill{font-family:var(--mono);font-size:.58rem;letter-spacing:.08em;text-transform:uppercase;padding:.25rem .65rem;border-radius:20px;border:1px solid var(--border);background:none;color:var(--text3);cursor:pointer;transition:all .15s}
+.tb-pill:hover{border-color:var(--border2);color:var(--text2)}
+.tb-pill.on{background:var(--gdim);border-color:var(--gbrd);color:var(--green)}
+.panels{flex:1;overflow:hidden;position:relative}
+.pnl{position:absolute;inset:0;overflow-y:auto;padding:1.5rem;display:none}
+.pnl.on{display:block}
+/* tabs in topbar */
+.tabs{display:flex;gap:0}
+.tab{font-family:var(--mono);font-size:.65rem;letter-spacing:.06em;padding:.5rem .85rem;cursor:pointer;color:var(--text3);border-bottom:2px solid transparent;transition:all .15s;background:none;border-top:none;border-left:none;border-right:none}
+.tab:hover{color:var(--text2)}
+.tab.on{color:var(--green);border-bottom-color:var(--green)}
+/* code */
+.cw{border-radius:7px;border:1px solid var(--border);overflow:hidden;margin:.75rem 0}
+.ct{background:var(--s2);border-bottom:1px solid var(--border);padding:.5rem 1rem;display:flex;align-items:center;justify-content:space-between}
+.cf{font-family:var(--mono);font-size:.65rem;color:var(--text2)}
+.cpb{font-family:var(--mono);font-size:.58rem;color:var(--text3);background:none;border:1px solid var(--border);padding:.2rem .5rem;cursor:pointer;border-radius:3px;transition:all .15s;text-transform:uppercase;letter-spacing:.05em}
+.cpb:hover{border-color:var(--border2);color:var(--text2)}
+.cpb.ok{color:var(--green);border-color:var(--green)}
+pre{background:var(--s1);padding:1rem;overflow-x:auto;font-family:var(--mono);font-size:.74rem;line-height:1.8;color:var(--text2);margin:0}
+pre::-webkit-scrollbar{height:3px}pre::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.kw{color:#c084fc}.str{color:#34d399}.cmt{color:var(--text3);font-style:italic}.fn{color:#60a5fa}.type{color:#fb923c}.num{color:#fbbf24}.tag{color:#e8a878}.attr{color:#c8d8a8}.val{color:#98d49a}
+/* email preview */
+.ep{background:#fff;border-radius:8px;overflow:hidden;margin:.75rem 0;font-family:Arial,sans-serif;border:1px solid var(--border)}
+.ep-meta{background:var(--s2);padding:.65rem 1rem;font-family:var(--mono);font-size:.6rem;color:var(--text3);border-bottom:1px solid var(--border);display:flex;gap:1.5rem}
+.ep-body{padding:0}
+/* cards */
+.card{background:var(--s2);border:1px solid var(--border);border-radius:7px;overflow:hidden;margin-bottom:.9rem}
+.ch{background:var(--s3);border-bottom:1px solid var(--border);padding:.65rem 1rem;font-family:var(--mono);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text2);display:flex;align-items:center;justify-content:space-between}
+.cb{padding:1rem}
+/* alert */
+.al{border-radius:7px;padding:.85rem 1rem;margin:.75rem 0;display:flex;gap:.7rem;font-size:.82rem;line-height:1.65}
+.al.green{background:var(--gdim);border:1px solid var(--gbrd)}
+.al.green .at{color:var(--green)}
+.al.blue{background:var(--bdim);border:1px solid var(--bbrd)}
+.al.blue .at{color:var(--blue)}
+.al.amber{background:var(--adim);border:1px solid var(--abrd)}
+.al.amber .at{color:var(--amber)}
+.at{font-weight:600;margin-bottom:.15rem}
+/* flow */
+.flow{display:flex;align-items:center;gap:0;overflow-x:auto;margin:.75rem 0}
+.fstep{display:flex;flex-direction:column;align-items:center;gap:.4rem;min-width:90px}
+.ficon{width:42px;height:42px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0}
+.flabel{font-size:.68rem;font-weight:500;color:var(--text2);text-align:center;line-height:1.3;font-family:var(--mono)}
+.farrow{color:var(--text3);font-size:1rem;margin:0 .2rem;padding-bottom:.8rem;flex-shrink:0}
+/* checklist */
+.chklist{display:flex;flex-direction:column;gap:.35rem}
+.chi{display:flex;align-items:flex-start;gap:.7rem;padding:.4rem 0;border-bottom:1px solid rgba(255,255,255,.04);cursor:pointer;font-size:.82rem}
+.chi:last-child{border-bottom:none}
+.chb{width:17px;height:17px;border-radius:3px;border:1.5px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.62rem;margin-top:.1rem;transition:all .2s}
+.chb.done{background:var(--green);border-color:var(--green);color:#0b0e14}
+.cht{flex:1;color:var(--text2);line-height:1.5}
+.prog{margin-top:.75rem;font-family:var(--mono);font-size:.62rem;color:var(--text3);padding:.45rem .75rem;background:var(--s2);border-radius:5px;display:flex;justify-content:space-between}
+/* grid */
+.eg{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+.ec{background:var(--s3);border:1px solid var(--border);border-radius:6px;padding:.85rem}
+.en{font-family:var(--mono);font-size:.7rem;font-weight:600;color:var(--blue);margin-bottom:.3rem}
+.et{font-size:.75rem;color:var(--text2);margin-bottom:.4rem;font-weight:300}
+.ep2{font-size:.7rem;color:var(--text3);font-family:var(--mono);line-height:1.6}
+@media(max-width:768px){body{grid-template-columns:1fr}.sb{display:none}.eg{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<aside class="sb">
+  <div class="sb-top">
+    <div class="sb-logo">Baggio<span>.</span>Mail</div>
+    <div class="sb-sub">Resend API · Transactional</div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-g">Templates</div>
+    <div class="sb-a on" onclick="sw('booking-confirm',this)">✅ Xác nhận đặt tour</div>
+    <div class="sb-a" onclick="sw('payment-success',this)">💳 Thanh toán thành công</div>
+    <div class="sb-a" onclick="sw('reminder',this)">⏰ Nhắc lịch 48h trước</div>
+    <div class="sb-a" onclick="sw('review',this)">⭐ Yêu cầu review</div>
+    <div class="sb-a" onclick="sw('cancel',this)">❌ Huỷ tour & Hoàn tiền</div>
+    <div class="sb-g">Kỹ thuật</div>
+    <div class="sb-a" onclick="sw('setup',this)">⚙️ Setup & Config</div>
+    <div class="sb-a" onclick="sw('triggers',this)">🔔 Email triggers</div>
+    <div class="sb-a" onclick="sw('checklist',this)">☑️ Checklist</div>
+  </nav>
+</aside>
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div class="tb-title">Hệ thống Email tự động</div>
+      <div class="tb-sub">Resend API · 5 templates · Node.js · React Email</div>
+    </div>
+    <div class="tb-right">
+      <span class="tb-pill on">Resend v3</span>
+      <span class="tb-pill">React Email</span>
+    </div>
+  </div>
+  <div class="panels">
+
+    <!-- BOOKING CONFIRM -->
+    <div class="pnl on" id="pnl-booking-confirm">
+      <div class="al blue"><div>ℹ️</div><div><div class="at">Trigger: ngay sau khi booking được tạo</div>Gửi tức thì khi khách hoàn thành form đặt tour — trước khi thanh toán. Mục tiêu: reassure và hướng dẫn bước tiếp theo.</div></div>
+
+      <div class="ep">
+        <div class="ep-meta">
+          <span>From: Baggio Travel &lt;booking@baggiotravel.com&gt;</span>
+          <span>Subject: ✅ Baggio Travel nhận được yêu cầu của bạn — #BT-0891</span>
+        </div>
+        <div class="ep-body">
+          <table width="100%" style="background:#f8f6f2;padding:0;margin:0"><tr><td>
+          <table width="600" align="center" style="background:#fff;border-radius:0;max-width:600px;margin:0 auto">
+            <tr><td style="background:#1a1814;padding:24px 32px;text-align:center">
+              <div style="font-family:Georgia,serif;font-size:22px;font-weight:700;color:#fff;letter-spacing:-.01em">Baggio<span style="color:#c5372a">.</span>Travel</div>
+            </td></tr>
+            <tr><td style="background:#c5372a;height:4px"></td></tr>
+            <tr><td style="padding:32px">
+              <div style="font-family:Georgia,serif;font-size:22px;font-weight:700;color:#1a1814;margin-bottom:8px">Chúng tôi đã nhận được yêu cầu của bạn!</div>
+              <p style="font-size:14px;color:#5a5650;line-height:1.7;margin:0 0 24px">Xin chào <strong>Nguyễn Thanh Hà</strong>, cảm ơn bạn đã tin tưởng Baggio Travel. Tư vấn viên sẽ liên hệ trong <strong>2 tiếng</strong> để xác nhận lịch trình.</p>
+              <table width="100%" style="background:#f8f6f2;border-radius:8px;padding:20px;margin-bottom:24px"><tr><td>
+                <div style="font-size:11px;color:#9a9490;letter-spacing:.12em;text-transform:uppercase;margin-bottom:12px;font-family:monospace">Chi tiết đặt tour</div>
+                <table width="100%">
+                  <tr><td style="font-size:13px;color:#5a5650;padding:4px 0">Tour</td><td style="font-size:13px;color:#1a1814;font-weight:600;text-align:right">Hạ Long – Du Thuyền 5N4Đ</td></tr>
+                  <tr><td style="font-size:13px;color:#5a5650;padding:4px 0">Ngày đi</td><td style="font-size:13px;color:#1a1814;font-weight:600;text-align:right">08/06/2025</td></tr>
+                  <tr><td style="font-size:13px;color:#5a5650;padding:4px 0">Số khách</td><td style="font-size:13px;color:#1a1814;font-weight:600;text-align:right">2 người lớn</td></tr>
+                  <tr><td style="font-size:13px;color:#5a5650;padding:4px 0">Đặt cọc 30%</td><td style="font-size:13px;color:#c5372a;font-weight:700;text-align:right">₫ 1.770.000</td></tr>
+                  <tr style="border-top:1px solid #e4e0d8"><td style="font-size:13px;color:#5a5650;padding:8px 0 4px;font-weight:600">Tổng cộng</td><td style="font-size:15px;color:#1a1814;font-weight:700;text-align:right;padding-top:8px">₫ 5.900.000</td></tr>
+                </table>
+              </td></tr></table>
+              <div style="font-size:11px;color:#9a9490;letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px;font-family:monospace">Mã đặt tour</div>
+              <div style="font-family:monospace;font-size:20px;font-weight:700;color:#1a1814;background:#f8f6f2;padding:12px 20px;border-radius:6px;letter-spacing:.1em;margin-bottom:24px;display:inline-block">#BT-0891</div>
+              <table width="100%"><tr>
+                <td width="48%"><a href="#" style="display:block;background:#c5372a;color:#fff;text-align:center;padding:14px;font-size:14px;font-weight:700;text-decoration:none;border-radius:6px">💳 Thanh toán cọc ngay</a></td>
+                <td width="4%"></td>
+                <td width="48%"><a href="#" style="display:block;background:#1a1814;color:#fff;text-align:center;padding:14px;font-size:14px;font-weight:700;text-decoration:none;border-radius:6px">📋 Xem lịch trình</a></td>
+              </tr></table>
+            </td></tr>
+            <tr><td style="background:#f8f6f2;padding:20px 32px;text-align:center">
+              <p style="font-size:12px;color:#9a9490;margin:0">Hotline: <strong>1900 xxxx</strong> · Email: <a href="mailto:support@baggiotravel.com" style="color:#c5372a">support@baggiotravel.com</a></p>
+              <p style="font-size:11px;color:#c8c4bc;margin:8px 0 0">© 2025 Baggio Travel · <a href="#" style="color:#c8c4bc">Huỷ nhận email</a></p>
+            </td></tr>
+          </table>
+          </td></tr></table>
+        </div>
+      </div>
+
+      <div class="cw">
+        <div class="ct"><span class="cf">src/emails/booking-confirm.ts — React Email template</span><button class="cpb" onclick="cp(this)">Copy</button></div>
+        <pre><span class="kw">import</span> { Html, Head, Body, Container, Section, Row, Column,
+         Text, Button, Hr, Img, Font } <span class="kw">from</span> <span class="str">'@react-email/components'</span>;
+
+<span class="kw">interface</span> <span class="type">Props</span> {
+  booking: {
+    ref: <span class="type">string</span>; guestName: <span class="type">string</span>; tourName: <span class="type">string</span>;
+    departDate: <span class="type">string</span>; pax: <span class="type">number</span>;  totalPrice: <span class="type">number</span>; depositAmount: <span class="type">number</span>;
+    payUrl: <span class="type">string</span>; itineraryUrl: <span class="type">string</span>;
+  };
+}
+
+<span class="kw">export default function</span> <span class="fn">BookingConfirmEmail</span>({ booking }: <span class="type">Props</span>) {
+  <span class="kw">const</span> fmt = (n: <span class="type">number</span>) => n.<span class="fn">toLocaleString</span>(<span class="str">'vi-VN'</span>);
+  <span class="kw">return</span> (
+    &lt;Html lang=<span class="str">"vi"</span>&gt;
+      &lt;Head&gt;
+        &lt;Font fontFamily=<span class="str">"Be Vietnam Pro"</span>
+          fallbackFontFamily=<span class="str">"Arial"</span>
+          webFont={{ url: <span class="str">"https://fonts.gstatic.com/s/bevietnampro/..."</span>, format: <span class="str">"woff2"</span> }}
+          fontWeight={<span class="num">400</span>} fontStyle=<span class="str">"normal"</span> /&gt;
+      &lt;/Head&gt;
+      &lt;Body style={{ background: <span class="str">'#f8f6f2'</span>, margin: <span class="num">0</span>, padding: <span class="num">0</span> }}&gt;
+        &lt;Container style={{ maxWidth: <span class="str">'600px'</span>, margin: <span class="str">'0 auto'</span> }}&gt;
+
+          <span class="cmt">{/* Header */}</span>
+          &lt;Section style={{ background: <span class="str">'#1a1814'</span>, padding: <span class="str">'24px 32px'</span>, textAlign: <span class="str">'center'</span> }}&gt;
+            &lt;Text style={{ fontFamily: <span class="str">'Georgia,serif'</span>, fontSize: <span class="str">'22px'</span>, color: <span class="str">'#fff'</span>, margin: <span class="num">0</span> }}&gt;
+              Baggio&lt;span style={{ color: <span class="str">'#c5372a'</span> }}&gt;.&lt;/span&gt;Travel
+            &lt;/Text&gt;
+          &lt;/Section&gt;
+          &lt;Section style={{ background: <span class="str">'#c5372a'</span>, height: <span class="str">'4px'</span> }} /&gt;
+
+          <span class="cmt">{/* Body */}</span>
+          &lt;Section style={{ background: <span class="str">'#fff'</span>, padding: <span class="str">'32px'</span> }}&gt;
+            &lt;Text style={{ fontSize: <span class="str">'22px'</span>, fontWeight: <span class="str">'700'</span>, color: <span class="str">'#1a1814'</span> }}&gt;
+              Chúng tôi đã nhận được yêu cầu của bạn!
+            &lt;/Text&gt;
+            &lt;Text style={{ fontSize: <span class="str">'14px'</span>, color: <span class="str">'#5a5650'</span>, lineHeight: <span class="str">'1.7'</span> }}&gt;
+              Xin chào &lt;strong&gt;{booking.guestName}&lt;/strong&gt;, tư vấn viên sẽ liên hệ trong &lt;strong&gt;2 tiếng&lt;/strong&gt;.
+            &lt;/Text&gt;
+
+            <span class="cmt">{/* Order summary */}</span>
+            &lt;Section style={{ background: <span class="str">'#f8f6f2'</span>, borderRadius: <span class="str">'8px'</span>, padding: <span class="str">'20px'</span>, margin: <span class="str">'20px 0'</span> }}&gt;
+              &lt;Text style={{ fontSize: <span class="str">'11px'</span>, color: <span class="str">'#9a9490'</span>, letterSpacing: <span class="str">'.12em'</span>, textTransform: <span class="str">'uppercase'</span> }}&gt;Chi tiết đặt tour&lt;/Text&gt;
+              &lt;Row&gt;&lt;Column&gt;Tour&lt;/Column&gt;&lt;Column style={{ textAlign: <span class="str">'right'</span>, fontWeight: <span class="str">'600'</span> }}&gt;{booking.tourName}&lt;/Column&gt;&lt;/Row&gt;
+              &lt;Row&gt;&lt;Column&gt;Ngày đi&lt;/Column&gt;&lt;Column style={{ textAlign: <span class="str">'right'</span>, fontWeight: <span class="str">'600'</span> }}&gt;{booking.departDate}&lt;/Column&gt;&lt;/Row&gt;
+              &lt;Row&gt;&lt;Column&gt;Đặt cọc 30%&lt;/Column&gt;&lt;Column style={{ textAlign: <span class="str">'right'</span>, fontWeight: <span class="str">'700'</span>, color: <span class="str">'#c5372a'</span> }}&gt;₫ {fmt(booking.depositAmount)}&lt;/Column&gt;&lt;/Row&gt;
+            &lt;/Section&gt;
+
+            <span class="cmt">{/* Booking ref */}</span>
+            &lt;Text style={{ fontFamily: <span class="str">'monospace'</span>, fontSize: <span class="str">'20px'</span>, fontWeight: <span class="str">'700'</span>, letterSpacing: <span class="str">'.1em'</span>, background: <span class="str">'#f8f6f2'</span>, padding: <span class="str">'12px 20px'</span>, borderRadius: <span class="str">'6px'</span>, display: <span class="str">'inline-block'</span> }}&gt;
+              #{booking.ref}
+            &lt;/Text&gt;
+
+            <span class="cmt">{/* CTAs */}</span>
+            &lt;Row style={{ marginTop: <span class="str">'24px'</span> }}&gt;
+              &lt;Column width=<span class="str">"48%"</span>&gt;
+                &lt;Button href={booking.payUrl} style={{ background: <span class="str">'#c5372a'</span>, color: <span class="str">'#fff'</span>, padding: <span class="str">'14px 20px'</span>, borderRadius: <span class="str">'6px'</span>, fontWeight: <span class="str">'700'</span>, width: <span class="str">'100%'</span> }}&gt;
+                  💳 Thanh toán cọc ngay
+                &lt;/Button&gt;
+              &lt;/Column&gt;
+              &lt;Column width=<span class="str">"4%"</span> /&gt;
+              &lt;Column width=<span class="str">"48%"</span>&gt;
+                &lt;Button href={booking.itineraryUrl} style={{ background: <span class="str">'#1a1814'</span>, color: <span class="str">'#fff'</span>, padding: <span class="str">'14px 20px'</span>, borderRadius: <span class="str">'6px'</span>, fontWeight: <span class="str">'700'</span>, width: <span class="str">'100%'</span> }}&gt;
+                  📋 Xem lịch trình
+                &lt;/Button&gt;
+              &lt;/Column&gt;
+            &lt;/Row&gt;
+          &lt;/Section&gt;
+
+          <span class="cmt">{/* Footer */}</span>
+          &lt;Section style={{ background: <span class="str">'#f8f6f2'</span>, padding: <span class="str">'20px 32px'</span>, textAlign: <span class="str">'center'</span> }}&gt;
+            &lt;Text style={{ fontSize: <span class="str">'12px'</span>, color: <span class="str">'#9a9490'</span> }}&gt;Hotline: 1900 xxxx · support@baggiotravel.com&lt;/Text&gt;
+          &lt;/Section&gt;
+        &lt;/Container&gt;
+      &lt;/Body&gt;
+    &lt;/Html&gt;
+  );
+}</pre>
+      </div>
+    </div>
+
+    <!-- SETUP -->
+    <div class="pnl" id="pnl-setup">
+      <div class="al green"><div>✅</div><div><div class="at">Tại sao dùng Resend?</div>Resend là email API hiện đại nhất 2024-2025 — tích hợp trực tiếp với React Email, DX tốt hơn SendGrid/Mailgun, có dashboard đẹp, free 3.000 email/tháng, và đặc biệt hỗ trợ tên miền .vn.</div></div>
+
+      <div class="cw">
+        <div class="ct"><span class="cf">Terminal — Cài đặt</span></div>
+        <pre><span class="cmt"># Cài Resend SDK + React Email</span>
+$ npm install resend @react-email/components
+
+<span class="cmt"># Preview email local (localhost:3030)</span>
+$ npx react-email dev
+
+<span class="cmt"># Cài thêm nếu dùng TypeScript</span>
+$ npm install -D @types/react</pre>
+      </div>
+
+      <div class="cw">
+        <div class="ct"><span class="cf">src/lib/email.ts — Resend client singleton</span><button class="cpb" onclick="cp(this)">Copy</button></div>
+        <pre><span class="kw">import</span> { Resend } <span class="kw">from</span> <span class="str">'resend'</span>;
+<span class="kw">import</span> { render } <span class="kw">from</span> <span class="str">'@react-email/render'</span>;
+
+<span class="kw">export const</span> resend = <span class="kw">new</span> <span class="fn">Resend</span>(<span class="fn">process</span>.env.<span class="type">RESEND_API_KEY</span>);
+
+<span class="kw">const</span> FROM = {
+  booking:  <span class="str">'Baggio Travel &lt;booking@baggiotravel.com&gt;'</span>,
+  support:  <span class="str">'Baggio Travel &lt;support@baggiotravel.com&gt;'</span>,
+  noreply:  <span class="str">'Baggio Travel &lt;noreply@baggiotravel.com&gt;'</span>,
+};
+
+<span class="cmt">// ── Gửi email xác nhận đặt tour ──</span>
+<span class="kw">export async function</span> <span class="fn">sendBookingConfirm</span>(booking: <span class="type">BookingData</span>) {
+  <span class="kw">const</span> { data, error } = <span class="kw">await</span> resend.emails.<span class="fn">send</span>({
+    from:    FROM.booking,
+    to:      [booking.guestEmail],
+    subject: <span class="str">`✅ Baggio Travel nhận được yêu cầu — #${booking.ref}`</span>,
+    react:   <span class="fn">BookingConfirmEmail</span>({ booking }),
+    tags:    [{ name: <span class="str">'type'</span>, value: <span class="str">'booking-confirm'</span> }],
+  });
+  <span class="kw">if</span> (error) <span class="kw">throw</span> error;
+  <span class="kw">return</span> data;
+}
+
+<span class="cmt">// ── Gửi xác nhận thanh toán ──</span>
+<span class="kw">export async function</span> <span class="fn">sendPaymentSuccess</span>(booking: <span class="type">BookingData</span>, payment: <span class="type">PaymentData</span>) {
+  <span class="kw">return</span> resend.emails.<span class="fn">send</span>({
+    from:    FROM.booking,
+    to:      [booking.guestEmail],
+    subject: <span class="str">`💳 Đã nhận cọc ₫${fmt(payment.amount)} — Tour ${booking.tourName}`</span>,
+    react:   <span class="fn">PaymentSuccessEmail</span>({ booking, payment }),
+    tags:    [{ name: <span class="str">'type'</span>, value: <span class="str">'payment-success'</span> }],
+  });
+}
+
+<span class="cmt">// ── Nhắc lịch 48h trước khởi hành ──</span>
+<span class="kw">export async function</span> <span class="fn">sendTourReminder</span>(booking: <span class="type">BookingData</span>) {
+  <span class="kw">return</span> resend.emails.<span class="fn">send</span>({
+    from:    FROM.booking,
+    to:      [booking.guestEmail],
+    subject: <span class="str">`⏰ 48h nữa — Tour ${booking.tourName} của bạn khởi hành!`</span>,
+    react:   <span class="fn">TourReminderEmail</span>({ booking }),
+    tags:    [{ name: <span class="str">'type'</span>, value: <span class="str">'reminder-48h'</span> }],
+  });
+}
+
+<span class="cmt">// ── Yêu cầu review sau tour ──</span>
+<span class="kw">export async function</span> <span class="fn">sendReviewRequest</span>(booking: <span class="type">BookingData</span>) {
+  <span class="kw">return</span> resend.emails.<span class="fn">send</span>({
+    from:    FROM.support,
+    to:      [booking.guestEmail],
+    subject: <span class="str">`⭐ Chuyến đi ${booking.tourName} của bạn thế nào?`</span>,
+    react:   <span class="fn">ReviewRequestEmail</span>({ booking }),
+    tags:    [{ name: <span class="str">'type'</span>, value: <span class="str">'review-request'</span> }],
+  });
+}
+
+<span class="cmt">// ── Email huỷ tour & hoàn tiền ──</span>
+<span class="kw">export async function</span> <span class="fn">sendCancellationEmail</span>(booking: <span class="type">BookingData</span>, refund: <span class="type">RefundData</span>) {
+  <span class="kw">return</span> resend.emails.<span class="fn">send</span>({
+    from:    FROM.support,
+    to:      [booking.guestEmail],
+    subject: <span class="str">`Tour #${booking.ref} đã huỷ — Hoàn tiền đang xử lý`</span>,
+    react:   <span class="fn">CancellationEmail</span>({ booking, refund }),
+    tags:    [{ name: <span class="str">'type'</span>, value: <span class="str">'cancellation'</span> }],
+  });
+}
+
+<span class="kw">const</span> fmt = (n: <span class="type">number</span>) => n.<span class="fn">toLocaleString</span>(<span class="str">'vi-VN'</span>);</pre>
+      </div>
+    </div>
+
+    <!-- TRIGGERS -->
+    <div class="pnl" id="pnl-triggers">
+      <div class="al amber"><div>⚡</div><div><div class="at">Email được kích hoạt ở đâu?</div>Mỗi email được gửi từ đúng 1 điểm trong backend — không bao giờ gửi từ frontend để tránh lộ API key và tránh gửi trùng.</div></div>
+
+      <div class="flow">
+        <div class="fstep"><div class="ficon" style="background:var(--gdim);border:1px solid var(--gbrd)">📋</div><div class="flabel">Booking tạo</div></div>
+        <div class="farrow">→</div>
+        <div class="fstep"><div class="ficon" style="background:var(--bdim);border:1px solid var(--bbrd)">✉️</div><div class="flabel">Xác nhận<br>yêu cầu</div></div>
+        <div class="farrow">→</div>
+        <div class="fstep"><div class="ficon" style="background:var(--pdim);border:1px solid var(--pbrd)">💳</div><div class="flabel">MoMo<br>webhook</div></div>
+        <div class="farrow">→</div>
+        <div class="fstep"><div class="ficon" style="background:var(--bdim);border:1px solid var(--bbrd)">✉️</div><div class="flabel">Xác nhận<br>thanh toán</div></div>
+        <div class="farrow">→</div>
+        <div class="fstep"><div class="ficon" style="background:var(--adim);border:1px solid var(--abrd)">⏰</div><div class="flabel">Cron 48h<br>trước</div></div>
+        <div class="farrow">→</div>
+        <div class="fstep"><div class="ficon" style="background:var(--adim);border:1px solid var(--abrd)">✉️</div><div class="flabel">Nhắc lịch<br>khởi hành</div></div>
+        <div class="farrow">→</div>
+        <div class="fstep"><div class="ficon" style="background:var(--gdim);border:1px solid var(--gbrd)">⭐</div><div class="flabel">Cron sau<br>tour 1 ngày</div></div>
+        <div class="farrow">→</div>
+        <div class="fstep"><div class="ficon" style="background:var(--gdim);border:1px solid var(--gbrd)">✉️</div><div class="flabel">Yêu cầu<br>review</div></div>
+      </div>
+
+      <div class="cw">
+        <div class="ct"><span class="cf">src/api/booking.js — Trigger email ngay sau khi tạo booking</span><button class="cpb" onclick="cp(this)">Copy</button></div>
+        <pre><span class="cmt">// POST /api/booking/create</span>
+<span class="kw">export default async function</span> <span class="fn">handler</span>(req, res) {
+  <span class="kw">const</span> booking = <span class="kw">await</span> <span class="fn">createBooking</span>(req.body);
+
+  <span class="cmt">// Fire email ngay — không await để không delay response</span>
+  <span class="fn">sendBookingConfirm</span>(booking).<span class="fn">catch</span>(err =>
+    console.<span class="fn">error</span>(<span class="str">'Email failed:'</span>, err) <span class="cmt">// không throw — booking vẫn thành công</span>
+  );
+
+  res.<span class="fn">json</span>({ success: <span class="kw">true</span>, bookingRef: booking.ref });
+}</pre>
+      </div>
+
+      <div class="cw">
+        <div class="ct"><span class="cf">src/api/payment/webhook.js — Trigger sau khi MoMo/VNPay xác nhận</span><button class="cpb" onclick="cp(this)">Copy</button></div>
+        <pre><span class="cmt">// POST /api/payment/momo/webhook</span>
+<span class="kw">export default async function</span> <span class="fn">handler</span>(req, res) {
+  <span class="kw">const</span> { resultCode, orderId } = req.body;
+  <span class="kw">if</span> (resultCode !== <span class="num">0</span>) { res.<span class="fn">json</span>({ message: <span class="str">'OK'</span> }); <span class="kw">return</span>; }
+
+  <span class="kw">const</span> booking = <span class="kw">await</span> <span class="fn">getBookingByOrderId</span>(orderId);
+  <span class="kw">const</span> payment = <span class="kw">await</span> <span class="fn">updatePaymentSuccess</span>(orderId);
+
+  <span class="fn">sendPaymentSuccess</span>(booking, payment).<span class="fn">catch</span>(console.error);
+
+  res.<span class="fn">json</span>({ message: <span class="str">'OK'</span> });
+}</pre>
+      </div>
+
+      <div class="cw">
+        <div class="ct"><span class="cf">src/cron/email-jobs.ts — Vercel Cron Jobs (vercel.json)</span><button class="cpb" onclick="cp(this)">Copy</button></div>
+        <pre><span class="cmt">// vercel.json — thêm cron jobs</span>
+{
+  <span class="str">"crons"</span>: [
+    {
+      <span class="str">"path"</span>: <span class="str">"/api/cron/reminder"</span>,
+      <span class="str">"schedule"</span>: <span class="str">"0 8 * * *"</span>   <span class="cmt">// chạy 8:00 SA mỗi ngày</span>
+    },
+    {
+      <span class="str">"path"</span>: <span class="str">"/api/cron/review-request"</span>,
+      <span class="str">"schedule"</span>: <span class="str">"0 10 * * *"</span>  <span class="cmt">// chạy 10:00 SA mỗi ngày</span>
+    }
+  ]
+}
+
+<span class="cmt">// src/api/cron/reminder.ts</span>
+<span class="kw">export default async function</span> <span class="fn">handler</span>(req, res) {
+  <span class="kw">if</span> (req.headers[<span class="str">'authorization'</span>] !== <span class="str">`Bearer ${process.env.CRON_SECRET}`</span>)
+    <span class="kw">return</span> res.<span class="fn">status</span>(<span class="num">401</span>).<span class="fn">end</span>();
+
+  <span class="kw">const</span> tomorrow = <span class="kw">new</span> <span class="fn">Date</span>();
+  tomorrow.<span class="fn">setDate</span>(tomorrow.<span class="fn">getDate</span>() + <span class="num">2</span>); <span class="cmt">// 48h trước</span>
+
+  <span class="kw">const</span> bookings = <span class="kw">await</span> db.booking.<span class="fn">findMany</span>({
+    where: {
+      status:     <span class="str">'CONFIRMED'</span>,
+      depart_date: { <span class="fn">gte</span>: <span class="fn">startOfDay</span>(tomorrow), <span class="fn">lte</span>: <span class="fn">endOfDay</span>(tomorrow) },
+      reminder_sent: <span class="kw">false</span>,
+    },
+    include: { user: <span class="kw">true</span>, tour: <span class="kw">true</span> },
+  });
+
+  <span class="kw">await</span> Promise.<span class="fn">allSettled</span>(
+    bookings.<span class="fn">map</span>(<span class="kw">async</span> b => {
+      <span class="kw">await</span> <span class="fn">sendTourReminder</span>(b);
+      <span class="kw">await</span> db.booking.<span class="fn">update</span>({ where: { id: b.id }, data: { reminder_sent: <span class="kw">true</span> } });
+    })
+  );
+
+  res.<span class="fn">json</span>({ sent: bookings.length });
+}</pre>
+      </div>
+    </div>
+
+    <!-- CHECKLIST -->
+    <div class="pnl" id="pnl-checklist">
+      <div class="card">
+        <div class="ch">Email System Checklist</div>
+        <div class="cb">
+          <div class="chklist">
+            <div class="chi" onclick="tk(this)"><div class="chb"></div><span class="cht">Đăng ký Resend tại resend.com — xác thực domain baggiotravel.com</span></div>
+            <div class="chi" onclick="tk(this)"><div class="chb"></div><span class="cht">Thêm DKIM, SPF, DMARC records vào DNS (Resend cung cấp)</span></div>
+            <div class="chi" onclick="tk(this)"><div class="chb"></div><span class="cht">Thêm RESEND_API_KEY vào Vercel Environment Variables</span></div>
+            <div class="chi" onclick="tk(this)"><div class="chb"></div><span class="cht">Test preview local với <code>npx react-email dev</code></span></div>
+            <div class="chi" onclick="tk(this)"><div class="chb"></div><span class="cht">5 templates hoàn chỉnh: booking-confirm, payment-success, reminder, review, cancel</span></div>
+            <div class="chi" onclick="tk(this)"><div class="chb"></div><span class="cht">Trigger email từ booking API — không delay response</span></div>
+            <div class="chi" onclick="tk(this)"><div class="chb"></div><span class="cht">Trigger email từ MoMo/VNPay webhook sau khi thanh toán thành công</span></div>
+            <div class="chi" onclick="tk(this)"><div class="chb"></div><span class="cht">Cron job 48h reminder hoạt động và có idempotency (reminder_sent flag)</span></div>
+            <div class="chi" onclick="tk(this)"><div class="chb"></div><span class="cht">Cron job review request — gửi 1 ngày sau ngày về tour</span></div>
+            <div class="chi" onclick="tk(this)"><div class="chb"></div><span class="cht">Thêm link huỷ nhận email (unsubscribe) trong footer tất cả email</span></div>
+          </div>
+          <div class="prog"><span id="ptxt">0 / 10</span><span id="pstatus">Chưa bắt đầu</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Other panels placeholder -->
+    <div class="pnl" id="pnl-payment-success">
+      <div class="al green"><div>💳</div><div><div class="at">Email xác nhận thanh toán</div>Gửi ngay sau khi MoMo/VNPay webhook trả về resultCode = 0. Nội dung: số tiền cọc, mã giao dịch, lịch trình đầy đủ, hotline hỗ trợ 24/7 và nút xem itinerary.</div></div>
+      <div class="cw"><div class="ct"><span class="cf">Nội dung chính email thanh toán thành công</span></div>
+      <pre><span class="cmt">// Các thông tin cần hiển thị:</span>
+✅ Đã nhận cọc ₫1.770.000 — Tour Hạ Long 5N4Đ
+📋 Mã giao dịch: MOMO-4312167901
+🗓 Ngày khởi hành: 08/06/2025 (còn X ngày)
+📍 Địa điểm tập trung: {departure_point}
+📞 Hotline HDV: {guide_phone}
+📱 Link theo dõi lịch trình: {itinerary_url}
+💡 Số dư còn lại: ₫4.130.000 — thanh toán trước 01/06/2025</pre></div>
+    </div>
+
+    <div class="pnl" id="pnl-reminder">
+      <div class="al amber"><div>⏰</div><div><div class="at">Email nhắc lịch 48h trước khởi hành</div>Gửi 8:00 SA, 48h trước ngày đi. Mục tiêu giảm no-show và tăng sự hài lòng của khách. Nội dung: thời gian tập trung, địa điểm, thông tin HDV, checklist đồ cần mang.</div></div>
+      <div class="cw"><div class="ct"><span class="cf">Nội dung email reminder 48h</span></div>
+      <pre><span class="cmt">// Checklist đồ cần mang (dynamic theo tour type)</span>
+🏖 Tour biển: Kem chống nắng, kính mát, đồ bơi, dép lê
+🏔 Tour núi:  Giày leo núi, áo khoác gió, thuốc say xe
+🏛 Tour cổ:   Giày bằng, quần dài vào chùa, máy ảnh
+
+<span class="cmt">// Thông tin quan trọng</span>
+⏰ Giờ tập trung: 06:30 SA ngày 08/06
+📍 Điểm đón: Sảnh khách sạn Vinpearl Hội An
+🧑‍💼 HDV: Trần Hoài Nam · 0901 234 567
+🌤 Thời tiết dự báo: 28°C · Nắng nhẹ</pre></div>
+    </div>
+
+    <div class="pnl" id="pnl-review">
+      <div class="al green"><div>⭐</div><div><div class="at">Email yêu cầu review — gửi 1 ngày sau khi tour kết thúc</div>Tỷ lệ review cao hơn 40% khi email đến trong 24h sau tour. Dùng rating widget nhúng trực tiếp trong email (click = redirect đến trang review).</div></div>
+      <div class="cw"><div class="ct"><span class="cf">Trick: Star rating nhúng trong email</span><button class="cpb" onclick="cp(this)">Copy</button></div>
+      <pre><span class="cmt">&lt;!-- Click sao trong email = redirect kèm rating param --&gt;</span>
+<span class="tag">&lt;table</span> <span class="attr">align</span>=<span class="val">"center"</span><span class="tag">&gt;&lt;tr&gt;</span>
+  <span class="tag">&lt;td&gt;&lt;a</span> <span class="attr">href</span>=<span class="val">"https://baggiotravel.com/review?ref=BT-0891&rating=1"</span><span class="tag">&gt;</span>⭐<span class="tag">&lt;/a&gt;&lt;/td&gt;</span>
+  <span class="tag">&lt;td&gt;&lt;a</span> <span class="attr">href</span>=<span class="val">"https://baggiotravel.com/review?ref=BT-0891&rating=2"</span><span class="tag">&gt;</span>⭐<span class="tag">&lt;/a&gt;&lt;/td&gt;</span>
+  <span class="tag">&lt;td&gt;&lt;a</span> <span class="attr">href</span>=<span class="val">"https://baggiotravel.com/review?ref=BT-0891&rating=3"</span><span class="tag">&gt;</span>⭐<span class="tag">&lt;/a&gt;&lt;/td&gt;</span>
+  <span class="tag">&lt;td&gt;&lt;a</span> <span class="attr">href</span>=<span class="val">"https://baggiotravel.com/review?ref=BT-0891&rating=4"</span><span class="tag">&gt;</span>⭐<span class="tag">&lt;/a&gt;&lt;/td&gt;</span>
+  <span class="tag">&lt;td&gt;&lt;a</span> <span class="attr">href</span>=<span class="val">"https://baggiotravel.com/review?ref=BT-0891&rating=5"</span><span class="tag">&gt;</span>⭐<span class="tag">&lt;/a&gt;&lt;/td&gt;</span>
+<span class="tag">&lt;/tr&gt;&lt;/table&gt;</span>
+<span class="cmt">&lt;!-- Trang review.html đọc ?rating= và pre-fill số sao --&gt;</span></pre></div>
+    </div>
+
+    <div class="pnl" id="pnl-cancel">
+      <div class="al" style="background:var(--rdim);border:1px solid var(--rbrd)"><div>❌</div><div><div class="at" style="color:var(--red)">Email huỷ tour & Hoàn tiền</div>Gửi ngay khi booking status chuyển sang CANCELLED. Phải rõ ràng: số tiền hoàn, phương thức, thời gian nhận. Không được mơ hồ — tránh khách phàn nàn.</div></div>
+      <div class="cw"><div class="ct"><span class="cf">Nội dung email huỷ tour</span></div>
+      <pre><span class="cmt">// 3 kịch bản hoàn tiền — hiển thị đúng theo policy</span>
+<span class="kw">if</span> (daysBeforeDepart >= <span class="num">7</span>) {
+  refundMsg = <span class="str">'Hoàn 100% — ₫1.770.000 về MoMo trong 3-5 ngày làm việc'</span>
+} <span class="kw">else if</span> (daysBeforeDepart >= <span class="num">3</span>) {
+  refundMsg = <span class="str">'Hoàn 50% — ₫885.000 về MoMo trong 3-5 ngày làm việc'</span>
+} <span class="kw">else</span> {
+  refundMsg = <span class="str">'Không hoàn cọc — huỷ trong 3 ngày trước tour'</span>
+}</pre></div>
+    </div>
+
+  </div>
+</div>
+<script>
+function sw(id,el){
+  document.querySelectorAll('.pnl').forEach(p=>p.classList.remove('on'));
+  document.getElementById('pnl-'+id).classList.add('on');
+  document.querySelectorAll('.sb-a').forEach(a=>a.classList.remove('on'));
+  if(el)el.classList.add('on');
+}
+function cp(btn){
+  const pre=btn.closest('.cw').querySelector('pre');
+  navigator.clipboard.writeText(pre.innerText).then(()=>{
+    btn.textContent='Copied!';btn.classList.add('ok');
+    setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('ok')},2000);
+  });
+}
+function tk(row){
+  const b=row.querySelector('.chb');
+  b.classList.toggle('done');b.textContent=b.classList.contains('done')?'✓':'';
+  const tot=document.querySelectorAll('.chb').length;
+  const done=document.querySelectorAll('.chb.done').length;
+  document.getElementById('ptxt').textContent=done+' / '+tot;
+  document.getElementById('pstatus').textContent=done===tot?'✅ Hoàn thành!':done>0?'Đang làm...':'Chưa bắt đầu';
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Baggio Travel — Tích hợp MoMo Payment API</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0d1117;
+  --surface:#161b22;
+  --surface2:#1c2128;
+  --surface3:#21262d;
+  --border:#30363d;
+  --border2:#484f58;
+  --text:#e6edf3;
+  --text2:#8b949e;
+  --text3:#484f58;
+  --pink:#ff7eb3;
+  --pink-dim:rgba(255,126,179,.1);
+  --purple:#c084fc;
+  --purple-dim:rgba(192,132,252,.1);
+  --blue:#58a6ff;
+  --blue-dim:rgba(88,166,255,.1);
+  --green:#3fb950;
+  --green-dim:rgba(63,185,80,.1);
+  --amber:#d29922;
+  --amber-dim:rgba(210,153,34,.1);
+  --red:#f85149;
+  --red-dim:rgba(248,81,73,.1);
+  --teal:#39d353;
+  --momo:#ae2070;
+  --momo-bright:#d63384;
+  --momo-dim:rgba(174,32,112,.15);
+  --font:'Be Vietnam Pro',sans-serif;
+  --mono:'Space Mono',monospace;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:14px;line-height:1.6}
+
+/* ── TOP ── */
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:.9rem 2rem;display:flex;align-items:center;gap:1rem;position:sticky;top:0;z-index:100}
+.topbar-logo{font-family:var(--mono);font-size:.95rem;font-weight:700;color:var(--text)}
+.topbar-logo span{color:var(--momo-bright)}
+.topbar-badge{font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;padding:.25rem .6rem;border-radius:20px;background:var(--momo-dim);color:var(--momo-bright);border:1px solid rgba(214,51,132,.3)}
+.topbar-links{margin-left:auto;display:flex;gap:1.5rem}
+.topbar-links a{font-size:.8rem;color:var(--text2);text-decoration:none;transition:color .2s;font-family:var(--mono);font-size:.7rem;letter-spacing:.06em}
+.topbar-links a:hover{color:var(--blue)}
+
+/* ── LAYOUT ── */
+.wrap{max-width:1200px;margin:0 auto;padding:2rem;display:grid;grid-template-columns:220px 1fr;gap:2rem}
+.sidebar{position:sticky;top:64px;align-self:start;max-height:calc(100vh - 80px);overflow-y:auto}
+.main{}
+
+/* ── SIDEBAR NAV ── */
+.nav-section{margin-bottom:1.5rem}
+.nav-section-title{font-family:var(--mono);font-size:.58rem;letter-spacing:.18em;text-transform:uppercase;color:var(--text3);padding:.4rem 0;margin-bottom:.3rem}
+.nav-link{display:block;font-size:.78rem;color:var(--text2);text-decoration:none;padding:.3rem .6rem;border-radius:4px;transition:all .15s;border-left:2px solid transparent}
+.nav-link:hover{color:var(--text);background:rgba(255,255,255,.04)}
+.nav-link.active{color:var(--momo-bright);border-left-color:var(--momo-bright);background:var(--momo-dim)}
+
+/* ── SECTION ── */
+.section{margin-bottom:3rem;scroll-margin-top:80px}
+.section-title{font-size:1.35rem;font-weight:700;color:var(--text);margin-bottom:.4rem;display:flex;align-items:center;gap:.75rem;letter-spacing:-.01em}
+.section-badge{font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;padding:.2rem .6rem;border-radius:3px}
+.badge-post{background:var(--blue-dim);color:var(--blue);border:1px solid rgba(88,166,255,.3)}
+.badge-env{background:var(--amber-dim);color:var(--amber);border:1px solid rgba(210,153,34,.3)}
+.badge-required{background:var(--red-dim);color:var(--red);border:1px solid rgba(248,81,73,.3)}
+.section-sub{font-size:.88rem;color:var(--text2);margin-bottom:1.5rem;font-weight:300;line-height:1.7}
+
+/* ── CARDS ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:1rem}
+.card-header{padding:.8rem 1.25rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface2)}
+.card-title{font-family:var(--mono);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text2)}
+.card-body{padding:1.25rem}
+
+/* ── FLOW DIAGRAM ── */
+.flow{display:flex;flex-direction:column;gap:0}
+.flow-step{display:grid;grid-template-columns:36px 1fr;gap:1rem;position:relative}
+.flow-step:not(:last-child)::before{content:'';position:absolute;left:17px;top:36px;bottom:-12px;width:1px;background:var(--border);z-index:0}
+.flow-dot{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:.72rem;font-weight:700;flex-shrink:0;position:relative;z-index:1;margin-bottom:12px}
+.flow-dot.server{background:var(--blue-dim);border:1.5px solid rgba(88,166,255,.4);color:var(--blue)}
+.flow-dot.momo{background:var(--momo-dim);border:1.5px solid rgba(214,51,132,.4);color:var(--momo-bright)}
+.flow-dot.client{background:var(--green-dim);border:1.5px solid rgba(63,185,80,.4);color:var(--green)}
+.flow-dot.done{background:var(--green-dim);border:1.5px solid var(--green);color:var(--green)}
+.flow-body{padding-bottom:12px}
+.flow-title{font-weight:600;font-size:.88rem;color:var(--text);margin-bottom:.2rem}
+.flow-desc{font-size:.8rem;color:var(--text2);line-height:1.65;font-weight:300}
+.flow-tag{font-family:var(--mono);font-size:.62rem;color:var(--text3);margin-top:.3rem;display:inline-block;padding:.15rem .5rem;border-radius:3px;border:1px solid var(--border)}
+.flow-tag.server{color:var(--blue);border-color:rgba(88,166,255,.3);background:var(--blue-dim)}
+.flow-tag.momo{color:var(--momo-bright);border-color:rgba(214,51,132,.3);background:var(--momo-dim)}
+.flow-tag.client{color:var(--green);border-color:rgba(63,185,80,.3);background:var(--green-dim)}
+
+/* ── CODE BLOCKS ── */
+.code-wrap{border-radius:8px;overflow:hidden;margin:1rem 0;border:1px solid var(--border)}
+.code-header{background:var(--surface2);border-bottom:1px solid var(--border);padding:.55rem 1rem;display:flex;align-items:center;justify-content:space-between}
+.code-lang{font-family:var(--mono);font-size:.65rem;letter-spacing:.1em;color:var(--text3);text-transform:uppercase}
+.code-filename{font-family:var(--mono);font-size:.7rem;color:var(--text2)}
+.copy-btn{font-family:var(--mono);font-size:.6rem;color:var(--text3);background:none;border:1px solid var(--border);padding:.25rem .6rem;cursor:pointer;border-radius:3px;transition:all .15s;letter-spacing:.06em}
+.copy-btn:hover{border-color:var(--border2);color:var(--text2)}
+.copy-btn.copied{color:var(--green);border-color:var(--green)}
+pre{background:var(--surface);padding:1.1rem;overflow-x:auto;font-family:var(--mono);font-size:.78rem;line-height:1.7;color:var(--text2);margin:0}
+.kw{color:var(--purple)}
+.str{color:var(--green)}
+.cmt{color:var(--text3);font-style:italic}
+.fn{color:var(--blue)}
+.num{color:var(--pink)}
+.key{color:var(--amber)}
+.var{color:var(--text)}
+
+/* ── PARAMS TABLE ── */
+.params-table{width:100%;border-collapse:collapse;font-size:.8rem}
+.params-table th{font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);padding:.55rem .9rem;text-align:left;border-bottom:1px solid var(--border);background:var(--surface2);font-weight:400}
+.params-table td{padding:.6rem .9rem;border-bottom:1px solid rgba(255,255,255,.04);vertical-align:top}
+.params-table tr:last-child td{border-bottom:none}
+.params-table tr:hover td{background:rgba(255,255,255,.02)}
+.param-name{font-family:var(--mono);font-size:.75rem;color:var(--blue)}
+.param-type{font-family:var(--mono);font-size:.65rem;color:var(--purple)}
+.param-req{font-family:var(--mono);font-size:.6rem;color:var(--red);margin-left:.3rem}
+.param-desc{color:var(--text2);font-weight:300;line-height:1.6}
+.param-note{font-size:.72rem;color:var(--text3);margin-top:.2rem;font-family:var(--mono)}
+
+/* ── ALERT BOXES ── */
+.alert{border-radius:7px;padding:1rem 1.1rem;margin:1rem 0;display:flex;gap:.75rem;font-size:.82rem;line-height:1.65}
+.alert-icon{font-size:1rem;flex-shrink:0;margin-top:.05rem}
+.alert-body{}
+.alert-title{font-weight:600;margin-bottom:.2rem}
+.alert.info{background:var(--blue-dim);border:1px solid rgba(88,166,255,.25)}
+.alert.info .alert-title{color:var(--blue)}
+.alert.warning{background:var(--amber-dim);border:1px solid rgba(210,153,34,.25)}
+.alert.warning .alert-title{color:var(--amber)}
+.alert.success{background:var(--green-dim);border:1px solid rgba(63,185,80,.25)}
+.alert.success .alert-title{color:var(--green)}
+.alert.danger{background:var(--red-dim);border:1px solid rgba(248,81,73,.25)}
+.alert.danger .alert-title{color:var(--red)}
+
+/* ── ENV VARS ── */
+.env-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1rem 0}
+.env-card{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:1rem;position:relative}
+.env-label{font-family:var(--mono);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-bottom:.5rem}
+.env-badge-wrap{display:flex;align-items:center;gap:.5rem;margin-bottom:.6rem}
+.env-type-badge{font-family:var(--mono);font-size:.62rem;padding:.2rem .55rem;border-radius:3px}
+.env-sandbox{background:var(--amber-dim);color:var(--amber);border:1px solid rgba(210,153,34,.3)}
+.env-prod{background:var(--green-dim);color:var(--green);border:1px solid rgba(63,185,80,.3)}
+.env-url{font-family:var(--mono);font-size:.72rem;color:var(--blue);word-break:break-all}
+.env-creds{display:flex;flex-direction:column;gap:.3rem;margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border)}
+.env-cred-row{display:flex;gap:.5rem;align-items:center;font-family:var(--mono);font-size:.68rem}
+.env-cred-key{color:var(--text3);min-width:110px}
+.env-cred-val{color:var(--text2);background:var(--surface);border:1px solid var(--border);padding:.2rem .5rem;border-radius:3px;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* ── DEMO PANEL ── */
+.demo-wrap{background:var(--surface);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:1rem}
+.demo-header{background:var(--surface2);border-bottom:1px solid var(--border);padding:.8rem 1.25rem;display:flex;align-items:center;gap:.75rem}
+.demo-dot{width:10px;height:10px;border-radius:50%}
+.demo-title{font-family:var(--mono);font-size:.72rem;color:var(--text2)}
+.demo-body{padding:1.5rem;display:grid;grid-template-columns:1fr 1fr;gap:1.5rem}
+.demo-form{}
+.demo-result{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:1rem}
+.demo-form-group{margin-bottom:.9rem}
+.demo-label{font-family:var(--mono);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);display:block;margin-bottom:.35rem}
+.demo-input,.demo-select{width:100%;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:.78rem;padding:.55rem .75rem;outline:none;border-radius:5px;transition:border-color .2s;-webkit-appearance:none}
+.demo-input:focus,.demo-select:focus{border-color:var(--momo-bright)}
+.demo-select option{background:var(--surface)}
+.demo-btn{width:100%;background:var(--momo-bright);color:#fff;border:none;padding:.75rem;font-family:var(--font);font-weight:700;font-size:.88rem;cursor:pointer;border-radius:5px;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:.5rem;margin-top:.5rem;letter-spacing:.02em}
+.demo-btn:hover{background:#c42d78;transform:translateY(-1px)}
+.demo-btn:disabled{background:var(--border);cursor:not-allowed;transform:none}
+.demo-result-title{font-family:var(--mono);font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-bottom:.75rem}
+.demo-json{font-family:var(--mono);font-size:.7rem;line-height:1.65;color:var(--text2);white-space:pre-wrap;word-break:break-all}
+.demo-status{display:flex;align-items:center;gap:.5rem;padding:.5rem .75rem;border-radius:5px;font-family:var(--mono);font-size:.7rem;margin-bottom:.75rem}
+.status-loading{background:var(--amber-dim);border:1px solid rgba(210,153,34,.3);color:var(--amber)}
+.status-success{background:var(--green-dim);border:1px solid rgba(63,185,80,.3);color:var(--green)}
+.status-error{background:var(--red-dim);border:1px solid rgba(248,81,73,.3);color:var(--red)}
+.qr-wrap{text-align:center;padding:1rem}
+.qr-placeholder{width:120px;height:120px;border:2px solid var(--border);border-radius:6px;margin:0 auto .75rem;display:flex;align-items:center;justify-content:center;font-size:2.5rem;background:var(--surface);position:relative;overflow:hidden}
+.qr-inner{display:grid;grid-template-columns:repeat(5,1fr);gap:2px;padding:8px}
+.qr-cell{background:var(--text);border-radius:1px}
+.qr-label{font-family:var(--mono);font-size:.62rem;color:var(--text3);letter-spacing:.08em}
+.pay-url{font-family:var(--mono);font-size:.65rem;color:var(--blue);word-break:break-all;margin-top:.5rem;padding:.4rem .6rem;background:var(--surface);border:1px solid var(--border);border-radius:4px}
+
+/* ── RESULT CODES ── */
+.rc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem}
+.rc-item{background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:.75rem}
+.rc-code{font-family:var(--mono);font-size:.82rem;font-weight:700;margin-bottom:.2rem}
+.rc-msg{font-size:.72rem;color:var(--text2);font-weight:300;line-height:1.5}
+.rc-0{color:var(--green)}
+.rc-err{color:var(--red)}
+.rc-warn{color:var(--amber)}
+
+/* ── CHECKLIST ── */
+.checklist{display:flex;flex-direction:column;gap:.5rem}
+.check-item{display:flex;align-items:flex-start;gap:.75rem;font-size:.82rem;color:var(--text2);padding:.4rem 0}
+.check-box{width:18px;height:18px;border-radius:3px;border:1.5px solid var(--border);flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.65rem;margin-top:.1rem;transition:all .2s}
+.check-box.done{background:var(--green);border-color:var(--green);color:#fff}
+
+/* ── TABS ── */
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:1.25rem}
+.tab{font-family:var(--mono);font-size:.7rem;letter-spacing:.08em;padding:.6rem 1rem;cursor:pointer;color:var(--text3);border-bottom:2px solid transparent;transition:all .2s;-webkit-user-select:none;user-select:none}
+.tab:hover{color:var(--text2)}
+.tab.active{color:var(--momo-bright);border-bottom-color:var(--momo-bright)}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
+/* ── WEBHOOK SIM ── */
+.webhook-log{background:var(--surface2);border:1px solid var(--border);border-radius:6px;height:200px;overflow-y:auto;padding:.75rem;font-family:var(--mono);font-size:.7rem}
+.log-entry{padding:.3rem 0;border-bottom:1px solid rgba(255,255,255,.04);display:flex;gap:.75rem}
+.log-time{color:var(--text3);flex-shrink:0}
+.log-msg{}
+.log-success{color:var(--green)}
+.log-error{color:var(--red)}
+.log-info{color:var(--blue)}
+.log-warn{color:var(--amber)}
+
+@media(max-width:900px){
+  .wrap{grid-template-columns:1fr}
+  .sidebar{display:none}
+  .demo-body{grid-template-columns:1fr}
+  .env-grid,.rc-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-logo">Baggio<span>.</span>Travel</div>
+  <div class="topbar-badge">MoMo API Docs</div>
+  <div class="topbar-links">
+    <a href="https://developers.momo.vn/v3" target="_blank">MoMo Docs ↗</a>
+    <a href="https://business.momo.vn" target="_blank">M4B Portal ↗</a>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="nav-section">
+      <div class="nav-section-title">Tổng quan</div>
+      <a class="nav-link active" href="#overview">Giới thiệu</a>
+      <a class="nav-link" href="#flow">Luồng thanh toán</a>
+      <a class="nav-link" href="#env">Môi trường & Credentials</a>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-title">Tích hợp</div>
+      <a class="nav-link" href="#signature">Tạo Signature (HMAC)</a>
+      <a class="nav-link" href="#create-payment">API: Tạo thanh toán</a>
+      <a class="nav-link" href="#webhook">Webhook IPN</a>
+      <a class="nav-link" href="#query">Kiểm tra giao dịch</a>
+      <a class="nav-link" href="#refund">Hoàn tiền</a>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-title">Code & Demo</div>
+      <a class="nav-link" href="#backend-code">Node.js Backend</a>
+      <a class="nav-link" href="#demo">Demo tương tác</a>
+      <a class="nav-link" href="#result-codes">Mã kết quả</a>
+      <a class="nav-link" href="#checklist">Checklist go-live</a>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- OVERVIEW -->
+    <div class="section" id="overview">
+      <div class="section-title">Tích hợp MoMo Payment API <span class="section-badge badge-env">v3</span></div>
+      <div class="section-sub">Hướng dẫn tích hợp cổng thanh toán MoMo vào Baggio Travel — từ sandbox đến production, bao gồm tạo đơn, xử lý webhook, hoàn tiền và kiểm tra giao dịch.</div>
+
+      <div class="alert info">
+        <div class="alert-icon">ℹ️</div>
+        <div class="alert-body">
+          <div class="alert-title">Loại tích hợp phù hợp nhất cho Baggio Travel</div>
+          MoMo cung cấp nhiều loại API. Cho website đặt tour, nên dùng <strong>Collection Link (payWithMethod)</strong> — hỗ trợ MoMo eWallet, ATM, Visa/Master/JCB trên cùng 1 API endpoint. Endpoint: <code>POST /v2/gateway/api/create</code>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><span class="card-title">Tổng quan luồng tích hợp</span></div>
+        <div class="card-body">
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem">
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:1rem;border-top:2px solid var(--amber)">
+              <div style="font-family:var(--mono);font-size:.6rem;color:var(--amber);letter-spacing:.12em;text-transform:uppercase;margin-bottom:.5rem">Bước 1</div>
+              <div style="font-weight:600;font-size:.88rem;margin-bottom:.3rem">Đăng ký M4B</div>
+              <div style="font-size:.78rem;color:var(--text2);font-weight:300;line-height:1.6">Tạo tài khoản MoMo for Business tại business.momo.vn, chọn loại tích hợp, nhận Sandbox credentials</div>
+            </div>
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:1rem;border-top:2px solid var(--blue)">
+              <div style="font-family:var(--mono);font-size:.6rem;color:var(--blue);letter-spacing:.12em;text-transform:uppercase;margin-bottom:.5rem">Bước 2</div>
+              <div style="font-weight:600;font-size:.88rem;margin-bottom:.3rem">Test Sandbox</div>
+              <div style="font-size:.78rem;color:var(--text2);font-weight:300;line-height:1.6">Tích hợp với môi trường test, dùng app MoMo Test để kiểm thử toàn bộ luồng thanh toán</div>
+            </div>
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:1rem;border-top:2px solid var(--green)">
+              <div style="font-family:var(--mono);font-size:.6rem;color:var(--green);letter-spacing:.12em;text-transform:uppercase;margin-bottom:.5rem">Bước 3</div>
+              <div style="font-weight:600;font-size:.88rem;margin-bottom:.3rem">Go Production</div>
+              <div style="font-size:.78rem;color:var(--text2);font-weight:300;line-height:1.6">Gửi kết quả test cho MoMo review, nhận Production credentials, deploy và UAT</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FLOW -->
+    <div class="section" id="flow">
+      <div class="section-title">Luồng thanh toán</div>
+      <div class="section-sub">Toàn bộ hành trình từ lúc khách nhấn "Thanh toán" đến khi hệ thống xác nhận đặt tour thành công.</div>
+      <div class="card">
+        <div class="card-body" style="padding:1.5rem">
+          <div class="flow">
+            <div class="flow-step">
+              <div class="flow-dot client">👤</div>
+              <div class="flow-body">
+                <div class="flow-title">Khách nhấn "Đặt cọc với MoMo"</div>
+                <div class="flow-desc">Frontend gửi thông tin đơn hàng (orderId, amount, tourName) lên Backend của Baggio Travel.</div>
+                <span class="flow-tag client">Client → Baggio Server</span>
+              </div>
+            </div>
+            <div class="flow-step">
+              <div class="flow-dot server">⚙️</div>
+              <div class="flow-body">
+                <div class="flow-title">Backend tạo đơn thanh toán</div>
+                <div class="flow-desc">Server tạo <code>requestId</code> unique, tính <code>signature</code> HMAC-SHA256, gọi MoMo API <code>POST /v2/gateway/api/create</code>.</div>
+                <span class="flow-tag server">Baggio Server → MoMo API</span>
+              </div>
+            </div>
+            <div class="flow-step">
+              <div class="flow-dot momo">💳</div>
+              <div class="flow-body">
+                <div class="flow-title">MoMo trả về payUrl</div>
+                <div class="flow-desc">MoMo xác thực signature, tạo giao dịch và trả về <code>payUrl</code> (link thanh toán) + <code>qrCodeUrl</code>.</div>
+                <span class="flow-tag momo">MoMo → Baggio Server</span>
+              </div>
+            </div>
+            <div class="flow-step">
+              <div class="flow-dot client">📱</div>
+              <div class="flow-body">
+                <div class="flow-title">Redirect khách hàng sang trang MoMo</div>
+                <div class="flow-desc">Frontend redirect đến <code>payUrl</code>. Khách chọn phương thức (MoMo wallet, ATM, Visa...) và xác nhận thanh toán.</div>
+                <span class="flow-tag client">Frontend redirect → MoMo Payment Page</span>
+              </div>
+            </div>
+            <div class="flow-step">
+              <div class="flow-dot momo">🔔</div>
+              <div class="flow-body">
+                <div class="flow-title">MoMo gửi IPN Webhook</div>
+                <div class="flow-desc">Sau khi thanh toán xong, MoMo POST kết quả về <code>notifyUrl</code> của Baggio Server. Server xác thực signature và cập nhật trạng thái đơn hàng.</div>
+                <span class="flow-tag momo">MoMo → Baggio notifyUrl (IPN)</span>
+              </div>
+            </div>
+            <div class="flow-step">
+              <div class="flow-dot client">↩️</div>
+              <div class="flow-body">
+                <div class="flow-title">Redirect khách về trang thành công</div>
+                <div class="flow-desc">MoMo redirect về <code>redirectUrl</code> với kết quả thanh toán. Frontend đọc params và hiển thị trang xác nhận đặt tour.</div>
+                <span class="flow-tag client">MoMo → redirectUrl → Frontend</span>
+              </div>
+            </div>
+            <div class="flow-step">
+              <div class="flow-dot done">✅</div>
+              <div class="flow-body">
+                <div class="flow-title">Xác nhận & Gửi email</div>
+                <div class="flow-desc">Backend cập nhật trạng thái đơn tour thành "Đã thanh toán cọc", gửi email xác nhận và SMS cho khách hàng.</div>
+                <span class="flow-tag server">Baggio Server → Khách hàng</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ENV -->
+    <div class="section" id="env">
+      <div class="section-title">Môi trường & Credentials</div>
+      <div class="section-sub">MoMo cung cấp 2 môi trường riêng biệt. Không bao giờ dùng Production credentials trong code test.</div>
+      <div class="env-grid">
+        <div class="env-card" style="border-top:2px solid var(--amber)">
+          <div class="env-label">Môi trường</div>
+          <div class="env-badge-wrap"><span class="env-type-badge env-sandbox">SANDBOX / TEST</span></div>
+          <div class="env-url">https://test-payment.momo.vn</div>
+          <div class="env-creds">
+            <div class="env-cred-row"><span class="env-cred-key">partnerCode</span><span class="env-cred-val">MOMO</span></div>
+            <div class="env-cred-row"><span class="env-cred-key">accessKey</span><span class="env-cred-val">F8BBA842ECF85</span></div>
+            <div class="env-cred-row"><span class="env-cred-key">secretKey</span><span class="env-cred-val">K951B6PE1waDMi640xX08PD3vg6EkVlz</span></div>
+          </div>
+          <div style="margin-top:.75rem;font-size:.72rem;color:var(--amber);font-family:var(--mono)">⚠ Dùng app MoMo Test để test</div>
+        </div>
+        <div class="env-card" style="border-top:2px solid var(--green)">
+          <div class="env-label">Môi trường</div>
+          <div class="env-badge-wrap"><span class="env-type-badge env-prod">PRODUCTION</span></div>
+          <div class="env-url">https://payment.momo.vn</div>
+          <div class="env-creds">
+            <div class="env-cred-row"><span class="env-cred-key">partnerCode</span><span class="env-cred-val">Từ M4B Portal</span></div>
+            <div class="env-cred-row"><span class="env-cred-key">accessKey</span><span class="env-cred-val">Từ M4B Portal</span></div>
+            <div class="env-cred-row"><span class="env-cred-key">secretKey</span><span class="env-cred-val">🔒 Giữ bí mật tuyệt đối</span></div>
+          </div>
+          <div style="margin-top:.75rem;font-size:.72rem;color:var(--green);font-family:var(--mono)">✓ Nhận sau khi MoMo duyệt sandbox test</div>
+        </div>
+      </div>
+      <div class="alert warning">
+        <div class="alert-icon">⚠️</div>
+        <div class="alert-body">
+          <div class="alert-title">Bảo mật secretKey</div>
+          Không bao giờ để <code>secretKey</code> trong frontend hay commit lên Git. Luôn lưu trong biến môi trường (<code>.env</code>) hoặc secret manager (AWS Secrets Manager, Vercel env vars...).
+        </div>
+      </div>
+    </div>
+
+    <!-- SIGNATURE -->
+    <div class="section" id="signature">
+      <div class="section-title">Tạo Signature (HMAC-SHA256)</div>
+      <div class="section-sub">Mọi request đến MoMo phải có signature để xác thực. Signature được tạo bằng HMAC-SHA256 từ chuỗi raw data theo thứ tự cố định.</div>
+      <div class="alert info">
+        <div class="alert-icon">🔑</div>
+        <div class="alert-body">
+          <div class="alert-title">Công thức tạo Signature</div>
+          <code>rawSignature = "accessKey=&AMOUNT&extraData=&ipnUrl=&orderId=&orderInfo=&partnerCode=&redirectUrl=&requestId=&requestType="</code><br>
+          <code style="color:var(--green)">signature = HMAC_SHA256(rawSignature, secretKey)</code>
+        </div>
+      </div>
+      <div class="code-wrap">
+        <div class="code-header">
+          <span class="code-filename">utils/momo-signature.js</span>
+          <span class="code-lang">javascript</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><span class="kw">const</span> <span class="var">crypto</span> = <span class="fn">require</span>(<span class="str">'crypto'</span>);
+
+<span class="cmt">// Tạo signature cho MoMo API request</span>
+<span class="kw">function</span> <span class="fn">createMoMoSignature</span>(<span class="var">params</span>, <span class="var">secretKey</span>) {
+  <span class="kw">const</span> <span class="var">rawSignature</span> = [
+    <span class="str">`accessKey=<span class="kw">${</span><span class="var">params</span>.accessKey<span class="kw">}</span>`</span>,
+    <span class="str">`amount=<span class="kw">${</span><span class="var">params</span>.amount<span class="kw">}</span>`</span>,
+    <span class="str">`extraData=<span class="kw">${</span><span class="var">params</span>.extraData<span class="kw">}</span>`</span>,
+    <span class="str">`ipnUrl=<span class="kw">${</span><span class="var">params</span>.ipnUrl<span class="kw">}</span>`</span>,
+    <span class="str">`orderId=<span class="kw">${</span><span class="var">params</span>.orderId<span class="kw">}</span>`</span>,
+    <span class="str">`orderInfo=<span class="kw">${</span><span class="var">params</span>.orderInfo<span class="kw">}</span>`</span>,
+    <span class="str">`partnerCode=<span class="kw">${</span><span class="var">params</span>.partnerCode<span class="kw">}</span>`</span>,
+    <span class="str">`redirectUrl=<span class="kw">${</span><span class="var">params</span>.redirectUrl<span class="kw">}</span>`</span>,
+    <span class="str">`requestId=<span class="kw">${</span><span class="var">params</span>.requestId<span class="kw">}</span>`</span>,
+    <span class="str">`requestType=<span class="kw">${</span><span class="var">params</span>.requestType<span class="kw">}</span>`</span>,
+  ].<span class="fn">join</span>(<span class="str">'&'</span>);
+
+  <span class="kw">return</span> <span class="var">crypto</span>
+    .<span class="fn">createHmac</span>(<span class="str">'sha256'</span>, <span class="var">secretKey</span>)
+    .<span class="fn">update</span>(<span class="var">rawSignature</span>)
+    .<span class="fn">digest</span>(<span class="str">'hex'</span>);
+}
+
+<span class="cmt">// Xác thực signature từ webhook IPN</span>
+<span class="kw">function</span> <span class="fn">verifyWebhookSignature</span>(<span class="var">body</span>, <span class="var">secretKey</span>) {
+  <span class="kw">const</span> { <span class="var">signature</span>, ...<span class="var">rest</span> } = <span class="var">body</span>;
+  <span class="kw">const</span> <span class="var">rawData</span> = <span class="fn">Object</span>.<span class="fn">keys</span>(<span class="var">rest</span>)
+    .<span class="fn">sort</span>()
+    .<span class="fn">map</span>(<span class="var">k</span> => <span class="str">`<span class="kw">${</span><span class="var">k</span><span class="kw">}</span>=<span class="kw">${</span><span class="var">rest</span>[<span class="var">k</span>]<span class="kw">}</span>`</span>)
+    .<span class="fn">join</span>(<span class="str">'&'</span>);
+  <span class="kw">const</span> <span class="var">expected</span> = <span class="var">crypto</span>
+    .<span class="fn">createHmac</span>(<span class="str">'sha256'</span>, <span class="var">secretKey</span>)
+    .<span class="fn">update</span>(<span class="var">rawData</span>)
+    .<span class="fn">digest</span>(<span class="str">'hex'</span>);
+  <span class="kw">return</span> <span class="var">signature</span> === <span class="var">expected</span>;
+}
+
+<span class="var">module</span>.<span class="var">exports</span> = { <span class="var">createMoMoSignature</span>, <span class="var">verifyWebhookSignature</span> };</pre>
+      </div>
+    </div>
+
+    <!-- CREATE PAYMENT -->
+    <div class="section" id="create-payment">
+      <div class="section-title">API: Tạo thanh toán <span class="section-badge badge-post">POST</span></div>
+      <div class="section-sub">Endpoint chính để tạo đơn thanh toán MoMo và nhận về payUrl để redirect khách hàng.</div>
+
+      <div class="card" style="margin-bottom:1rem">
+        <div class="card-header"><span class="card-title">Request Parameters</span></div>
+        <div class="card-body" style="padding:0">
+          <table class="params-table">
+            <thead><tr><th>Tham số</th><th>Kiểu</th><th>Mô tả</th></tr></thead>
+            <tbody>
+              <tr><td><span class="param-name">partnerCode</span><span class="param-req">*</span></td><td><span class="param-type">String</span></td><td><span class="param-desc">Mã partner, nhận từ M4B Portal (VD: <code>MOMO</code> cho sandbox)</span></td></tr>
+              <tr><td><span class="param-name">requestId</span><span class="param-req">*</span></td><td><span class="param-type">String(50)</span></td><td><span class="param-desc">ID request duy nhất, dùng cho idempotency. Nên dùng UUID v4.</span><div class="param-note">Không được trùng giữa các request</div></td></tr>
+              <tr><td><span class="param-name">amount</span><span class="param-req">*</span></td><td><span class="param-type">Long</span></td><td><span class="param-desc">Số tiền thanh toán (VND). Min: 1.000đ, Max: 50.000.000đ/giao dịch</span></td></tr>
+              <tr><td><span class="param-name">orderId</span><span class="param-req">*</span></td><td><span class="param-type">String(64)</span></td><td><span class="param-desc">Mã đơn hàng của merchant. Unique, không đoán được. VD: <code>BT-0891-1717123456</code></span></td></tr>
+              <tr><td><span class="param-name">orderInfo</span><span class="param-req">*</span></td><td><span class="param-type">String</span></td><td><span class="param-desc">Mô tả hiển thị cho khách hàng trên app MoMo. VD: "Đặt cọc Tour Hạ Long 5N4Đ - 2 khách"</span></td></tr>
+              <tr><td><span class="param-name">redirectUrl</span><span class="param-req">*</span></td><td><span class="param-type">String</span></td><td><span class="param-desc">URL redirect sau khi khách hoàn tất thanh toán. VD: <code>https://baggio.travel/booking/success</code></span></td></tr>
+              <tr><td><span class="param-name">ipnUrl</span><span class="param-req">*</span></td><td><span class="param-type">String</span></td><td><span class="param-desc">Webhook URL nhận IPN notification từ MoMo. Phải là HTTPS và public accessible.</span><div class="param-note">Timeout tối thiểu 30s. MoMo retry 5 lần nếu không nhận được 200 OK</div></td></tr>
+              <tr><td><span class="param-name">requestType</span><span class="param-req">*</span></td><td><span class="param-type">String</span></td><td><span class="param-desc">Loại request. Dùng <code>payWithMethod</code> cho Collection Link (hỗ trợ tất cả PTTT)</span></td></tr>
+              <tr><td><span class="param-name">extraData</span><span class="param-req">*</span></td><td><span class="param-type">String</span></td><td><span class="param-desc">Dữ liệu thêm (base64). Dùng <code>""</code> nếu không cần. Có thể nhúng orderId tour để callback.</span></td></tr>
+              <tr><td><span class="param-name">signature</span><span class="param-req">*</span></td><td><span class="param-type">String</span></td><td><span class="param-desc">HMAC-SHA256 signature. Xem phần "Tạo Signature" ở trên.</span></td></tr>
+              <tr><td><span class="param-name">items</span></td><td><span class="param-type">Array</span></td><td><span class="param-desc">Danh sách sản phẩm (optional). Hiển thị chi tiết trên trang thanh toán MoMo.</span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="code-wrap">
+        <div class="code-header">
+          <span class="code-filename">routes/payment.js</span>
+          <span class="code-lang">node.js · express</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><span class="kw">const</span> <span class="var">express</span> = <span class="fn">require</span>(<span class="str">'express'</span>);
+<span class="kw">const</span> <span class="var">axios</span>   = <span class="fn">require</span>(<span class="str">'axios'</span>);
+<span class="kw">const</span> { <span class="var">v4</span>: <span class="var">uuidv4</span> } = <span class="fn">require</span>(<span class="str">'uuid'</span>);
+<span class="kw">const</span> { <span class="var">createMoMoSignature</span> } = <span class="fn">require</span>(<span class="str">'../utils/momo-signature'</span>);
+<span class="kw">const</span> <span class="var">router</span> = <span class="var">express</span>.<span class="fn">Router</span>();
+
+<span class="cmt">// Cấu hình — lưu trong .env, không hardcode</span>
+<span class="kw">const</span> <span class="var">MOMO_CONFIG</span> = {
+  partnerCode: <span class="var">process</span>.<span class="var">env</span>.<span class="var">MOMO_PARTNER_CODE</span>, <span class="cmt">// 'MOMO' cho sandbox</span>
+  accessKey:   <span class="var">process</span>.<span class="var">env</span>.<span class="var">MOMO_ACCESS_KEY</span>,
+  secretKey:   <span class="var">process</span>.<span class="var">env</span>.<span class="var">MOMO_SECRET_KEY</span>,
+  apiUrl:      <span class="var">process</span>.<span class="var">env</span>.<span class="var">MOMO_API_URL</span>,  <span class="cmt">// test-payment.momo.vn hoặc payment.momo.vn</span>
+  redirectUrl: <span class="str">`<span class="kw">${</span><span class="var">process</span>.<span class="var">env</span>.<span class="var">APP_URL</span><span class="kw">}</span>/booking/success`</span>,
+  ipnUrl:      <span class="str">`<span class="kw">${</span><span class="var">process</span>.<span class="var">env</span>.<span class="var">APP_URL</span><span class="kw">}</span>/api/payment/momo/webhook`</span>,
+};
+
+<span class="cmt">// POST /api/payment/momo/create</span>
+<span class="var">router</span>.<span class="fn">post</span>(<span class="str">'/create'</span>, <span class="kw">async</span> (<span class="var">req</span>, <span class="var">res</span>) => {
+  <span class="kw">try</span> {
+    <span class="kw">const</span> { <span class="var">bookingId</span>, <span class="var">amount</span>, <span class="var">tourName</span>, <span class="var">guestCount</span> } = <span class="var">req</span>.<span class="var">body</span>;
+
+    <span class="cmt">// Validate</span>
+    <span class="kw">if</span> (!<span class="var">bookingId</span> || !<span class="var">amount</span> || <span class="var">amount</span> < <span class="num">1000</span>) {
+      <span class="kw">return</span> <span class="var">res</span>.<span class="fn">status</span>(<span class="num">400</span>).<span class="fn">json</span>({ <span class="key">error</span>: <span class="str">'Invalid booking data'</span> });
+    }
+
+    <span class="kw">const</span> <span class="var">requestId</span> = <span class="fn">uuidv4</span>();
+    <span class="kw">const</span> <span class="var">orderId</span>   = <span class="str">`BT-<span class="kw">${</span><span class="var">bookingId</span><span class="kw">}</span>-<span class="kw">${</span><span class="var">Date</span>.<span class="fn">now</span>()<span class="kw">}</span>`</span>;
+    <span class="kw">const</span> <span class="var">orderInfo</span> = <span class="str">`Đặt cọc tour <span class="kw">${</span><span class="var">tourName</span><span class="kw">}</span> - <span class="kw">${</span><span class="var">guestCount</span><span class="kw">}</span> khách`</span>;
+    <span class="kw">const</span> <span class="var">extraData</span> = <span class="fn">Buffer</span>.<span class="fn">from</span>(<span class="fn">JSON</span>.<span class="fn">stringify</span>({ <span class="var">bookingId</span> })).<span class="fn">toString</span>(<span class="str">'base64'</span>);
+
+    <span class="kw">const</span> <span class="var">params</span> = {
+      <span class="key">partnerCode</span>: <span class="var">MOMO_CONFIG</span>.<span class="var">partnerCode</span>,
+      <span class="key">accessKey</span>:   <span class="var">MOMO_CONFIG</span>.<span class="var">accessKey</span>,
+      <span class="key">requestId</span>,
+      <span class="key">amount</span>:      <span class="var">String</span>(<span class="var">amount</span>),
+      <span class="key">orderId</span>,
+      <span class="key">orderInfo</span>,
+      <span class="key">redirectUrl</span>: <span class="var">MOMO_CONFIG</span>.<span class="var">redirectUrl</span>,
+      <span class="key">ipnUrl</span>:      <span class="var">MOMO_CONFIG</span>.<span class="var">ipnUrl</span>,
+      <span class="key">requestType</span>: <span class="str">'payWithMethod'</span>,
+      <span class="key">extraData</span>,
+    };
+
+    <span class="var">params</span>.<span class="var">signature</span> = <span class="fn">createMoMoSignature</span>(<span class="var">params</span>, <span class="var">MOMO_CONFIG</span>.<span class="var">secretKey</span>);
+
+    <span class="cmt">// Lưu requestId vào DB để idempotency check</span>
+    <span class="kw">await</span> <span class="var">db</span>.<span class="var">booking</span>.<span class="fn">update</span>({
+      <span class="key">where</span>: { <span class="key">id</span>: <span class="var">bookingId</span> },
+      <span class="key">data</span>: { <span class="key">momoRequestId</span>: <span class="var">requestId</span>, <span class="key">momoOrderId</span>: <span class="var">orderId</span> }
+    });
+
+    <span class="kw">const</span> { <span class="var">data</span> } = <span class="kw">await</span> <span class="var">axios</span>.<span class="fn">post</span>(
+      <span class="str">`https://<span class="kw">${</span><span class="var">MOMO_CONFIG</span>.<span class="var">apiUrl</span><span class="kw">}</span>/v2/gateway/api/create`</span>,
+      <span class="var">params</span>,
+      { <span class="key">timeout</span>: <span class="num">30000</span> }  <span class="cmt">// timeout tối thiểu 30s theo docs</span>
+    );
+
+    <span class="kw">if</span> (<span class="var">data</span>.<span class="var">resultCode</span> !== <span class="num">0</span>) {
+      <span class="kw">throw new</span> <span class="fn">Error</span>(<span class="str">`MoMo error <span class="kw">${</span><span class="var">data</span>.<span class="var">resultCode</span><span class="kw">}</span>: <span class="kw">${</span><span class="var">data</span>.<span class="var">message</span><span class="kw">}</span>`</span>);
+    }
+
+    <span class="var">res</span>.<span class="fn">json</span>({
+      <span class="key">payUrl</span>:    <span class="var">data</span>.<span class="var">payUrl</span>,      <span class="cmt">// redirect khách hàng đến đây</span>
+      <span class="key">qrCodeUrl</span>: <span class="var">data</span>.<span class="var">qrCodeUrl</span>,  <span class="cmt">// hiển thị QR nếu muốn</span>
+      <span class="key">deeplink</span>:  <span class="var">data</span>.<span class="var">deeplink</span>,   <span class="cmt">// mở thẳng app MoMo trên mobile</span>
+      <span class="key">orderId</span>,
+    });
+
+  } <span class="kw">catch</span> (<span class="var">err</span>) {
+    <span class="var">console</span>.<span class="fn">error</span>(<span class="str">'MoMo payment error:'</span>, <span class="var">err</span>.<span class="var">message</span>);
+    <span class="var">res</span>.<span class="fn">status</span>(<span class="num">500</span>).<span class="fn">json</span>({ <span class="key">error</span>: <span class="str">'Payment creation failed'</span> });
+  }
+});
+
+<span class="var">module</span>.<span class="var">exports</span> = <span class="var">router</span>;</pre>
+      </div>
+    </div>
+
+    <!-- WEBHOOK -->
+    <div class="section" id="webhook">
+      <div class="section-title">Webhook IPN (Instant Payment Notification)</div>
+      <div class="section-sub">MoMo gọi <code>ipnUrl</code> ngay sau khi giao dịch hoàn tất. Đây là cách đáng tin cậy nhất để cập nhật trạng thái đơn hàng — không phụ thuộc vào redirect.</div>
+
+      <div class="alert danger">
+        <div class="alert-icon">🔒</div>
+        <div class="alert-body">
+          <div class="alert-title">Bắt buộc xác thực signature webhook</div>
+          Luôn verify signature của mọi IPN request trước khi xử lý. Kẻ tấn công có thể giả mạo webhook để cập nhật trạng thái thanh toán giả.
+        </div>
+      </div>
+
+      <div class="code-wrap">
+        <div class="code-header">
+          <span class="code-filename">routes/payment.js (tiếp theo)</span>
+          <span class="code-lang">node.js · webhook handler</span>
+          <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+        </div>
+        <pre><span class="cmt">// POST /api/payment/momo/webhook  ← ipnUrl</span>
+<span class="var">router</span>.<span class="fn">post</span>(<span class="str">'/webhook'</span>, <span class="kw">async</span> (<span class="var">req</span>, <span class="var">res</span>) => {
+  <span class="kw">const</span> <span class="var">body</span> = <span class="var">req</span>.<span class="var">body</span>;
+
+  <span class="cmt">// 1. Xác thực signature TRƯỚC khi làm gì khác</span>
+  <span class="kw">const</span> <span class="var">isValid</span> = <span class="fn">verifyWebhookSignature</span>(<span class="var">body</span>, <span class="var">MOMO_CONFIG</span>.<span class="var">secretKey</span>);
+  <span class="kw">if</span> (!<span class="var">isValid</span>) {
+    <span class="var">console</span>.<span class="fn">warn</span>(<span class="str">'⚠ Invalid MoMo webhook signature'</span>, <span class="var">body</span>);
+    <span class="kw">return</span> <span class="var">res</span>.<span class="fn">status</span>(<span class="num">400</span>).<span class="fn">json</span>({ <span class="key">message</span>: <span class="str">'Invalid signature'</span> });
+  }
+
+  <span class="kw">const</span> {
+    <span class="var">orderId</span>, <span class="var">resultCode</span>, <span class="var">transId</span>,
+    <span class="var">amount</span>, <span class="var">message</span>, <span class="var">extraData</span>
+  } = <span class="var">body</span>;
+
+  <span class="cmt">// 2. Parse extraData để lấy bookingId</span>
+  <span class="kw">const</span> { <span class="var">bookingId</span> } = <span class="fn">JSON</span>.<span class="fn">parse</span>(
+    <span class="fn">Buffer</span>.<span class="fn">from</span>(<span class="var">extraData</span>, <span class="str">'base64'</span>).<span class="fn">toString</span>(<span class="str">'utf8'</span>)
+  );
+
+  <span class="cmt">// 3. Idempotency — tránh xử lý 2 lần nếu MoMo retry</span>
+  <span class="kw">const</span> <span class="var">booking</span> = <span class="kw">await</span> <span class="var">db</span>.<span class="var">booking</span>.<span class="fn">findUnique</span>({ <span class="key">where</span>: { <span class="var">id</span>: <span class="var">bookingId</span> } });
+  <span class="kw">if</span> (<span class="var">booking</span>.<span class="var">paymentStatus</span> === <span class="str">'PAID'</span>) {
+    <span class="kw">return</span> <span class="var">res</span>.<span class="fn">json</span>({ <span class="key">message</span>: <span class="str">'Already processed'</span> }); <span class="cmt">// 200 OK để MoMo không retry</span>
+  }
+
+  <span class="kw">if</span> (<span class="var">resultCode</span> === <span class="num">0</span>) {
+    <span class="cmt">// ✅ Thanh toán thành công</span>
+    <span class="kw">await</span> <span class="fn">Promise</span>.<span class="fn">all</span>([
+      <span class="var">db</span>.<span class="var">booking</span>.<span class="fn">update</span>({
+        <span class="key">where</span>: { <span class="key">id</span>: <span class="var">bookingId</span> },
+        <span class="key">data</span>: {
+          <span class="key">paymentStatus</span>: <span class="str">'PAID'</span>,
+          <span class="key">momoTransId</span>:   <span class="var">transId</span>,
+          <span class="key">paidAmount</span>:    <span class="fn">parseInt</span>(<span class="var">amount</span>),
+          <span class="key">paidAt</span>:        <span class="kw">new</span> <span class="fn">Date</span>(),
+        }
+      }),
+      <span class="fn">sendConfirmationEmail</span>(<span class="var">bookingId</span>), <span class="cmt">// gửi email xác nhận</span>
+      <span class="fn">sendSMS</span>(<span class="var">bookingId</span>),               <span class="cmt">// gửi SMS</span>
+    ]);
+
+    <span class="var">console</span>.<span class="fn">log</span>(<span class="str">`✅ Payment success: <span class="kw">${</span><span class="var">orderId</span><span class="kw">}</span>, transId: <span class="kw">${</span><span class="var">transId</span><span class="kw">}</span>`</span>);
+  } <span class="kw">else</span> {
+    <span class="cmt">// ❌ Thanh toán thất bại</span>
+    <span class="kw">await</span> <span class="var">db</span>.<span class="var">booking</span>.<span class="fn">update</span>({
+      <span class="key">where</span>: { <span class="key">id</span>: <span class="var">bookingId</span> },
+      <span class="key">data</span>: { <span class="key">paymentStatus</span>: <span class="str">'FAILED'</span>, <span class="key">failReason</span>: <span class="var">message</span> }
+    });
+    <span class="var">console</span>.<span class="fn">warn</span>(<span class="str">`❌ Payment failed: <span class="kw">${</span><span class="var">orderId</span><span class="kw">}</span>, code: <span class="kw">${</span><span class="var">resultCode</span><span class="kw">}</span>`</span>);
+  }
+
+  <span class="cmt">// QUAN TRỌNG: Phải trả 200 OK trong 30s, MoMo retry 5 lần nếu không nhận được</span>
+  <span class="var">res</span>.<span class="fn">json</span>({ <span class="key">message</span>: <span class="str">'OK'</span> });
+});</pre>
+      </div>
+    </div>
+
+    <!-- QUERY & REFUND -->
+    <div class="section" id="query">
+      <div class="section-title">Kiểm tra giao dịch & Hoàn tiền</div>
+      <div class="section-sub">Dùng để tra cứu trạng thái giao dịch (khi webhook không nhận được) và xử lý hoàn tiền khi khách huỷ tour.</div>
+
+      <div class="tabs">
+        <div class="tab active" onclick="switchTab(this,'tab-query')">Query Transaction</div>
+        <div class="tab" onclick="switchTab(this,'tab-refund')">Hoàn tiền (Refund)</div>
+      </div>
+
+      <div class="tab-panel active" id="tab-query">
+        <div class="code-wrap">
+          <div class="code-header">
+            <span class="code-filename">Kiểm tra trạng thái giao dịch</span>
+            <span class="code-lang">node.js</span>
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          </div>
+          <pre><span class="cmt">// POST /v2/gateway/api/query</span>
+<span class="kw">async function</span> <span class="fn">queryTransaction</span>(<span class="var">orderId</span>) {
+  <span class="kw">const</span> <span class="var">requestId</span> = <span class="fn">uuidv4</span>();
+  <span class="kw">const</span> <span class="var">rawSignature</span> = <span class="str">`accessKey=<span class="kw">${</span><span class="var">MOMO_CONFIG</span>.<span class="var">accessKey</span><span class="kw">}</span>&orderId=<span class="kw">${</span><span class="var">orderId</span><span class="kw">}</span>&partnerCode=<span class="kw">${</span><span class="var">MOMO_CONFIG</span>.<span class="var">partnerCode</span><span class="kw">}</span>&requestId=<span class="kw">${</span><span class="var">requestId</span><span class="kw">}</span>`</span>;
+  <span class="kw">const</span> <span class="var">signature</span> = <span class="var">crypto</span>.<span class="fn">createHmac</span>(<span class="str">'sha256'</span>, <span class="var">MOMO_CONFIG</span>.<span class="var">secretKey</span>).<span class="fn">update</span>(<span class="var">rawSignature</span>).<span class="fn">digest</span>(<span class="str">'hex'</span>);
+
+  <span class="kw">const</span> { <span class="var">data</span> } = <span class="kw">await</span> <span class="var">axios</span>.<span class="fn">post</span>(
+    <span class="str">`https://<span class="kw">${</span><span class="var">MOMO_CONFIG</span>.<span class="var">apiUrl</span><span class="kw">}</span>/v2/gateway/api/query`</span>,
+    { <span class="key">partnerCode</span>: <span class="var">MOMO_CONFIG</span>.<span class="var">partnerCode</span>, <span class="key">requestId</span>, <span class="key">orderId</span>, <span class="key">signature</span>, <span class="key">lang</span>: <span class="str">'vi'</span> }
+  );
+  <span class="kw">return</span> <span class="var">data</span>; <span class="cmt">// resultCode === 0: thành công, khác: thất bại</span>
+}</pre>
+        </div>
+      </div>
+
+      <div class="tab-panel" id="tab-refund">
+        <div class="code-wrap">
+          <div class="code-header">
+            <span class="code-filename">Hoàn tiền khi khách huỷ tour</span>
+            <span class="code-lang">node.js</span>
+            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          </div>
+          <pre><span class="cmt">// POST /v2/gateway/api/refund</span>
+<span class="kw">async function</span> <span class="fn">refundPayment</span>(<span class="var">orderId</span>, <span class="var">transId</span>, <span class="var">amount</span>, <span class="var">reason</span>) {
+  <span class="kw">const</span> <span class="var">requestId</span>    = <span class="fn">uuidv4</span>();
+  <span class="kw">const</span> <span class="var">refundOrderId</span> = <span class="str">`REFUND-<span class="kw">${</span><span class="var">orderId</span><span class="kw">}</span>-<span class="kw">${</span><span class="var">Date</span>.<span class="fn">now</span>()<span class="kw">}</span>`</span>;
+  <span class="kw">const</span> <span class="var">rawSignature</span>  = <span class="str">`accessKey=<span class="kw">${</span><span class="var">MOMO_CONFIG</span>.<span class="var">accessKey</span><span class="kw">}</span>&amount=<span class="kw">${</span><span class="var">amount</span><span class="kw">}</span>&description=<span class="kw">${</span><span class="var">reason</span><span class="kw">}</span>&orderId=<span class="kw">${</span><span class="var">refundOrderId</span><span class="kw">}</span>&partnerCode=<span class="kw">${</span><span class="var">MOMO_CONFIG</span>.<span class="var">partnerCode</span><span class="kw">}</span>&requestId=<span class="kw">${</span><span class="var">requestId</span><span class="kw">}</span>&transId=<span class="kw">${</span><span class="var">transId</span><span class="kw">}</span>`</span>;
+  <span class="kw">const</span> <span class="var">signature</span>    = <span class="var">crypto</span>.<span class="fn">createHmac</span>(<span class="str">'sha256'</span>, <span class="var">MOMO_CONFIG</span>.<span class="var">secretKey</span>).<span class="fn">update</span>(<span class="var">rawSignature</span>).<span class="fn">digest</span>(<span class="str">'hex'</span>);
+
+  <span class="kw">const</span> { <span class="var">data</span> } = <span class="kw">await</span> <span class="var">axios</span>.<span class="fn">post</span>(
+    <span class="str">`https://<span class="kw">${</span><span class="var">MOMO_CONFIG</span>.<span class="var">apiUrl</span><span class="kw">}</span>/v2/gateway/api/refund`</span>,
+    { <span class="key">partnerCode</span>: <span class="var">MOMO_CONFIG</span>.<span class="var">partnerCode</span>, <span class="key">requestId</span>, <span class="key">orderId</span>: <span class="var">refundOrderId</span>, <span class="key">transId</span>: <span class="fn">String</span>(<span class="var">transId</span>), <span class="key">amount</span>: <span class="fn">String</span>(<span class="var">amount</span>), <span class="key">description</span>: <span class="var">reason</span>, <span class="key">signature</span>, <span class="key">lang</span>: <span class="str">'vi'</span> }
+  );
+  <span class="kw">if</span> (<span class="var">data</span>.<span class="var">resultCode</span> !== <span class="num">0</span>) <span class="kw">throw new</span> <span class="fn">Error</span>(<span class="str">`Refund failed: <span class="kw">${</span><span class="var">data</span>.<span class="var">message</span><span class="kw">}</span>`</span>);
+  <span class="kw">return</span> <span class="var">data</span>;
+}
+
+<span class="cmt">// Dùng trong route huỷ tour:</span>
+<span class="var">router</span>.<span class="fn">post</span>(<span class="str">'/cancel/:bookingId'</span>, <span class="kw">async</span> (<span class="var">req</span>, <span class="var">res</span>) => {
+  <span class="kw">const</span> <span class="var">booking</span> = <span class="kw">await</span> <span class="var">db</span>.<span class="var">booking</span>.<span class="fn">findUnique</span>({ <span class="key">where</span>: { <span class="key">id</span>: <span class="var">req</span>.<span class="var">params</span>.<span class="var">bookingId</span> } });
+  <span class="kw">const</span> <span class="var">refund</span> = <span class="kw">await</span> <span class="fn">refundPayment</span>(
+    <span class="var">booking</span>.<span class="var">momoOrderId</span>, <span class="var">booking</span>.<span class="var">momoTransId</span>,
+    <span class="var">booking</span>.<span class="var">paidAmount</span>, <span class="str">'Khách huỷ tour trước 7 ngày'</span>
+  );
+  <span class="var">res</span>.<span class="fn">json</span>({ <span class="key">success</span>: <span class="kw">true</span>, <span class="key">refundTransId</span>: <span class="var">refund</span>.<span class="var">transId</span> });
+});</pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- DEMO -->
+    <div class="section" id="demo">
+      <div class="section-title">Demo tương tác</div>
+      <div class="section-sub">Giả lập luồng tạo đơn MoMo — xem request/response thực tế trông như thế nào (dùng Sandbox credentials).</div>
+      <div class="demo-wrap">
+        <div class="demo-header">
+          <div class="demo-dot" style="background:#ef4444"></div>
+          <div class="demo-dot" style="background:#f59e0b"></div>
+          <div class="demo-dot" style="background:#22c55e"></div>
+          <div class="demo-title" style="margin-left:.5rem">MoMo Payment Simulator — Sandbox</div>
+        </div>
+        <div class="demo-body">
+          <div class="demo-form">
+            <div class="demo-form-group">
+              <label class="demo-label">Tour</label>
+              <select class="demo-select" id="demoTour">
+                <option value="Hạ Long 5N4Đ|5900000">Hạ Long 5N4Đ — 5.900.000đ</option>
+                <option value="Hội An 3N2Đ|2800000">Hội An 3N2Đ — 2.800.000đ</option>
+                <option value="Phú Quốc Premium|15500000">Phú Quốc Premium — 15.500.000đ</option>
+              </select>
+            </div>
+            <div class="demo-form-group">
+              <label class="demo-label">Số khách</label>
+              <select class="demo-select" id="demoGuests">
+                <option>2 người</option><option>3 người</option><option>4 người</option>
+              </select>
+            </div>
+            <div class="demo-form-group">
+              <label class="demo-label">Đặt cọc (30%)</label>
+              <input class="demo-input" id="demoAmount" value="1,770,000 đ" readonly>
+            </div>
+            <div class="demo-form-group">
+              <label class="demo-label">Phương thức</label>
+              <select class="demo-select">
+                <option>MoMo eWallet</option>
+                <option>ATM Card</option>
+                <option>Visa/Master</option>
+              </select>
+            </div>
+            <button class="demo-btn" id="demoBtn" onclick="runDemo()">
+              <span>💳</span> Tạo đơn thanh toán MoMo
+            </button>
+          </div>
+          <div class="demo-result">
+            <div class="demo-result-title">Response từ MoMo API</div>
+            <div id="demoStatus"></div>
+            <div id="demoOutput" class="demo-json" style="color:var(--text3);font-style:italic">Nhấn "Tạo đơn" để xem response...</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><span class="card-title">Webhook IPN Simulator</span></div>
+        <div class="card-body">
+          <div style="display:flex;gap:.75rem;margin-bottom:.75rem;flex-wrap:wrap">
+            <button class="copy-btn" onclick="addLog('success','[IPN] POST /webhook · resultCode: 0 · transId: 4312167901 · amount: 1770000')" style="padding:.4rem .9rem">✅ Simulate Success</button>
+            <button class="copy-btn" onclick="addLog('error','[IPN] POST /webhook · resultCode: 1006 · message: Transaction cancelled by user')" style="padding:.4rem .9rem">❌ Simulate Cancel</button>
+            <button class="copy-btn" onclick="addLog('warn','[IPN] POST /webhook · resultCode: 1005 · message: Duplicate orderId detected')" style="padding:.4rem .9rem">⚠ Simulate Duplicate</button>
+            <button class="copy-btn" onclick="clearLog()" style="padding:.4rem .9rem">Clear</button>
+          </div>
+          <div class="webhook-log" id="webhookLog">
+            <div class="log-entry"><span class="log-time">--:--:--</span><span class="log-info">Webhook listener ready on /api/payment/momo/webhook</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RESULT CODES -->
+    <div class="section" id="result-codes">
+      <div class="section-title">Mã kết quả quan trọng</div>
+      <div class="section-sub">Các <code>resultCode</code> thường gặp khi xử lý response và webhook từ MoMo.</div>
+      <div class="rc-grid">
+        <div class="rc-item"><div class="rc-code rc-0">0</div><div class="rc-msg">Thành công</div></div>
+        <div class="rc-item"><div class="rc-code rc-err">10</div><div class="rc-msg">Hệ thống đang bảo trì</div></div>
+        <div class="rc-item"><div class="rc-code rc-err">11</div><div class="rc-msg">Truy cập bị từ chối</div></div>
+        <div class="rc-item"><div class="rc-code rc-err">12</div><div class="rc-msg">API version không hỗ trợ</div></div>
+        <div class="rc-item"><div class="rc-code rc-err">13</div><div class="rc-msg">Xác thực merchant thất bại</div></div>
+        <div class="rc-item"><div class="rc-code rc-err">20</div><div class="rc-msg">Dữ liệu request sai định dạng</div></div>
+        <div class="rc-item"><div class="rc-code rc-err">21</div><div class="rc-msg">Số tiền không hợp lệ</div></div>
+        <div class="rc-item"><div class="rc-code rc-warn">1001</div><div class="rc-msg">Tài khoản không đủ số dư</div></div>
+        <div class="rc-item"><div class="rc-code rc-warn">1002</div><div class="rc-msg">Vượt hạn mức giao dịch</div></div>
+        <div class="rc-item"><div class="rc-code rc-warn">1005</div><div class="rc-msg">orderId/requestId bị trùng</div></div>
+        <div class="rc-item"><div class="rc-code rc-warn">1006</div><div class="rc-msg">Giao dịch bị huỷ bởi người dùng</div></div>
+        <div class="rc-item"><div class="rc-code rc-err">9000</div><div class="rc-msg">Giao dịch được hoàn tiền một phần</div></div>
+      </div>
+    </div>
+
+    <!-- CHECKLIST -->
+    <div class="section" id="checklist">
+      <div class="section-title">Checklist trước khi Go-Live</div>
+      <div class="section-sub">Tick vào từng mục khi bạn hoàn thành — đảm bảo không bỏ sót bước quan trọng nào.</div>
+      <div class="card">
+        <div class="card-body">
+          <div class="checklist" id="checklist">
+            <div class="check-item"><div class="check-box" onclick="toggleCheck(this)"></div><span>Đăng ký tài khoản M4B tại business.momo.vn và chọn "Collection Link"</span></div>
+            <div class="check-item"><div class="check-box" onclick="toggleCheck(this)"></div><span>Nhận Sandbox credentials (partnerCode, accessKey, secretKey)</span></div>
+            <div class="check-item"><div class="check-box" onclick="toggleCheck(this)"></div><span>Lưu secretKey vào <code>.env</code> — không commit lên Git</span></div>
+            <div class="check-item"><div class="check-box" onclick="toggleCheck(this)"></div><span>Implement tạo Signature HMAC-SHA256 đúng thứ tự field</span></div>
+            <div class="check-item"><div class="check-box" onclick="toggleCheck(this)"></div><span>Test tạo đơn thanh toán thành công trên Sandbox</span></div>
+            <div class="check-item"><div class="check-box" onclick="toggleCheck(this)"></div><span>Implement webhook IPN handler có verify signature</span></div>
+            <div class="check-item"><div class="check-box" onclick="toggleCheck(this)"></div><span>ipnUrl là HTTPS, public accessible, response 200 OK trong 30s</span></div>
+            <div class="check-item"><div class="check-box" onclick="toggleCheck(this)"></div><span>Implement idempotency — tránh xử lý đơn 2 lần khi MoMo retry webhook</span></div>
+            <div class="check-item"><div class="check-box" onclick="toggleCheck(this)"></div><span>Test luồng huỷ tour + hoàn tiền (refund API)</span></div>
+            <div class="check-item"><div class="check-box" onclick="toggleCheck(this)"></div><span>Test query transaction để xử lý trường hợp webhook không đến</span></div>
+            <div class="check-item"><div class="check-box" onclick="toggleCheck(this)"></div><span>Gửi kết quả test case cho MoMo review (screenshot + log)</span></div>
+            <div class="check-item"><div class="check-box" onclick="toggleCheck(this)"></div><span>Nhận Production credentials và deploy</span></div>
+            <div class="check-item"><div class="check-box" onclick="toggleCheck(this)"></div><span>UAT 1 giao dịch thật trên Production với số tiền nhỏ</span></div>
+          </div>
+          <div style="margin-top:1.25rem;padding:.75rem 1rem;background:var(--surface2);border-radius:6px;font-family:var(--mono);font-size:.72rem;color:var(--text3)" id="checkProgress">0 / 13 hoàn thành</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /wrap -->
+
+<script>
+// Copy code
+function copyCode(btn){
+  const pre = btn.closest('.code-wrap').querySelector('pre');
+  navigator.clipboard.writeText(pre.innerText).then(()=>{
+    btn.textContent='Copied!';btn.classList.add('copied');
+    setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('copied')},2000);
+  });
+}
+
+// Tabs
+function switchTab(btn,panelId){
+  btn.closest('.section').querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  btn.closest('.section').querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById(panelId).classList.add('active');
+}
+
+// Demo
+document.getElementById('demoTour').addEventListener('change',updateAmount);
+document.getElementById('demoGuests').addEventListener('change',updateAmount);
+function updateAmount(){
+  const [,priceStr]=document.getElementById('demoTour').value.split('|');
+  const guests=parseInt(document.getElementById('demoGuests').value);
+  const total=parseInt(priceStr)*guests;
+  const deposit=Math.round(total*0.3);
+  document.getElementById('demoAmount').value=deposit.toLocaleString('vi-VN')+' đ';
+}
+updateAmount();
+
+function runDemo(){
+  const btn=document.getElementById('demoBtn');
+  btn.disabled=true;btn.innerHTML='<span>⏳</span> Đang gọi API...';
+  document.getElementById('demoStatus').innerHTML='<div class="demo-status status-loading">⏳ Đang gửi request đến test-payment.momo.vn...</div>';
+  document.getElementById('demoOutput').style.fontStyle='normal';
+
+  setTimeout(()=>{
+    const [tourName,priceStr]=document.getElementById('demoTour').value.split('|');
+    const guests=parseInt(document.getElementById('demoGuests').value);
+    const total=parseInt(priceStr)*guests;
+    const deposit=Math.round(total*0.3);
+    const orderId='BT-0891-'+Date.now();
+    const requestId=crypto.randomUUID?.()??('req-'+Math.random().toString(36).slice(2));
+    const transId=Math.floor(Math.random()*9000000000+1000000000);
+
+    document.getElementById('demoStatus').innerHTML='<div class="demo-status status-success">✅ resultCode: 0 — Tạo đơn thành công</div>';
+    document.getElementById('demoOutput').innerHTML = JSON.stringify({
+      partnerCode:"MOMO",
+      orderId,
+      requestId,
+      amount:deposit,
+      responseTime:Date.now(),
+      message:"Thành công",
+      resultCode:0,
+      payUrl:`https://test-payment.momo.vn/v2/gateway/pay?t=TU9NT${btoa(orderId).slice(0,20)}`,
+      shortLink:`https://test-payment.momo.vn/shortlink/${Math.random().toString(36).slice(2,8)}`,
+      qrCodeUrl:`https://test-payment.momo.vn/qr/${orderId}`,
+      deeplink:`momo://app?action=payWithApp&orderId=${orderId}`,
+    },null,2)
+    .replace(/"([^"]+)":/g,'<span style="color:var(--amber)">"$1"</span>:')
+    .replace(/: "([^"]+)"/g,': <span style="color:var(--green)">"$1"</span>')
+    .replace(/: (\d+)/g,': <span style="color:var(--pink)">$1</span>')
+    .replace(/: (true|false|null)/g,': <span style="color:var(--purple)">$1</span>');
+
+    addLog('success',`[IPN] Webhook nhận được · resultCode: 0 · orderId: ${orderId} · transId: ${transId}`);
+    addLog('info',`[DB] booking.update · paymentStatus: PAID · paidAmount: ${deposit.toLocaleString('vi-VN')}đ`);
+    addLog('info',`[Email] Gửi xác nhận → khach@email.com`);
+
+    btn.disabled=false;btn.innerHTML='<span>💳</span> Tạo đơn thanh toán MoMo';
+  },1400);
+}
+
+// Webhook log
+function addLog(type, msg){
+  const log=document.getElementById('webhookLog');
+  const now=new Date().toLocaleTimeString('vi-VN');
+  const entry=document.createElement('div');
+  entry.className='log-entry';
+  entry.innerHTML=`<span class="log-time">${now}</span><span class="log-${type}">${msg}</span>`;
+  log.appendChild(entry);
+  log.scrollTop=log.scrollHeight;
+}
+function clearLog(){document.getElementById('webhookLog').innerHTML='<div class="log-entry"><span class="log-time">--:--:--</span><span class="log-info">Log cleared</span></div>';}
+
+// Checklist
+function toggleCheck(el){
+  el.classList.toggle('done');
+  if(el.classList.contains('done')) el.textContent='✓';
+  else el.textContent='';
+  const total=document.querySelectorAll('.check-box').length;
+  const done=document.querySelectorAll('.check-box.done').length;
+  const prog=document.getElementById('checkProgress');
+  prog.textContent=`${done} / ${total} hoàn thành`;
+  if(done===total) prog.style.color='var(--green)';
+  else prog.style.color='var(--text3)';
+}
+
+// Sidebar active on scroll
+const sections=document.querySelectorAll('.section');
+const navLinks=document.querySelectorAll('.nav-link');
+window.addEventListener('scroll',()=>{
+  let cur='';
+  sections.forEach(s=>{if(window.scrollY>=s.offsetTop-100)cur=s.id;});
+  navLinks.forEach(l=>{
+    l.classList.remove('active');
+    if(l.getAttribute('href')==='#'+cur)l.classList.add('active');
+  });
+},{passive:true});
+</script>
+</body>
+</html>

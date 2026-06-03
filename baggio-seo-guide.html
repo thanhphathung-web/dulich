@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Baggio Travel — SEO Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#f8f7f4;
+  --surface:#ffffff;
+  --surface2:#f2f0ec;
+  --ink:#1a1814;
+  --ink2:#5a5650;
+  --ink3:#9a948e;
+  --border:#e4e0d8;
+  --border2:#ccc8bf;
+  --green:#1a7a4a;
+  --green-bg:#edf7f1;
+  --green-border:#b8e0cb;
+  --blue:#1a4e8a;
+  --blue-bg:#edf2fa;
+  --blue-border:#b8cef0;
+  --amber:#7a4e10;
+  --amber-bg:#fdf5e6;
+  --amber-border:#f0d898;
+  --red:#8a1a1a;
+  --red-bg:#fdf0f0;
+  --red-border:#f0b8b8;
+  --purple:#4a1a8a;
+  --purple-bg:#f3eefa;
+  --purple-border:#c8b0f0;
+  --font:'DM Sans',sans-serif;
+  --mono:'DM Mono',monospace;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:14px;line-height:1.65}
+
+/* ── LAYOUT ── */
+.page{display:grid;grid-template-columns:220px 1fr;min-height:100vh}
+
+/* ── SIDEBAR ── */
+.sb{background:var(--surface);border-right:1px solid var(--border);position:sticky;top:0;height:100vh;overflow-y:auto;display:flex;flex-direction:column}
+.sb-logo{padding:1.25rem;border-bottom:1px solid var(--border)}
+.sb-logo-name{font-size:1rem;font-weight:600;color:var(--ink);letter-spacing:-.01em}
+.sb-logo-name span{color:var(--green)}
+.sb-logo-sub{font-family:var(--mono);font-size:.58rem;color:var(--ink3);letter-spacing:.1em;margin-top:.2rem;text-transform:uppercase}
+.sb-nav{flex:1;padding:.5rem 0}
+.sb-sec{font-family:var(--mono);font-size:.56rem;letter-spacing:.18em;text-transform:uppercase;color:var(--ink3);padding:.6rem 1rem .2rem}
+.sb-link{display:flex;align-items:center;gap:.6rem;padding:.45rem 1rem;font-size:.8rem;color:var(--ink2);cursor:pointer;border-left:2px solid transparent;transition:all .15s;text-decoration:none}
+.sb-link:hover{color:var(--ink);background:var(--surface2)}
+.sb-link.active{color:var(--green);border-left-color:var(--green);background:var(--green-bg);font-weight:500}
+.sb-icon{font-size:.85rem;width:18px;text-align:center}
+
+.sb-score{margin:1rem;padding:.9rem;background:var(--surface2);border:1px solid var(--border);border-radius:8px}
+.sb-score-label{font-family:var(--mono);font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);margin-bottom:.5rem}
+.sb-score-val{font-size:2rem;font-weight:600;color:var(--green);line-height:1;font-family:var(--mono)}
+.sb-score-sub{font-size:.7rem;color:var(--ink3);margin-top:.2rem}
+.sb-score-bar{height:4px;background:var(--border);border-radius:2px;margin-top:.75rem;overflow:hidden}
+.sb-score-fill{height:100%;background:var(--green);border-radius:2px;transition:width .6s}
+
+/* ── MAIN ── */
+.main{min-height:100vh}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:.85rem 2rem;position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:1rem}
+.topbar-title{font-size:.95rem;font-weight:600;color:var(--ink)}
+.topbar-crumb{font-size:.75rem;color:var(--ink3);font-family:var(--mono)}
+.topbar-right{margin-left:auto;display:flex;gap:.5rem}
+.tb-chip{font-family:var(--mono);font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;padding:.3rem .7rem;border-radius:20px;border:1px solid var(--border);background:none;color:var(--ink3);cursor:pointer;transition:all .15s}
+.tb-chip:hover{border-color:var(--border2);color:var(--ink2)}
+.tb-chip.green{background:var(--green-bg);border-color:var(--green-border);color:var(--green)}
+
+.content{padding:2rem;max-width:900px}
+
+/* ── SECTIONS ── */
+.seo-section{margin-bottom:3.5rem;scroll-margin-top:68px}
+.sec-eyebrow{font-family:var(--mono);font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;color:var(--green);margin-bottom:.5rem;display:flex;align-items:center;gap:.5rem}
+.sec-eyebrow::before{content:'';width:20px;height:1px;background:var(--green)}
+.sec-title{font-size:1.5rem;font-weight:600;letter-spacing:-.02em;color:var(--ink);margin-bottom:.4rem}
+.sec-sub{font-size:.88rem;color:var(--ink2);font-weight:300;line-height:1.7;margin-bottom:1.5rem}
+
+/* ── CARDS ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:1rem}
+.card-header{padding:.75rem 1.25rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--surface2)}
+.card-title{font-family:var(--mono);font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3)}
+.card-body{padding:1.25rem}
+
+/* ── CODE BLOCKS ── */
+.code-wrap{border-radius:8px;border:1px solid var(--border);overflow:hidden;margin:.75rem 0}
+.code-top{background:var(--surface2);border-bottom:1px solid var(--border);padding:.5rem 1rem;display:flex;align-items:center;justify-content:space-between}
+.code-file{font-family:var(--mono);font-size:.66rem;color:var(--ink2)}
+.code-lang{font-family:var(--mono);font-size:.58rem;color:var(--ink3);text-transform:uppercase;letter-spacing:.1em}
+.copy-btn{font-family:var(--mono);font-size:.58rem;color:var(--ink3);background:none;border:1px solid var(--border);padding:.2rem .5rem;cursor:pointer;border-radius:3px;transition:all .15s}
+.copy-btn:hover{border-color:var(--border2);color:var(--ink2)}
+.copy-btn.ok{color:var(--green);border-color:var(--green-border)}
+pre{background:#1e1c18;padding:1.1rem;overflow-x:auto;font-family:var(--mono);font-size:.75rem;line-height:1.8;margin:0}
+pre::-webkit-scrollbar{height:4px}
+pre::-webkit-scrollbar-thumb{background:#3a3830;border-radius:2px}
+.kw{color:#d4b896}
+.str{color:#98d49a}
+.cmt{color:#6a6458;font-style:italic}
+.fn{color:#86b4e8}
+.tag{color:#e8a878}
+.attr{color:#c8d8a8}
+.val{color:#98d49a}
+.num{color:#f0c878}
+.op{color:#a8a098}
+
+/* ── ALERTS ── */
+.alert{border-radius:8px;padding:.9rem 1.1rem;margin:.75rem 0;display:flex;gap:.75rem;font-size:.83rem;line-height:1.65}
+.alert-icon{flex-shrink:0;font-size:1rem}
+.alert-title{font-weight:600;margin-bottom:.15rem}
+.alert.green{background:var(--green-bg);border:1px solid var(--green-border)}
+.alert.green .alert-title{color:var(--green)}
+.alert.blue{background:var(--blue-bg);border:1px solid var(--blue-border)}
+.alert.blue .alert-title{color:var(--blue)}
+.alert.amber{background:var(--amber-bg);border:1px solid var(--amber-border)}
+.alert.amber .alert-title{color:var(--amber)}
+.alert.red{background:var(--red-bg);border:1px solid var(--red-border)}
+.alert.red .alert-title{color:var(--red)}
+
+/* ── SERP PREVIEW ── */
+.serp-wrap{background:#fff;border:1px solid var(--border);border-radius:8px;padding:1.25rem;font-family:Arial,sans-serif;margin:.75rem 0}
+.serp-url{font-size:.72rem;color:#1a7a1a;margin-bottom:.15rem;display:flex;align-items:center;gap:.4rem}
+.serp-favicon{width:16px;height:16px;background:#c5372a;border-radius:50%;display:inline-block;flex-shrink:0}
+.serp-title{font-size:1.1rem;color:#1558d6;text-decoration:underline;cursor:pointer;line-height:1.3;margin-bottom:.35rem;font-weight:400}
+.serp-title:hover{color:#c5372a}
+.serp-desc{font-size:.84rem;color:#4d5156;line-height:1.55}
+.serp-date{color:#70757a;font-size:.82rem}
+.serp-sitelinks{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border)}
+.serp-sl{font-size:.75rem;color:#1558d6;text-decoration:underline;cursor:pointer}
+.serp-sl-desc{font-size:.7rem;color:#70757a;margin-top:.1rem}
+
+/* ── CHECKLIST ── */
+.checks{display:flex;flex-direction:column;gap:.35rem}
+.check-item{display:flex;align-items:flex-start;gap:.75rem;padding:.45rem 0;border-bottom:1px solid rgba(0,0,0,.05);cursor:pointer;font-size:.83rem}
+.check-item:last-child{border-bottom:none}
+.chk{width:18px;height:18px;border-radius:4px;border:1.5px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.65rem;margin-top:.1rem;transition:all .2s}
+.chk.done{background:var(--green);border-color:var(--green);color:#fff}
+.check-text{flex:1;color:var(--ink2);line-height:1.5}
+.check-tag{font-family:var(--mono);font-size:.58rem;letter-spacing:.06em;text-transform:uppercase;padding:.15rem .4rem;border-radius:3px;flex-shrink:0;margin-top:.15rem}
+.ct-impact{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)}
+.ct-medium{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border)}
+.ct-low{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-border)}
+.check-prog{display:flex;justify-content:space-between;align-items:center;margin-top:.75rem;padding:.5rem .75rem;background:var(--surface2);border-radius:5px;font-family:var(--mono);font-size:.65rem;color:var(--ink3)}
+
+/* ── KEYWORD TABLE ── */
+.kw-table{width:100%;border-collapse:collapse}
+.kw-table th{font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);padding:.55rem .9rem;text-align:left;border-bottom:1px solid var(--border);background:var(--surface2);font-weight:400}
+.kw-table td{padding:.6rem .9rem;border-bottom:1px solid rgba(0,0,0,.05);font-size:.82rem;vertical-align:middle}
+.kw-table tr:last-child td{border-bottom:none}
+.kw-table tr:hover td{background:var(--surface2)}
+.kw-word{font-weight:500;color:var(--ink)}
+.vol-bar-wrap{width:80px;background:var(--border);height:5px;border-radius:2px;overflow:hidden}
+.vol-bar{height:100%;background:var(--green);border-radius:2px}
+.diff-badge{font-family:var(--mono);font-size:.6rem;padding:.15rem .45rem;border-radius:3px;text-transform:uppercase;letter-spacing:.05em}
+.diff-easy{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
+.diff-med{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border)}
+.diff-hard{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)}
+.intent-badge{font-family:var(--mono);font-size:.58rem;padding:.12rem .4rem;border-radius:3px;text-transform:uppercase}
+.int-trans{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-border)}
+.int-info{background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-border)}
+.int-nav{background:var(--surface2);color:var(--ink3);border:1px solid var(--border)}
+
+/* ── SCORE METER ── */
+.score-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem;margin:.75rem 0}
+.score-card{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:1rem;text-align:center}
+.score-num{font-size:1.8rem;font-weight:600;font-family:var(--mono);line-height:1;margin-bottom:.3rem}
+.score-label{font-size:.72rem;color:var(--ink3);font-weight:400}
+.score-hint{font-size:.65rem;color:var(--ink3);margin-top:.3rem;font-family:var(--mono)}
+
+/* ── GA4 EVENTS ── */
+.events-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem}
+.event-card{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:.9rem}
+.event-name{font-family:var(--mono);font-size:.72rem;font-weight:500;color:var(--blue);margin-bottom:.3rem}
+.event-trigger{font-size:.75rem;color:var(--ink2);margin-bottom:.4rem;font-weight:300}
+.event-params{font-family:var(--mono);font-size:.65rem;color:var(--ink3);line-height:1.6}
+
+@media(max-width:860px){
+  .page{grid-template-columns:1fr}
+  .sb{display:none}
+  .score-grid{grid-template-columns:1fr 1fr}
+  .events-grid{grid-template-columns:1fr}
+  .serp-sitelinks{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- SIDEBAR -->
+<aside class="sb">
+  <div class="sb-logo">
+    <div class="sb-logo-name">Baggio<span>.</span>Travel</div>
+    <div class="sb-logo-sub">SEO & Growth Guide</div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-sec">On-page SEO</div>
+    <a class="sb-link active" onclick="goto('meta',this)"><span class="sb-icon">📄</span>Meta Tags</a>
+    <a class="sb-link" onclick="goto('schema',this)"><span class="sb-icon">🔣</span>Schema Markup</a>
+    <a class="sb-link" onclick="goto('sitemap',this)"><span class="sb-icon">🗺️</span>Sitemap & robots.txt</a>
+    <a class="sb-link" onclick="goto('perf',this)"><span class="sb-icon">⚡</span>Core Web Vitals</a>
+    <div class="sb-sec">Keywords</div>
+    <a class="sb-link" onclick="goto('keywords',this)"><span class="sb-icon">🔍</span>Từ khoá mục tiêu</a>
+    <a class="sb-link" onclick="goto('content',this)"><span class="sb-icon">✍️</span>Content Strategy</a>
+    <div class="sb-sec">Analytics</div>
+    <a class="sb-link" onclick="goto('ga4',this)"><span class="sb-icon">📊</span>Google Analytics 4</a>
+    <a class="sb-link" onclick="goto('gsc',this)"><span class="sb-icon">🔎</span>Search Console</a>
+    <div class="sb-sec">Checklist</div>
+    <a class="sb-link" onclick="goto('checklist',this)"><span class="sb-icon">✅</span>SEO Checklist</a>
+  </nav>
+  <div class="sb-score">
+    <div class="sb-score-label">SEO Score mục tiêu</div>
+    <div class="sb-score-val" id="scoreVal">0</div>
+    <div class="sb-score-sub">/ 100 — Lighthouse SEO</div>
+    <div class="sb-score-bar"><div class="sb-score-fill" id="scoreFill" style="width:0%"></div></div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div class="topbar-title">SEO & Analytics Setup</div>
+      <div class="topbar-crumb">Baggio Travel · On-page · Schema · GA4 · Search Console</div>
+    </div>
+    <div class="topbar-right">
+      <span class="tb-chip green">Lighthouse target: 100</span>
+      <span class="tb-chip">PageSpeed Insights</span>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ── META TAGS ── -->
+    <div class="seo-section" id="meta">
+      <div class="sec-eyebrow">On-page SEO</div>
+      <div class="sec-title">Meta Tags chuẩn</div>
+      <div class="sec-sub">Meta tags quyết định cách Google và mạng xã hội hiển thị trang của bạn. Mỗi trang tour cần một bộ meta tags riêng biệt.</div>
+
+      <div style="margin-bottom:.75rem">
+        <strong style="font-size:.82rem;color:var(--ink2)">Preview SERP — Trang chủ</strong>
+      </div>
+      <div class="serp-wrap">
+        <div class="serp-url"><div class="serp-favicon"></div> baggiotravel.com</div>
+        <div class="serp-title">Baggio Travel — Tour Du Lịch Việt Nam Trọn Gói | Đặt Tour Online</div>
+        <div class="serp-desc"><span class="serp-date">2025 · </span>Khám phá Việt Nam với hơn 240 gói tour trọn gói — vé máy bay, khách sạn, hướng dẫn viên. Đặt tour Hội An, Hạ Long, Phú Quốc từ 1.900.000đ. Hoàn tiền 100% nếu huỷ trước 7 ngày.</div>
+        <div class="serp-sitelinks">
+          <div><div class="serp-sl">Đặt tour ngay</div><div class="serp-sl-desc">Book trong 3 phút</div></div>
+          <div><div class="serp-sl">Tour Hội An</div><div class="serp-sl-desc">Từ 2.800.000đ</div></div>
+          <div><div class="serp-sl">Tour Hạ Long</div><div class="serp-sl-desc">Du thuyền 4★</div></div>
+          <div><div class="serp-sl">Liên hệ</div><div class="serp-sl-desc">Tư vấn miễn phí</div></div>
+        </div>
+      </div>
+
+      <div class="code-wrap">
+        <div class="code-top"><span class="code-file">src/pages/index.html — &lt;head&gt;</span><span class="code-lang">HTML</span><button class="copy-btn" onclick="cp(this)">Copy</button></div>
+        <pre><span class="cmt">&lt;!-- ── CƠ BẢN ────────────────────────────────── --&gt;</span>
+<span class="tag">&lt;meta</span> <span class="attr">charset</span>=<span class="val">"UTF-8"</span><span class="tag">&gt;</span>
+<span class="tag">&lt;meta</span> <span class="attr">name</span>=<span class="val">"viewport"</span> <span class="attr">content</span>=<span class="val">"width=device-width, initial-scale=1.0"</span><span class="tag">&gt;</span>
+<span class="tag">&lt;meta</span> <span class="attr">http-equiv</span>=<span class="val">"X-UA-Compatible"</span> <span class="attr">content</span>=<span class="val">"IE=edge"</span><span class="tag">&gt;</span>
+
+<span class="cmt">&lt;!-- ── TITLE & DESCRIPTION ───────────────────── --&gt;</span>
+<span class="cmt">&lt;!-- Title: 50-60 ký tự, có từ khoá chính --&gt;</span>
+<span class="tag">&lt;title&gt;</span>Baggio Travel — Tour Du Lịch Việt Nam Trọn Gói | Đặt Tour Online<span class="tag">&lt;/title&gt;</span>
+
+<span class="cmt">&lt;!-- Description: 150-160 ký tự, có CTA và từ khoá --&gt;</span>
+<span class="tag">&lt;meta</span> <span class="attr">name</span>=<span class="val">"description"</span>
+  <span class="attr">content</span>=<span class="val">"Khám phá Việt Nam với 240+ gói tour trọn gói — vé máy bay, khách sạn, HDV. Tour Hội An, Hạ Long, Phú Quốc từ 1.900.000đ. Đặt tour trong 3 phút, hoàn 100% nếu huỷ."</span><span class="tag">&gt;</span>
+
+<span class="cmt">&lt;!-- Keywords (ít quan trọng nhưng vẫn nên có) --&gt;</span>
+<span class="tag">&lt;meta</span> <span class="attr">name</span>=<span class="val">"keywords"</span>
+  <span class="attr">content</span>=<span class="val">"tour du lịch việt nam, đặt tour online, tour hội an, tour hạ long, tour phú quốc, tour trọn gói"</span><span class="tag">&gt;</span>
+
+<span class="cmt">&lt;!-- Canonical URL — tránh duplicate content --&gt;</span>
+<span class="tag">&lt;link</span> <span class="attr">rel</span>=<span class="val">"canonical"</span> <span class="attr">href</span>=<span class="val">"https://baggiotravel.com"</span><span class="tag">&gt;</span>
+
+<span class="cmt">&lt;!-- ── OPEN GRAPH (Facebook, Zalo, LinkedIn) ─── --&gt;</span>
+<span class="tag">&lt;meta</span> <span class="attr">property</span>=<span class="val">"og:type"</span>        <span class="attr">content</span>=<span class="val">"website"</span><span class="tag">&gt;</span>
+<span class="tag">&lt;meta</span> <span class="attr">property</span>=<span class="val">"og:url"</span>         <span class="attr">content</span>=<span class="val">"https://baggiotravel.com"</span><span class="tag">&gt;</span>
+<span class="tag">&lt;meta</span> <span class="attr">property</span>=<span class="val">"og:site_name"</span>    <span class="attr">content</span>=<span class="val">"Baggio Travel"</span><span class="tag">&gt;</span>
+<span class="tag">&lt;meta</span> <span class="attr">property</span>=<span class="val">"og:title"</span>       <span class="attr">content</span>=<span class="val">"Baggio Travel — Tour Du Lịch Việt Nam Trọn Gói"</span><span class="tag">&gt;</span>
+<span class="tag">&lt;meta</span> <span class="attr">property</span>=<span class="val">"og:description"</span>  <span class="attr">content</span>=<span class="val">"240+ gói tour trọn gói Việt Nam — vé bay, khách sạn, hướng dẫn viên địa phương. Đặt trong 3 phút."</span><span class="tag">&gt;</span>
+<span class="cmt">&lt;!-- Ảnh OG: 1200x630px, dưới 1MB, chứa logo và điểm đến đẹp --&gt;</span>
+<span class="tag">&lt;meta</span> <span class="attr">property</span>=<span class="val">"og:image"</span>        <span class="attr">content</span>=<span class="val">"https://baggiotravel.com/og-home.jpg"</span><span class="tag">&gt;</span>
+<span class="tag">&lt;meta</span> <span class="attr">property</span>=<span class="val">"og:image:width"</span>  <span class="attr">content</span>=<span class="val">"1200"</span><span class="tag">&gt;</span>
+<span class="tag">&lt;meta</span> <span class="attr">property</span>=<span class="val">"og:image:height"</span> <span class="attr">content</span>=<span class="val">"630"</span><span class="tag">&gt;</span>
+<span class="tag">&lt;meta</span> <span class="attr">property</span>=<span class="val">"og:locale"</span>       <span class="attr">content</span>=<span class="val">"vi_VN"</span><span class="tag">&gt;</span>
+
+<span class="cmt">&lt;!-- ── TWITTER CARD ──────────────────────────── --&gt;</span>
+<span class="tag">&lt;meta</span> <span class="attr">name</span>=<span class="val">"twitter:card"</span>        <span class="attr">content</span>=<span class="val">"summary_large_image"</span><span class="tag">&gt;</span>
+<span class="tag">&lt;meta</span> <span class="attr">name</span>=<span class="val">"twitter:site"</span>        <span class="attr">content</span>=<span class="val">"@baggiotravel"</span><span class="tag">&gt;</span>
+<span class="tag">&lt;meta</span> <span class="attr">name</span>=<span class="val">"twitter:title"</span>       <span class="attr">content</span>=<span class="val">"Baggio Travel — Tour Du Lịch Việt Nam"</span><span class="tag">&gt;</span>
+<span class="tag">&lt;meta</span> <span class="attr">name</span>=<span class="val">"twitter:description"</span>  <span class="attr">content</span>=<span class="val">"240+ tour trọn gói từ 1.900.000đ. Đặt trong 3 phút."</span><span class="tag">&gt;</span>
+<span class="tag">&lt;meta</span> <span class="attr">name</span>=<span class="val">"twitter:image"</span>       <span class="attr">content</span>=<span class="val">"https://baggiotravel.com/og-home.jpg"</span><span class="tag">&gt;</span>
+
+<span class="cmt">&lt;!-- ── FAVICON SET ──────────────────────────── --&gt;</span>
+<span class="tag">&lt;link</span> <span class="attr">rel</span>=<span class="val">"icon"</span>             <span class="attr">href</span>=<span class="val">"/favicon.ico"</span><span class="tag">&gt;</span>
+<span class="tag">&lt;link</span> <span class="attr">rel</span>=<span class="val">"icon"</span>             <span class="attr">href</span>=<span class="val">"/icon.svg"</span>            <span class="attr">type</span>=<span class="val">"image/svg+xml"</span><span class="tag">&gt;</span>
+<span class="tag">&lt;link</span> <span class="attr">rel</span>=<span class="val">"apple-touch-icon"</span> <span class="attr">href</span>=<span class="val">"/apple-touch-icon.png"</span><span class="tag">&gt;</span>
+<span class="tag">&lt;link</span> <span class="attr">rel</span>=<span class="val">"manifest"</span>         <span class="attr">href</span>=<span class="val">"/manifest.json"</span><span class="tag">&gt;</span>
+
+<span class="cmt">&lt;!-- ── LANGUAGE & GEO ──────────────────────── --&gt;</span>
+<span class="tag">&lt;meta</span> <span class="attr">name</span>=<span class="val">"language"</span>   <span class="attr">content</span>=<span class="val">"Vietnamese"</span><span class="tag">&gt;</span>
+<span class="tag">&lt;meta</span> <span class="attr">name</span>=<span class="val">"geo.region"</span> <span class="attr">content</span>=<span class="val">"VN"</span><span class="tag">&gt;</span>
+<span class="tag">&lt;link</span> <span class="attr">rel</span>=<span class="val">"alternate"</span>  <span class="attr">hreflang</span>=<span class="val">"vi"</span> <span class="attr">href</span>=<span class="val">"https://baggiotravel.com"</span><span class="tag">&gt;</span>
+<span class="tag">&lt;link</span> <span class="attr">rel</span>=<span class="val">"alternate"</span>  <span class="attr">hreflang</span>=<span class="val">"en"</span> <span class="attr">href</span>=<span class="val">"https://baggiotravel.com/en"</span><span class="tag">&gt;</span>
+
+<span class="cmt">&lt;!-- ── PERFORMANCE HINTS ─────────────────────── --&gt;</span>
+<span class="tag">&lt;link</span> <span class="attr">rel</span>=<span class="val">"preconnect"</span>    <span class="attr">href</span>=<span class="val">"https://fonts.googleapis.com"</span><span class="tag">&gt;</span>
+<span class="tag">&lt;link</span> <span class="attr">rel</span>=<span class="val">"dns-prefetch"</span>  <span class="attr">href</span>=<span class="val">"https://www.googletagmanager.com"</span><span class="tag">&gt;</span>
+<span class="tag">&lt;link</span> <span class="attr">rel</span>=<span class="val">"preload"</span>       <span class="attr">href</span>=<span class="val">"/images/hero.webp"</span> <span class="attr">as</span>=<span class="val">"image"</span><span class="tag">&gt;</span></pre>
+      </div>
+
+      <div class="code-wrap">
+        <div class="code-top"><span class="code-file">src/pages/tour/[slug].html — Meta tags cho trang tour</span><span class="code-lang">Template</span><button class="copy-btn" onclick="cp(this)">Copy</button></div>
+        <pre><span class="cmt">&lt;!-- Meta cho trang chi tiết tour — điền dynamic từ DB --&gt;</span>
+<span class="tag">&lt;title&gt;</span>{{tour.name}} | Baggio Travel — Đặt Tour {{tour.destination}}<span class="tag">&lt;/title&gt;</span>
+
+<span class="tag">&lt;meta</span> <span class="attr">name</span>=<span class="val">"description"</span>
+  <span class="attr">content</span>=<span class="val">"{{tour.name}} {{tour.duration_days}}N{{tour.nights}}Đ — từ {{tour.base_price}}đ/người. Bao gồm: {{tour.includes_summary}}. Đặt cọc chỉ 30%, hoàn 100% nếu huỷ."</span><span class="tag">&gt;</span>
+
+<span class="tag">&lt;link</span> <span class="attr">rel</span>=<span class="val">"canonical"</span> <span class="attr">href</span>=<span class="val">"https://baggiotravel.com/tour/{{tour.slug}}"</span><span class="tag">&gt;</span>
+
+<span class="tag">&lt;meta</span> <span class="attr">property</span>=<span class="val">"og:type"</span>    <span class="attr">content</span>=<span class="val">"product"</span><span class="tag">&gt;</span>
+<span class="tag">&lt;meta</span> <span class="attr">property</span>=<span class="val">"og:url"</span>     <span class="attr">content</span>=<span class="val">"https://baggiotravel.com/tour/{{tour.slug}}"</span><span class="tag">&gt;</span>
+<span class="tag">&lt;meta</span> <span class="attr">property</span>=<span class="val">"og:title"</span>   <span class="attr">content</span>=<span class="val">"{{tour.name}} — từ {{tour.base_price}}đ | Baggio Travel"</span><span class="tag">&gt;</span>
+<span class="tag">&lt;meta</span> <span class="attr">property</span>=<span class="val">"og:image"</span>   <span class="attr">content</span>=<span class="val">"{{tour.cover_image}}"</span><span class="tag">&gt;</span>
+<span class="tag">&lt;meta</span> <span class="attr">property</span>=<span class="val">"product:price:amount"</span>   <span class="attr">content</span>=<span class="val">"{{tour.base_price}}"</span><span class="tag">&gt;</span>
+<span class="tag">&lt;meta</span> <span class="attr">property</span>=<span class="val">"product:price:currency"</span> <span class="attr">content</span>=<span class="val">"VND"</span><span class="tag">&gt;</span></pre>
+      </div>
+    </div>
+
+    <!-- ── SCHEMA MARKUP ── -->
+    <div class="seo-section" id="schema">
+      <div class="sec-eyebrow">Structured Data</div>
+      <div class="sec-title">Schema Markup (JSON-LD)</div>
+      <div class="sec-sub">Schema markup giúp Google hiểu nội dung và hiển thị rich snippets — rating sao, giá, breadcrumb — trực tiếp trên trang kết quả tìm kiếm.</div>
+
+      <div class="alert blue">
+        <div class="alert-icon">💡</div>
+        <div><div class="alert-title">Rich results cho travel website</div>Baggio Travel cần 5 loại schema: <strong>Organization, TouristTrip, Product, BreadcrumbList, FAQPage</strong>. Validate tại <code>search.google.com/test/rich-results</code> sau khi thêm.</div>
+      </div>
+
+      <div class="code-wrap">
+        <div class="code-top"><span class="code-file">Schema — Trang chủ: Organization + WebSite</span><span class="code-lang">JSON-LD</span><button class="copy-btn" onclick="cp(this)">Copy</button></div>
+        <pre><span class="tag">&lt;script</span> <span class="attr">type</span>=<span class="val">"application/ld+json"</span><span class="tag">&gt;</span>
+{
+  <span class="kw">"@context"</span>: <span class="str">"https://schema.org"</span>,
+  <span class="kw">"@graph"</span>: [
+    {
+      <span class="kw">"@type"</span>: <span class="str">"Organization"</span>,
+      <span class="kw">"@id"</span>: <span class="str">"https://baggiotravel.com/#org"</span>,
+      <span class="kw">"name"</span>: <span class="str">"Baggio Travel"</span>,
+      <span class="kw">"url"</span>: <span class="str">"https://baggiotravel.com"</span>,
+      <span class="kw">"logo"</span>: <span class="str">"https://baggiotravel.com/logo.png"</span>,
+      <span class="kw">"description"</span>: <span class="str">"Nền tảng đặt tour du lịch Việt Nam trọn gói"</span>,
+      <span class="kw">"contactPoint"</span>: {
+        <span class="kw">"@type"</span>: <span class="str">"ContactPoint"</span>,
+        <span class="kw">"telephone"</span>: <span class="str">"+84-1900-xxxx"</span>,
+        <span class="kw">"contactType"</span>: <span class="str">"customer service"</span>,
+        <span class="kw">"availableLanguage"</span>: [<span class="str">"Vietnamese"</span>, <span class="str">"English"</span>],
+        <span class="kw">"hoursAvailable"</span>: <span class="str">"Mo-Su 07:00-22:00"</span>
+      },
+      <span class="kw">"address"</span>: {
+        <span class="kw">"@type"</span>: <span class="str">"PostalAddress"</span>,
+        <span class="kw">"streetAddress"</span>: <span class="str">"123 Nguyễn Huệ"</span>,
+        <span class="kw">"addressLocality"</span>: <span class="str">"Quận 1"</span>,
+        <span class="kw">"addressRegion"</span>: <span class="str">"TP. Hồ Chí Minh"</span>,
+        <span class="kw">"addressCountry"</span>: <span class="str">"VN"</span>
+      },
+      <span class="kw">"sameAs"</span>: [
+        <span class="str">"https://facebook.com/baggiotravel"</span>,
+        <span class="str">"https://instagram.com/baggiotravel"</span>,
+        <span class="str">"https://tiktok.com/@baggiotravel"</span>
+      ]
+    },
+    {
+      <span class="kw">"@type"</span>: <span class="str">"WebSite"</span>,
+      <span class="kw">"@id"</span>: <span class="str">"https://baggiotravel.com/#website"</span>,
+      <span class="kw">"url"</span>: <span class="str">"https://baggiotravel.com"</span>,
+      <span class="kw">"name"</span>: <span class="str">"Baggio Travel"</span>,
+      <span class="kw">"publisher"</span>: { <span class="kw">"@id"</span>: <span class="str">"https://baggiotravel.com/#org"</span> },
+      <span class="kw">"potentialAction"</span>: {
+        <span class="kw">"@type"</span>: <span class="str">"SearchAction"</span>,
+        <span class="kw">"target"</span>: <span class="str">"https://baggiotravel.com/search?q={search_term_string}"</span>,
+        <span class="kw">"query-input"</span>: <span class="str">"required name=search_term_string"</span>
+      }
+    }
+  ]
+}
+<span class="tag">&lt;/script&gt;</span></pre>
+      </div>
+
+      <div class="code-wrap">
+        <div class="code-top"><span class="code-file">Schema — Trang tour: TouristTrip + Product + BreadcrumbList + FAQ</span><span class="code-lang">JSON-LD</span><button class="copy-btn" onclick="cp(this)">Copy</button></div>
+        <pre><span class="tag">&lt;script</span> <span class="attr">type</span>=<span class="val">"application/ld+json"</span><span class="tag">&gt;</span>
+{
+  <span class="kw">"@context"</span>: <span class="str">"https://schema.org"</span>,
+  <span class="kw">"@graph"</span>: [
+    {
+      <span class="kw">"@type"</span>: <span class="str">"TouristTrip"</span>,
+      <span class="kw">"name"</span>: <span class="str">"Hội An – Phố Cổ &amp; Ẩm Thực 3N2Đ"</span>,
+      <span class="kw">"description"</span>: <span class="str">"Tour khám phá phố cổ Hội An 3 ngày 2 đêm — bao gồm vé máy bay, khách sạn 3★, HDV địa phương"</span>,
+      <span class="kw">"image"</span>: [<span class="str">"https://baggiotravel.com/images/hoi-an-1.jpg"</span>],
+      <span class="kw">"url"</span>: <span class="str">"https://baggiotravel.com/tour/hoi-an-pho-co-3n2d"</span>,
+      <span class="kw">"touristType"</span>: [<span class="str">"Culture &amp; Heritage"</span>, <span class="str">"Food Tour"</span>],
+      <span class="kw">"itinerary"</span>: {
+        <span class="kw">"@type"</span>: <span class="str">"ItemList"</span>,
+        <span class="kw">"itemListElement"</span>: [
+          { <span class="kw">"@type"</span>: <span class="str">"ListItem"</span>, <span class="kw">"position"</span>: <span class="num">1</span>, <span class="kw">"name"</span>: <span class="str">"Ngày 1: Bay vào Đà Nẵng, nhận phòng"</span> },
+          { <span class="kw">"@type"</span>: <span class="str">"ListItem"</span>, <span class="kw">"position"</span>: <span class="num">2</span>, <span class="kw">"name"</span>: <span class="str">"Ngày 2: Tham quan Phố Cổ, làng rau Trà Quế"</span> },
+          { <span class="kw">"@type"</span>: <span class="str">"ListItem"</span>, <span class="kw">"position"</span>: <span class="num">3</span>, <span class="kw">"name"</span>: <span class="str">"Ngày 3: Biển Mỹ Khê, bay về"</span> }
+        ]
+      }
+    },
+    {
+      <span class="kw">"@type"</span>: <span class="str">"Product"</span>,
+      <span class="kw">"name"</span>: <span class="str">"Tour Hội An 3N2Đ"</span>,
+      <span class="kw">"image"</span>: <span class="str">"https://baggiotravel.com/images/hoi-an-cover.jpg"</span>,
+      <span class="kw">"description"</span>: <span class="str">"Gói tour Hội An trọn gói 3 ngày 2 đêm"</span>,
+      <span class="kw">"brand"</span>: { <span class="kw">"@type"</span>: <span class="str">"Brand"</span>, <span class="kw">"name"</span>: <span class="str">"Baggio Travel"</span> },
+      <span class="kw">"offers"</span>: {
+        <span class="kw">"@type"</span>: <span class="str">"Offer"</span>,
+        <span class="kw">"url"</span>: <span class="str">"https://baggiotravel.com/tour/hoi-an-pho-co-3n2d"</span>,
+        <span class="kw">"priceCurrency"</span>: <span class="str">"VND"</span>,
+        <span class="kw">"price"</span>: <span class="str">"2800000"</span>,
+        <span class="kw">"priceValidUntil"</span>: <span class="str">"2025-12-31"</span>,
+        <span class="kw">"availability"</span>: <span class="str">"https://schema.org/InStock"</span>,
+        <span class="kw">"seller"</span>: { <span class="kw">"@id"</span>: <span class="str">"https://baggiotravel.com/#org"</span> }
+      },
+      <span class="kw">"aggregateRating"</span>: {
+        <span class="kw">"@type"</span>: <span class="str">"AggregateRating"</span>,
+        <span class="kw">"ratingValue"</span>: <span class="str">"4.9"</span>,
+        <span class="kw">"reviewCount"</span>: <span class="str">"128"</span>,
+        <span class="kw">"bestRating"</span>: <span class="str">"5"</span>
+      }
+    },
+    {
+      <span class="kw">"@type"</span>: <span class="str">"BreadcrumbList"</span>,
+      <span class="kw">"itemListElement"</span>: [
+        { <span class="kw">"@type"</span>: <span class="str">"ListItem"</span>, <span class="kw">"position"</span>: <span class="num">1</span>, <span class="kw">"name"</span>: <span class="str">"Trang chủ"</span>,      <span class="kw">"item"</span>: <span class="str">"https://baggiotravel.com"</span> },
+        { <span class="kw">"@type"</span>: <span class="str">"ListItem"</span>, <span class="kw">"position"</span>: <span class="num">2</span>, <span class="kw">"name"</span>: <span class="str">"Miền Trung"</span>,    <span class="kw">"item"</span>: <span class="str">"https://baggiotravel.com/mien-trung"</span> },
+        { <span class="kw">"@type"</span>: <span class="str">"ListItem"</span>, <span class="kw">"position"</span>: <span class="num">3</span>, <span class="kw">"name"</span>: <span class="str">"Tour Hội An 3N2Đ"</span>, <span class="kw">"item"</span>: <span class="str">"https://baggiotravel.com/tour/hoi-an-pho-co-3n2d"</span> }
+      ]
+    },
+    {
+      <span class="kw">"@type"</span>: <span class="str">"FAQPage"</span>,
+      <span class="kw">"mainEntity"</span>: [
+        {
+          <span class="kw">"@type"</span>: <span class="str">"Question"</span>,
+          <span class="kw">"name"</span>: <span class="str">"Tour Hội An bao gồm những gì?"</span>,
+          <span class="kw">"acceptedAnswer"</span>: { <span class="kw">"@type"</span>: <span class="str">"Answer"</span>, <span class="kw">"text"</span>: <span class="str">"Gói tour bao gồm vé máy bay khứ hồi, khách sạn 3★, hướng dẫn viên địa phương, xe đưa đón sân bay và 2 bữa sáng."</span> }
+        },
+        {
+          <span class="kw">"@type"</span>: <span class="str">"Question"</span>,
+          <span class="kw">"name"</span>: <span class="str">"Chính sách huỷ tour như thế nào?"</span>,
+          <span class="kw">"acceptedAnswer"</span>: { <span class="kw">"@type"</span>: <span class="str">"Answer"</span>, <span class="kw">"text"</span>: <span class="str">"Hoàn 100% nếu huỷ trước 7 ngày. Hoàn 50% nếu huỷ trước 3 ngày. Không hoàn nếu huỷ trong vòng 3 ngày."</span> }
+        }
+      ]
+    }
+  ]
+}
+<span class="tag">&lt;/script&gt;</span></pre>
+      </div>
+    </div>
+
+    <!-- ── SITEMAP ── -->
+    <div class="seo-section" id="sitemap">
+      <div class="sec-eyebrow">Crawlability</div>
+      <div class="sec-title">Sitemap & robots.txt</div>
+      <div class="sec-sub">Sitemap giúp Google crawl và index tất cả trang. robots.txt kiểm soát bot nào được truy cập trang nào.</div>
+
+      <div class="code-wrap">
+        <div class="code-top"><span class="code-file">public/sitemap.xml — tự generate từ DB</span><span class="code-lang">XML</span><button class="copy-btn" onclick="cp(this)">Copy</button></div>
+        <pre><span class="op">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</span>
+<span class="tag">&lt;urlset</span> <span class="attr">xmlns</span>=<span class="val">"http://www.sitemaps.org/schemas/sitemap/0.9"</span>
+        <span class="attr">xmlns:image</span>=<span class="val">"http://www.google.com/schemas/sitemap-image/1.1"</span><span class="tag">&gt;</span>
+
+  <span class="cmt">&lt;!-- Trang chủ --&gt;</span>
+  <span class="tag">&lt;url&gt;</span>
+    <span class="tag">&lt;loc&gt;</span>https://baggiotravel.com<span class="tag">&lt;/loc&gt;</span>
+    <span class="tag">&lt;lastmod&gt;</span>2025-06-01<span class="tag">&lt;/lastmod&gt;</span>
+    <span class="tag">&lt;changefreq&gt;</span>daily<span class="tag">&lt;/changefreq&gt;</span>
+    <span class="tag">&lt;priority&gt;</span>1.0<span class="tag">&lt;/priority&gt;</span>
+  <span class="tag">&lt;/url&gt;</span>
+
+  <span class="cmt">&lt;!-- Danh mục theo vùng --&gt;</span>
+  <span class="tag">&lt;url&gt;</span>
+    <span class="tag">&lt;loc&gt;</span>https://baggiotravel.com/mien-bac<span class="tag">&lt;/loc&gt;</span>
+    <span class="tag">&lt;changefreq&gt;</span>weekly<span class="tag">&lt;/changefreq&gt;</span>
+    <span class="tag">&lt;priority&gt;</span>0.9<span class="tag">&lt;/priority&gt;</span>
+  <span class="tag">&lt;/url&gt;</span>
+  <span class="tag">&lt;url&gt;</span>
+    <span class="tag">&lt;loc&gt;</span>https://baggiotravel.com/mien-trung<span class="tag">&lt;/loc&gt;</span>
+    <span class="tag">&lt;changefreq&gt;</span>weekly<span class="tag">&lt;/changefreq&gt;</span>
+    <span class="tag">&lt;priority&gt;</span>0.9<span class="tag">&lt;/priority&gt;</span>
+  <span class="tag">&lt;/url&gt;</span>
+  <span class="tag">&lt;url&gt;</span>
+    <span class="tag">&lt;loc&gt;</span>https://baggiotravel.com/mien-nam<span class="tag">&lt;/loc&gt;</span>
+    <span class="tag">&lt;changefreq&gt;</span>weekly<span class="tag">&lt;/changefreq&gt;</span>
+    <span class="tag">&lt;priority&gt;</span>0.9<span class="tag">&lt;/priority&gt;</span>
+  <span class="tag">&lt;/url&gt;</span>
+
+  <span class="cmt">&lt;!-- Trang tour riêng lẻ — generate từ DB --&gt;</span>
+  <span class="tag">&lt;url&gt;</span>
+    <span class="tag">&lt;loc&gt;</span>https://baggiotravel.com/tour/hoi-an-pho-co-am-thuc-3n2d<span class="tag">&lt;/loc&gt;</span>
+    <span class="tag">&lt;lastmod&gt;</span>2025-06-01<span class="tag">&lt;/lastmod&gt;</span>
+    <span class="tag">&lt;changefreq&gt;</span>weekly<span class="tag">&lt;/changefreq&gt;</span>
+    <span class="tag">&lt;priority&gt;</span>0.85<span class="tag">&lt;/priority&gt;</span>
+    <span class="tag">&lt;image:image&gt;</span>
+      <span class="tag">&lt;image:loc&gt;</span>https://baggiotravel.com/images/hoi-an-cover.jpg<span class="tag">&lt;/image:loc&gt;</span>
+      <span class="tag">&lt;image:title&gt;</span>Tour Hội An – Phố Cổ & Ẩm Thực 3N2Đ<span class="tag">&lt;/image:title&gt;</span>
+    <span class="tag">&lt;/image:image&gt;</span>
+  <span class="tag">&lt;/url&gt;</span>
+  <span class="cmt">&lt;!-- ... thêm các tour khác từ DB --&gt;</span>
+
+<span class="tag">&lt;/urlset&gt;</span></pre>
+      </div>
+
+      <div class="code-wrap">
+        <div class="code-top"><span class="code-file">src/api/sitemap.js — Auto-generate từ DB</span><span class="code-lang">Node.js</span><button class="copy-btn" onclick="cp(this)">Copy</button></div>
+        <pre><span class="cmt">// GET /sitemap.xml — Vercel serverless function</span>
+<span class="kw">export default async function</span> <span class="fn">handler</span>(req, res) {
+  <span class="kw">const</span> tours = <span class="kw">await</span> db.tour.<span class="fn">findMany</span>({
+    where:  { status: <span class="str">'ACTIVE'</span> },
+    select: { slug: <span class="kw">true</span>, updated_at: <span class="kw">true</span>, cover_image: <span class="kw">true</span>, name: <span class="kw">true</span> },
+  });
+
+  <span class="kw">const</span> urls = [
+    { loc: <span class="str">'/'</span>,           priority: <span class="str">'1.0'</span>, freq: <span class="str">'daily'</span> },
+    { loc: <span class="str">'/mien-bac'</span>,   priority: <span class="str">'0.9'</span>, freq: <span class="str">'weekly'</span> },
+    { loc: <span class="str">'/mien-trung'</span>, priority: <span class="str">'0.9'</span>, freq: <span class="str">'weekly'</span> },
+    { loc: <span class="str">'/mien-nam'</span>,   priority: <span class="str">'0.9'</span>, freq: <span class="str">'weekly'</span> },
+    ...tours.<span class="fn">map</span>(t => ({
+      loc:     <span class="str">`/tour/<span class="kw">${</span>t.slug<span class="kw">}</span>`</span>,
+      lastmod: t.updated_at.<span class="fn">toISOString</span>().<span class="fn">split</span>(<span class="str">'T'</span>)[<span class="num">0</span>],
+      priority: <span class="str">'0.85'</span>,
+      freq:    <span class="str">'weekly'</span>,
+      image:   t.cover_image,
+      imgTitle: t.name,
+    })),
+  ];
+
+  <span class="kw">const</span> xml = <span class="str">`&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"&gt;
+<span class="kw">${</span>urls.<span class="fn">map</span>(u =&gt; <span class="str">`  &lt;url&gt;
+    &lt;loc&gt;https://baggiotravel.com<span class="kw">${</span>u.loc<span class="kw">}</span>&lt;/loc&gt;
+    <span class="kw">${</span>u.lastmod ? <span class="str">`&lt;lastmod&gt;<span class="kw">${</span>u.lastmod<span class="kw">}</span>&lt;/lastmod&gt;`</span> : <span class="str">''</span><span class="kw">}</span>
+    &lt;changefreq&gt;<span class="kw">${</span>u.freq<span class="kw">}</span>&lt;/changefreq&gt;
+    &lt;priority&gt;<span class="kw">${</span>u.priority<span class="kw">}</span>&lt;/priority&gt;
+    <span class="kw">${</span>u.image ? <span class="str">`&lt;image:image&gt;&lt;image:loc&gt;<span class="kw">${</span>u.image<span class="kw">}</span>&lt;/image:loc&gt;&lt;image:title&gt;<span class="kw">${</span>u.imgTitle<span class="kw">}</span>&lt;/image:title&gt;&lt;/image:image&gt;`</span> : <span class="str">''</span><span class="kw">}</span>
+  &lt;/url&gt;`</span>).<span class="fn">join</span>(<span class="str">'\n'</span>)<span class="kw">}</span>
+&lt;/urlset&gt;`</span>;
+
+  res.<span class="fn">setHeader</span>(<span class="str">'Content-Type'</span>, <span class="str">'application/xml'</span>);
+  res.<span class="fn">setHeader</span>(<span class="str">'Cache-Control'</span>, <span class="str">'s-maxage=86400'</span>); <span class="cmt">// cache 24h</span>
+  res.<span class="fn">send</span>(xml);
+}</pre>
+      </div>
+
+      <div class="code-wrap">
+        <div class="code-top"><span class="code-file">public/robots.txt</span><span class="code-lang">robots</span><button class="copy-btn" onclick="cp(this)">Copy</button></div>
+        <pre><span class="cmt"># Baggio Travel — robots.txt</span>
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /api/
+Disallow: /booking/success
+Disallow: /?*            <span class="cmt"># tránh crawl URL có query params</span>
+
+<span class="cmt"># Cho phép crawl ảnh</span>
+User-agent: Googlebot-Image
+Allow: /images/
+Allow: /public/
+
+Sitemap: https://baggiotravel.com/sitemap.xml</pre>
+      </div>
+    </div>
+
+    <!-- ── CORE WEB VITALS ── -->
+    <div class="seo-section" id="perf">
+      <div class="sec-eyebrow">Performance</div>
+      <div class="sec-title">Core Web Vitals</div>
+      <div class="sec-sub">Google dùng 3 chỉ số này làm ranking factor từ 2021. Target mức "Good" để cạnh tranh tốt hơn đối thủ.</div>
+
+      <div class="score-grid">
+        <div class="score-card">
+          <div class="score-num" style="color:var(--green)">LCP</div>
+          <div class="score-label">Largest Contentful Paint</div>
+          <div class="score-hint">Target: &lt; 2.5s<br>Hiện tại: ~3.2s ⚠</div>
+        </div>
+        <div class="score-card">
+          <div class="score-num" style="color:var(--green)">INP</div>
+          <div class="score-label">Interaction to Next Paint</div>
+          <div class="score-hint">Target: &lt; 200ms<br>Thay thế FID từ 2024</div>
+        </div>
+        <div class="score-card">
+          <div class="score-num" style="color:var(--green)">CLS</div>
+          <div class="score-label">Cumulative Layout Shift</div>
+          <div class="score-hint">Target: &lt; 0.1<br>Đặt width/height cho ảnh</div>
+        </div>
+        <div class="score-card">
+          <div class="score-num" style="color:var(--green)">FCP</div>
+          <div class="score-label">First Contentful Paint</div>
+          <div class="score-hint">Target: &lt; 1.8s<br>Preload hero image</div>
+        </div>
+      </div>
+
+      <div class="code-wrap">
+        <div class="code-top"><span class="code-file">Tối ưu ảnh — thêm vào tất cả &lt;img&gt; trong tour pages</span><span class="code-lang">HTML</span><button class="copy-btn" onclick="cp(this)">Copy</button></div>
+        <pre><span class="cmt">&lt;!-- ✅ Ảnh hero — preload, eager, explicit size --&gt;</span>
+<span class="tag">&lt;link</span> <span class="attr">rel</span>=<span class="val">"preload"</span> <span class="attr">as</span>=<span class="val">"image"</span> <span class="attr">href</span>=<span class="val">"hero.webp"</span> <span class="attr">fetchpriority</span>=<span class="val">"high"</span><span class="tag">&gt;</span>
+<span class="tag">&lt;img</span>
+  <span class="attr">src</span>=<span class="val">"hero.webp"</span>
+  <span class="attr">alt</span>=<span class="val">"Tour Hội An – Phố Cổ Quảng Nam"</span>
+  <span class="attr">width</span>=<span class="val">"1200"</span> <span class="attr">height</span>=<span class="val">"630"</span>         <span class="cmt">&lt;!-- tránh CLS --&gt;</span>
+  <span class="attr">loading</span>=<span class="val">"eager"</span>                    <span class="cmt">&lt;!-- hero không lazy load --&gt;</span>
+  <span class="attr">fetchpriority</span>=<span class="val">"high"</span>               <span class="cmt">&lt;!-- cải thiện LCP --&gt;</span>
+  <span class="attr">decoding</span>=<span class="val">"async"</span>
+<span class="tag">&gt;</span>
+
+<span class="cmt">&lt;!-- ✅ Ảnh tour card — lazy load, WebP với fallback --&gt;</span>
+<span class="tag">&lt;picture&gt;</span>
+  <span class="tag">&lt;source</span> <span class="attr">srcset</span>=<span class="val">"tour-hoi-an.webp"</span> <span class="attr">type</span>=<span class="val">"image/webp"</span><span class="tag">&gt;</span>
+  <span class="tag">&lt;img</span>
+    <span class="attr">src</span>=<span class="val">"tour-hoi-an.jpg"</span>
+    <span class="attr">alt</span>=<span class="val">"Tour Hội An 3 ngày 2 đêm — phố cổ buổi đêm lung linh"</span>
+    <span class="attr">width</span>=<span class="val">"400"</span> <span class="attr">height</span>=<span class="val">"267"</span>
+    <span class="attr">loading</span>=<span class="val">"lazy"</span>
+    <span class="attr">decoding</span>=<span class="val">"async"</span>
+  <span class="tag">&gt;</span>
+<span class="tag">&lt;/picture&gt;</span></pre>
+      </div>
+    </div>
+
+    <!-- ── KEYWORDS ── -->
+    <div class="seo-section" id="keywords">
+      <div class="sec-eyebrow">Keyword Research</div>
+      <div class="sec-title">Từ khoá mục tiêu</div>
+      <div class="sec-sub">Tập trung vào từ khoá có intent mua hàng cao trước — sau đó mở rộng sang informational để xây authority.</div>
+
+      <div class="card">
+        <div class="card-header"><span class="card-title">Từ khoá ưu tiên — Transactional (mua hàng)</span></div>
+        <div class="card-body" style="padding:0">
+          <table class="kw-table">
+            <thead><tr><th>Từ khoá</th><th>Volume/tháng</th><th>Cạnh tranh</th><th>Intent</th><th>Trang đích</th></tr></thead>
+            <tbody>
+              <tr><td><span class="kw-word">tour hội an trọn gói</span></td><td><div class="vol-bar-wrap"><div class="vol-bar" style="width:90%"></div></div> 14.800</td><td><span class="diff-badge diff-med">Trung bình</span></td><td><span class="intent-badge int-trans">Mua</span></td><td><code style="font-size:.68rem">/tour/hoi-an</code></td></tr>
+              <tr><td><span class="kw-word">tour hạ long 4 ngày 3 đêm</span></td><td><div class="vol-bar-wrap"><div class="vol-bar" style="width:85%"></div></div> 12.100</td><td><span class="diff-badge diff-med">Trung bình</span></td><td><span class="intent-badge int-trans">Mua</span></td><td><code style="font-size:.68rem">/tour/ha-long</code></td></tr>
+              <tr><td><span class="kw-word">đặt tour phú quốc online</span></td><td><div class="vol-bar-wrap"><div class="vol-bar" style="width:78%"></div></div> 9.900</td><td><span class="diff-badge diff-easy">Dễ</span></td><td><span class="intent-badge int-trans">Mua</span></td><td><code style="font-size:.68rem">/tour/phu-quoc</code></td></tr>
+              <tr><td><span class="kw-word">tour đà lạt 3 ngày 2 đêm giá rẻ</span></td><td><div class="vol-bar-wrap"><div class="vol-bar" style="width:70%"></div></div> 8.100</td><td><span class="diff-badge diff-easy">Dễ</span></td><td><span class="intent-badge int-trans">Mua</span></td><td><code style="font-size:.68rem">/tour/da-lat</code></td></tr>
+              <tr><td><span class="kw-word">tour du lịch việt nam trọn gói</span></td><td><div class="vol-bar-wrap"><div class="vol-bar" style="width:95%"></div></div> 22.200</td><td><span class="diff-badge diff-hard">Khó</span></td><td><span class="intent-badge int-trans">Mua</span></td><td><code style="font-size:.68rem">/</code></td></tr>
+              <tr><td><span class="kw-word">tour sa pa trekking</span></td><td><div class="vol-bar-wrap"><div class="vol-bar" style="width:60%"></div></div> 5.400</td><td><span class="diff-badge diff-easy">Dễ</span></td><td><span class="intent-badge int-trans">Mua</span></td><td><code style="font-size:.68rem">/tour/sa-pa</code></td></tr>
+              <tr><td><span class="kw-word">tour gia đình hè 2025</span></td><td><div class="vol-bar-wrap"><div class="vol-bar" style="width:75%"></div></div> 8.800</td><td><span class="diff-badge diff-easy">Dễ</span></td><td><span class="intent-badge int-trans">Mua</span></td><td><code style="font-size:.68rem">/tour?type=family</code></td></tr>
+              <tr><td><span class="kw-word">hướng dẫn viên du lịch tiếng anh</span></td><td><div class="vol-bar-wrap"><div class="vol-bar" style="width:42%"></div></div> 2.900</td><td><span class="diff-badge diff-easy">Dễ</span></td><td><span class="intent-badge int-nav">Tìm kiếm</span></td><td><code style="font-size:.68rem">/huong-dan-vien</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="alert amber">
+        <div class="alert-icon">💡</div>
+        <div><div class="alert-title">Long-tail keywords — dễ rank hơn, convert tốt hơn</div>
+        "tour hội an cho người lớn tuổi", "tour hạ long không say tàu", "tour phú quốc có trẻ em", "tour đà lạt tháng 12", "đặt tour cuối tuần gần hà nội" — volume thấp nhưng intent rõ ràng và cạnh tranh ít.</div>
+      </div>
+    </div>
+
+    <!-- ── CONTENT ── -->
+    <div class="seo-section" id="content">
+      <div class="sec-eyebrow">Content Marketing</div>
+      <div class="sec-title">Content Strategy</div>
+      <div class="sec-sub">Blog và content informational giúp xây domain authority — Google rank trang tour tốt hơn khi domain có nhiều content chất lượng.</div>
+
+      <div class="card">
+        <div class="card-header"><span class="card-title">Lịch content 3 tháng đầu</span></div>
+        <div class="card-body">
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem">
+            <div style="background:var(--green-bg);border:1px solid var(--green-border);border-radius:7px;padding:.9rem">
+              <div style="font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--green);margin-bottom:.5rem">Tháng 1 — Foundation</div>
+              <div style="display:flex;flex-direction:column;gap:.4rem;font-size:.78rem;color:var(--ink2)">
+                <div>📍 Trang landing từng điểm đến</div>
+                <div>📍 Hội An, Hạ Long, Phú Quốc, Sa Pa</div>
+                <div>📍 FAQ page chính</div>
+                <div>📍 Trang chính sách huỷ tour</div>
+                <div>📍 Blog: "Hướng dẫn du lịch Hội An 2025"</div>
+              </div>
+            </div>
+            <div style="background:var(--blue-bg);border:1px solid var(--blue-border);border-radius:7px;padding:.9rem">
+              <div style="font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--blue);margin-bottom:.5rem">Tháng 2 — Authority</div>
+              <div style="display:flex;flex-direction:column;gap:.4rem;font-size:.78rem;color:var(--ink2)">
+                <div>📝 Blog: "Kinh nghiệm du lịch Hạ Long"</div>
+                <div>📝 Blog: "Top 10 điểm ăn ngon Hội An"</div>
+                <div>📝 Blog: "Tour Phú Quốc mùa nào đẹp?"</div>
+                <div>📝 Trang so sánh tour theo ngân sách</div>
+                <div>📝 Thêm review khách hàng thật</div>
+              </div>
+            </div>
+            <div style="background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:7px;padding:.9rem">
+              <div style="font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--amber);margin-bottom:.5rem">Tháng 3 — Scale</div>
+              <div style="display:flex;flex-direction:column;gap:.4rem;font-size:.78rem;color:var(--ink2)">
+                <div>🚀 Blog theo mùa: tour hè, lễ, tết</div>
+                <div>🚀 Trang theo nhóm: gia đình, cặp đôi</div>
+                <div>🚀 Video tour + YouTube SEO</div>
+                <div>🚀 Link building từ travel blogs VN</div>
+                <div>🚀 Google Business Profile</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── GA4 ── -->
+    <div class="seo-section" id="ga4">
+      <div class="sec-eyebrow">Analytics</div>
+      <div class="sec-title">Google Analytics 4 Setup</div>
+      <div class="sec-sub">Tracking đúng giúp biết tour nào được xem nhiều, bước nào trong booking flow khiến khách bỏ đi, và kênh nào mang lại đơn hàng thật.</div>
+
+      <div class="code-wrap">
+        <div class="code-top"><span class="code-file">Cài GA4 — thêm vào &lt;head&gt; của tất cả trang</span><span class="code-lang">HTML + JS</span><button class="copy-btn" onclick="cp(this)">Copy</button></div>
+        <pre><span class="cmt">&lt;!-- Google tag (gtag.js) — thay G-XXXXXXXXXX bằng Measurement ID của bạn --&gt;</span>
+<span class="tag">&lt;script</span> <span class="attr">async</span> <span class="attr">src</span>=<span class="val">"https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"</span><span class="tag">&gt;&lt;/script&gt;</span>
+<span class="tag">&lt;script&gt;</span>
+  window.dataLayer = window.dataLayer || [];
+  <span class="kw">function</span> <span class="fn">gtag</span>() { dataLayer.<span class="fn">push</span>(arguments); }
+  <span class="fn">gtag</span>(<span class="str">'js'</span>, <span class="kw">new</span> <span class="fn">Date</span>());
+  <span class="fn">gtag</span>(<span class="str">'config'</span>, <span class="str">'G-XXXXXXXXXX'</span>, {
+    page_title:    document.title,
+    page_location: window.location.href,
+    <span class="cmt">// Bật Enhanced Measurement — tự track scroll, outbound clicks</span>
+    send_page_view: <span class="kw">true</span>,
+  });
+<span class="tag">&lt;/script&gt;</span></pre>
+      </div>
+
+      <div class="card" style="margin-top:1rem">
+        <div class="card-header"><span class="card-title">Custom Events — Tracking booking funnel</span></div>
+        <div class="card-body" style="padding:.9rem">
+          <div class="events-grid">
+            <div class="event-card">
+              <div class="event-name">view_tour</div>
+              <div class="event-trigger">Khi khách mở trang chi tiết tour</div>
+              <div class="event-params">tour_id, tour_name,<br>destination, price</div>
+            </div>
+            <div class="event-card">
+              <div class="event-name">begin_checkout</div>
+              <div class="event-trigger">Khi nhấn "Đặt tour ngay"</div>
+              <div class="event-params">tour_id, adult_count,<br>total_value, currency: VND</div>
+            </div>
+            <div class="event-card">
+              <div class="event-name">add_to_cart</div>
+              <div class="event-trigger">Chọn ngày và số khách xong</div>
+              <div class="event-params">tour_id, depart_date,<br>pax, value</div>
+            </div>
+            <div class="event-card">
+              <div class="event-name">purchase</div>
+              <div class="event-trigger">Sau khi MoMo webhook SUCCESS</div>
+              <div class="event-params">transaction_id, value,<br>currency, items[]</div>
+            </div>
+            <div class="event-card">
+              <div class="event-name">chatbot_open</div>
+              <div class="event-trigger">Mở chatbot AI Lan</div>
+              <div class="event-params">page_path, tour_context</div>
+            </div>
+            <div class="event-card">
+              <div class="event-name">search_tours</div>
+              <div class="event-trigger">Dùng thanh tìm kiếm</div>
+              <div class="event-params">search_term, destination,<br>result_count</div>
+            </div>
+          </div>
+          <div class="code-wrap" style="margin-top:.9rem">
+            <div class="code-top"><span class="code-file">Cách fire custom event</span><span class="code-lang">JS</span><button class="copy-btn" onclick="cp(this)">Copy</button></div>
+            <pre><span class="cmt">// Khi khách nhấn nút đặt tour</span>
+<span class="fn">gtag</span>(<span class="str">'event'</span>, <span class="str">'begin_checkout'</span>, {
+  currency:    <span class="str">'VND'</span>,
+  value:       <span class="num">2800000</span>,
+  items: [{
+    item_id:       <span class="str">'tour-hoi-an-3n2d'</span>,
+    item_name:     <span class="str">'Hội An – Phố Cổ 3N2Đ'</span>,
+    item_category: <span class="str">'Miền Trung'</span>,
+    price:         <span class="num">2800000</span>,
+    quantity:      <span class="num">2</span>, <span class="cmt">// số khách</span>
+  }],
+});
+
+<span class="cmt">// Sau khi thanh toán thành công (backend → frontend)</span>
+<span class="fn">gtag</span>(<span class="str">'event'</span>, <span class="str">'purchase'</span>, {
+  transaction_id: <span class="str">'BT-0891'</span>,
+  currency:       <span class="str">'VND'</span>,
+  value:          <span class="num">840000</span>, <span class="cmt">// tiền cọc 30%</span>
+  items:          [{ item_id: <span class="str">'tour-hoi-an-3n2d'</span>, quantity: <span class="num">2</span> }],
+});</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SEARCH CONSOLE ── -->
+    <div class="seo-section" id="gsc">
+      <div class="sec-eyebrow">Google Search Console</div>
+      <div class="sec-title">Setup & Monitoring</div>
+      <div class="sec-sub">Search Console cho biết Google đang crawl trang nào, từ khoá nào mang traffic, và lỗi index cần sửa.</div>
+
+      <div class="card">
+        <div class="card-header"><span class="card-title">5 bước setup Search Console</span></div>
+        <div class="card-body">
+          <div style="display:flex;flex-direction:column;gap:.75rem">
+            <div style="display:grid;grid-template-columns:28px 1fr;gap:.75rem;align-items:start">
+              <div style="width:28px;height:28px;background:var(--green-bg);border:1px solid var(--green-border);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:.68rem;color:var(--green);flex-shrink:0">1</div>
+              <div><div style="font-weight:500;font-size:.85rem;margin-bottom:.15rem">Vào search.google.com/search-console → Add property</div><div style="font-size:.78rem;color:var(--ink2);font-weight:300">Chọn "Domain" (khuyên dùng) → nhập <code>baggiotravel.com</code></div></div>
+            </div>
+            <div style="display:grid;grid-template-columns:28px 1fr;gap:.75rem;align-items:start">
+              <div style="width:28px;height:28px;background:var(--green-bg);border:1px solid var(--green-border);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:.68rem;color:var(--green);flex-shrink:0">2</div>
+              <div><div style="font-weight:500;font-size:.85rem;margin-bottom:.15rem">Verify ownership qua DNS TXT record</div><div style="font-size:.78rem;color:var(--ink2);font-weight:300">Google cung cấp TXT record → thêm vào Namecheap/Cloudflare → Verify. Mất 1–48h propagate.</div></div>
+            </div>
+            <div style="display:grid;grid-template-columns:28px 1fr;gap:.75rem;align-items:start">
+              <div style="width:28px;height:28px;background:var(--green-bg);border:1px solid var(--green-border);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:.68rem;color:var(--green);flex-shrink:0">3</div>
+              <div><div style="font-weight:500;font-size:.85rem;margin-bottom:.15rem">Submit Sitemap</div><div style="font-size:.78rem;color:var(--ink2);font-weight:300">Sitemaps → Add → nhập <code>https://baggiotravel.com/sitemap.xml</code> → Submit</div></div>
+            </div>
+            <div style="display:grid;grid-template-columns:28px 1fr;gap:.75rem;align-items:start">
+              <div style="width:28px;height:28px;background:var(--green-bg);border:1px solid var(--green-border);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:.68rem;color:var(--green);flex-shrink:0">4</div>
+              <div><div style="font-weight:500;font-size:.85rem;margin-bottom:.15rem">Request Indexing cho trang quan trọng</div><div style="font-size:.78rem;color:var(--ink2);font-weight:300">URL Inspection → nhập URL trang chủ → Request Indexing. Làm lần lượt cho từng trang tour.</div></div>
+            </div>
+            <div style="display:grid;grid-template-columns:28px 1fr;gap:.75rem;align-items:start">
+              <div style="width:28px;height:28px;background:var(--green-bg);border:1px solid var(--green-border);border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:.68rem;color:var(--green);flex-shrink:0">5</div>
+              <div><div style="font-weight:500;font-size:.85rem;margin-bottom:.15rem">Kết nối với GA4</div><div style="font-size:.78rem;color:var(--ink2);font-weight:300">Settings → Linked accounts → Google Analytics → Link với property GA4. Dữ liệu tích hợp sau vài ngày.</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="alert green">
+        <div class="alert-icon">📊</div>
+        <div><div class="alert-title">Theo dõi hàng tuần sau khi index</div>
+        Performance report → lọc theo từng URL tour → xem <strong>Impressions, Clicks, CTR, Average position</strong>. CTR &lt; 2% → cần cải thiện title/description. Position 4–10 → cần tăng backlinks.</div>
+      </div>
+    </div>
+
+    <!-- ── CHECKLIST ── -->
+    <div class="seo-section" id="checklist">
+      <div class="sec-eyebrow">Launch Checklist</div>
+      <div class="sec-title">SEO Checklist đầy đủ</div>
+      <div class="sec-sub">Tick từng mục trước khi ra mắt và trong 30 ngày đầu.</div>
+
+      <div class="card">
+        <div class="card-body">
+          <div style="font-family:var(--mono);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);margin-bottom:.75rem">🔴 Cần làm trước khi launch</div>
+          <div class="checks" id="cl">
+            <div class="check-item" onclick="tick(this)"><div class="chk"></div><span class="check-text">Meta title & description đầy đủ cho tất cả trang (trang chủ, tour, blog)</span><span class="check-tag ct-impact">HIGH</span></div>
+            <div class="check-item" onclick="tick(this)"><div class="chk"></div><span class="check-text">Canonical URL đúng trên mọi trang — không để Google thấy duplicate content</span><span class="check-tag ct-impact">HIGH</span></div>
+            <div class="check-item" onclick="tick(this)"><div class="chk"></div><span class="check-text">Schema markup JSON-LD: Organization + TouristTrip/Product trên trang tour</span><span class="check-tag ct-impact">HIGH</span></div>
+            <div class="check-item" onclick="tick(this)"><div class="chk"></div><span class="check-text">sitemap.xml accessible tại /sitemap.xml và được submit lên Search Console</span><span class="check-tag ct-impact">HIGH</span></div>
+            <div class="check-item" onclick="tick(this)"><div class="chk"></div><span class="check-text">robots.txt đúng — không block Googlebot khỏi trang tour</span><span class="check-tag ct-impact">HIGH</span></div>
+            <div class="check-item" onclick="tick(this)"><div class="chk"></div><span class="check-text">HTTPS hoạt động — URL hiển thị https:// không có mixed content warning</span><span class="check-tag ct-impact">HIGH</span></div>
+            <div class="check-item" onclick="tick(this)"><div class="chk"></div><span class="check-text">GA4 tracking code đã cài — kiểm tra realtime report thấy pageview</span><span class="check-tag ct-impact">HIGH</span></div>
+
+            <div style="font-family:var(--mono);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);margin:.9rem 0 .4rem">🟡 Tuần đầu sau launch</div>
+            <div class="check-item" onclick="tick(this)"><div class="chk"></div><span class="check-text">Open Graph image đúng kích thước (1200×630px) — kiểm tra qua Facebook Debugger</span><span class="check-tag ct-medium">MED</span></div>
+            <div class="check-item" onclick="tick(this)"><div class="chk"></div><span class="check-text">Tất cả ảnh tour có alt text mô tả rõ ràng (không phải "image1.jpg")</span><span class="check-tag ct-medium">MED</span></div>
+            <div class="check-item" onclick="tick(this)"><div class="chk"></div><span class="check-text">Core Web Vitals: LCP &lt; 2.5s, CLS &lt; 0.1 — test qua PageSpeed Insights</span><span class="check-tag ct-medium">MED</span></div>
+            <div class="check-item" onclick="tick(this)"><div class="chk"></div><span class="check-text">URL trang tour dạng /tour/ten-tour-slug — không có ID số xấu</span><span class="check-tag ct-medium">MED</span></div>
+            <div class="check-item" onclick="tick(this)"><div class="chk"></div><span class="check-text">Breadcrumb hiển thị đúng trên tất cả trang tour (Trang chủ > Vùng > Tên tour)</span><span class="check-tag ct-medium">MED</span></div>
+            <div class="check-item" onclick="tick(this)"><div class="chk"></div><span class="check-text">Schema validate pass 100% tại search.google.com/test/rich-results</span><span class="check-tag ct-medium">MED</span></div>
+
+            <div style="font-family:var(--mono);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);margin:.9rem 0 .4rem">🔵 Tháng đầu — Growth</div>
+            <div class="check-item" onclick="tick(this)"><div class="chk"></div><span class="check-text">Google Business Profile đã tạo và verify địa chỉ Baggio Travel</span><span class="check-tag ct-low">GROWTH</span></div>
+            <div class="check-item" onclick="tick(this)"><div class="chk"></div><span class="check-text">Tối thiểu 4 bài blog hướng dẫn du lịch đã publish (1 bài/tuần)</span><span class="check-tag ct-low">GROWTH</span></div>
+            <div class="check-item" onclick="tick(this)"><div class="chk"></div><span class="check-text">Custom GA4 events: view_tour, begin_checkout, purchase đang fire đúng</span><span class="check-tag ct-low">GROWTH</span></div>
+            <div class="check-item" onclick="tick(this)"><div class="chk"></div><span class="check-text">Ít nhất 3 backlinks từ travel blogs hoặc báo du lịch Việt Nam</span><span class="check-tag ct-low">GROWTH</span></div>
+            <div class="check-item" onclick="tick(this)"><div class="chk"></div><span class="check-text">Hreflang thêm cho phiên bản /en — tránh Google index sai ngôn ngữ</span><span class="check-tag ct-low">GROWTH</span></div>
+          </div>
+          <div class="check-prog">
+            <span id="checkTxt">0 / 17 hoàn thành</span>
+            <span id="checkStatus" style="color:var(--ink3)">Chưa bắt đầu</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<script>
+// scroll spy
+const sections=['meta','schema','sitemap','perf','keywords','content','ga4','gsc','checklist'];
+const obs=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      const id=e.target.id;
+      document.querySelectorAll('.sb-link').forEach(l=>l.classList.remove('active'));
+      document.querySelectorAll('.sb-link').forEach(l=>{
+        if(l.getAttribute('onclick')?.includes(`'${id}'`))l.classList.add('active');
+      });
+    }
+  });
+},{threshold:.3,rootMargin:'-60px 0px -60% 0px'});
+sections.forEach(id=>{const el=document.getElementById(id);if(el)obs.observe(el);});
+
+function goto(id,el){
+  document.getElementById(id)?.scrollIntoView({behavior:'smooth',block:'start'});
+  document.querySelectorAll('.sb-link').forEach(l=>l.classList.remove('active'));
+  if(el)el.classList.add('active');
+}
+
+function cp(btn){
+  const pre=btn.closest('.code-wrap').querySelector('pre');
+  navigator.clipboard.writeText(pre.innerText).then(()=>{
+    btn.textContent='Copied!';btn.classList.add('ok');
+    setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('ok')},2000);
+  });
+}
+
+function tick(row){
+  const box=row.querySelector('.chk');
+  box.classList.toggle('done');
+  box.textContent=box.classList.contains('done')?'✓':'';
+  const total=document.querySelectorAll('.chk').length;
+  const done=document.querySelectorAll('.chk.done').length;
+  document.getElementById('checkTxt').textContent=`${done} / ${total} hoàn thành`;
+  const pct=Math.round(done/total*100);
+  document.getElementById('scoreVal').textContent=pct;
+  document.getElementById('scoreFill').style.width=pct+'%';
+  const st=document.getElementById('checkStatus');
+  if(done===total){st.textContent='🚀 Sẵn sàng rank!';st.style.color='var(--green)';}
+  else if(pct>=70){st.textContent='Gần xong!';st.style.color='var(--amber)';}
+  else st.textContent='Đang thực hiện';
+}
+
+// Animate score on load
+setTimeout(()=>{
+  let i=0;
+  const target=0;
+  const iv=setInterval(()=>{
+    i+=2;if(i>=target){i=target;clearInterval(iv);}
+    document.getElementById('scoreVal').textContent=i;
+    document.getElementById('scoreFill').style.width=i+'%';
+  },20);
+},500);
+</script>
+</body>
+</html>
