@@ -1,0 +1,17 @@
+{
+  "cleanUrls": true,
+  "routes": [
+    { "src": "/admin",    "dest": "/baggio-admin.html" },
+    { "src": "/booking",  "dest": "/baggio-booking-engine.html" },
+    { "src": "/chatbot",  "dest": "/baggio-chatbot.html" },
+    { "src": "/momo",     "dest": "/baggio-momo-integration.html" },
+    { "src": "/vnpay",    "dest": "/baggio-vnpay.html" },
+    { "src": "/email",    "dest": "/baggio-email-system.html" },
+    { "src": "/schema",   "dest": "/baggio-database-schema.html" },
+    { "src": "/api-docs", "dest": "/baggio-backend-api.html" },
+    { "src": "/seo",      "dest": "/baggio-seo-guide.html" },
+    { "src": "/deploy",   "dest": "/baggio-deploy-guide.html" },
+    { "src": "/about",    "dest": "/baggio-website.html" },
+    { "src": "/(.*)",     "dest": "/index.html" }
+  ]
+}
