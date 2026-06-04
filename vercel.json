@@ -1,17 +1,16 @@
 {
   "cleanUrls": true,
-  "routes": [
-    { "src": "/booking",  "dest": "/baggio-booking-live.html" },
-    { "src": "/admin",    "dest": "/baggio-admin.html" },
-    { "src": "/chatbot",  "dest": "/baggio-chatbot.html" },
-    { "src": "/momo",     "dest": "/baggio-momo-integration.html" },
-    { "src": "/vnpay",    "dest": "/baggio-vnpay.html" },
-    { "src": "/email",    "dest": "/baggio-email-system.html" },
-    { "src": "/schema",   "dest": "/baggio-database-schema.html" },
-    { "src": "/api-docs", "dest": "/baggio-backend-api.html" },
-    { "src": "/seo",      "dest": "/baggio-seo-guide.html" },
-    { "src": "/deploy",   "dest": "/baggio-deploy-guide.html" },
-    { "src": "/about",    "dest": "/baggio-website.html" },
-    { "src": "/(.*)",     "dest": "/index.html" }
+  "rewrites": [
+    { "source": "/booking",  "destination": "/baggio-booking-live.html" },
+    { "source": "/admin",    "destination": "/baggio-admin.html" },
+    { "source": "/chatbot",  "destination": "/baggio-chatbot.html" },
+    { "source": "/momo",     "destination": "/baggio-momo-integration.html" },
+    { "source": "/vnpay",    "destination": "/baggio-vnpay.html" },
+    { "source": "/email",    "destination": "/baggio-email-system.html" },
+    { "source": "/schema",   "destination": "/baggio-database-schema.html" },
+    { "source": "/api-docs", "destination": "/baggio-backend-api.html" },
+    { "source": "/seo",      "destination": "/baggio-seo-guide.html" },
+    { "source": "/deploy",   "destination": "/baggio-deploy-guide.html" },
+    { "source": "/about",    "destination": "/baggio-website.html" }
   ]
 }
