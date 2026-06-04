@@ -1,5 +1,4 @@
 {
-  "cleanUrls": true,
   "rewrites": [
     { "source": "/booking",  "destination": "/baggio-booking-live.html" },
     { "source": "/admin",    "destination": "/baggio-admin.html" },
