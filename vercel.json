@@ -1,8 +1,8 @@
 {
   "cleanUrls": true,
   "routes": [
-    { "src": "/admin",    "dest": "/baggio-admin.html" },
     { "src": "/booking",  "dest": "/baggio-booking-live.html" },
+    { "src": "/admin",    "dest": "/baggio-admin.html" },
     { "src": "/chatbot",  "dest": "/baggio-chatbot.html" },
     { "src": "/momo",     "dest": "/baggio-momo-integration.html" },
     { "src": "/vnpay",    "dest": "/baggio-vnpay.html" },
@@ -15,4 +15,3 @@
     { "src": "/(.*)",     "dest": "/index.html" }
   ]
 }
- 
