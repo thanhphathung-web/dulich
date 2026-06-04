@@ -2,7 +2,7 @@
   "cleanUrls": true,
   "routes": [
     { "src": "/admin",    "dest": "/baggio-admin.html" },
-    { "src": "/booking",  "dest": "/baggio-booking-engine.html" },
+    { "src": "/booking", "dest": "/baggio-booking-live.html" },
     { "src": "/chatbot",  "dest": "/baggio-chatbot.html" },
     { "src": "/momo",     "dest": "/baggio-momo-integration.html" },
     { "src": "/vnpay",    "dest": "/baggio-vnpay.html" },
