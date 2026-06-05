@@ -1,5 +1,6 @@
 {
   "rewrites": [
+    { "source": "/booking.html", "destination": "/baggio-booking-live.html" },
     { "source": "/booking",  "destination": "/baggio-booking-live.html" },
     { "source": "/admin",    "destination": "/baggio-admin.html" },
     { "source": "/chatbot",  "destination": "/baggio-chatbot.html" },
