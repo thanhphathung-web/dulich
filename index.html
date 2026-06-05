@@ -600,6 +600,7 @@ function buildIncludesList(inc) {
   if (inc.guide)    items.push('Hướng dẫn viên địa phương')
   if (inc.transfer) items.push('Xe đưa đón sân bay')
   if (inc.meals)    items.push(Array.isArray(inc.meals) ? inc.meals.join(', ') : inc.meals)
+  if (inc.transfer === true) items.push('Xe đưa đón sân bay')
   return items.slice(0, 4).map(i => `<li>${i}</li>`).join('')
 }
 
