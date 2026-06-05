@@ -509,7 +509,7 @@ async function loadTours(){
     const slug=new URLSearchParams(location.search).get('tour')
     if(slug){
       const t=S.allTours.find(x=>x.slug===slug)
-      if(t) selectTour(t.id)
+     if(t){ selectTour(t.id); goStep(2) }
     }
   }catch(e){
     document.getElementById('tourList').innerHTML='<div style="color:#c5372b;font-size:.85rem;padding:1rem">Không tải được danh sách tour. Kiểm tra kết nối Supabase.</div>'
