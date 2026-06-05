@@ -381,6 +381,41 @@ body{background:var(--cream);color:var(--ink);font-family:var(--font);font-size:
           <span>💡</span>
           <span>Chỉ cần đặt cọc <strong>30%</strong> để giữ chỗ. Thanh toán phần còn lại trước <strong>7 ngày</strong> khởi hành. Hoàn 100% nếu huỷ trước 7 ngày.</span>
         </div>
+         <div id="bankInfo" style="display:none;margin-top:.9rem;background:var(--card);border:2px solid var(--teal);border-radius:8px;overflow:hidden">
+  <div style="background:var(--teal);padding:.6rem 1rem;font-family:var(--mono);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:#fff">Thông tin chuyển khoản</div>
+  <div style="padding:1rem;display:grid;grid-template-columns:1fr auto;gap:1rem;align-items:center">
+    <div style="display:flex;flex-direction:column;gap:.5rem">
+      <div style="display:flex;justify-content:space-between;font-size:.82rem;padding:.3rem 0;border-bottom:1px solid var(--border)">
+        <span style="color:var(--muted)">Ngân hàng</span>
+        <strong style="color:var(--ink)">Techcombank</strong>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:.82rem;padding:.3rem 0;border-bottom:1px solid var(--border)">
+        <span style="color:var(--muted)">Số tài khoản</span>
+        <strong style="color:var(--ink);font-family:var(--mono);letter-spacing:.08em">4042828666</strong>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:.82rem;padding:.3rem 0;border-bottom:1px solid var(--border)">
+        <span style="color:var(--muted)">Chủ tài khoản</span>
+        <strong style="color:var(--ink)">TRAN HUNG VI</strong>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:.82rem;padding:.3rem 0;border-bottom:1px solid var(--border)">
+        <span style="color:var(--muted)">Số tiền cọc</span>
+        <strong style="color:var(--red);font-size:.95rem" id="bankAmount">—</strong>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:.82rem;padding:.3rem 0">
+        <span style="color:var(--muted)">Nội dung CK</span>
+        <strong style="color:var(--teal);font-family:var(--mono)" id="bankContent">DAT COC BAGGIO</strong>
+      </div>
+    </div>
+    <div style="text-align:center;flex-shrink:0">
+      <img id="bankQR" src="" alt="QR Chuyển khoản" style="width:130px;height:130px;border:1px solid var(--border);border-radius:4px;display:block">
+      <div style="font-family:var(--mono);font-size:.6rem;color:var(--muted);margin-top:.4rem">Quét QR để chuyển</div>
+    </div>
+  </div>
+  <div style="background:rgba(26,107,94,.07);padding:.65rem 1rem;font-size:.78rem;color:var(--teal);display:flex;gap:.5rem">
+    <span>💡</span>
+    <span>Sau khi chuyển khoản, nhắn mã đặt tour <strong id="bankRef">BT-XXXX</strong> qua Zalo <strong>0901234567</strong> để xác nhận.</span>
+  </div>
+</div>
         <div class="btn-row">
           <button class="btn-back" onclick="goStep(4)">← Quay lại</button>
           <button class="btn-next" id="btnConfirm" onclick="submitBooking()">🎒 Xác nhận & Đặt cọc ngay</button>
@@ -594,6 +629,21 @@ function selectRoom(el,type){
 function selectPay(el,method){
   document.querySelectorAll('.popt').forEach(p=>p.classList.remove('selected'))
   el.classList.add('selected');S.payMethod=method
+  const bankInfo=document.getElementById('bankInfo')
+  if(method==='BANK_TRANSFER'){
+    const deposit=Math.round(calcTotal()*.3)
+    const ref=document.getElementById('cfName')?.value?.trim()||'BAGGIO'
+    const content=`DAT COC ${ref.toUpperCase().split(' ').pop()}`
+    document.getElementById('bankAmount').textContent=deposit.toLocaleString('vi-VN')+'đ'
+    document.getElementById('bankContent').textContent=content
+    document.getElementById('bankRef').textContent='BT-XXXX'
+    // QR code tự động từ VietQR
+    const qrUrl=`https://img.vietqr.io/image/TCB-4042828666-compact2.png?amount=${deposit}&addInfo=${encodeURIComponent(content)}&accountName=TRAN%20HUNG%20VI`
+    document.getElementById('bankQR').src=qrUrl
+    bankInfo.style.display='block'
+  } else {
+    bankInfo.style.display='none'
+  }
 }
 
 // ── SUMMARY ────────────────────────────────────────
