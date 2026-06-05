@@ -498,6 +498,34 @@ function toast(msg,type='ok'){
 // ── LOAD TOURS ─────────────────────────────────────
 async function loadTours(){
   try{
+    const slug = new URLSearchParams(location.search).get('tour')
+    if(slug){
+      const {data,error} = await sb.from('tours')
+        .select('id,name,slug,destination,region,duration_days,duration_nights,base_price,child_price_pct,max_pax,cover_image,includes')
+        .eq('slug', slug)
+        .eq('status','ACTIVE')
+        .limit(1)
+      if(error) throw error
+      if(data && data.length > 0){
+        S.allTours = data
+        renderTourList()
+        selectTour(data[0].id)
+      }
+    } else {
+      const {data,error} = await sb.from('tours')
+        .select('id,name,slug,destination,region,duration_days,duration_nights,base_price,child_price_pct,max_pax,cover_image,includes')
+        .eq('status','ACTIVE')
+        .order('base_price',{ascending:true})
+        .limit(20)
+      if(error) throw error
+      S.allTours = data || []
+      renderTourList()
+    }
+  }catch(e){
+    console.error('loadTours:',e)
+    document.getElementById('tourList').innerHTML='<div style="color:#c5372b;padding:1rem;font-size:.85rem">Không tải được tour.</div>'
+  }
+}
     // Kiểm tra có slug trong URL không
     const slug = new URLSearchParams(location.search).get('tour')
     
