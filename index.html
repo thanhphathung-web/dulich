@@ -368,6 +368,16 @@ footer{background:var(--ink);color:rgba(250,248,243,.55);padding:3rem 2rem 1.5re
     </div>
     <div class="sec-count" id="tourCountLabel">Đang tải...</div>
   </div>
+     <div style="display:flex;align-items:center;justify-content:flex-end;margin-bottom:.75rem;gap:.5rem">
+  <span style="font-size:.75rem;color:var(--muted);font-family:var(--mono)">Hiển thị</span>
+  <select id="pageSizeSelect" onchange="changePageSize(this.value)" style="border:1px solid var(--border);background:var(--card);padding:.35rem .65rem;font-family:var(--mono);font-size:.72rem;color:var(--ink);outline:none;cursor:pointer">
+    <option value="12">12 tour</option>
+    <option value="20">20 tour</option>
+    <option value="50">50 tour</option>
+    <option value="100">100 tour</option>
+  </select>
+  <span style="font-size:.75rem;color:var(--muted);font-family:var(--mono)">/trang</span>
+</div>
   <div class="filter-bar" id="filterBar">
     <button class="fchip active" onclick="setRegionFilter('',this)">Tất cả</button>
     <button class="fchip" onclick="setRegionFilter('north',this)">🏔 Miền Bắc</button>
@@ -460,26 +470,31 @@ function toast(msg, type = 'ok') {
 // ══════════════════════════════════════════════════════════════
 // LOAD TOURS
 // ══════════════════════════════════════════════════════════════
-async function loadTours() {
+let PAGE_SIZE = 24
+let currentPage = 0
+let totalTours  = 0
+
+async function loadTours(page = 0) {
   try {
-    const { data, error } = await sb
+    const from = page * PAGE_SIZE
+    const to   = from + PAGE_SIZE - 1
+
+    const { data, error, count } = await sb
       .from('tours')
-      .select(`
-        id, name, slug, destination, region,
-        duration_days, duration_nights,
-        base_price, max_pax, cover_image,
-        includes, itinerary, highlights,
-        status,
-        tour_schedules ( available_slots, depart_date, status )
-      `)
+      .select('id,name,slug,destination,region,duration_days,duration_nights,base_price,max_pax,cover_image,includes,status,tour_schedules(available_slots,depart_date,status)', { count: 'exact' })
       .eq('status', 'ACTIVE')
       .order('base_price', { ascending: true })
+      .range(from, to)
 
     if (error) throw error
 
-    allTours = data || []
-    document.getElementById('heroTourCount').innerHTML = allTours.length + '<span>+</span>'
+    currentPage  = page
+    totalTours   = count || 0
+    allTours     = data || []
+
+    document.getElementById('heroTourCount').innerHTML = totalTours + '<span>+</span>'
     renderTours(allTours)
+    renderPagination()
     populateDestFilter()
   } catch (err) {
     console.error('loadTours:', err)
@@ -487,11 +502,42 @@ async function loadTours() {
       <div class="state-box">
         <div class="state-icon">⚠️</div>
         <div class="state-title">Không tải được danh sách tour</div>
-        <div class="state-sub">Kiểm tra lại kết nối Supabase hoặc thử lại sau.</div>
         <button class="state-retry" onclick="loadTours()">Thử lại</button>
       </div>`
-    toast('Lỗi tải dữ liệu tour', 'err')
   }
+}
+
+function renderPagination() {
+  const totalPages = Math.ceil(totalTours / PAGE_SIZE)
+  let existing = document.getElementById('pagination')
+  if (!existing) {
+    existing = document.createElement('div')
+    existing.id = 'pagination'
+    existing.style.cssText = 'display:flex;gap:.5rem;justify-content:center;align-items:center;margin-top:2rem;flex-wrap:wrap'
+    document.getElementById('toursGrid').after(existing)
+  }
+  if (totalPages <= 1) { existing.innerHTML = ''; return }
+
+  let html = ''
+  // Nút Previous
+  html += `<button onclick="loadTours(${currentPage-1})" ${currentPage===0?'disabled':''} style="padding:.5rem 1rem;border:1px solid var(--border);background:${currentPage===0?'var(--surface2)':'var(--card)'};color:var(--muted);cursor:pointer;font-family:var(--font)">← Trước</button>`
+  
+  // Số trang
+  const start = Math.max(0, currentPage - 2)
+  const end   = Math.min(totalPages - 1, currentPage + 2)
+  if (start > 0) html += `<button onclick="loadTours(0)" style="padding:.5rem .75rem;border:1px solid var(--border);background:var(--card);cursor:pointer;font-family:var(--font)">1</button><span style="color:var(--muted)">...</span>`
+  
+  for (let i = start; i <= end; i++) {
+    html += `<button onclick="loadTours(${i})" style="padding:.5rem .75rem;border:1px solid ${i===currentPage?'var(--red)':'var(--border)'};background:${i===currentPage?'var(--red)':'var(--card)'};color:${i===currentPage?'#fff':'var(--ink)'};cursor:pointer;font-family:var(--font)">${i+1}</button>`
+  }
+  
+  if (end < totalPages - 1) html += `<span style="color:var(--muted)">...</span><button onclick="loadTours(${totalPages-1})" style="padding:.5rem .75rem;border:1px solid var(--border);background:var(--card);cursor:pointer;font-family:var(--font)">${totalPages}</button>`
+  
+  // Nút Next
+  html += `<button onclick="loadTours(${currentPage+1})" ${currentPage===totalPages-1?'disabled':''} style="padding:.5rem 1rem;border:1px solid var(--border);background:${currentPage===totalPages-1?'var(--surface2)':'var(--card)'};color:var(--muted);cursor:pointer;font-family:var(--font)">Sau →</button>`
+  
+  html += `<span style="font-size:.75rem;color:var(--muted);font-family:var(--mono)">Trang ${currentPage+1}/${totalPages} · ${totalTours} tour</span>`
+  existing.innerHTML = html
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -555,6 +601,11 @@ function buildIncludesList(inc) {
   if (inc.transfer) items.push('Xe đưa đón sân bay')
   if (inc.meals)    items.push(Array.isArray(inc.meals) ? inc.meals.join(', ') : inc.meals)
   return items.slice(0, 4).map(i => `<li>${i}</li>`).join('')
+}
+
+function changePageSize(val) {
+  PAGE_SIZE = parseInt(val)
+  loadTours(0) // reset về trang 1
 }
 
 // ══════════════════════════════════════════════════════════════
