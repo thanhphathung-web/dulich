@@ -498,12 +498,36 @@ function toast(msg,type='ok'){
 // ── LOAD TOURS ─────────────────────────────────────
 async function loadTours(){
   try{
-    const {data,error}=await sb.from('tours')
-      .select('id,name,slug,destination,region,duration_days,duration_nights,base_price,child_price_pct,max_pax,cover_image,includes')
-      .eq('status','ACTIVE').order('base_price',{ascending:true})
-    if(error)throw error
-    S.allTours=data||[]
-    renderTourList()
+    // Kiểm tra có slug trong URL không
+    const slug = new URLSearchParams(location.search).get('tour')
+    
+    if(slug){
+      // Chỉ load đúng 1 tour theo slug
+      const {data,error} = await sb.from('tours')
+        .select('id,name,slug,destination,region,duration_days,duration_nights,base_price,child_price_pct,max_pax,cover_image,includes')
+        .eq('slug', slug)
+        .eq('status','ACTIVE')
+        .single()
+      if(error) throw error
+      S.allTours = data ? [data] : []
+      renderTourList()
+      // Pre-select tour đó luôn
+      if(data){ selectTour(data.id) }
+    } else {
+      // Không có slug → load 20 tour gần nhất để chọn
+      const {data,error} = await sb.from('tours')
+        .select('id,name,slug,destination,region,duration_days,duration_nights,base_price,child_price_pct,max_pax,cover_image,includes')
+        .eq('status','ACTIVE')
+        .order('base_price',{ascending:true})
+        .limit(20)
+      if(error) throw error
+      S.allTours = data || []
+      renderTourList()
+    }
+  }catch(e){
+    document.getElementById('tourList').innerHTML='<div style="color:#c5372b;padding:1rem;font-size:.85rem">Không tải được tour. Kiểm tra kết nối.</div>'
+  }
+}
 
     // Pre-select nếu có ?tour= trong URL
     const slug=new URLSearchParams(location.search).get('tour')
