@@ -507,12 +507,14 @@ async function loadTours(){
         .select('id,name,slug,destination,region,duration_days,duration_nights,base_price,child_price_pct,max_pax,cover_image,includes')
         .eq('slug', slug)
         .eq('status','ACTIVE')
-        .single()
+        .limit(1)
       if(error) throw error
-      S.allTours = data ? [data] : []
-      renderTourList()
       // Pre-select tour đó luôn
-      if(data){ selectTour(data.id) }
+      if(data && data.length > 0){ 
+  S.allTours = data
+  renderTourList()
+  selectTour(data[0].id) 
+}
     } else {
       // Không có slug → load 20 tour gần nhất để chọn
       const {data,error} = await sb.from('tours')
