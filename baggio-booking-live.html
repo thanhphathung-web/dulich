@@ -638,10 +638,9 @@ function selectPay(el,method){
     const content='DAT COC '+name.toUpperCase().split(' ').pop()
     document.getElementById('bankAmount').textContent=deposit.toLocaleString('vi-VN')+'đ'
     document.getElementById('bankContent').textContent=content
-    const qr=`https://img.vietqr.io/image/TCB-4042828666-compact2.png?amount=${deposit}&addInfo=${encodeURIComponent(content)}&accountName=TRAN%20HUNG%20VI`
+    const qrData=`STK: 4042828666 | TCB | ${deposit.toLocaleString('vi-VN')}d | ${content}`
 const qrEl=document.getElementById('bankQR')
-qrEl.src=''
-setTimeout(()=>{ qrEl.src=qr }, 100)
+qrEl.src=`https://api.qrserver.com/v1/create-qr-code/?size=130x130&data=${encodeURIComponent(qrData)}`
     bankInfo.style.display='block'
   } else {
     bankInfo.style.display='none'
