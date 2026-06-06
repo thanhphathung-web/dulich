@@ -379,32 +379,33 @@ body{background:var(--cream);color:var(--ink);font-family:var(--font);font-size:
         </div>
         <div class="deposit-note">
 <div id="bankInfo" style="display:none;margin-top:.9rem;background:var(--card);border:2px solid var(--teal);border-radius:8px;overflow:hidden">
-  <div style="background:var(--teal);padding:.6rem 1rem;font-family:var(--mono);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:#fff">Thông tin chuyển khoản</div>
-  <div style="padding:1rem;display:flex;flex-direction:column;gap:.75rem">
+  <div style="background:var(--teal);padding:.6rem 1rem;font-family:var(--mono);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:#fff;text-align:center">💳 Thông tin chuyển khoản</div>
+  <div style="padding:1rem;display:grid;grid-template-columns:1fr 150px;gap:1rem;align-items:start">
     <div style="display:flex;flex-direction:column;gap:.5rem">
-      <div style="display:flex;justify-content:space-between;font-size:.82rem;padding:.3rem 0;border-bottom:1px solid var(--border)">
-        <span style="color:var(--muted)">Ngân hàng</span><strong>Techcombank</strong>
+      <div style="display:flex;justify-content:space-between;font-size:.82rem;padding:.35rem 0;border-bottom:1px solid var(--border)">
+        <span style="color:var(--muted)">Ngân hàng</span><strong style="color:var(--ink)">Techcombank</strong>
       </div>
-      <div style="display:flex;justify-content:space-between;font-size:.82rem;padding:.3rem 0;border-bottom:1px solid var(--border)">
-        <span style="color:var(--muted)">Số tài khoản</span><strong style="font-family:var(--mono);letter-spacing:.08em">4042828666</strong>
+      <div style="display:flex;justify-content:space-between;font-size:.82rem;padding:.35rem 0;border-bottom:1px solid var(--border)">
+        <span style="color:var(--muted)">Số tài khoản</span><strong style="font-family:var(--mono);letter-spacing:.06em;color:var(--ink)">4042828666</strong>
       </div>
-      <div style="display:flex;justify-content:space-between;font-size:.82rem;padding:.3rem 0;border-bottom:1px solid var(--border)">
-        <span style="color:var(--muted)">Chủ tài khoản</span><strong>TRAN HUNG VI</strong>
+      <div style="display:flex;justify-content:space-between;font-size:.82rem;padding:.35rem 0;border-bottom:1px solid var(--border)">
+        <span style="color:var(--muted)">Chủ tài khoản</span><strong style="color:var(--ink)">TRAN HUNG VI</strong>
       </div>
-      <div style="display:flex;justify-content:space-between;font-size:.82rem;padding:.3rem 0;border-bottom:1px solid var(--border)">
-        <span style="color:var(--muted)">Số tiền cọc</span><strong style="color:var(--red)" id="bankAmount">—</strong>
+      <div style="display:flex;justify-content:space-between;font-size:.82rem;padding:.35rem 0;border-bottom:1px solid var(--border)">
+        <span style="color:var(--muted)">Số tiền cọc</span><strong style="color:var(--red);font-size:.95rem" id="bankAmount">—</strong>
       </div>
-      <div style="display:flex;justify-content:space-between;font-size:.82rem;padding:.3rem 0">
-        <span style="color:var(--muted)">Nội dung CK</span><strong style="color:var(--teal);font-family:var(--mono)" id="bankContent">DAT COC BAGGIO</strong>
+      <div style="display:flex;justify-content:space-between;font-size:.82rem;padding:.35rem 0">
+        <span style="color:var(--muted)">Nội dung CK</span><strong style="color:var(--teal);font-family:var(--mono)" id="bankContent">—</strong>
       </div>
     </div>
-    <div style="text-align:center;margin-top:.5rem">
-  <img id="bankQR" src="" alt="QR" style="width:160px;height:160px;border:1px solid var(--border);border-radius:4px;display:block;margin:0 auto">
-  <div style="font-family:var(--mono);font-size:.6rem;color:var(--muted);margin-top:.4rem">Quét QR để chuyển khoản</div>
-</div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:.4rem;padding-top:.25rem">
+      <img id="bankQR" src="" alt="QR" style="width:140px;height:140px;border:1px solid var(--border);border-radius:6px;display:block">
+      <div style="font-family:var(--mono);font-size:.58rem;color:var(--muted);text-align:center">Quét QR chuyển khoản</div>
+    </div>
   </div>
-  <div style="background:rgba(26,107,94,.07);padding:.65rem 1rem;font-size:.78rem;color:var(--teal);display:flex;gap:.5rem">
-    <span>💡</span><span>Sau khi chuyển, nhắn mã <strong id="bankRef">BT-XXXX</strong> qua Zalo <strong>090 123 4567</strong> để xác nhận.</span>
+  <div style="background:rgba(26,107,94,.07);padding:.65rem 1rem;font-size:.78rem;color:var(--teal);display:flex;gap:.5rem;align-items:flex-start">
+    <span>💡</span>
+    <span>Sau khi chuyển, nhắn mã <strong id="bankRef">BT-XXXX</strong> qua Zalo <strong>090 123 4567</strong> để xác nhận nhanh nhất.</span>
   </div>
 </div>
           <span>💡</span>
@@ -638,9 +639,8 @@ function selectPay(el,method){
     const content='DAT COC '+name.toUpperCase().split(' ').pop()
     document.getElementById('bankAmount').textContent=deposit.toLocaleString('vi-VN')+'đ'
     document.getElementById('bankContent').textContent=content
-    const qrData=`STK: 4042828666 | TCB | ${deposit.toLocaleString('vi-VN')}d | ${content}`
-const qrEl=document.getElementById('bankQR')
-qrEl.src=`https://api.qrserver.com/v1/create-qr-code/?size=130x130&data=${encodeURIComponent(qrData)}`
+    const qrEl=document.getElementById('bankQR')
+qrEl.src=`https://img.vietqr.io/image/TCB-4042828666-qr_only.png?amount=${deposit}&addInfo=${encodeURIComponent(content)}`
     bankInfo.style.display='block'
   } else {
     bankInfo.style.display='none'
