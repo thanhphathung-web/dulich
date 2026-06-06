@@ -4,6 +4,7 @@
     { "source": "/booking",  "destination": "/baggio-booking-live.html" },
     { "source": "/admin",    "destination": "/baggio-admin.html" },
     { "source": "/tour", "destination": "/baggio-tour-detail.html" },
+    { "source": "/tour", "destination": "/baggio-tour-detail.html" },
     { "source": "/chatbot",  "destination": "/baggio-chatbot.html" },
     { "source": "/momo",     "destination": "/baggio-momo-integration.html" },
     { "source": "/vnpay",    "destination": "/baggio-vnpay.html" },
