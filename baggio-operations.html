@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Baggio Travel — Vận hành Tour</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+const SUPABASE_URL  = 'https://lfnlezfphwjtdunyungi.supabase.co'
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxmbmxlemZwaHdqdGR1bnl1bmdpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0NjkwNzcsImV4cCI6MjA5NjA0NTA3N30.fmjvqhyiPcjB6qT5GDtfzMfY-C-WXP4QUIk-YW7FhJg'
+</script>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0d1117;--s1:#161b22;--s2:#1c2230;--s3:#21283a;
+  --border:#253047;--border2:#2d3a55;
+  --text:#e6edf3;--text2:#8b949e;--text3:#3d4f6e;
+  --green:#3fb950;--gdim:rgba(63,185,80,.12);--gbrd:rgba(63,185,80,.3);
+  --blue:#58a6ff;--bdim:rgba(88,166,255,.1);--bbrd:rgba(88,166,255,.25);
+  --amber:#d29922;--adim:rgba(210,153,34,.1);--abrd:rgba(210,153,34,.25);
+  --red:#f85149;--rdim:rgba(248,81,73,.1);--rbrd:rgba(248,81,73,.25);
+  --purple:#bc8cff;--pdim:rgba(188,140,255,.1);--pbrd:rgba(188,140,255,.3);
+  --font:'Be Vietnam Pro',sans-serif;--mono:'Space Mono',monospace;
+}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:13px;display:grid;grid-template-columns:220px 1fr;grid-template-rows:52px 1fr}
+
+/* TOPBAR */
+.topbar{grid-column:1/-1;background:var(--s1);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 1.25rem;gap:1rem}
+.tb-logo{font-family:var(--mono);font-size:.88rem;font-weight:700;color:var(--text)}
+.tb-logo span{color:var(--green)}
+.tb-back{font-size:.75rem;color:var(--text3);text-decoration:none;display:flex;align-items:center;gap:.35rem;transition:color .2s}
+.tb-back:hover{color:var(--text2)}
+.tb-title{font-size:.82rem;color:var(--text2)}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:.75rem}
+.tb-clock{font-family:var(--mono);font-size:.68rem;color:var(--text3)}
+
+/* SIDEBAR */
+.sidebar{background:var(--s1);border-right:1px solid var(--border);overflow-y:auto;padding:.75rem 0}
+.sb-section{font-family:var(--mono);font-size:.55rem;letter-spacing:.18em;text-transform:uppercase;color:var(--text3);padding:.65rem 1.1rem .25rem}
+.sb-item{display:flex;align-items:center;gap:.6rem;padding:.48rem 1.1rem;font-size:.8rem;color:var(--text2);cursor:pointer;border-left:2px solid transparent;transition:all .15s}
+.sb-item:hover{color:var(--text);background:rgba(255,255,255,.03)}
+.sb-item.active{color:var(--blue);border-left-color:var(--blue);background:var(--bdim)}
+.sb-badge{margin-left:auto;font-family:var(--mono);font-size:.55rem;padding:.15rem .4rem;border-radius:4px}
+.sb-badge.warn{background:var(--adim);border:1px solid var(--abrd);color:var(--amber)}
+.sb-badge.err{background:var(--rdim);border:1px solid var(--rbrd);color:var(--red)}
+
+/* MAIN */
+.main{overflow-y:auto;padding:1.5rem}
+.page{display:none}.page.active{display:block}
+
+/* CARDS */
+.card{background:var(--s2);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:1rem}
+.card-header{background:var(--s3);border-bottom:1px solid var(--border);padding:.75rem 1.1rem;display:flex;align-items:center;justify-content:space-between;gap:.75rem}
+.card-title{font-weight:600;font-size:.85rem;color:var(--text)}
+.card-body{padding:1.1rem}
+.card-actions{display:flex;gap:.5rem;flex-wrap:wrap}
+
+/* STAT ROW */
+.stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem;margin-bottom:1.25rem}
+.stat{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:.9rem 1rem;position:relative}
+.stat::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:8px 8px 0 0}
+.stat.g::before{background:var(--green)}.stat.b::before{background:var(--blue)}.stat.a::before{background:var(--amber)}.stat.r::before{background:var(--red)}
+.stat-label{font-family:var(--mono);font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-bottom:.4rem}
+.stat-val{font-family:var(--mono);font-size:1.5rem;font-weight:700;line-height:1;margin-bottom:.2rem}
+.stat-sub{font-size:.72rem;color:var(--text2)}
+
+/* TOUR OP CARD */
+.tour-op-list{display:flex;flex-direction:column;gap:.75rem}
+.tour-op-card{background:var(--s2);border:1px solid var(--border);border-radius:8px;overflow:hidden;transition:border-color .2s}
+.tour-op-card:hover{border-color:var(--border2)}
+.toc-header{background:var(--s3);padding:.75rem 1.1rem;display:flex;align-items:center;justify-content:space-between;gap:.75rem;cursor:pointer}
+.toc-info{flex:1}
+.toc-ref{font-family:var(--mono);font-size:.68rem;color:var(--blue);margin-bottom:.2rem}
+.toc-name{font-weight:600;font-size:.88rem;color:var(--text)}
+.toc-meta{font-size:.72rem;color:var(--text2);margin-top:.15rem;display:flex;gap:.85rem;flex-wrap:wrap}
+.toc-progress{text-align:right;flex-shrink:0}
+.toc-pct{font-family:var(--mono);font-size:1.1rem;font-weight:700;line-height:1}
+.toc-pct.done{color:var(--green)}.toc-pct.warn{color:var(--amber)}.toc-pct.bad{color:var(--red)}
+.toc-pct-label{font-size:.62rem;color:var(--text3);font-family:var(--mono)}
+.toc-body{padding:1rem;display:none}
+.toc-body.open{display:block}
+.progress-bar{height:3px;background:var(--border);border-radius:2px;margin:.5rem 0 1rem;overflow:hidden}
+.progress-fill{height:100%;border-radius:2px;transition:width .5s}
+.progress-fill.done{background:var(--green)}.progress-fill.warn{background:var(--amber)}.progress-fill.bad{background:var(--red)}
+
+/* CHECKLIST */
+.checklist-section{margin-bottom:1.25rem}
+.cs-title{font-family:var(--mono);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);padding:.4rem 0;margin-bottom:.5rem;display:flex;align-items:center;gap:.5rem}
+.cs-icon{font-size:.9rem}
+.check-items{display:flex;flex-direction:column;gap:.35rem}
+.check-item{display:flex;align-items:flex-start;gap:.65rem;padding:.5rem .75rem;border-radius:5px;border:1px solid var(--border);background:var(--s3);transition:border-color .2s}
+.check-item:hover{border-color:var(--border2)}
+.check-item.done{opacity:.65}
+.check-item.done .ci-text{text-decoration:line-through;color:var(--text3)}
+.check-item.overdue{border-color:var(--rbrd);background:var(--rdim)}
+.ci-check{width:18px;height:18px;border-radius:4px;border:1.5px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;margin-top:.05rem}
+.ci-check.checked{background:var(--green);border-color:var(--green);color:#0d1117;font-size:.65rem}
+.ci-content{flex:1}
+.ci-text{font-size:.82rem;color:var(--text);line-height:1.5;font-weight:400}
+.ci-meta{display:flex;align-items:center;gap:.65rem;margin-top:.2rem;flex-wrap:wrap}
+.ci-tag{font-family:var(--mono);font-size:.55rem;letter-spacing:.06em;text-transform:uppercase;padding:.15rem .4rem;border-radius:3px}
+.ci-tag.flight{background:var(--bdim);border:1px solid var(--bbrd);color:var(--blue)}
+.ci-tag.hotel{background:var(--pdim);border:1px solid var(--pbrd);color:var(--purple)}
+.ci-tag.transport{background:var(--adim);border:1px solid var(--abrd);color:var(--amber)}
+.ci-tag.food{background:var(--gdim);border:1px solid var(--gbrd);color:var(--green)}
+.ci-tag.guide{background:var(--rdim);border:1px solid var(--rbrd);color:var(--red)}
+.ci-tag.admin{background:var(--s3);border:1px solid var(--border);color:var(--text3)}
+.ci-deadline{font-size:.68rem;color:var(--text3);font-family:var(--mono)}
+.ci-deadline.overdue{color:var(--red)}
+.ci-note{font-size:.75rem;color:var(--text2);font-style:italic;margin-top:.2rem;font-weight:300}
+.ci-actions{display:flex;gap:.35rem;flex-shrink:0;align-items:flex-start}
+.ci-btn{background:none;border:1px solid var(--border);color:var(--text3);font-family:var(--mono);font-size:.55rem;padding:.2rem .45rem;border-radius:3px;cursor:pointer;transition:all .15s;text-transform:uppercase}
+.ci-btn:hover{border-color:var(--border2);color:var(--text2)}
+
+/* ADD TASK */
+.add-task-form{background:var(--s3);border:1px dashed var(--border);border-radius:5px;padding:.75rem;margin-top:.5rem;display:none}
+.add-task-form.open{display:block}
+.atf-row{display:grid;grid-template-columns:1fr auto auto auto;gap:.5rem;align-items:center}
+.atf-input{background:var(--s1);border:1px solid var(--border);color:var(--text);font-family:var(--font);font-size:.8rem;padding:.5rem .75rem;border-radius:4px;outline:none;flex:1}
+.atf-input:focus{border-color:var(--blue)}
+.atf-select{background:var(--s1);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:.65rem;padding:.5rem .5rem;border-radius:4px;outline:none;cursor:pointer}
+.atf-btn{font-family:var(--mono);font-size:.6rem;letter-spacing:.06em;text-transform:uppercase;padding:.45rem .85rem;border-radius:4px;cursor:pointer;transition:all .15s;border:1px solid}
+.atf-btn.save{background:var(--blue);border-color:var(--blue);color:#0d1117}
+.atf-btn.cancel{background:none;border-color:var(--border);color:var(--text2)}
+
+/* NOTE MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:500;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.modal-bg.open{display:flex}
+.modal{background:var(--s2);border:1px solid var(--border);border-radius:10px;width:100%;max-width:520px;overflow:hidden}
+.modal-header{background:var(--s3);border-bottom:1px solid var(--border);padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-weight:600;font-size:.9rem}
+.modal-close{background:none;border:none;color:var(--text2);font-size:1.2rem;cursor:pointer}
+.modal-body{padding:1.25rem;display:flex;flex-direction:column;gap:.85rem}
+.modal-footer{padding:.85rem 1.25rem;border-top:1px solid var(--border);display:flex;gap:.5rem;justify-content:flex-end}
+.form-group{display:flex;flex-direction:column;gap:.35rem}
+.form-label{font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text3)}
+.form-input,.form-select,.form-textarea{background:var(--s1);border:1px solid var(--border);color:var(--text);font-family:var(--font);font-size:.85rem;padding:.6rem .85rem;border-radius:5px;outline:none;transition:border-color .2s;width:100%}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--blue)}
+.form-select option{background:var(--s2)}
+.form-textarea{resize:vertical;min-height:80px;font-size:.82rem}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+
+/* BUTTONS */
+.btn{font-family:var(--mono);font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;padding:.4rem .9rem;border-radius:5px;cursor:pointer;transition:all .15s;border:1px solid}
+.btn-default{background:none;border-color:var(--border);color:var(--text2)}
+.btn-default:hover{border-color:var(--border2);color:var(--text)}
+.btn-primary{background:var(--blue);border-color:var(--blue);color:#0d1117}
+.btn-primary:hover{background:#79b8ff}
+.btn-green{background:var(--green);border-color:var(--green);color:#0d1117}
+.btn-danger{background:none;border-color:var(--rbrd);color:var(--red)}
+
+/* BADGE */
+.badge{font-family:var(--mono);font-size:.58rem;letter-spacing:.06em;text-transform:uppercase;padding:.22rem .55rem;border-radius:4px;display:inline-flex;align-items:center;gap:.3rem;white-space:nowrap}
+.badge-pending{background:var(--adim);border:1px solid var(--abrd);color:var(--amber)}
+.badge-confirmed{background:var(--bdim);border:1px solid var(--bbrd);color:var(--blue)}
+.badge-completed{background:var(--gdim);border:1px solid var(--gbrd);color:var(--green)}
+
+/* GUIDE SCHEDULE */
+.guide-month{display:grid;grid-template-columns:80px repeat(7,1fr);gap:2px;margin-bottom:1rem}
+.guide-name{font-size:.75rem;font-weight:600;color:var(--text);padding:.4rem .5rem;display:flex;align-items:center}
+.guide-day-header{font-family:var(--mono);font-size:.6rem;color:var(--text3);text-align:center;padding:.3rem 0}
+.guide-cell{height:36px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:.6rem;cursor:pointer;transition:all .15s;border:1px solid transparent}
+.guide-cell.free{background:var(--s3);color:var(--text3)}
+.guide-cell.free:hover{border-color:var(--green);color:var(--green)}
+.guide-cell.busy{background:rgba(88,166,255,.15);border:1px solid var(--bbrd);color:var(--blue);font-size:.55rem;text-align:center;padding:2px}
+.guide-cell.off{background:var(--rdim);border:1px solid var(--rbrd);color:var(--red)}
+.guide-legend{display:flex;gap:1rem;margin-bottom:1rem;font-size:.72rem;color:var(--text2)}
+.leg-item{display:flex;align-items:center;gap:.35rem}
+.leg-dot{width:10px;height:10px;border-radius:2px}
+
+/* EMPTY */
+.empty-state{text-align:center;padding:3rem 1rem}
+.empty-icon{font-size:2.5rem;opacity:.3;margin-bottom:.75rem}
+.empty-title{font-size:.9rem;font-weight:600;color:var(--text);margin-bottom:.3rem}
+.empty-sub{font-size:.78rem;color:var(--text2)}
+
+/* TOAST */
+.toast-wrap{position:fixed;bottom:1.5rem;right:1.5rem;z-index:999;display:flex;flex-direction:column;gap:.5rem}
+.toast{background:var(--s2);border:1px solid var(--border);color:var(--text);padding:.65rem 1rem;font-size:.8rem;border-radius:6px;display:flex;align-items:center;gap:.5rem;min-width:240px;animation:toastIn .2s ease;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+@keyframes toastIn{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:none}}
+
+::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+@media(max-width:900px){body{grid-template-columns:1fr}.sidebar{display:none}.stat-row{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<!-- NOTE MODAL -->
+<div class="modal-bg" id="noteModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="noteModalTitle">Thêm ghi chú</div>
+      <button class="modal-close" onclick="closeNoteModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">Nội dung công việc *</label>
+        <input class="form-input" id="noteTaskText" placeholder="VD: Đặt phòng KS Mường Thanh 2 đêm 08-09/06...">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Danh mục</label>
+          <select class="form-select" id="noteTaskCat">
+            <option value="flight">✈️ Vé máy bay</option>
+            <option value="hotel">🏨 Khách sạn</option>
+            <option value="transport">🚌 Di chuyển</option>
+            <option value="food">🍽️ Ăn uống</option>
+            <option value="guide">🧑‍💼 HDV</option>
+            <option value="admin">📋 Hành chính</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Deadline</label>
+          <input class="form-input" id="noteTaskDeadline" type="date">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Ghi chú chi tiết</label>
+        <textarea class="form-textarea" id="noteTaskNote" placeholder="Số điện thoại liên hệ, địa chỉ, mã đặt phòng, số hiệu chuyến bay..."></textarea>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Assign cho</label>
+        <select class="form-select" id="noteTaskAssign">
+          <option value="">-- Bản thân xử lý --</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="saveTask()">💾 Lưu công việc</button>
+      <button class="btn btn-default" onclick="closeNoteModal()">Hủy</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="tb-logo">Baggio<span>.</span>Ops</div>
+  <div class="tb-back" style="color:var(--text3);font-size:.75rem">/ Vận hành Tour</div>
+  <div class="tb-right">
+    <a href="baggio-admin.html" class="btn btn-default" style="text-decoration:none;font-size:.6rem">← Admin</a>
+    <div class="tb-clock" id="clockEl"></div>
+  </div>
+</header>
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sb-section">Vận hành</div>
+  <div class="sb-item active" onclick="nav('checklist',this)">
+    <span>✅</span> Checklist Tour
+    <span class="sb-badge warn" id="sbOverdue">0</span>
+  </div>
+  <div class="sb-item" onclick="nav('guides',this)">
+    <span>🧑‍💼</span> Lịch HDV
+  </div>
+  <div class="sb-item" onclick="nav('reminders',this)">
+    <span>🔔</span> Nhắc nhở
+    <span class="sb-badge err" id="sbReminders">0</span>
+  </div>
+  <div class="sb-section">Quản lý</div>
+  <div class="sb-item" onclick="nav('suppliers',this)">
+    <span>🏪</span> Nhà cung cấp
+  </div>
+  <div class="sb-item" onclick="nav('templates',this)">
+    <span>📝</span> Template công việc
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- ═══ CHECKLIST ═══ -->
+  <div class="page active" id="page-checklist">
+    <div class="stat-row">
+      <div class="stat g"><div class="stat-label">Tour sắp tới</div><div class="stat-val" id="statUpcoming">—</div><div class="stat-sub">30 ngày tới</div></div>
+      <div class="stat b"><div class="stat-label">Task hôm nay</div><div class="stat-val" id="statToday">—</div><div class="stat-sub">Cần xử lý</div></div>
+      <div class="stat a"><div class="stat-label">Chưa hoàn thành</div><div class="stat-val" id="statPending">—</div><div class="stat-sub">Tổng task còn lại</div></div>
+      <div class="stat r"><div class="stat-label">Quá hạn</div><div class="stat-val" id="statOverdue">—</div><div class="stat-sub" style="color:var(--red)">Cần xử lý ngay!</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">📋 Checklist vận hành theo booking</div>
+        <div class="card-actions">
+          <select class="atf-select" id="filterStatus" onchange="loadChecklist()">
+            <option value="active">Đang vận hành</option>
+            <option value="all">Tất cả</option>
+            <option value="upcoming">Sắp tới</option>
+          </select>
+          <button class="btn btn-default" onclick="loadChecklist()">↺ Tải lại</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="tour-op-list" id="checklistEl">
+          <div class="empty-state"><div class="empty-icon">✅</div><div class="empty-title">Đang tải...</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ GUIDE SCHEDULE ═══ -->
+  <div class="page" id="page-guides">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">📅 Lịch làm việc HDV — <span id="guideMonthLabel"></span></div>
+        <div class="card-actions">
+          <button class="btn btn-default" onclick="changeGuidesMonth(-1)">← Tháng trước</button>
+          <button class="btn btn-default" onclick="changeGuidesMonth(1)">Tháng sau →</button>
+          <button class="btn btn-primary" onclick="loadGuideSchedule()">↺ Cập nhật</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="guide-legend">
+          <div class="leg-item"><div class="leg-dot" style="background:var(--s3);border:1px solid var(--border)"></div> Rảnh</div>
+          <div class="leg-item"><div class="leg-dot" style="background:rgba(88,166,255,.15);border:1px solid var(--bbrd)"></div> Có tour</div>
+          <div class="leg-item"><div class="leg-dot" style="background:var(--rdim);border:1px solid var(--rbrd)"></div> Nghỉ phép</div>
+        </div>
+        <div id="guideScheduleEl">
+          <div class="empty-state"><div class="empty-icon">📅</div><div class="empty-title">Đang tải lịch...</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">🧑‍💼 Danh sách HDV & trạng thái</div>
+      </div>
+      <div class="card-body" id="guideListEl">
+        <div class="empty-state"><div class="empty-icon">⏳</div><div class="empty-title">Đang tải...</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ REMINDERS ═══ -->
+  <div class="page" id="page-reminders">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">🔔 Nhắc nhở tự động</div>
+        <div class="card-actions">
+          <button class="btn btn-primary" onclick="loadReminders()">↺ Kiểm tra</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div id="remindersEl">
+          <div class="empty-state"><div class="empty-icon">🔔</div><div class="empty-title">Đang kiểm tra...</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SUPPLIERS ═══ -->
+  <div class="page" id="page-suppliers">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">🏪 Nhà cung cấp dịch vụ</div>
+        <button class="btn btn-primary" onclick="openAddSupplier()">+ Thêm NCC</button>
+      </div>
+      <div class="card-body">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem" id="suppliersEl">
+          <div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">🏪</div><div class="empty-title">Chưa có nhà cung cấp</div><div class="empty-sub">Thêm khách sạn, hãng xe, nhà hàng... để quản lý tập trung</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ TEMPLATES ═══ -->
+  <div class="page" id="page-templates">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">📝 Template checklist theo loại tour</div>
+        <button class="btn btn-primary" onclick="toast('Tính năng đang phát triển','warn')">+ Tạo template mới</button>
+      </div>
+      <div class="card-body">
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem" id="templatesEl"></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+// ══════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON)
+const fmt    = n => Number(n||0).toLocaleString('vi-VN')
+const fmtD   = d => d ? new Date(d).toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit',year:'numeric'}) : '—'
+const today  = () => new Date().toISOString().split('T')[0]
+
+let guideMonth = new Date()
+let currentNoteBookingId = null
+let allTasks = {} // {bookingId: [{id,text,cat,done,deadline,note},...]}
+
+setInterval(()=>{ document.getElementById('clockEl').textContent = new Date().toLocaleTimeString('vi-VN') }, 1000)
+
+function toast(msg,type='ok'){
+  const w=document.getElementById('toastWrap'),t=document.createElement('div')
+  t.className='toast'
+  t.style.borderLeft=`3px solid ${type==='err'?'var(--red)':type==='warn'?'var(--amber)':'var(--green)'}`
+  t.textContent=msg;w.appendChild(t)
+  setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity .3s';setTimeout(()=>t.remove(),300)},3000)
+}
+
+function nav(page,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'))
+  document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'))
+  document.getElementById('page-'+page).classList.add('active')
+  if(el)el.classList.add('active')
+  const loaders={checklist:loadChecklist,guides:loadGuideSchedule,reminders:loadReminders,suppliers:loadSuppliers,templates:loadTemplates}
+  if(loaders[page])loaders[page]()
+}
+
+// ══════════════════════════════════════════════
+// DEFAULT CHECKLIST TEMPLATE
+// ══════════════════════════════════════════════
+const DEFAULT_TASKS = [
+  {cat:'flight',   text:'Xác nhận vé máy bay — kiểm tra PNR, tên hành khách, hành lý'},
+  {cat:'hotel',    text:'Đặt phòng khách sạn — confirm số phòng, check-in time, breakfast'},
+  {cat:'transport',text:'Đặt xe đón sân bay — loại xe, biển số, giờ đón, số tài xế'},
+  {cat:'guide',    text:'Liên hệ HDV — xác nhận lịch, giao tài liệu tour, điểm tập trung'},
+  {cat:'food',     text:'Đặt nhà hàng (nếu cần) — số người, menu, yêu cầu ăn kiêng'},
+  {cat:'admin',    text:'Gửi thông tin tour cho khách — lịch trình, điểm tập trung, HDV liên hệ'},
+  {cat:'admin',    text:'Gọi/nhắn khách xác nhận 48h trước khởi hành'},
+  {cat:'admin',    text:'Chuẩn bị tài liệu: voucher, danh sách khách, hướng dẫn tour'},
+  {cat:'flight',   text:'Kiểm tra lại chuyến bay ngày khởi hành (delay/gate)'},
+  {cat:'admin',    text:'Thu thập feedback sau tour — gửi link đánh giá'},
+]
+
+const CAT_MAP = {
+  flight:'✈️ Máy bay', hotel:'🏨 Khách sạn', transport:'🚌 Di chuyển',
+  food:'🍽️ Ăn uống', guide:'🧑‍💼 HDV', admin:'📋 Hành chính'
+}
+
+const CAT_GROUPS = {
+  flight:   {icon:'✈️', label:'Vé máy bay & Chuyến đi'},
+  hotel:    {icon:'🏨', label:'Khách sạn & Lưu trú'},
+  transport:{icon:'🚌', label:'Di chuyển & Xe'},
+  food:     {icon:'🍽️', label:'Ăn uống & Nhà hàng'},
+  guide:    {icon:'🧑‍💼', label:'Hướng dẫn viên'},
+  admin:    {icon:'📋', label:'Hành chính & Khách hàng'},
+}
+
+// ══════════════════════════════════════════════
+// LOCAL STORAGE TASKS
+// ══════════════════════════════════════════════
+function getTasksForBooking(bookingId) {
+  const stored = localStorage.getItem(`tasks_${bookingId}`)
+  if(stored) return JSON.parse(stored)
+  // Tạo default tasks
+  const tasks = DEFAULT_TASKS.map((t,i)=>({
+    id: `${bookingId}_${i}`, ...t, done:false, deadline:'', note:'', createdAt: new Date().toISOString()
+  }))
+  localStorage.setItem(`tasks_${bookingId}`, JSON.stringify(tasks))
+  return tasks
+}
+
+function saveTasksForBooking(bookingId, tasks) {
+  localStorage.setItem(`tasks_${bookingId}`, JSON.stringify(tasks))
+}
+
+function toggleTask(bookingId, taskId) {
+  const tasks = getTasksForBooking(bookingId)
+  const t = tasks.find(t=>t.id===taskId)
+  if(t) { t.done=!t.done; saveTasksForBooking(bookingId,tasks) }
+  renderChecklist()
+}
+
+function addTask(bookingId) {
+  const text = document.getElementById(`atf_text_${bookingId}`)?.value?.trim()
+  const cat  = document.getElementById(`atf_cat_${bookingId}`)?.value || 'admin'
+  if(!text) return
+  const tasks = getTasksForBooking(bookingId)
+  tasks.push({id:`${bookingId}_custom_${Date.now()}`, text, cat, done:false, deadline:'', note:'', createdAt:new Date().toISOString()})
+  saveTasksForBooking(bookingId,tasks)
+  document.getElementById(`atf_text_${bookingId}`).value=''
+  toggleAddForm(bookingId)
+  renderChecklist()
+  toast('✅ Đã thêm công việc')
+}
+
+function deleteTask(bookingId, taskId) {
+  const tasks = getTasksForBooking(bookingId).filter(t=>t.id!==taskId)
+  saveTasksForBooking(bookingId,tasks)
+  renderChecklist()
+}
+
+function toggleAddForm(bookingId) {
+  const f = document.getElementById(`atf_${bookingId}`)
+  if(f) f.classList.toggle('open')
+}
+
+// ══════════════════════════════════════════════
+// NOTE MODAL
+// ══════════════════════════════════════════════
+let noteContext = null
+function openNoteModal(bookingId, taskId) {
+  noteContext = {bookingId, taskId}
+  const tasks = getTasksForBooking(bookingId)
+  const t = tasks.find(t=>t.id===taskId)
+  if(!t) return
+  document.getElementById('noteModalTitle').textContent = `Ghi chú: ${t.text.slice(0,40)}...`
+  document.getElementById('noteTaskText').value  = t.text
+  document.getElementById('noteTaskCat').value   = t.cat
+  document.getElementById('noteTaskDeadline').value = t.deadline||''
+  document.getElementById('noteTaskNote').value  = t.note||''
+  document.getElementById('noteModal').classList.add('open')
+}
+function closeNoteModal(){ document.getElementById('noteModal').classList.remove('open'); noteContext=null }
+
+function saveTask() {
+  if(!noteContext) return
+  const {bookingId,taskId} = noteContext
+  const tasks = getTasksForBooking(bookingId)
+  const t = tasks.find(t=>t.id===taskId)
+  if(t){
+    t.text     = document.getElementById('noteTaskText').value.trim()
+    t.cat      = document.getElementById('noteTaskCat').value
+    t.deadline = document.getElementById('noteTaskDeadline').value
+    t.note     = document.getElementById('noteTaskNote').value.trim()
+    saveTasksForBooking(bookingId,tasks)
+    closeNoteModal()
+    renderChecklist()
+    toast('💾 Đã lưu ghi chú')
+  }
+}
+
+// ══════════════════════════════════════════════
+// CHECKLIST LOAD & RENDER
+// ══════════════════════════════════════════════
+let bookingsCache = []
+
+async function loadChecklist() {
+  const filter = document.getElementById('filterStatus').value
+  let q = sb.from('bookings')
+    .select('id,booking_ref,guest_name,guest_phone,status,deposit_amount,created_at,tours(name,destination,duration_days),guides(full_name)')
+    .in('status',['PENDING','CONFIRMED','ONGOING'])
+    .order('created_at',{ascending:false})
+    .limit(30)
+
+  const {data,error} = await q
+  if(error){ toast('Lỗi tải dữ liệu','err'); return }
+  bookingsCache = data||[]
+  renderChecklist()
+  updateStats()
+}
+
+function renderChecklist() {
+  const el = document.getElementById('checklistEl')
+  if(!bookingsCache.length){
+    el.innerHTML='<div class="empty-state"><div class="empty-icon">✅</div><div class="empty-title">Không có tour đang vận hành</div><div class="empty-sub">Các booking đã xác nhận sẽ hiện ở đây</div></div>'
+    return
+  }
+
+  el.innerHTML = bookingsCache.map(b=>{
+    const tasks   = getTasksForBooking(b.id)
+    const done    = tasks.filter(t=>t.done).length
+    const total   = tasks.length
+    const pct     = total ? Math.round(done/total*100) : 0
+    const overdue = tasks.filter(t=>!t.done&&t.deadline&&t.deadline<today()).length
+    const pctClass = pct===100?'done':pct>=50?'warn':'bad'
+
+    // Group tasks by category
+    const groups = Object.keys(CAT_GROUPS).map(cat=>{
+      const catTasks = tasks.filter(t=>t.cat===cat)
+      if(!catTasks.length) return ''
+      return `
+        <div class="checklist-section">
+          <div class="cs-title"><span class="cs-icon">${CAT_GROUPS[cat].icon}</span>${CAT_GROUPS[cat].label}
+            <span style="margin-left:auto;font-family:var(--mono);font-size:.58rem;color:var(--text3)">${catTasks.filter(t=>t.done).length}/${catTasks.length}</span>
+          </div>
+          <div class="check-items">
+            ${catTasks.map(t=>`
+              <div class="check-item ${t.done?'done':''} ${!t.done&&t.deadline&&t.deadline<today()?'overdue':''}">
+                <div class="ci-check ${t.done?'checked':''}" onclick="toggleTask('${b.id}','${t.id}')">${t.done?'✓':''}</div>
+                <div class="ci-content">
+                  <div class="ci-text">${t.text}</div>
+                  <div class="ci-meta">
+                    <span class="ci-tag ${t.cat}">${CAT_MAP[t.cat]||t.cat}</span>
+                    ${t.deadline?`<span class="ci-deadline ${t.deadline<today()&&!t.done?'overdue':''}">⏰ ${fmtD(t.deadline)}</span>`:''}
+                  </div>
+                  ${t.note?`<div class="ci-note">📝 ${t.note}</div>`:''}
+                </div>
+                <div class="ci-actions">
+                  <button class="ci-btn" onclick="openNoteModal('${b.id}','${t.id}')">✏️</button>
+                  <button class="ci-btn" onclick="deleteTask('${b.id}','${t.id}')">🗑</button>
+                </div>
+              </div>`).join('')}
+          </div>
+        </div>`
+    }).join('')
+
+    return `
+    <div class="tour-op-card">
+      <div class="toc-header" onclick="toggleTocBody('toc_${b.id}')">
+        <div class="toc-info">
+          <div class="toc-ref">#${b.booking_ref||b.id.slice(-8)} ${overdue?`<span style="color:var(--red);margin-left:.5rem">⚠️ ${overdue} quá hạn</span>`:''}</div>
+          <div class="toc-name">${b.guest_name||'—'} · ${b.tours?.name?.slice(0,40)||'—'}</div>
+          <div class="toc-meta">
+            <span>📍 ${b.tours?.destination||'—'}</span>
+            <span>📅 ${b.tours?.duration_days||1} ngày</span>
+            <span>🧑‍💼 ${b.guides?.full_name||'Chưa phân công'}</span>
+            <span>💰 Cọc: ${fmt(b.deposit_amount)}đ</span>
+            <span class="badge ${b.status==='CONFIRMED'?'badge-confirmed':b.status==='PENDING'?'badge-pending':'badge-completed'}">${b.status}</span>
+          </div>
+        </div>
+        <div class="toc-progress">
+          <div class="toc-pct ${pctClass}">${pct}%</div>
+          <div class="toc-pct-label">${done}/${total} xong</div>
+        </div>
+      </div>
+      <div class="toc-body" id="toc_${b.id}">
+        <div class="progress-bar"><div class="progress-fill ${pctClass}" style="width:${pct}%"></div></div>
+        ${groups}
+        <div style="margin-top:.75rem">
+          <button class="btn btn-default" onclick="toggleAddForm('${b.id}')">+ Thêm công việc</button>
+        </div>
+        <div class="add-task-form" id="atf_${b.id}">
+          <div class="atf-row" style="margin-bottom:.5rem">
+            <input class="atf-input" id="atf_text_${b.id}" placeholder="Tên công việc...">
+            <select class="atf-select" id="atf_cat_${b.id}">
+              ${Object.entries(CAT_MAP).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}
+            </select>
+            <button class="atf-btn save" onclick="addTask('${b.id}')">Lưu</button>
+            <button class="atf-btn cancel" onclick="toggleAddForm('${b.id}')">Hủy</button>
+          </div>
+        </div>
+      </div>
+    </div>`
+  }).join('')
+}
+
+function toggleTocBody(id){
+  const el=document.getElementById(id)
+  if(el) el.classList.toggle('open')
+}
+
+function updateStats(){
+  const allTasks = bookingsCache.flatMap(b=>getTasksForBooking(b.id))
+  const overdue  = allTasks.filter(t=>!t.done&&t.deadline&&t.deadline<today())
+  const pending  = allTasks.filter(t=>!t.done)
+  const todayTasks = allTasks.filter(t=>!t.done&&t.deadline===today())
+  document.getElementById('statUpcoming').textContent  = bookingsCache.length
+  document.getElementById('statPending').textContent   = pending.length
+  document.getElementById('statOverdue').textContent   = overdue.length
+  document.getElementById('statToday').textContent     = todayTasks.length
+  document.getElementById('sbOverdue').textContent     = overdue.length
+  document.getElementById('sbReminders').textContent   = todayTasks.length
+}
+
+// ══════════════════════════════════════════════
+// GUIDE SCHEDULE
+// ══════════════════════════════════════════════
+function changeGuidesMonth(dir){
+  guideMonth.setMonth(guideMonth.getMonth()+dir)
+  loadGuideSchedule()
+}
+
+async function loadGuideSchedule(){
+  const y=guideMonth.getFullYear(), m=guideMonth.getMonth()
+  document.getElementById('guideMonthLabel').textContent=`Tháng ${m+1}/${y}`
+
+  const {data:guides}=await sb.from('guides').select('id,full_name,status,regions').eq('status','ACTIVE')
+  const {data:bookings}=await sb.from('bookings')
+    .select('id,guide_id,created_at,tours(duration_days)')
+    .in('status',['CONFIRMED','ONGOING'])
+
+  const DAYS=['T2','T3','T4','T5','T6','T7','CN']
+  // Lấy 7 ngày từ đầu tuần hiện tại
+  const startOfWeek=new Date(); startOfWeek.setDate(startOfWeek.getDate()-startOfWeek.getDay()+1)
+  const days=Array.from({length:7},(_,i)=>{const d=new Date(startOfWeek);d.setDate(d.getDate()+i);return d})
+
+  const el=document.getElementById('guideScheduleEl')
+  if(!guides?.length){el.innerHTML='<div class="empty-state"><div class="empty-title">Chưa có HDV nào</div></div>';return}
+
+  let html=`<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;min-width:600px">`
+  html+=`<thead><tr><th style="padding:.5rem;font-family:var(--mono);font-size:.6rem;color:var(--text3);text-align:left;width:120px">HDV</th>`
+  days.forEach(d=>{
+    const isToday=d.toDateString()===new Date().toDateString()
+    html+=`<th style="padding:.5rem;font-family:var(--mono);font-size:.6rem;color:${isToday?'var(--blue)':'var(--text3)'};text-align:center">${DAYS[d.getDay()===0?6:d.getDay()-1]}<br>${d.getDate()}/${d.getMonth()+1}</th>`
+  })
+  html+=`</tr></thead><tbody>`
+
+  guides.forEach(g=>{
+    html+=`<tr><td style="padding:.5rem;font-size:.8rem;font-weight:500;color:var(--text)">${g.full_name}</td>`
+    days.forEach(d=>{
+      // Check if guide has booking on this day
+      const hasBooking=bookings?.some(b=>b.guide_id===g.id&&new Date(b.created_at).toDateString()===d.toDateString())
+      const isToday=d.toDateString()===new Date().toDateString()
+      if(hasBooking){
+        html+=`<td style="padding:2px"><div style="background:rgba(88,166,255,.15);border:1px solid var(--bbrd);border-radius:4px;padding:.3rem;text-align:center;font-family:var(--mono);font-size:.58rem;color:var(--blue)">Có tour</div></td>`
+      } else {
+        html+=`<td style="padding:2px"><div style="background:${isToday?'rgba(63,185,80,.1)':'var(--s3)'};border:1px solid ${isToday?'var(--gbrd)':'var(--border)'};border-radius:4px;height:32px;cursor:pointer" title="Rảnh"></div></td>`
+      }
+    })
+    html+=`</tr>`
+  })
+  html+=`</tbody></table></div>`
+  el.innerHTML=html
+
+  // Guide list
+  document.getElementById('guideListEl').innerHTML=`
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.65rem">
+    ${guides.map(g=>`
+      <div style="background:var(--s3);border:1px solid var(--border);border-radius:6px;padding:.9rem">
+        <div style="font-weight:600;font-size:.88rem;margin-bottom:.3rem">${g.full_name}</div>
+        <div style="font-size:.75rem;color:var(--text2);margin-bottom:.5rem">${(g.regions||[]).map(r=>({north:'Miền Bắc',central:'Miền Trung',south:'Miền Nam'}[r]||r)).join(', ')||'Tất cả vùng'}</div>
+        <span class="badge badge-confirmed">● ACTIVE</span>
+      </div>`).join('')}
+    </div>`
+}
+
+// ══════════════════════════════════════════════
+// REMINDERS
+// ══════════════════════════════════════════════
+async function loadReminders(){
+  const {data:bookings}=await sb.from('bookings')
+    .select('id,booking_ref,guest_name,guest_phone,status,tours(name)')
+    .in('status',['CONFIRMED','PENDING'])
+
+  const reminders=[]
+  ;(bookings||[]).forEach(b=>{
+    const tasks=getTasksForBooking(b.id)
+    const overdueTasks=tasks.filter(t=>!t.done&&t.deadline&&t.deadline<today())
+    const todayTasks=tasks.filter(t=>!t.done&&t.deadline===today())
+    if(overdueTasks.length) reminders.push({type:'overdue',booking:b,tasks:overdueTasks})
+    if(todayTasks.length)   reminders.push({type:'today',booking:b,tasks:todayTasks})
+  })
+
+  const el=document.getElementById('remindersEl')
+  if(!reminders.length){
+    el.innerHTML='<div class="empty-state"><div class="empty-icon">🎉</div><div class="empty-title">Không có nhắc nhở nào</div><div class="empty-sub">Tất cả công việc đang đúng tiến độ!</div></div>'
+    return
+  }
+
+  el.innerHTML=reminders.map(r=>`
+    <div style="background:var(--${r.type==='overdue'?'rdim':'adim'});border:1px solid var(--${r.type==='overdue'?'rbrd':'abrd'});border-radius:6px;padding:1rem;margin-bottom:.75rem">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem">
+        <div>
+          <div style="font-weight:600;font-size:.88rem;color:var(--${r.type==='overdue'?'red':'amber'})">${r.type==='overdue'?'⚠️ Quá hạn':'🔔 Hôm nay'} — #${r.booking.booking_ref||r.booking.id.slice(-6)}</div>
+          <div style="font-size:.78rem;color:var(--text2);margin-top:.15rem">${r.booking.guest_name} · ${r.booking.tours?.name?.slice(0,40)||'—'}</div>
+        </div>
+        <a href="tel:${r.booking.guest_phone}" style="background:var(--green);color:#0d1117;font-family:var(--mono);font-size:.65rem;padding:.35rem .75rem;border-radius:4px;text-decoration:none;font-weight:700">📞 Gọi</a>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:.35rem">
+        ${r.tasks.map(t=>`
+          <div style="display:flex;align-items:center;gap:.65rem;font-size:.8rem">
+            <span class="ci-tag ${t.cat}">${CAT_MAP[t.cat]||t.cat}</span>
+            <span style="color:var(--text)">${t.text}</span>
+            ${t.deadline?`<span style="margin-left:auto;font-family:var(--mono);font-size:.65rem;color:var(--${r.type==='overdue'?'red':'amber'})">${fmtD(t.deadline)}</span>`:''}
+          </div>`).join('')}
+      </div>
+    </div>`).join('')
+}
+
+// ══════════════════════════════════════════════
+// SUPPLIERS
+// ══════════════════════════════════════════════
+const SUPPLIERS_KEY='baggio_suppliers'
+function getSuppliers(){ try{return JSON.parse(localStorage.getItem(SUPPLIERS_KEY)||'[]')}catch{return[]} }
+function saveSuppliers(s){ localStorage.setItem(SUPPLIERS_KEY,JSON.stringify(s)) }
+
+function loadSuppliers(){
+  const suppliers=getSuppliers()
+  const el=document.getElementById('suppliersEl')
+  if(!suppliers.length){
+    el.innerHTML='<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">🏪</div><div class="empty-title">Chưa có nhà cung cấp</div><div class="empty-sub">Thêm khách sạn, hãng xe, nhà hàng để quản lý tập trung</div></div>'
+    return
+  }
+  el.innerHTML=suppliers.map((s,i)=>`
+    <div style="background:var(--s3);border:1px solid var(--border);border-radius:6px;padding:1rem">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:.5rem">
+        <div>
+          <div style="font-weight:600;font-size:.88rem">${s.name}</div>
+          <span class="ci-tag ${s.cat}" style="margin-top:.3rem;display:inline-block">${CAT_MAP[s.cat]||s.cat}</span>
+        </div>
+        <button class="ci-btn" onclick="deleteSupplier(${i})" style="color:var(--red)">🗑</button>
+      </div>
+      ${s.contact?`<div style="font-size:.78rem;color:var(--text2)">📞 ${s.contact}</div>`:''}
+      ${s.address?`<div style="font-size:.78rem;color:var(--text2)">📍 ${s.address}</div>`:''}
+      ${s.note?`<div style="font-size:.75rem;color:var(--text3);margin-top:.35rem;font-style:italic">${s.note}</div>`:''}
+    </div>`).join('')
+}
+
+function deleteSupplier(i){
+  const s=getSuppliers(); s.splice(i,1); saveSuppliers(s); loadSuppliers()
+  toast('Đã xóa nhà cung cấp','warn')
+}
+
+function openAddSupplier(){
+  const name=prompt('Tên nhà cung cấp:'); if(!name) return
+  const cats=Object.entries(CAT_MAP).map(([k,v])=>`${k}: ${v}`).join('\n')
+  const cat=prompt(`Danh mục:\n${cats}\n\nNhập key (flight/hotel/transport/food/guide/admin):`)||'admin'
+  const contact=prompt('SĐT liên hệ:')||''
+  const address=prompt('Địa chỉ:')||''
+  const note=prompt('Ghi chú (giá hợp đồng, điều khoản...):')||''
+  const s=getSuppliers()
+  s.push({name,cat,contact,address,note,createdAt:new Date().toISOString()})
+  saveSuppliers(s); loadSuppliers()
+  toast('✅ Đã thêm nhà cung cấp')
+}
+
+// ══════════════════════════════════════════════
+// TEMPLATES
+// ══════════════════════════════════════════════
+const TEMPLATES=[
+  {name:'Tour Biển & Đảo',icon:'🏖',tasks:['Đặt vé tàu/phà ra đảo','Book khách sạn resort biển','Thuê xe máy hoặc xe điện','Đặt lịch lặn biển/kayak','Nhà hàng hải sản tươi']},
+  {name:'Tour Núi & Trekking',icon:'🏔',tasks:['Thuê xe 4WD hoặc xe máy','Homestay bản địa','Porter và equipment','Permit leo núi (nếu cần)','Đồ ăn mang theo trekking']},
+  {name:'Tour Văn hóa & Di tích',icon:'🏛',tasks:['Vé tham quan di tích','HDV chuyên lịch sử','Xe bus/van theo đoàn','Nhà hàng cơm niêu truyền thống','Trang phục phù hợp ghi chú']},
+  {name:'Tour MICE & Team Building',icon:'🏢',tasks:['Hội trường/phòng họp','Setup AV equipment','Catering & coffee break','Hoạt động team building','Xe đưa đón đoàn','Quà lưu niệm & vật phẩm']},
+]
+
+function loadTemplates(){
+  document.getElementById('templatesEl').innerHTML=TEMPLATES.map(t=>`
+    <div style="background:var(--s3);border:1px solid var(--border);border-radius:8px;padding:1.1rem">
+      <div style="font-size:1.5rem;margin-bottom:.5rem">${t.icon}</div>
+      <div style="font-weight:600;font-size:.9rem;margin-bottom:.75rem">${t.name}</div>
+      <div style="display:flex;flex-direction:column;gap:.3rem">
+        ${t.tasks.map(task=>`<div style="font-size:.78rem;color:var(--text2);display:flex;align-items:center;gap:.4rem"><span style="color:var(--teal,var(--green))">✓</span>${task}</div>`).join('')}
+      </div>
+      <button class="btn btn-default" style="margin-top:.85rem;width:100%;font-size:.6rem" onclick="toast('Áp dụng template vào booking — tính năng đang phát triển','warn')">Áp dụng vào booking →</button>
+    </div>`).join('')
+}
+
+// ══════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', ()=>{
+  loadChecklist()
+  loadTemplates()
+})
+document.addEventListener('keydown', e=>{
+  if(e.key==='Escape') closeNoteModal()
+})
+</script>
+</body>
+</html>
