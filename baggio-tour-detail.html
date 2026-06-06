@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chi tiết tour — Baggio Travel</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Space+Mono&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+const SUPABASE_URL  = 'https://lfnlezfphwjtdunyungi.supabase.co'
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxmbmxlemZwaHdqdGR1bnl1bmdpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0NjkwNzcsImV4cCI6MjA5NjA0NTA3N30.fmjvqhyiPcjB6qT5GDtfzMfY-C-WXP4QUIk-YW7FhJg'
+</script>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --ink:#111118;--cream:#faf8f3;--paper:#f3efe6;--card:#fff;
+  --red:#c5372b;--gold:#b8860b;--teal:#1a6b5e;--muted:#7a7268;
+  --border:#e5dfd3;--font:'Be Vietnam Pro',sans-serif;
+  --serif:'Playfair Display',Georgia,serif;--mono:'Space Mono',monospace;
+}
+html{scroll-behavior:smooth}
+body{background:var(--cream);color:var(--ink);font-family:var(--font);font-size:15px;line-height:1.65}
+
+/* NAV */
+nav{background:var(--card);border-bottom:1px solid var(--border);padding:.9rem 2rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 1px 8px rgba(17,17,24,.06)}
+.nav-logo{font-family:var(--serif);font-size:1.4rem;font-weight:700;color:var(--ink);text-decoration:none}
+.nav-logo span{color:var(--red)}
+.nav-links{display:flex;gap:1.75rem;list-style:none}
+.nav-links a{font-size:.82rem;font-weight:500;color:var(--muted);text-decoration:none;transition:color .2s}
+.nav-links a:hover{color:var(--red)}
+.nav-cta{background:var(--red);color:#fff;font-size:.82rem;font-weight:600;padding:.5rem 1.2rem;text-decoration:none;transition:background .2s}
+.nav-cta:hover{background:#a82d22}
+
+/* HERO */
+.hero{position:relative;height:480px;overflow:hidden}
+.hero-img{width:100%;height:100%;object-fit:cover;filter:brightness(.7);display:block}
+.hero-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(17,17,24,.8) 0%,rgba(17,17,24,.2) 60%,transparent 100%)}
+.hero-content{position:absolute;bottom:0;left:0;right:0;padding:2.5rem 2rem}
+.hero-breadcrumb{font-family:var(--mono);font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.5);margin-bottom:.75rem;display:flex;align-items:center;gap:.5rem}
+.hero-breadcrumb a{color:rgba(255,255,255,.5);text-decoration:none}
+.hero-breadcrumb a:hover{color:#fff}
+.hero-title{font-family:var(--serif);font-size:clamp(1.8rem,4vw,3rem);font-weight:900;color:#fff;line-height:1.1;margin-bottom:.75rem;letter-spacing:-.02em}
+.hero-meta{display:flex;gap:1.5rem;flex-wrap:wrap}
+.hero-tag{font-family:var(--mono);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.7);display:flex;align-items:center;gap:.35rem}
+
+/* LAYOUT */
+.wrap{max-width:1100px;margin:0 auto;padding:2.5rem 2rem}
+.content-grid{display:grid;grid-template-columns:1fr 340px;gap:2rem;align-items:start}
+
+/* TABS */
+.tabs{display:flex;border-bottom:2px solid var(--border);margin-bottom:2rem;gap:0}
+.tab{font-family:var(--mono);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;padding:.75rem 1.25rem;cursor:pointer;color:var(--muted);border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .2s;background:none;border-top:none;border-left:none;border-right:none}
+.tab:hover{color:var(--ink)}
+.tab.active{color:var(--red);border-bottom-color:var(--red);font-weight:600}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
+/* ITINERARY */
+.itin-day{margin-bottom:1.5rem;position:relative;padding-left:3rem}
+.itin-day::before{content:attr(data-day);position:absolute;left:0;top:0;width:36px;height:36px;border-radius:50%;background:var(--red);color:#fff;font-family:var(--mono);font-size:.68rem;font-weight:700;display:flex;align-items:center;justify-content:center}
+.itin-day::after{content:'';position:absolute;left:17px;top:36px;bottom:-1.5rem;width:2px;background:var(--border)}
+.itin-day:last-child::after{display:none}
+.itin-title{font-weight:600;font-size:.95rem;color:var(--ink);margin-bottom:.5rem;line-height:1.3}
+.itin-acts{list-style:none;display:flex;flex-direction:column;gap:.3rem}
+.itin-acts li{font-size:.85rem;color:var(--muted);padding-left:.85rem;position:relative;font-weight:300;line-height:1.6}
+.itin-acts li::before{content:'•';position:absolute;left:0;color:var(--red);font-size:.7rem}
+
+/* INCLUDES */
+.inc-grid{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:1.5rem}
+.inc-item{display:flex;align-items:flex-start;gap:.6rem;font-size:.85rem;padding:.5rem 0;border-bottom:1px solid var(--border)}
+.inc-item:nth-last-child(-n+2){border-bottom:none}
+.inc-icon{font-size:1rem;flex-shrink:0;margin-top:.05rem}
+.inc-text{color:var(--ink);font-weight:300;line-height:1.5}
+.inc-text strong{font-weight:600;display:block;font-size:.82rem;color:var(--ink)}
+.inc-section-title{font-weight:600;font-size:.88rem;color:var(--ink);margin-bottom:.75rem;display:flex;align-items:center;gap:.5rem}
+.exc-list{list-style:none;display:flex;flex-direction:column;gap:.4rem}
+.exc-list li{font-size:.85rem;color:var(--muted);padding-left:1.25rem;position:relative;font-weight:300}
+.exc-list li::before{content:'✕';position:absolute;left:0;color:var(--red);font-size:.65rem;top:.1rem}
+
+/* REVIEWS */
+.reviews-summary{display:flex;align-items:center;gap:2rem;background:var(--paper);padding:1.25rem;margin-bottom:1.5rem}
+.rating-big{font-family:var(--serif);font-size:3rem;font-weight:900;color:var(--ink);line-height:1}
+.rating-stars{color:var(--gold);font-size:1.1rem;letter-spacing:.05em;margin-bottom:.2rem}
+.rating-count{font-size:.78rem;color:var(--muted)}
+.review-card{border-bottom:1px solid var(--border);padding:1.25rem 0}
+.review-card:last-child{border-bottom:none}
+.rev-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem}
+.rev-author{display:flex;align-items:center;gap:.65rem}
+.rev-av{width:38px;height:38px;border-radius:50%;background:var(--paper);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.82rem;color:var(--red);font-family:var(--serif)}
+.rev-name{font-size:.88rem;font-weight:600;color:var(--ink)}
+.rev-date{font-size:.72rem;color:var(--muted)}
+.rev-stars{color:var(--gold);font-size:.85rem}
+.rev-text{font-size:.88rem;color:var(--muted);line-height:1.75;font-weight:300;font-style:italic}
+
+/* SIDEBAR */
+.booking-card{background:var(--card);border:1px solid var(--border);position:sticky;top:80px;overflow:hidden}
+.bc-header{background:var(--ink);padding:1.25rem 1.5rem}
+.bc-price-from{font-family:var(--mono);font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4);display:block;margin-bottom:.2rem}
+.bc-price{font-family:var(--serif);font-size:2rem;font-weight:900;color:#fff;line-height:1}
+.bc-price-per{font-size:.78rem;color:rgba(255,255,255,.4);font-family:var(--font)}
+.bc-body{padding:1.25rem}
+.bc-schedule-title{font-family:var(--mono);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:.65rem}
+.schedule-list{display:flex;flex-direction:column;gap:.4rem;margin-bottom:1.25rem;max-height:200px;overflow-y:auto}
+.sched-item{border:1.5px solid var(--border);padding:.55rem .85rem;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:space-between;font-size:.8rem}
+.sched-item:hover{border-color:var(--red);background:rgba(197,55,43,.04)}
+.sched-item.selected{border-color:var(--red);background:rgba(197,55,43,.06)}
+.sched-date{font-weight:600;color:var(--ink);font-family:var(--mono);font-size:.75rem}
+.sched-slots{font-size:.68rem;color:var(--muted)}
+.sched-slots.low{color:var(--red)}
+.btn-book{width:100%;background:var(--red);color:#fff;border:none;padding:1rem;font-family:var(--font);font-weight:700;font-size:.95rem;cursor:pointer;transition:background .2s,transform .2s;display:flex;align-items:center;justify-content:center;gap:.5rem;margin-bottom:.75rem}
+.btn-book:hover{background:#a82d22;transform:translateY(-1px)}
+.btn-consult{width:100%;background:none;border:1.5px solid var(--border);color:var(--ink);padding:.85rem;font-family:var(--font);font-weight:600;font-size:.88rem;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:.5rem}
+.btn-consult:hover{border-color:var(--teal);color:var(--teal)}
+.bc-features{margin-top:1rem;display:flex;flex-direction:column;gap:.4rem}
+.bc-feat{display:flex;align-items:center;gap:.5rem;font-size:.78rem;color:var(--muted)}
+.bc-feat::before{content:'✓';color:var(--teal);font-weight:700;flex-shrink:0}
+
+/* RELATED */
+.related-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-top:1rem}
+.rel-card{background:var(--card);border:1px solid var(--border);overflow:hidden;cursor:pointer;transition:transform .3s,box-shadow .3s;text-decoration:none}
+.rel-card:hover{transform:translateY(-4px);box-shadow:0 12px 32px rgba(17,17,24,.1)}
+.rel-img{width:100%;height:130px;object-fit:cover;display:block;filter:brightness(.85);transition:transform .4s}
+.rel-card:hover .rel-img{transform:scale(1.05)}
+.rel-body{padding:.85rem}
+.rel-dest{font-family:var(--mono);font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:var(--teal);margin-bottom:.3rem}
+.rel-name{font-size:.88rem;font-weight:600;color:var(--ink);margin-bottom:.4rem;line-height:1.3}
+.rel-price{font-family:var(--serif);font-size:1rem;font-weight:700;color:var(--ink)}
+
+/* SKELETON */
+.skeleton{background:linear-gradient(90deg,#f0ebe2 25%,#e8e3d8 50%,#f0ebe2 75%);background-size:200% 100%;animation:shimmer 1.5s infinite}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.skel{height:16px;border-radius:3px;margin-bottom:.5rem}
+
+/* SHARE */
+.share-bar{display:flex;align-items:center;gap:.65rem;margin-top:1.5rem;padding-top:1.5rem;border-top:1px solid var(--border)}
+.share-label{font-size:.8rem;color:var(--muted);font-weight:500}
+.share-btn{background:none;border:1px solid var(--border);padding:.4rem .85rem;font-size:.75rem;color:var(--muted);cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:.4rem}
+.share-btn:hover{border-color:var(--border);color:var(--ink);background:var(--paper)}
+
+/* TOAST */
+.toast-wrap{position:fixed;bottom:1.5rem;right:1.5rem;z-index:999;display:flex;flex-direction:column;gap:.5rem}
+.toast{background:var(--ink);color:#fff;padding:.7rem 1rem;font-size:.82rem;border-radius:4px;display:flex;align-items:center;gap:.5rem;animation:toastIn .25s ease;box-shadow:0 8px 24px rgba(17,17,24,.25)}
+@keyframes toastIn{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:none}}
+
+/* ZALO FLOAT */
+.zalo-float{position:fixed;bottom:1.5rem;left:1.5rem;z-index:90;display:flex;flex-direction:column;gap:.5rem;align-items:flex-start}
+.zalo-btn{background:#0068ff;color:#fff;border:none;padding:.65rem 1.1rem;border-radius:25px;font-size:.82rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:.45rem;box-shadow:0 4px 16px rgba(0,104,255,.35);transition:transform .2s,box-shadow .2s;text-decoration:none}
+.zalo-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,104,255,.4)}
+.call-btn{background:var(--teal);color:#fff;border:none;padding:.65rem 1.1rem;border-radius:25px;font-size:.82rem;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:.45rem;box-shadow:0 4px 16px rgba(26,107,94,.35);transition:transform .2s;text-decoration:none}
+.call-btn:hover{transform:translateY(-2px)}
+
+@media(max-width:900px){
+  .content-grid{grid-template-columns:1fr}
+  .booking-card{position:static}
+  .related-grid{grid-template-columns:1fr 1fr}
+  .inc-grid{grid-template-columns:1fr}
+  nav .nav-links{display:none}
+  .hero{height:320px}
+}
+@media(max-width:600px){
+  .wrap{padding:1.5rem 1rem}
+  .related-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<!-- ZALO FLOAT -->
+<div class="zalo-float">
+  <a class="zalo-btn" href="https://zalo.me/0901234567" target="_blank">💬 Chat Zalo</a>
+  <a class="call-btn" href="tel:0901234567">📞 Gọi ngay</a>
+</div>
+
+<!-- NAV -->
+<nav>
+  <a href="index.html" class="nav-logo">Baggio<span>.</span>Travel</a>
+  <ul class="nav-links">
+    <li><a href="index.html#tours">Tour</a></li>
+    <li><a href="index.html#guides">HDV</a></li>
+    <li><a href="index.html#reviews">Đánh giá</a></li>
+  </ul>
+  <a href="#" class="nav-cta" id="navBookBtn">Đặt tour ngay</a>
+</nav>
+
+<!-- HERO -->
+<div class="hero" id="hero">
+  <img class="hero-img" id="heroImg" src="https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=1200&q=80" alt="">
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <div class="hero-breadcrumb">
+      <a href="index.html">Trang chủ</a> › <a href="index.html#tours">Tour</a> › <span id="heroDest">...</span>
+    </div>
+    <h1 class="hero-title" id="heroTitle">Đang tải...</h1>
+    <div class="hero-meta">
+      <div class="hero-tag">📅 <span id="heroDays">—</span></div>
+      <div class="hero-tag">📍 <span id="heroDestTag">—</span></div>
+      <div class="hero-tag">👥 Tối đa <span id="heroMaxPax">—</span> khách</div>
+      <div class="hero-tag" id="heroRatingTag" style="display:none">⭐ <span id="heroRating">—</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- CONTENT -->
+<div class="wrap">
+  <div class="content-grid">
+
+    <!-- LEFT -->
+    <div class="left-col">
+      <div class="tabs">
+        <button class="tab active" onclick="switchTab('itinerary',this)">📅 Lịch trình</button>
+        <button class="tab" onclick="switchTab('includes',this)">✅ Bao gồm</button>
+        <button class="tab" onclick="switchTab('reviews',this)">⭐ Đánh giá</button>
+        <button class="tab" onclick="switchTab('info',this)">ℹ️ Thông tin</button>
+      </div>
+
+      <!-- ITINERARY TAB -->
+      <div class="tab-panel active" id="tab-itinerary">
+        <div id="itineraryContent">
+          <div class="skel skeleton" style="width:40%;height:20px;margin-bottom:1rem"></div>
+          <div class="skel skeleton" style="width:90%"></div>
+          <div class="skel skeleton" style="width:75%"></div>
+          <div class="skel skeleton" style="width:85%"></div>
+        </div>
+      </div>
+
+      <!-- INCLUDES TAB -->
+      <div class="tab-panel" id="tab-includes">
+        <div class="inc-section-title">✅ Bao gồm trong tour</div>
+        <div class="inc-grid" id="includesGrid"></div>
+        <div class="inc-section-title" style="margin-top:1.5rem">❌ Không bao gồm</div>
+        <ul class="exc-list" id="excludesList"></ul>
+      </div>
+
+      <!-- REVIEWS TAB -->
+      <div class="tab-panel" id="tab-reviews">
+        <div class="reviews-summary" id="reviewsSummary" style="display:none">
+          <div>
+            <div class="rating-big" id="avgRating">—</div>
+            <div class="rating-stars" id="avgStars">☆☆☆☆☆</div>
+            <div class="rating-count" id="reviewCount">— đánh giá</div>
+          </div>
+          <div style="font-size:.85rem;color:var(--muted);font-weight:300;line-height:1.8;flex:1">
+            Tất cả đánh giá từ khách hàng thực tế đã tham gia tour.<br>Baggio Travel không chỉnh sửa hay xóa bất kỳ đánh giá nào.
+          </div>
+        </div>
+        <div id="reviewsList"></div>
+      </div>
+
+      <!-- INFO TAB -->
+      <div class="tab-panel" id="tab-info">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem">
+          <div>
+            <div class="inc-section-title">📋 Thông tin chung</div>
+            <div id="infoGeneral" style="display:flex;flex-direction:column;gap:.5rem;font-size:.85rem"></div>
+          </div>
+          <div>
+            <div class="inc-section-title">⚠️ Lưu ý quan trọng</div>
+            <ul class="exc-list">
+              <li>Mang theo CMND/CCCD hoặc Passport bản gốc</li>
+              <li>Đặt cọc 30% để giữ chỗ, thanh toán đủ trước 7 ngày</li>
+              <li>Hoàn 100% nếu hủy trước 7 ngày khởi hành</li>
+              <li>Hoàn 50% nếu hủy trong 3-7 ngày</li>
+              <li>Không hoàn nếu hủy trong vòng 3 ngày</li>
+              <li>Trẻ em dưới 5 tuổi miễn phí (không có suất ăn)</li>
+            </ul>
+          </div>
+        </div>
+        <div style="margin-top:1.5rem">
+          <div class="inc-section-title">📍 Điểm tập trung</div>
+          <div id="meetingPoint" style="font-size:.88rem;color:var(--muted);padding:.85rem;background:var(--paper);border-left:3px solid var(--red)"></div>
+        </div>
+      </div>
+
+      <!-- SHARE -->
+      <div class="share-bar">
+        <span class="share-label">Chia sẻ:</span>
+        <button class="share-btn" onclick="shareZalo()">💬 Zalo</button>
+        <button class="share-btn" onclick="shareFacebook()">📘 Facebook</button>
+        <button class="share-btn" onclick="copyLink()">🔗 Copy link</button>
+      </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <div class="right-col">
+      <div class="booking-card">
+        <div class="bc-header">
+          <span class="bc-price-from">Giá từ</span>
+          <div class="bc-price" id="bcPrice">—<span class="bc-price-per"> đ/người</span></div>
+        </div>
+        <div class="bc-body">
+          <div class="bc-schedule-title">Chọn ngày khởi hành</div>
+          <div class="schedule-list" id="scheduleList">
+            <div style="font-size:.8rem;color:var(--muted);text-align:center;padding:1rem">⏳ Đang tải lịch...</div>
+          </div>
+          <button class="btn-book" id="bookBtn" onclick="bookNow()">🎒 Đặt tour ngay</button>
+          <button class="btn-consult" onclick="consultZalo()">💬 Tư vấn miễn phí</button>
+          <div class="bc-features">
+            <div class="bc-feat">Xác nhận trong 2 tiếng</div>
+            <div class="bc-feat">Hoàn tiền 100% nếu hủy trước 7 ngày</div>
+            <div class="bc-feat">Giá đã bao gồm thuế VAT</div>
+            <div class="bc-feat">Hỗ trợ 24/7 qua Zalo</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RELATED TOURS -->
+  <div style="margin-top:3rem">
+    <div style="font-family:var(--mono);font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:var(--red);margin-bottom:.5rem;display:flex;align-items:center;gap:.5rem"><span style="width:18px;height:1px;background:var(--red);display:inline-block"></span>Tour liên quan</div>
+    <h2 style="font-family:var(--serif);font-size:1.6rem;font-weight:900;letter-spacing:-.02em;margin-bottom:1.25rem">Có thể bạn thích</h2>
+    <div class="related-grid" id="relatedGrid"></div>
+  </div>
+</div>
+
+<script>
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON)
+const fmt = n => Number(n||0).toLocaleString('vi-VN')
+const fmtDate = d => new Date(d).toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit',year:'numeric'})
+const initials = name => name.split(' ').slice(-2).map(w=>w[0]).join('').toUpperCase()
+const regionLabel = r => ({north:'Miền Bắc',central:'Miền Trung',south:'Miền Nam'}[r]||r)
+
+let tour = null
+let selectedSchedule = null
+
+function toast(msg,type='ok'){
+  const w=document.getElementById('toastWrap'),t=document.createElement('div')
+  t.className='toast';t.style.borderLeft=`3px solid ${type==='err'?'#c5372b':'#1a6b5e'}`
+  t.textContent=msg;w.appendChild(t)
+  setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity .3s';setTimeout(()=>t.remove(),300)},3000)
+}
+
+function switchTab(tab, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'))
+  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'))
+  document.getElementById('tab-'+tab).classList.add('active')
+  btn.classList.add('active')
+}
+
+// ── LOAD TOUR ──────────────────────────────────────────
+async function loadTour() {
+  const slug = new URLSearchParams(location.search).get('slug')
+  if(!slug) { window.location.href='index.html'; return }
+
+  const {data,error} = await sb.from('tours')
+    .select('*,tour_schedules(id,depart_date,return_date,available_slots,status,price_override),reviews(id,reviewer_name,rating,comment,created_at,is_published)')
+    .eq('slug', slug).single()
+
+  if(error||!data) { window.location.href='index.html'; return }
+  tour = data
+  renderTour(data)
+}
+
+function renderTour(t) {
+  // Meta
+  document.title = `${t.name} — Baggio Travel`
+  document.getElementById('heroImg').src = t.cover_image || 'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=1200&q=80'
+  document.getElementById('heroImg').alt = t.name
+  document.getElementById('heroTitle').textContent = t.name
+  document.getElementById('heroDest').textContent = t.destination
+  document.getElementById('heroDestTag').textContent = `${t.destination} · ${regionLabel(t.region)}`
+  document.getElementById('heroDays').textContent = `${t.duration_days} ngày ${t.duration_nights} đêm`
+  document.getElementById('heroMaxPax').textContent = t.max_pax
+  document.getElementById('bcPrice').innerHTML = `${fmt(t.base_price)}<span class="bc-price-per"> đ/người</span>`
+  document.getElementById('navBookBtn').onclick = bookNow
+
+  // Reviews rating
+  const pubReviews = (t.reviews||[]).filter(r=>r.is_published)
+  if(pubReviews.length) {
+    const avg = (pubReviews.reduce((s,r)=>s+r.rating,0)/pubReviews.length).toFixed(1)
+    document.getElementById('heroRatingTag').style.display='flex'
+    document.getElementById('heroRating').textContent = `${avg} (${pubReviews.length} đánh giá)`
+    document.getElementById('avgRating').textContent = avg
+    document.getElementById('avgStars').textContent = '★'.repeat(Math.round(avg))+'☆'.repeat(5-Math.round(avg))
+    document.getElementById('reviewCount').textContent = `${pubReviews.length} đánh giá`
+    document.getElementById('reviewsSummary').style.display='flex'
+    document.getElementById('reviewsList').innerHTML = pubReviews.slice(0,8).map(r=>`
+      <div class="review-card">
+        <div class="rev-header">
+          <div class="rev-author">
+            <div class="rev-av">${initials(r.reviewer_name)}</div>
+            <div><div class="rev-name">${r.reviewer_name}</div><div class="rev-date">${fmtDate(r.created_at)}</div></div>
+          </div>
+          <div class="rev-stars">${'★'.repeat(r.rating)}${'☆'.repeat(5-r.rating)}</div>
+        </div>
+        <p class="rev-text">"${r.comment||''}"</p>
+      </div>`).join('')
+  } else {
+    document.getElementById('reviewsList').innerHTML='<div style="text-align:center;padding:2rem;color:var(--muted);font-size:.88rem">Chưa có đánh giá nào. Hãy là người đầu tiên đánh giá!</div>'
+  }
+
+  // Itinerary
+  const itin = Array.isArray(t.itinerary) ? t.itinerary : (typeof t.itinerary==='string'?JSON.parse(t.itinerary||'[]'):[])
+  document.getElementById('itineraryContent').innerHTML = itin.length ? itin.map(day=>`
+    <div class="itin-day" data-day="${day.day}">
+      <div class="itin-title">Ngày ${day.day}: ${day.title}</div>
+      <ul class="itin-acts">${(day.activities||[]).map(a=>`<li>${a}</li>`).join('')}</ul>
+    </div>`).join('') : '<div style="color:var(--muted);font-size:.88rem">Lịch trình chi tiết sẽ được cung cấp sau khi đặt tour.</div>'
+
+  // Includes
+  const inc = t.includes || {}
+  const includeItems = [
+    inc.flights && {icon:'✈️', title:'Vé máy bay', desc: inc.flights===true?'Khứ hồi':inc.flights},
+    inc.hotel   && {icon:'🏨', title:'Khách sạn', desc: inc.hotel},
+    inc.guide   && {icon:'🧑‍💼', title:'Hướng dẫn viên', desc:'Địa phương chuyên nghiệp'},
+    inc.transfer && {icon:'🚌', title:'Xe đưa đón', desc:'Sân bay & điểm tham quan'},
+    inc.meals   && {icon:'🍽️', title:'Ăn uống', desc: Array.isArray(inc.meals)?inc.meals.join(', '):inc.meals},
+    inc.insurance && {icon:'🛡️', title:'Bảo hiểm', desc:'Du lịch toàn diện'},
+    inc.entrance_fees && {icon:'🎟️', title:'Vé tham quan', desc:'Tất cả điểm trong lịch trình'},
+    inc.activities && {icon:'🏄', title:'Hoạt động', desc: Array.isArray(inc.activities)?inc.activities.join(', '):inc.activities},
+  ].filter(Boolean)
+
+  document.getElementById('includesGrid').innerHTML = includeItems.map(i=>`
+    <div class="inc-item">
+      <div class="inc-icon">${i.icon}</div>
+      <div class="inc-text"><strong>${i.title}</strong>${typeof i.desc==='string'?i.desc:''}</div>
+    </div>`).join('')
+
+  document.getElementById('excludesList').innerHTML = [
+    'Chi phí cá nhân (nước uống, mua sắm)',
+    'Tiền tip cho HDV và tài xế',
+    'Các dịch vụ phát sinh ngoài chương trình',
+    'Phụ thu phòng đơn (nếu có)',
+  ].map(e=>`<li>${e}</li>`).join('')
+
+  // Info tab
+  document.getElementById('infoGeneral').innerHTML = [
+    `<div style="display:flex;justify-content:space-between;padding:.35rem 0;border-bottom:1px solid var(--border)"><span style="color:var(--muted)">Điểm đến</span><strong>${t.destination}</strong></div>`,
+    `<div style="display:flex;justify-content:space-between;padding:.35rem 0;border-bottom:1px solid var(--border)"><span style="color:var(--muted)">Vùng miền</span><strong>${regionLabel(t.region)}</strong></div>`,
+    `<div style="display:flex;justify-content:space-between;padding:.35rem 0;border-bottom:1px solid var(--border)"><span style="color:var(--muted)">Thời gian</span><strong>${t.duration_days} ngày ${t.duration_nights} đêm</strong></div>`,
+    `<div style="display:flex;justify-content:space-between;padding:.35rem 0;border-bottom:1px solid var(--border)"><span style="color:var(--muted)">Số khách tối đa</span><strong>${t.max_pax} người</strong></div>`,
+    `<div style="display:flex;justify-content:space-between;padding:.35rem 0"><span style="color:var(--muted)">Giá trẻ em</span><strong>${t.child_price_pct||70}% giá người lớn</strong></div>`,
+  ].join('')
+
+  document.getElementById('meetingPoint').textContent = t.meeting_point || 'Liên hệ để biết điểm tập trung cụ thể'
+
+  // Schedules
+  const openSchedules = (t.tour_schedules||[]).filter(s=>s.status==='OPEN'&&new Date(s.depart_date)>=new Date()).sort((a,b)=>new Date(a.depart_date)-new Date(b.depart_date))
+  document.getElementById('scheduleList').innerHTML = openSchedules.length ? openSchedules.slice(0,6).map(s=>`
+    <div class="sched-item" onclick="selectSchedule(this,'${s.id}','${s.depart_date}','${s.return_date||''}',${s.available_slots||0})">
+      <div class="sched-date">${fmtDate(s.depart_date)}</div>
+      <div class="sched-slots ${s.available_slots<=3?'low':''}">${s.available_slots<=0?'Hết chỗ':s.available_slots<=3?`Còn ${s.available_slots} chỗ`:`${s.available_slots} chỗ trống`}</div>
+    </div>`).join('')
+    : '<div style="font-size:.8rem;color:var(--muted);text-align:center;padding:1rem">Hiện chưa có lịch. Liên hệ để đặt tour riêng.</div>'
+
+  // Related
+  loadRelated(t.destination, t.id, t.region)
+}
+
+function selectSchedule(el, id, depart, ret, slots) {
+  if(slots<=0) { toast('Lịch này đã hết chỗ','err'); return }
+  document.querySelectorAll('.sched-item').forEach(e=>e.classList.remove('selected'))
+  el.classList.add('selected')
+  selectedSchedule = {id, depart, ret, slots}
+}
+
+function bookNow() {
+  if(!tour) return
+  const url = selectedSchedule
+    ? `baggio-booking-live.html?tour=${tour.slug}&schedule=${selectedSchedule.id}`
+    : `baggio-booking-live.html?tour=${tour.slug}`
+  window.location.href = url
+}
+
+function consultZalo() {
+  const msg = tour ? `Xin chào Baggio Travel! Tôi muốn tư vấn về tour: ${tour.name}` : 'Xin chào Baggio Travel!'
+  window.open(`https://zalo.me/0901234567?text=${encodeURIComponent(msg)}`, '_blank')
+}
+
+// ── RELATED ────────────────────────────────────────────
+async function loadRelated(destination, excludeId, region) {
+  const {data} = await sb.from('tours')
+    .select('id,name,slug,destination,base_price,cover_image,duration_days')
+    .eq('status','ACTIVE')
+    .eq('region', region)
+    .neq('id', excludeId)
+    .limit(3)
+
+  document.getElementById('relatedGrid').innerHTML = (data||[]).map(t=>`
+    <a class="rel-card" href="baggio-tour-detail.html?slug=${t.slug}">
+      <img class="rel-img" src="${t.cover_image||'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=400&q=70'}" alt="${t.name}" onerror="this.src='https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=400&q=70'">
+      <div class="rel-body">
+        <div class="rel-dest">${t.destination} · ${t.duration_days}N</div>
+        <div class="rel-name">${t.name.slice(0,50)}${t.name.length>50?'...':''}</div>
+        <div class="rel-price">${fmt(t.base_price)}đ <span style="font-size:.72rem;font-weight:400;color:var(--muted)">/người</span></div>
+      </div>
+    </a>`).join('')
+}
+
+// ── SHARE ─────────────────────────────────────────────
+function shareZalo() {
+  window.open(`https://zalo.me/share/?url=${encodeURIComponent(location.href)}&title=${encodeURIComponent(tour?.name||'Tour Baggio Travel')}`, '_blank')
+}
+function shareFacebook() {
+  window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(location.href)}`, '_blank')
+}
+function copyLink() {
+  navigator.clipboard.writeText(location.href).then(()=>toast('✅ Đã copy link tour!'))
+}
+
+// ── INIT ──────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', loadTour)
+</script>
+</body>
+</html>
