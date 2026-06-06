@@ -3,6 +3,7 @@
     { "source": "/booking.html", "destination": "/baggio-booking-live.html" },
     { "source": "/booking",  "destination": "/baggio-booking-live.html" },
     { "source": "/admin",    "destination": "/baggio-admin.html" },
+    { "source": "/operations", "destination": "/baggio-operations.html" },
     { "source": "/tour", "destination": "/baggio-tour-detail.html" },
     { "source": "/tour", "destination": "/baggio-tour-detail.html" },
     { "source": "/chatbot",  "destination": "/baggio-chatbot.html" },
