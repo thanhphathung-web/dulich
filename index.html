@@ -332,13 +332,13 @@ footer{background:var(--ink);color:rgba(250,248,243,.55);padding:3rem 2rem 1.5re
     </div>
     <div class="sf-group">
       <label class="sf-label">Điểm đến</label>
-      <select class="sf-select" id="filterDest" onchange="filterTours()">
+      <select class="sf-select" id="filterDest" onchange="applyFilters()">
         <option value="">Tất cả điểm đến</option>
       </select>
     </div>
     <div class="sf-group">
       <label class="sf-label">Giá từ</label>
-      <select class="sf-select" id="filterPriceMin" onchange="filterTours()">
+      <select class="sf-select" id="filterPriceMin" onchange="applyFilters()">
         <option value="">Không giới hạn</option>
         <option value="1000000">1 triệu</option>
         <option value="2000000">2 triệu</option>
@@ -348,7 +348,7 @@ footer{background:var(--ink);color:rgba(250,248,243,.55);padding:3rem 2rem 1.5re
     </div>
     <div class="sf-group">
       <label class="sf-label">Giá đến</label>
-      <select class="sf-select" id="filterPriceMax" onchange="filterTours()">
+      <select class="sf-select" id="filterPriceMax" onchange="applyFilters()">
         <option value="">Không giới hạn</option>
         <option value="2000000">2 triệu</option>
         <option value="5000000">5 triệu</option>
@@ -358,7 +358,7 @@ footer{background:var(--ink);color:rgba(250,248,243,.55);padding:3rem 2rem 1.5re
     </div>
     <div class="sf-group">
       <label class="sf-label">Số ngày</label>
-      <select class="sf-select" id="filterDays" onchange="filterTours()">
+      <select class="sf-select" id="filterDays" onchange="applyFilters()">
         <option value="">Bất kỳ</option>
         <option value="1">1 ngày</option>
         <option value="2">2 ngày</option>
@@ -484,34 +484,61 @@ function toast(msg, type = 'ok') {
 }
 
 // ══════════════════════════════════════════════════════════════
-// LOAD TOURS
+// LOAD TOURS — SERVER-SIDE FILTER
 // ══════════════════════════════════════════════════════════════
 let PAGE_SIZE = 24
 let currentPage = 0
 let totalTours  = 0
 
+// Danh sách 63 tỉnh theo vùng miền
+const PROVINCES = {
+  north:   ['Hà Nội','Hải Phòng','Hà Giang','Cao Bằng','Bắc Kạn','Lạng Sơn','Tuyên Quang','Lào Cai','Yên Bái','Thái Nguyên','Phú Thọ','Bắc Giang','Quảng Ninh','Vĩnh Phúc','Bắc Ninh','Hải Dương','Hưng Yên','Hà Nam','Nam Định','Thái Bình','Ninh Bình','Hòa Bình','Điện Biên','Lai Châu','Sơn La'],
+  central: ['Thanh Hóa','Nghệ An','Hà Tĩnh','Quảng Bình','Quảng Trị','Thừa Thiên Huế','Đà Nẵng','Quảng Nam','Quảng Ngãi','Bình Định','Phú Yên','Khánh Hòa','Ninh Thuận','Bình Thuận','Kon Tum','Gia Lai','Đắk Lắk','Đắk Nông','Lâm Đồng'],
+  south:   ['Hồ Chí Minh','Bà Rịa - Vũng Tàu','Bình Dương','Bình Phước','Tây Ninh','Đồng Nai','Long An','Tiền Giang','Bến Tre','Trà Vinh','Vĩnh Long','Đồng Tháp','An Giang','Kiên Giang','Cần Thơ','Hậu Giang','Sóc Trăng','Bạc Liêu','Cà Mau'],
+}
+const ALL_PROVINCES = [...PROVINCES.north, ...PROVINCES.central, ...PROVINCES.south].sort()
+
+function getFilters() {
+  return {
+    region:   document.getElementById('filterRegion')?.value || '',
+    dest:     document.getElementById('filterDest')?.value || '',
+    priceMin: document.getElementById('filterPriceMin')?.value || '',
+    priceMax: document.getElementById('filterPriceMax')?.value || '',
+    days:     document.getElementById('filterDays')?.value || '',
+  }
+}
+
 async function loadTours(page = 0) {
   try {
+    document.getElementById('tourCountLabel').textContent = 'Đang tải...'
     const from = page * PAGE_SIZE
     const to   = from + PAGE_SIZE - 1
+    const f    = getFilters()
 
-    const { data, error, count } = await sb
-      .from('tours')
+    let q = sb.from('tours')
       .select('id,name,slug,destination,region,duration_days,duration_nights,base_price,max_pax,cover_image,includes,status,tour_schedules(available_slots,depart_date,status)', { count: 'exact' })
       .eq('status', 'ACTIVE')
-      .order('base_price', { ascending: true })
-      .range(from, to)
 
+    // Server-side filters
+    if (f.dest)     q = q.eq('destination', f.dest)
+    if (f.region)   q = q.eq('region', f.region)
+    if (f.priceMin) q = q.gte('base_price', +f.priceMin)
+    if (f.priceMax) q = q.lte('base_price', +f.priceMax)
+    if (f.days)     q = q.eq('duration_days', +f.days)
+
+    q = q.order('base_price', { ascending: true }).range(from, to)
+
+    const { data, error, count } = await q
     if (error) throw error
 
-    currentPage  = page
-    totalTours   = count || 0
-    allTours     = data || []
+    currentPage = page
+    totalTours  = count || 0
+    allTours    = data || []
 
     document.getElementById('heroTourCount').innerHTML = totalTours + '<span>+</span>'
+    document.getElementById('tourCountLabel').textContent = `${totalTours} tour`
     renderTours(allTours)
     renderPagination()
-    populateDestFilter(document.getElementById('filterRegion')?.value || '')
   } catch (err) {
     console.error('loadTours:', err)
     document.getElementById('toursGrid').innerHTML = `
@@ -580,17 +607,11 @@ function renderTours(tours) {
     const incList   = buildIncludesList(inc)
     const badgeHtml = hasSoon ? `<div class="tc-badge">Còn ${schedOpen[0].available_slots} chỗ</div>` : ''
 
-    // Xoay vòng ảnh theo index để tránh trùng liên tiếp
-    const imgIndex  = tours.indexOf(t) % 2
-    const imgArr    = Array.isArray(t.images) && t.images.length > 0 ? t.images : null
-    const imgSrc    = imgArr ? imgArr[imgIndex % imgArr.length]
-                     : (t.cover_image || 'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=600&q=70')
-
     return `
     <article class="tour-card" onclick="openModal('${t.id}')">
       <div class="tc-img-wrap">
         <img class="tc-img"
-          src="${imgSrc}"
+          src="${t.cover_image || 'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=600&q=70'}"
           alt="${t.name}" loading="lazy"
           onerror="this.src='https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=600&q=70'">
         ${badgeHtml}
@@ -632,30 +653,19 @@ function changePageSize(val) {
 }
 
 // ══════════════════════════════════════════════════════════════
-// FILTERS
+// FILTERS — SERVER-SIDE
 // ══════════════════════════════════════════════════════════════
 let activeRegion = ''
 
-// Map vùng miền → danh sách tỉnh
-const regionProvinces = {
-  north: ['Hà Nội','Hải Phòng','Hà Giang','Cao Bằng','Bắc Kạn','Lạng Sơn','Tuyên Quang','Lào Cai','Yên Bái','Thái Nguyên','Phú Thọ','Bắc Giang','Quảng Ninh','Vĩnh Phúc','Bắc Ninh','Hải Dương','Hưng Yên','Hà Nam','Nam Định','Thái Bình','Ninh Bình','Hòa Bình','Điện Biên','Lai Châu','Sơn La'],
-  central: ['Thanh Hóa','Nghệ An','Hà Tĩnh','Quảng Bình','Quảng Trị','Thừa Thiên Huế','Huế','Đà Nẵng','Quảng Nam','Hội An','Quảng Ngãi','Bình Định','Phú Yên','Khánh Hòa','Ninh Thuận','Bình Thuận','Kon Tum','Gia Lai','Đắk Lắk','Đắk Nông','Lâm Đồng'],
-  south: ['Hồ Chí Minh','Bà Rịa - Vũng Tàu','Bình Dương','Bình Phước','Tây Ninh','Đồng Nai','Long An','Tiền Giang','Bến Tre','Trà Vinh','Vĩnh Long','Đồng Tháp','An Giang','Kiên Giang','Cần Thơ','Hậu Giang','Sóc Trăng','Bạc Liêu','Cà Mau'],
-}
-
-function populateDestFilter(regionFilter = '') {
-  const sel = document.getElementById('filterDest')
-  const currentVal = sel.value
+function populateDestFilter(region) {
+  const sel  = document.getElementById('filterDest')
+  const prev = sel.value
   sel.innerHTML = '<option value="">Tất cả điểm đến</option>'
-
-  let dests = [...new Set(allTours.map(t => t.destination))].sort()
-  if (regionFilter && regionProvinces[regionFilter]) {
-    dests = dests.filter(d => regionProvinces[regionFilter].includes(d))
-  }
-  dests.forEach(d => {
+  const list = region ? (PROVINCES[region] || []) : ALL_PROVINCES
+  list.forEach(d => {
     const o = document.createElement('option')
     o.value = d; o.textContent = d
-    if (d === currentVal) o.selected = true
+    if (d === prev) o.selected = true
     sel.appendChild(o)
   })
 }
@@ -663,11 +673,10 @@ function populateDestFilter(regionFilter = '') {
 function onRegionChange() {
   const region = document.getElementById('filterRegion').value
   activeRegion = region
-  // Cập nhật dropdown điểm đến theo vùng
+  // Cập nhật dropdown điểm đến theo vùng, reset về tất cả
   populateDestFilter(region)
-  // Reset điểm đến khi đổi vùng
   document.getElementById('filterDest').value = ''
-  filterTours()
+  applyFilters()
 }
 
 function setRegionFilter(region, btn) {
@@ -677,39 +686,26 @@ function setRegionFilter(region, btn) {
   document.getElementById('filterRegion').value = region
   populateDestFilter(region)
   document.getElementById('filterDest').value = ''
-  filterTours()
+  applyFilters()
 }
 
-function filterTours() {
-  const dest     = document.getElementById('filterDest').value
-  const region   = document.getElementById('filterRegion').value || activeRegion
-  const priceMin = document.getElementById('filterPriceMin')?.value || ''
-  const priceMax = document.getElementById('filterPriceMax')?.value || ''
-  const days     = document.getElementById('filterDays').value
-
-  let filtered = allTours.filter(t => {
-    if (dest     && t.destination !== dest)           return false
-    if (region   && t.region !== region)              return false
-    if (priceMin && t.base_price < +priceMin)         return false
-    if (priceMax && t.base_price > +priceMax)         return false
-    if (days     && t.duration_days !== +days)        return false
-    return true
-  })
-  renderTours(filtered)
+function applyFilters() {
+  loadTours(0) // reset về trang 1, query Supabase với filter mới
 }
+
+// Giữ filterTours để không lỗi nếu còn dùng ở đâu đó
+function filterTours() { applyFilters() }
 
 function resetFilters() {
   activeRegion = ''
-  document.getElementById('filterDest').value     = ''
-  document.getElementById('filterRegion').value   = ''
-  document.getElementById('filterDays').value     = ''
-  const pmin = document.getElementById('filterPriceMin')
-  const pmax = document.getElementById('filterPriceMax')
-  if (pmin) pmin.value = ''
-  if (pmax) pmax.value = ''
+  document.getElementById('filterRegion').value  = ''
+  document.getElementById('filterDest').value    = ''
+  document.getElementById('filterPriceMin').value = ''
+  document.getElementById('filterPriceMax').value = ''
+  document.getElementById('filterDays').value    = ''
   document.querySelectorAll('.fchip').forEach((b, i) => b.classList.toggle('active', i === 0))
   populateDestFilter('')
-  renderTours(allTours)
+  loadTours(0)
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -862,6 +858,7 @@ function updateFooterDests() {
 // INIT — chạy tất cả khi trang load
 // ══════════════════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', async () => {
+  populateDestFilter('') // load đủ 63 tỉnh ngay khi mở trang
   await Promise.all([loadTours(), loadGuides(), loadReviews()])
   updateFooterDests()
   toast('✅ Dữ liệu đã tải từ Supabase')
