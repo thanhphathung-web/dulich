@@ -840,7 +840,7 @@ async function submitBooking(){
 }
 
 // ── INIT ───────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', ()=>{
+document.addEventListener('DOMContentLoaded', async () => {
   // Bật RLS policy cho bookings — cần INSERT từ frontend
   loadTours()
   renderCal()
