@@ -17,7 +17,7 @@
 <!-- ═══════════════════════════════════════════ -->
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -400,7 +400,7 @@ body{background:var(--cream);color:var(--ink);font-family:var(--font);font-size:
       </div>
     </div>
     <div style="display:flex;flex-direction:column;align-items:center;gap:.4rem;padding-top:.25rem">
-      <canvas id="bankQR" style="width:140px;height:140px;border:1px solid var(--border);border-radius:6px;display:block"></canvas>
+      <div id="bankQR" style="width:140px;height:140px;border:1px solid var(--border);border-radius:6px;overflow:hidden;display:block"></div>
       <div style="font-family:var(--mono);font-size:.58rem;color:var(--muted);text-align:center">Quét QR chuyển khoản</div>
     </div>
   </div>
@@ -641,8 +641,14 @@ function selectPay(el,method){
     document.getElementById('bankAmount').textContent=deposit.toLocaleString('vi-VN')+'đ'
     document.getElementById('bankContent').textContent=content
     const qrEl=document.getElementById('bankQR')
-const qrText=`https://qr.sepay.vn/img?bank=TCB&acc=4042828666&template=compact&amount=${deposit}&des=${encodeURIComponent(content)}`
-QRCode.toCanvas(qrEl, qrText, {width:140,margin:1,color:{dark:'#111118',light:'#ffffff'}}, function(err){
+qrEl.innerHTML=''
+new QRCode(qrEl,{
+  text:`2|99|4042828666|TRAN HUNG VI|TCB|0|${deposit}|${content}`,
+  width:140,height:140,
+  colorDark:'#111118',colorLight:'#ffffff',
+  correctLevel:QRCode.CorrectLevel.M
+}) 
+function(err){
   if(err) console.error('QR error:',err)
 })
     bankInfo.style.display='block'
