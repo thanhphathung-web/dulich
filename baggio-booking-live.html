@@ -639,7 +639,9 @@ function selectPay(el,method){
     document.getElementById('bankAmount').textContent=deposit.toLocaleString('vi-VN')+'đ'
     document.getElementById('bankContent').textContent=content
     const qr=`https://img.vietqr.io/image/TCB-4042828666-compact2.png?amount=${deposit}&addInfo=${encodeURIComponent(content)}&accountName=TRAN%20HUNG%20VI`
-    document.getElementById('bankQR').src=qr
+const qrEl=document.getElementById('bankQR')
+qrEl.src=''
+setTimeout(()=>{ qrEl.src=qr }, 100)
     bankInfo.style.display='block'
   } else {
     bankInfo.style.display='none'
