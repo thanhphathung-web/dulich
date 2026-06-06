@@ -256,6 +256,7 @@ footer{background:var(--ink);color:rgba(250,248,243,.55);padding:3rem 2rem 1.5re
         <div style="font-size:.68rem;color:var(--muted)">Giá từ</div>
         <div class="modal-price" id="modalPrice"></div>
       </div>
+      <button class="btn-book-modal" id="modalDetailBtn" style="background:var(--ink)">🔍 Xem chi tiết</button>
       <button class="btn-book-modal" id="modalBookBtn">🎒 Đặt tour này</button>
     </div>
   </div>
@@ -752,6 +753,9 @@ async function openModal(tourId) {
 
   document.getElementById('modalBookBtn').onclick = () => {
     window.location.href = `booking.html?tour=${t.slug}`
+  }
+ document.getElementById('modalDetailBtn').onclick = () => {
+    window.location.href = `baggio-tour-detail.html?slug=${t.slug}`
   }
 
   document.getElementById('modalBg').classList.add('open')
