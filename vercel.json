@@ -6,6 +6,8 @@
     { "source": "/operations", "destination": "/baggio-operations.html" },
     { "source": "/guides-mgmt", "destination": "/baggio-guides-mgmt.html" },
     { "source": "/suppliers", "destination": "/baggio-suppliers.html" },
+    { "source": "/comms",  "destination": "/baggio-comms.html"  },
+    { "source": "/report", "destination": "/baggio-report.html" },
     { "source": "/tour", "destination": "/baggio-tour-detail.html" },
     { "source": "/tour", "destination": "/baggio-tour-detail.html" },
     { "source": "/chatbot",  "destination": "/baggio-chatbot.html" },
