@@ -339,8 +339,8 @@ async function loadReport(){
   toast('⏳ Đang tải dữ liệu...')
 
   const {data:bookings,error}=await sb.from('bookings')
-    .select('id,booking_ref,guest_name,guest_phone,status,payment_status,payment_method,total_price,deposit_amount,adult_count,child_count,created_at,tours(name,destination,duration_days)')
-    .gte('created_at',from).lte('created_at',to+'T23:59:59')
+   .select('id,booking_ref,guest_name,guest_phone,status,payment_status,total_price,deposit_amount,adult_count,child_count,created_at,tours(name,destination,duration_days)')
+   .gte('created_at',from).lte('created_at',to)
     .order('created_at',{ascending:false})
 
   if(error){toast('Lỗi tải dữ liệu','err');return}
@@ -351,8 +351,7 @@ async function loadReport(){
   const diff=toDate-fromDate
   const prevFrom=new Date(fromDate-diff-86400000).toISOString().split('T')[0]
   const prevTo=new Date(fromDate-86400000).toISOString().split('T')[0]
-  const {data:prevBookings}=await sb.from('bookings').select('status,payment_status,deposit_amount,created_at').gte('created_at',prevFrom).lte('created_at',prevTo+'T23:59:59')
-
+  const {data:prevBookings}=await sb.from('bookings').select('status,payment_status,deposit_amount,created_at').gte('created_at',prevFrom).lte('created_at',prevTo)
   renderReport(bookings||[], prevBookings||[], from, to, label)
   toast('✅ Báo cáo đã cập nhật')
 }
