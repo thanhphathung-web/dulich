@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Baggio Travel — Báo cáo</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+const SUPABASE_URL  = 'https://lfnlezfphwjtdunyungi.supabase.co'
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxmbmxlemZwaHdqdGR1bnl1bmdpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0NjkwNzcsImV4cCI6MjA5NjA0NTA3N30.fmjvqhyiPcjB6qT5GDtfzMfY-C-WXP4QUIk-YW7FhJg'
+</script>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0d1117;--s1:#161b22;--s2:#1c2230;--s3:#21283a;
+  --border:#253047;--border2:#2d3a55;
+  --text:#e6edf3;--text2:#8b949e;--text3:#3d4f6e;
+  --green:#3fb950;--gdim:rgba(63,185,80,.12);--gbrd:rgba(63,185,80,.3);
+  --blue:#58a6ff;--bdim:rgba(88,166,255,.1);--bbrd:rgba(88,166,255,.25);
+  --amber:#d29922;--adim:rgba(210,153,34,.1);--abrd:rgba(210,153,34,.25);
+  --red:#f85149;--rdim:rgba(248,81,73,.1);--rbrd:rgba(248,81,73,.25);
+  --font:'Be Vietnam Pro',sans-serif;--mono:'Space Mono',monospace;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:13px;min-height:100vh}
+
+.topbar{background:var(--s1);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 1.5rem;height:52px;gap:1rem;position:sticky;top:0;z-index:100}
+.tb-logo{font-family:var(--mono);font-size:.88rem;font-weight:700;color:var(--text)}
+.tb-logo span{color:var(--green)}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:.75rem}
+.btn{font-family:var(--mono);font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;padding:.4rem .9rem;border-radius:5px;cursor:pointer;transition:all .15s;border:1px solid;text-decoration:none;display:inline-flex;align-items:center;gap:.35rem}
+.btn-default{background:none;border-color:var(--border);color:var(--text2)}
+.btn-default:hover{border-color:var(--border2);color:var(--text)}
+.btn-primary{background:var(--blue);border-color:var(--blue);color:#0d1117}
+.btn-primary:hover{background:#79b8ff}
+.btn-green{background:var(--green);border-color:var(--green);color:#0d1117}
+.btn-green:hover{background:#57df70}
+
+.wrap{max-width:1200px;margin:0 auto;padding:2rem 1.5rem}
+
+/* CONTROLS */
+.controls{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:1.25rem;margin-bottom:1.5rem;display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+.ctrl-group{display:flex;flex-direction:column;gap:.3rem}
+.ctrl-label{font-family:var(--mono);font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text3)}
+.ctrl-select{background:var(--s1);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:.72rem;padding:.45rem .75rem;border-radius:5px;outline:none;cursor:pointer;min-width:140px}
+.ctrl-select option{background:var(--s2)}
+.ctrl-actions{margin-left:auto;display:flex;gap:.65rem}
+
+/* STAT GRID */
+.stat-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:.85rem;margin-bottom:1.5rem}
+.stat-card{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:1rem 1.1rem;position:relative}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:8px 8px 0 0}
+.sc-g::before{background:var(--green)}.sc-b::before{background:var(--blue)}
+.sc-a::before{background:var(--amber)}.sc-r::before{background:var(--red)}.sc-p::before{background:#bc8cff}
+.sc-label{font-family:var(--mono);font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-bottom:.4rem}
+.sc-val{font-family:var(--mono);font-size:1.4rem;font-weight:700;line-height:1;margin-bottom:.2rem}
+.sc-sub{font-size:.72rem;color:var(--text2)}
+.sc-trend{font-family:var(--mono);font-size:.62rem;padding:.12rem .4rem;border-radius:3px;display:inline-block;margin-top:.2rem}
+.sc-trend.up{background:var(--gdim);color:var(--green)}.sc-trend.dn{background:var(--rdim);color:var(--red)}
+
+/* CHARTS */
+.charts-row{display:grid;grid-template-columns:2fr 1fr;gap:1rem;margin-bottom:1.5rem}
+.chart-card{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:1.1rem}
+.cc-title{font-weight:600;font-size:.85rem;color:var(--text);margin-bottom:.2rem}
+.cc-sub{font-size:.72rem;color:var(--text3);font-family:var(--mono);margin-bottom:1rem}
+.chart-wrap{height:220px;position:relative}
+
+.charts-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin-bottom:1.5rem}
+
+/* TABLES */
+.table-card{background:var(--s2);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:1.25rem}
+.tc-header{background:var(--s3);border-bottom:1px solid var(--border);padding:.75rem 1.1rem;display:flex;align-items:center;justify-content:space-between}
+.tc-title{font-weight:600;font-size:.85rem}
+table{width:100%;border-collapse:collapse}
+th{font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);padding:.6rem 1rem;text-align:left;font-weight:400;border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:.65rem 1rem;border-bottom:1px solid rgba(255,255,255,.04);font-size:.8rem;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.02)}
+
+/* PRINT STYLES */
+@media print{
+  body{background:#fff!important;color:#111!important}
+  .topbar,.controls .ctrl-actions,.no-print{display:none!important}
+  .stat-grid{grid-template-columns:repeat(5,1fr)}
+  .charts-row{grid-template-columns:2fr 1fr}
+  .stat-card,.chart-card,.table-card{background:#fff!important;border:1px solid #ddd!important;break-inside:avoid}
+  .sc-label,.cc-sub,.tc-title,.cc-title{color:#666!important}
+  .sc-val,.tb-logo{color:#111!important}
+  th{color:#666!important;background:#f5f5f5!important}
+  td{color:#111!important}
+  :root{--text:#111;--text2:#555;--text3:#888}
+}
+
+/* TOAST */
+.toast-wrap{position:fixed;bottom:1.5rem;right:1.5rem;z-index:999;display:flex;flex-direction:column;gap:.5rem}
+.toast{background:var(--s2);border:1px solid var(--border);color:var(--text);padding:.65rem 1rem;font-size:.8rem;border-radius:6px;animation:toastIn .2s ease;box-shadow:0 8px 24px rgba(0,0,0,.4);display:flex;align-items:center;gap:.5rem}
+@keyframes toastIn{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:none}}
+
+::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+@media(max-width:900px){.stat-grid{grid-template-columns:repeat(2,1fr)}.charts-row,.charts-row-3{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="toast-wrap" id="toastWrap"></div>
+
+<header class="topbar">
+  <div class="tb-logo">Baggio<span>.</span>Report</div>
+  <div style="font-size:.75rem;color:var(--text3)">/ Báo cáo tổng hợp</div>
+  <div class="tb-right">
+    <a href="baggio-admin.html" class="btn btn-default">← Admin</a>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- CONTROLS -->
+  <div class="controls">
+    <div class="ctrl-group">
+      <div class="ctrl-label">Kỳ báo cáo</div>
+      <select class="ctrl-select" id="periodType" onchange="updatePeriod()">
+        <option value="month">Theo tháng</option>
+        <option value="quarter">Theo quý</option>
+        <option value="year">Theo năm</option>
+        <option value="custom">Tùy chọn</option>
+      </select>
+    </div>
+    <div class="ctrl-group" id="monthCtrl">
+      <div class="ctrl-label">Tháng</div>
+      <select class="ctrl-select" id="monthSel"></select>
+    </div>
+    <div class="ctrl-group" id="quarterCtrl" style="display:none">
+      <div class="ctrl-label">Quý</div>
+      <select class="ctrl-select" id="quarterSel">
+        <option value="1">Q1 (T1-T3)</option>
+        <option value="2">Q2 (T4-T6)</option>
+        <option value="3">Q3 (T7-T9)</option>
+        <option value="4">Q4 (T10-T12)</option>
+      </select>
+    </div>
+    <div class="ctrl-group" id="yearCtrl">
+      <div class="ctrl-label">Năm</div>
+      <select class="ctrl-select" id="yearSel"></select>
+    </div>
+    <div class="ctrl-group" id="customCtrl" style="display:none">
+      <div class="ctrl-label">Từ ngày</div>
+      <input type="date" class="ctrl-select" id="customFrom">
+    </div>
+    <div class="ctrl-group" id="customCtrl2" style="display:none">
+      <div class="ctrl-label">Đến ngày</div>
+      <input type="date" class="ctrl-select" id="customTo">
+    </div>
+    <div class="ctrl-actions">
+      <button class="btn btn-primary" onclick="loadReport()">📊 Tạo báo cáo</button>
+      <button class="btn btn-green" onclick="exportPDF()">📄 Xuất PDF</button>
+      <button class="btn btn-default" onclick="exportCSV()">📥 Xuất CSV</button>
+    </div>
+  </div>
+
+  <!-- REPORT TITLE -->
+  <div style="margin-bottom:1.25rem">
+    <div style="font-family:var(--mono);font-size:.65rem;letter-spacing:.15em;text-transform:uppercase;color:var(--text3);margin-bottom:.3rem">Báo cáo kinh doanh</div>
+    <h1 style="font-size:1.5rem;font-weight:700;color:var(--text)" id="reportTitle">Tháng — / —</h1>
+    <div style="font-size:.78rem;color:var(--text2);margin-top:.2rem" id="reportSubtitle">Baggio Travel · Tổng hợp hoạt động kinh doanh</div>
+  </div>
+
+  <!-- STAT CARDS -->
+  <div class="stat-grid">
+    <div class="stat-card sc-g">
+      <div class="sc-label">Doanh thu</div>
+      <div class="sc-val" id="rRevenue">—</div>
+      <div class="sc-sub">Tiền cọc đã thu</div>
+      <div class="sc-trend up" id="rRevTrend"></div>
+    </div>
+    <div class="stat-card sc-b">
+      <div class="sc-label">Tổng đơn hàng</div>
+      <div class="sc-val" id="rOrders">—</div>
+      <div class="sc-sub" id="rOrderSub">booking</div>
+      <div class="sc-trend up" id="rOrdTrend"></div>
+    </div>
+    <div class="stat-card sc-a">
+      <div class="sc-label">Giá trị TB / đơn</div>
+      <div class="sc-val" id="rAvgOrder">—</div>
+      <div class="sc-sub">đ / booking</div>
+    </div>
+    <div class="stat-card sc-r">
+      <div class="sc-label">Tỷ lệ hủy</div>
+      <div class="sc-val" id="rCancelRate">—</div>
+      <div class="sc-sub">% tổng đơn</div>
+    </div>
+    <div class="stat-card sc-p">
+      <div class="sc-label">Doanh thu dự kiến</div>
+      <div class="sc-val" id="rExpected">—</div>
+      <div class="sc-sub">Thanh toán đủ</div>
+    </div>
+  </div>
+
+  <!-- CHARTS ROW 1 -->
+  <div class="charts-row">
+    <div class="chart-card">
+      <div class="cc-title">Doanh thu theo ngày</div>
+      <div class="cc-sub" id="chartRevLabel">Tiền cọc thu trong kỳ</div>
+      <div class="chart-wrap"><canvas id="dailyChart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="cc-title">Phân bổ đơn hàng</div>
+      <div class="cc-sub">Theo trạng thái</div>
+      <div class="chart-wrap"><canvas id="statusChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- CHARTS ROW 2 -->
+  <div class="charts-row-3">
+    <div class="chart-card">
+      <div class="cc-title">Top điểm đến</div>
+      <div class="cc-sub">Số lượng booking</div>
+      <div class="chart-wrap"><canvas id="destChart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="cc-title">Phương thức thanh toán</div>
+      <div class="cc-sub">Phân bổ</div>
+      <div class="chart-wrap"><canvas id="payChart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="cc-title">Số ngày tour phổ biến</div>
+      <div class="cc-sub">Phân bổ duration</div>
+      <div class="chart-wrap"><canvas id="durationChart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- BOOKING TABLE -->
+  <div class="table-card">
+    <div class="tc-header">
+      <div class="tc-title">📋 Chi tiết đơn hàng trong kỳ</div>
+      <div style="font-family:var(--mono);font-size:.65rem;color:var(--text3)" id="tableCount">0 đơn</div>
+    </div>
+    <table>
+      <thead><tr>
+        <th>Mã đơn</th><th>Khách hàng</th><th>Tour</th><th>Điểm đến</th><th>Ngày đặt</th><th>Khách</th><th>Tổng tiền</th><th>Tiền cọc</th><th>Trạng thái</th><th>Thanh toán</th>
+      </tr></thead>
+      <tbody id="bookingTbl">
+        <tr><td colspan="10" style="text-align:center;padding:2rem;color:var(--text3);font-family:var(--mono)">⏳ Đang tải...</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- FINANCIAL SUMMARY -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem">
+    <div class="table-card">
+      <div class="tc-header"><div class="tc-title">💰 Tóm tắt tài chính</div></div>
+      <div style="padding:1rem">
+        <div id="finSummary" style="display:flex;flex-direction:column;gap:.5rem"></div>
+      </div>
+    </div>
+    <div class="table-card">
+      <div class="tc-header"><div class="tc-title">🏆 Top tour doanh thu cao</div></div>
+      <div style="padding:1rem">
+        <div id="topTours" style="display:flex;flex-direction:column;gap:.5rem"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <div style="text-align:center;padding:1.5rem;color:var(--text3);font-family:var(--mono);font-size:.65rem;border-top:1px solid var(--border)">
+    Baggio Travel · Báo cáo tự động · <span id="reportGenTime"></span>
+  </div>
+
+</div>
+
+<script>
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON)
+const fmt = n => Number(n||0).toLocaleString('vi-VN')
+const fmtD = d => d ? new Date(d).toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit',year:'numeric'}) : '—'
+let reportData = []
+
+function toast(msg,type='ok'){
+  const w=document.getElementById('toastWrap'),t=document.createElement('div')
+  t.className='toast'
+  t.style.borderLeft=`3px solid ${type==='err'?'var(--red)':type==='warn'?'var(--amber)':'var(--green)'}`
+  t.textContent=msg;w.appendChild(t)
+  setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity .3s';setTimeout(()=>t.remove(),300)},3000)
+}
+
+// ── INIT CONTROLS ─────────────────────────────
+function initControls(){
+  const now=new Date()
+  // Months
+  const ms=document.getElementById('monthSel')
+  for(let i=0;i<12;i++){
+    const d=new Date(); d.setMonth(d.getMonth()-i)
+    const val=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`
+    const o=document.createElement('option'); o.value=val; o.textContent=`Tháng ${d.getMonth()+1}/${d.getFullYear()}`
+    ms.appendChild(o)
+  }
+  // Years
+  const ys=document.getElementById('yearSel')
+  for(let y=now.getFullYear();y>=now.getFullYear()-3;y--){
+    const o=document.createElement('option'); o.value=y; o.textContent=`Năm ${y}`; ys.appendChild(o)
+  }
+  // Custom dates
+  document.getElementById('customFrom').value=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-01`
+  document.getElementById('customTo').value=now.toISOString().split('T')[0]
+}
+
+function updatePeriod(){
+  const p=document.getElementById('periodType').value
+  document.getElementById('monthCtrl').style.display=p==='month'?'flex':'none'
+  document.getElementById('quarterCtrl').style.display=p==='quarter'?'flex':'none'
+  document.getElementById('customCtrl').style.display=p==='custom'?'flex':'none'
+  document.getElementById('customCtrl2').style.display=p==='custom'?'flex':'none'
+}
+
+function getDateRange(){
+  const p=document.getElementById('periodType').value
+  const now=new Date()
+  if(p==='month'){
+    const [y,m]=document.getElementById('monthSel').value.split('-').map(Number)
+    return{from:`${y}-${String(m).padStart(2,'0')}-01`,to:`${y}-${String(m).padStart(2,'0')}-31`,label:`Tháng ${m}/${y}`}
+  }
+  if(p==='quarter'){
+    const q=Number(document.getElementById('quarterSel').value)
+    const y=Number(document.getElementById('yearSel').value)
+    const ms=[[1,3],[4,6],[7,9],[10,12]][q-1]
+    return{from:`${y}-${String(ms[0]).padStart(2,'0')}-01`,to:`${y}-${String(ms[1]).padStart(2,'0')}-31`,label:`Q${q}/${y}`}
+  }
+  if(p==='year'){
+    const y=document.getElementById('yearSel').value
+    return{from:`${y}-01-01`,to:`${y}-12-31`,label:`Năm ${y}`}
+  }
+  return{from:document.getElementById('customFrom').value,to:document.getElementById('customTo').value,label:'Kỳ tùy chọn'}
+}
+
+// ── LOAD REPORT ───────────────────────────────
+async function loadReport(){
+  const {from,to,label}=getDateRange()
+  document.getElementById('reportTitle').textContent=label
+  document.getElementById('reportGenTime').textContent=new Date().toLocaleString('vi-VN')
+
+  toast('⏳ Đang tải dữ liệu...')
+
+  const {data:bookings,error}=await sb.from('bookings')
+    .select('id,booking_ref,guest_name,guest_phone,status,payment_status,payment_method,total_price,deposit_amount,adult_count,child_count,created_at,tours(name,destination,duration_days)')
+    .gte('created_at',from).lte('created_at',to+'T23:59:59')
+    .order('created_at',{ascending:false})
+
+  if(error){toast('Lỗi tải dữ liệu','err');return}
+  reportData=bookings||[]
+
+  // Also load prev period for comparison
+  const fromDate=new Date(from), toDate=new Date(to)
+  const diff=toDate-fromDate
+  const prevFrom=new Date(fromDate-diff-86400000).toISOString().split('T')[0]
+  const prevTo=new Date(fromDate-86400000).toISOString().split('T')[0]
+  const {data:prevBookings}=await sb.from('bookings').select('status,payment_status,deposit_amount,created_at').gte('created_at',prevFrom).lte('created_at',prevTo+'T23:59:59')
+
+  renderReport(bookings||[], prevBookings||[], from, to, label)
+  toast('✅ Báo cáo đã cập nhật')
+}
+
+function renderReport(bookings, prevBookings, from, to, label){
+  const paid=bookings.filter(b=>b.payment_status==='SUCCESS')
+  const revenue=paid.reduce((s,b)=>s+Number(b.deposit_amount||0),0)
+  const prevRevenue=prevBookings.filter(b=>b.payment_status==='SUCCESS').reduce((s,b)=>s+Number(b.deposit_amount||0),0)
+  const cancelled=bookings.filter(b=>b.status==='CANCELLED')
+  const cancelRate=bookings.length?Math.round(cancelled.length/bookings.length*100):0
+  const avgOrder=bookings.length?Math.round(bookings.reduce((s,b)=>s+Number(b.total_price||0),0)/bookings.length):0
+  const expectedFull=bookings.filter(b=>b.status!=='CANCELLED').reduce((s,b)=>s+Number(b.total_price||0),0)
+
+  // Revenue trend
+  const revGrowth=prevRevenue>0?Math.round((revenue-prevRevenue)/prevRevenue*100):0
+  const ordGrowth=prevBookings.length>0?Math.round((bookings.length-prevBookings.length)/prevBookings.length*100):0
+
+  document.getElementById('rRevenue').textContent=fmt(revenue)+'đ'
+  document.getElementById('rOrders').textContent=bookings.length
+  document.getElementById('rOrderSub').textContent=`${paid.length} đã cọc · ${bookings.filter(b=>b.status==='CONFIRMED').length} xác nhận`
+  document.getElementById('rAvgOrder').textContent=fmt(avgOrder)
+  document.getElementById('rCancelRate').textContent=cancelRate+'%'
+  document.getElementById('rExpected').textContent=fmt(expectedFull)+'đ'
+  document.getElementById('rRevTrend').textContent=`${revGrowth>=0?'↑':'↓'} ${Math.abs(revGrowth)}% kỳ trước`
+  document.getElementById('rRevTrend').className=`sc-trend ${revGrowth>=0?'up':'dn'}`
+  document.getElementById('rOrdTrend').textContent=`${ordGrowth>=0?'↑':'↓'} ${Math.abs(ordGrowth)}% kỳ trước`
+  document.getElementById('rOrdTrend').className=`sc-trend ${ordGrowth>=0?'up':'dn'}`
+
+  // Daily chart
+  const dailyMap={}
+  paid.forEach(b=>{
+    const day=b.created_at.split('T')[0]
+    dailyMap[day]=(dailyMap[day]||0)+Number(b.deposit_amount||0)
+  })
+  const sortedDays=Object.keys(dailyMap).sort()
+  const ctx1=document.getElementById('dailyChart').getContext('2d')
+  if(window._d1)window._d1.destroy()
+  window._d1=new Chart(ctx1,{type:'bar',
+    data:{labels:sortedDays.map(d=>d.slice(5)),datasets:[{data:sortedDays.map(d=>dailyMap[d]),backgroundColor:'rgba(63,185,80,.3)',borderColor:'#3fb950',borderWidth:1.5,borderRadius:3}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${fmt(c.raw)}đ`}}},
+      scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8b949e',font:{size:9}}},y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8b949e',font:{size:9},callback:v=>`${(v/1e6).toFixed(1)}M`}}}}
+  })
+
+  // Status pie
+  const statusCounts={PENDING:0,CONFIRMED:0,ONGOING:0,COMPLETED:0,CANCELLED:0}
+  bookings.forEach(b=>{if(statusCounts[b.status]!==undefined)statusCounts[b.status]++})
+  const ctx2=document.getElementById('statusChart').getContext('2d')
+  if(window._d2)window._d2.destroy()
+  window._d2=new Chart(ctx2,{type:'doughnut',
+    data:{labels:['Chờ XN','Đã XN','Đang đi','Hoàn thành','Hủy'],
+      datasets:[{data:Object.values(statusCounts),backgroundColor:['rgba(210,153,34,.7)','rgba(88,166,255,.7)','rgba(188,140,255,.7)','rgba(63,185,80,.7)','rgba(248,81,73,.7)'],borderWidth:1}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:'#8b949e',font:{size:9},boxWidth:10,padding:6}}}}
+  })
+
+  // Dest chart
+  const destMap={}
+  bookings.forEach(b=>{const d=b.tours?.destination||'Khác';destMap[d]=(destMap[d]||0)+1})
+  const top5Dest=Object.entries(destMap).sort((a,b)=>b[1]-a[1]).slice(0,6)
+  const ctx3=document.getElementById('destChart').getContext('2d')
+  if(window._d3)window._d3.destroy()
+  window._d3=new Chart(ctx3,{type:'bar',
+    data:{labels:top5Dest.map(([d])=>d.slice(0,12)),datasets:[{data:top5Dest.map(([,v])=>v),backgroundColor:'rgba(88,166,255,.5)',borderColor:'#58a6ff',borderWidth:1,borderRadius:3}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8b949e',font:{size:9}}},y:{grid:{display:false},ticks:{color:'#8b949e',font:{size:9}}}}}
+  })
+
+  // Pay chart
+  const payMap={}
+  bookings.forEach(b=>{const p=b.payment_method||'BANK_TRANSFER';payMap[p]=(payMap[p]||0)+1})
+  const payLabels={BANK_TRANSFER:'Chuyển khoản',MOMO:'MoMo',VNPAY:'VNPay',CASH:'Tiền mặt',TEST:'Test'}
+  const ctx4=document.getElementById('payChart').getContext('2d')
+  if(window._d4)window._d4.destroy()
+  window._d4=new Chart(ctx4,{type:'pie',
+    data:{labels:Object.keys(payMap).map(k=>payLabels[k]||k),datasets:[{data:Object.values(payMap),backgroundColor:['rgba(63,185,80,.7)','rgba(88,166,255,.7)','rgba(188,140,255,.7)','rgba(210,153,34,.7)','rgba(248,81,73,.7)'],borderWidth:1}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:'#8b949e',font:{size:9},boxWidth:10,padding:6}}}}
+  })
+
+  // Duration chart
+  const durMap={}
+  bookings.forEach(b=>{const d=`${b.tours?.duration_days||1}N`;durMap[d]=(durMap[d]||0)+1})
+  const ctx5=document.getElementById('durationChart').getContext('2d')
+  if(window._d5)window._d5.destroy()
+  window._d5=new Chart(ctx5,{type:'bar',
+    data:{labels:Object.keys(durMap).sort(),datasets:[{data:Object.keys(durMap).sort().map(k=>durMap[k]),backgroundColor:'rgba(188,140,255,.5)',borderColor:'#bc8cff',borderWidth:1,borderRadius:3}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8b949e',font:{size:9}}},y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8b949e',font:{size:9},stepSize:1}}}}
+  })
+
+  // Booking table
+  document.getElementById('tableCount').textContent=`${bookings.length} đơn`
+  const STATUS_BADGE={PENDING:'badge-pending ⏳',CONFIRMED:'badge-confirmed ✅',ONGOING:'badge-ongoing 🔄',COMPLETED:'badge-completed ✓',CANCELLED:'badge-cancelled ✕'}
+  document.getElementById('bookingTbl').innerHTML=bookings.map(b=>`
+    <tr>
+      <td><span style="font-family:var(--mono);font-size:.7rem;color:var(--blue)">${b.booking_ref||b.id.slice(-6)}</span></td>
+      <td><div style="font-weight:500">${b.guest_name||'—'}</div><div style="font-size:.7rem;color:var(--text2)">${b.guest_phone||''}</div></td>
+      <td><div style="color:var(--text2);font-size:.75rem;max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${b.tours?.name||'—'}</div></td>
+      <td><span style="font-size:.75rem;color:var(--text2)">${b.tours?.destination||'—'}</span></td>
+      <td><span style="font-family:var(--mono);font-size:.7rem">${fmtD(b.created_at)}</span></td>
+      <td><span style="font-family:var(--mono)">${b.adult_count||1}NL${b.child_count?`+${b.child_count}TE`:''}</span></td>
+      <td><span style="font-family:var(--mono)">${fmt(b.total_price)}đ</span></td>
+      <td><span style="font-family:var(--mono);color:var(--green)">${fmt(b.deposit_amount)}đ</span></td>
+      <td><span style="font-family:var(--mono);font-size:.58rem;padding:.2rem .45rem;border-radius:3px;background:${b.status==='CONFIRMED'?'var(--bdim)':b.status==='COMPLETED'?'var(--gdim)':b.status==='CANCELLED'?'var(--rdim)':'var(--adim)'};border:1px solid ${b.status==='CONFIRMED'?'var(--bbrd)':b.status==='COMPLETED'?'var(--gbrd)':b.status==='CANCELLED'?'var(--rbrd)':'var(--abrd)'};color:${b.status==='CONFIRMED'?'var(--blue)':b.status==='COMPLETED'?'var(--green)':b.status==='CANCELLED'?'var(--red)':'var(--amber)'}">${b.status}</span></td>
+      <td><span style="font-family:var(--mono);font-size:.65rem;color:${b.payment_status==='SUCCESS'?'var(--green)':'var(--text3)'}">${b.payment_status==='SUCCESS'?'✓ Đã cọc':'Chưa cọc'}</span></td>
+    </tr>`).join('')||'<tr><td colspan="10" style="text-align:center;padding:1.5rem;color:var(--text3)">Không có dữ liệu</td></tr>'
+
+  // Financial summary
+  const totalFull=bookings.filter(b=>b.status!=='CANCELLED').reduce((s,b)=>s+Number(b.total_price||0),0)
+  const totalDeposit=paid.reduce((s,b)=>s+Number(b.deposit_amount||0),0)
+  const remaining=totalFull-totalDeposit
+  const estCost=Math.round(revenue*0.3)
+  document.getElementById('finSummary').innerHTML=[
+    ['Tổng doanh thu tiềm năng',fmt(totalFull)+'đ','var(--text)'],
+    ['Đã thu (tiền cọc)',fmt(totalDeposit)+'đ','var(--green)'],
+    ['Còn phải thu',fmt(remaining)+'đ','var(--amber)'],
+    ['Chi phí ước tính (30%)',fmt(estCost)+'đ','var(--red)'],
+    ['Lợi nhuận gộp ước tính',fmt(totalDeposit-estCost)+'đ','var(--blue)'],
+    ['Tỷ lệ chuyển đổi',`${bookings.length?Math.round(paid.length/bookings.length*100):0}%`,'var(--purple)'],
+  ].map(([label,val,color])=>`
+    <div style="display:flex;justify-content:space-between;padding:.45rem 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:.82rem">
+      <span style="color:var(--text2);font-weight:300">${label}</span>
+      <span style="font-family:var(--mono);font-weight:600;color:${color}">${val}</span>
+    </div>`).join('')
+
+  // Top tours
+  const tourRevMap={}
+  paid.forEach(b=>{const n=b.tours?.name||'—';if(!tourRevMap[n])tourRevMap[n]={rev:0,count:0};tourRevMap[n].rev+=Number(b.deposit_amount||0);tourRevMap[n].count++})
+  const top5Tours=Object.entries(tourRevMap).sort((a,b)=>b[1].rev-a[1].rev).slice(0,5)
+  document.getElementById('topTours').innerHTML=top5Tours.map(([name,{rev,count}],i)=>`
+    <div style="display:flex;align-items:center;gap:.65rem;padding:.45rem 0;border-bottom:1px solid rgba(255,255,255,.04)">
+      <div style="font-family:var(--mono);font-size:.75rem;font-weight:700;color:${i===0?'var(--amber)':'var(--text3)'};width:20px">${i+1}</div>
+      <div style="flex:1;font-size:.78rem;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name.slice(0,35)}</div>
+      <div style="font-family:var(--mono);font-size:.72rem;color:var(--green);flex-shrink:0">${fmt(rev)}đ</div>
+    </div>`).join('')||'<div style="color:var(--text3);font-size:.82rem">Chưa có dữ liệu</div>'
+}
+
+// ── EXPORT PDF ────────────────────────────────
+function exportPDF(){
+  toast('🖨️ Đang mở chế độ in PDF...')
+  setTimeout(()=>window.print(),300)
+}
+
+// ── EXPORT CSV ────────────────────────────────
+function exportCSV(){
+  const rows=[['Mã đơn','Khách hàng','SĐT','Tour','Điểm đến','Ngày đặt','NL','TE','Tổng tiền','Tiền cọc','Trạng thái','Thanh toán']]
+  reportData.forEach(b=>rows.push([b.booking_ref||b.id,b.guest_name||'',b.guest_phone||'',b.tours?.name||'',b.tours?.destination||'',fmtD(b.created_at),b.adult_count||1,b.child_count||0,b.total_price||0,b.deposit_amount||0,b.status,b.payment_status]))
+  const bom='\uFEFF'
+  const csv=bom+rows.map(r=>r.map(v=>`"${v}"`).join(',')).join('\n')
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}))
+  const {label}=getDateRange()
+  a.download=`baggio-report-${label.replace(/\//g,'-')}.csv`; a.click()
+  toast('📥 Đã xuất CSV')
+}
+
+// ── INIT ─────────────────────────────────────
+document.addEventListener('DOMContentLoaded',()=>{
+  initControls()
+  document.getElementById('reportGenTime').textContent=new Date().toLocaleString('vi-VN')
+  loadReport()
+})
+</script>
+</body>
+</html>
