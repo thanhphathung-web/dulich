@@ -339,8 +339,8 @@ async function loadReport(){
   toast('⏳ Đang tải dữ liệu...')
 
   const {data:bookings,error}=await sb.from('bookings')
-   .select('id,booking_ref,guest_name,guest_phone,status,payment_status,total_price,deposit_amount,adult_count,child_count,created_at,tours(name,destination,duration_days)')
-   .gte('created_at',from).lte('created_at',to)
+    .select('id,booking_ref,guest_name,guest_phone,status,payment_status,total_price,deposit_amount,adult_count,child_count,created_at,tours(name,destination,duration_days)')
+    .gte('created_at',from).lte('created_at',to)
     .order('created_at',{ascending:false})
 
   if(error){toast('Lỗi tải dữ liệu','err');return}
@@ -352,6 +352,7 @@ async function loadReport(){
   const prevFrom=new Date(fromDate-diff-86400000).toISOString().split('T')[0]
   const prevTo=new Date(fromDate-86400000).toISOString().split('T')[0]
   const {data:prevBookings}=await sb.from('bookings').select('status,payment_status,deposit_amount,created_at').gte('created_at',prevFrom).lte('created_at',prevTo)
+
   renderReport(bookings||[], prevBookings||[], from, to, label)
   toast('✅ Báo cáo đã cập nhật')
 }
@@ -420,7 +421,7 @@ function renderReport(bookings, prevBookings, from, to, label){
 
   // Pay chart
   const payMap={}
-  bookings.forEach(b=>{const p=b.payment_method||'BANK_TRANSFER';payMap[p]=(payMap[p]||0)+1})
+  bookings.forEach(b=>{const p=b.payment_status==='SUCCESS'?'Đã cọc':'Chưa cọc';payMap[p]=(payMap[p]||0)+1})
   const payLabels={BANK_TRANSFER:'Chuyển khoản',MOMO:'MoMo',VNPAY:'VNPay',CASH:'Tiền mặt',TEST:'Test'}
   const ctx4=document.getElementById('payChart').getContext('2d')
   if(window._d4)window._d4.destroy()
