@@ -38,6 +38,12 @@ nav{background:var(--card);border-bottom:1px solid var(--border);padding:.9rem 2
 .nav-links a:hover{color:var(--red)}
 .nav-cta{background:var(--red);color:#fff;font-size:.82rem;font-weight:600;padding:.5rem 1.2rem;border:none;cursor:pointer;text-decoration:none;transition:background .2s;display:inline-block}
 .nav-cta:hover{background:#a82d22}
+.lang-switcher{display:flex;gap:2px;background:var(--paper);border:1px solid var(--border);border-radius:4px;padding:2px}
+.lang-btn{background:none;border:none;font-family:var(--mono);font-size:.65rem;font-weight:600;padding:.25rem .5rem;cursor:pointer;color:var(--muted);border-radius:3px;transition:all .15s;letter-spacing:.04em}
+.lang-btn:hover{color:var(--ink)}
+.lang-btn.active{background:var(--red);color:#fff}
+.nav-zalo{display:flex;align-items:center;opacity:.8;transition:opacity .2s}
+.nav-zalo:hover{opacity:1}
 
 /* ── HERO ── */
 #hero{min-height:90vh;display:grid;grid-template-columns:1fr 1fr;align-items:center;padding:6rem 2rem;background:linear-gradient(135deg,var(--cream) 60%,var(--paper))}
@@ -256,7 +262,6 @@ footer{background:var(--ink);color:rgba(250,248,243,.55);padding:3rem 2rem 1.5re
         <div style="font-size:.68rem;color:var(--muted)">Giá từ</div>
         <div class="modal-price" id="modalPrice"></div>
       </div>
-      <button class="btn-book-modal" id="modalDetailBtn" style="background:var(--ink)">🔍 Xem chi tiết</button>
       <button class="btn-book-modal" id="modalBookBtn">🎒 Đặt tour này</button>
     </div>
   </div>
@@ -264,14 +269,24 @@ footer{background:var(--ink);color:rgba(250,248,243,.55);padding:3rem 2rem 1.5re
 
 <!-- NAV -->
 <nav>
-  <a href="#" class="nav-logo">Baggio<span>.</span>Travel</a>
+  <a href="index.html" class="nav-logo">Baggio<span>.</span>Travel</a>
   <ul class="nav-links">
-    <li><a href="#tours">Tour</a></li>
-    <li><a href="#guides">HDV</a></li>
-    <li><a href="#reviews">Đánh giá</a></li>
-    <li><a href="admin.html">Admin</a></li>
+    <li><a href="#tours" data-i18n="nav_tours">Tour</a></li>
+    <li><a href="#guides" data-i18n="nav_guides">HDV</a></li>
+    <li><a href="#reviews" data-i18n="nav_reviews">Đánh giá</a></li>
+    <li><a href="baggio-admin.html">Admin</a></li>
   </ul>
-  <a href="booking.html" class="nav-cta">Đặt tour ngay</a>
+  <div style="display:flex;align-items:center;gap:.65rem">
+    <div class="lang-switcher" id="langSwitcher">
+      <button class="lang-btn active" onclick="setLang('vi')">VI</button>
+      <button class="lang-btn" onclick="setLang('en')">EN</button>
+      <button class="lang-btn" onclick="setLang('zh')">中</button>
+    </div>
+    <a href="https://zalo.me/0906306286" target="_blank" class="nav-zalo" title="Chat Zalo">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="6" fill="#0068FF"/><text x="12" y="17" text-anchor="middle" font-size="11" font-weight="700" fill="#fff" font-family="Arial">Z</text></svg>
+    </a>
+    <a href="booking.html" class="nav-cta" data-i18n="nav_book">Đặt tour ngay</a>
+  </div>
 </nav>
 
 <!-- HERO -->
@@ -279,7 +294,7 @@ footer{background:var(--ink);color:rgba(250,248,243,.55);padding:3rem 2rem 1.5re
   <div>
     <div class="hero-eyebrow">Tour trọn gói Việt Nam</div>
     <h1 class="hero-title">Khám phá<br><em>Việt Nam</em><br>theo cách của bạn</h1>
-    <p class="hero-sub">Từ <strong>vé máy bay, khách sạn, hướng dẫn viên địa phương</strong> đến xe đón sân bay — chúng tôi lo tất cả.</p>
+    <p class="hero-sub" data-i18n="hero_sub">Từ <strong>vé máy bay, khách sạn, hướng dẫn viên địa phương</strong> đến xe đón sân bay — chúng tôi lo tất cả.</p>
     <div class="hero-stats">
       <div><div class="stat-num" id="heroTourCount">—<span>+</span></div><div class="stat-label">Gói tour</div></div>
       <div><div class="stat-num" id="heroGuideCount">—<span>+</span></div><div class="stat-label">HDV chuyên nghiệp</div></div>
@@ -380,8 +395,8 @@ footer{background:var(--ink);color:rgba(250,248,243,.55);padding:3rem 2rem 1.5re
 <section id="tours">
   <div class="sec-header">
     <div>
-      <div class="sec-eyebrow">Gói tour</div>
-      <h2 class="sec-title">Chọn tour<br>phù hợp</h2>
+      <div class="sec-eyebrow" data-i18n="sec_tours_eye">Gói tour</div>
+      <h2 class="sec-title" data-i18n="sec_tours_title">Chọn tour<br>phù hợp</h2>
     </div>
     <div class="sec-count" id="tourCountLabel">Đang tải...</div>
   </div>
@@ -413,8 +428,8 @@ footer{background:var(--ink);color:rgba(250,248,243,.55);padding:3rem 2rem 1.5re
 <section id="guides">
   <div class="sec-header">
     <div>
-      <div class="sec-eyebrow">Hướng dẫn viên</div>
-      <h2 class="sec-title">Đội ngũ HDV<br>địa phương</h2>
+      <div class="sec-eyebrow" data-i18n="sec_guides_eye">Hướng dẫn viên</div>
+      <h2 class="sec-title" data-i18n="sec_guides_title">Đội ngũ HDV<br>địa phương</h2>
     </div>
   </div>
   <div class="guides-grid" id="guidesGrid">
@@ -430,8 +445,8 @@ footer{background:var(--ink);color:rgba(250,248,243,.55);padding:3rem 2rem 1.5re
 <section id="reviews">
   <div class="sec-header">
     <div>
-      <div class="sec-eyebrow">Đánh giá</div>
-      <h2 class="sec-title">Khách hàng nói gì</h2>
+      <div class="sec-eyebrow" data-i18n="sec_reviews_eye">Đánh giá</div>
+      <h2 class="sec-title" data-i18n="sec_reviews_title">Khách hàng nói gì</h2>
     </div>
     <div style="font-family:var(--mono);font-size:.65rem;color:var(--muted)">★★★★★ 4.9 / 5</div>
   </div>
@@ -446,11 +461,49 @@ footer{background:var(--ink);color:rgba(250,248,243,.55);padding:3rem 2rem 1.5re
 <footer>
   <div>
     <div class="ft-brand">Baggio<span>.</span>Travel</div>
-    <p class="ft-desc">Nền tảng đặt tour du lịch Việt Nam trọn gói — từ vé máy bay, khách sạn đến hướng dẫn viên địa phương.</p>
+    <p class="ft-desc" data-i18n="ft_desc">Nền tảng đặt tour du lịch Việt Nam trọn gói — từ vé máy bay, khách sạn đến hướng dẫn viên địa phương.</p>
+    <div style="margin-top:1rem;display:flex;flex-direction:column;gap:.4rem;font-size:.78rem">
+      <div style="display:flex;align-items:center;gap:.5rem;color:rgba(250,248,243,.55)">📍 Phạm Văn Chiêu, TP. Hồ Chí Minh</div>
+      <div style="display:flex;align-items:center;gap:.5rem;color:rgba(250,248,243,.55)">📞 <a href="tel:0906306286" style="color:rgba(250,248,243,.8);text-decoration:none">0906 306 286</a></div>
+      <div style="display:flex;align-items:center;gap:.5rem;color:rgba(250,248,243,.55)">📧 <a href="mailto:thanhphathung@gmail.com" style="color:rgba(250,248,243,.8);text-decoration:none">thanhphathung@gmail.com</a></div>
+      <div style="display:flex;align-items:center;gap:.5rem;color:rgba(250,248,243,.55)">🕐 <span data-i18n="ft_hours">Thứ 2 – Thứ 7 · 8:00 – 18:00</span></div>
+    </div>
+    <div style="margin-top:1rem;display:flex;gap:.65rem">
+      <a href="https://zalo.me/0906306286" target="_blank" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);color:rgba(250,248,243,.7);width:34px;height:34px;display:flex;align-items:center;justify-content:center;text-decoration:none;font-size:.75rem;transition:all .2s" title="Zalo">Z</a>
+      <a href="https://facebook.com" target="_blank" style="background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);color:rgba(250,248,243,.7);width:34px;height:34px;display:flex;align-items:center;justify-content:center;text-decoration:none;font-size:.75rem;transition:all .2s" title="Facebook">f</a>
+    </div>
   </div>
-  <div><div class="ft-title">Điểm đến</div><ul class="ft-links" id="ftDestLinks"><li><a href="#">Hội An</a></li><li><a href="#">Hạ Long</a></li><li><a href="#">Phú Quốc</a></li><li><a href="#">Sa Pa</a></li><li><a href="#">Đà Lạt</a></li></ul></div>
-  <div><div class="ft-title">Dịch vụ</div><ul class="ft-links"><li><a href="booking.html">Đặt tour</a></li><li><a href="chatbot.html">Tư vấn AI</a></li><li><a href="admin.html">Quản lý</a></li></ul></div>
-  <div><div class="ft-title">Hỗ trợ</div><ul class="ft-links"><li><a href="#">Hotline: 1900 xxxx</a></li><li><a href="#">Chính sách huỷ</a></li><li><a href="#">FAQ</a></li></ul></div>
+  <div>
+    <div class="ft-title" data-i18n="ft_destinations">Điểm đến</div>
+    <ul class="ft-links" id="ftDestLinks">
+      <li><a href="#">Hội An</a></li>
+      <li><a href="#">Hạ Long</a></li>
+      <li><a href="#">Phú Quốc</a></li>
+      <li><a href="#">Sa Pa</a></li>
+      <li><a href="#">Đà Lạt</a></li>
+    </ul>
+  </div>
+  <div>
+    <div class="ft-title" data-i18n="ft_services">Dịch vụ</div>
+    <ul class="ft-links">
+      <li><a href="booking.html" data-i18n="ft_book">Đặt tour</a></li>
+      <li><a href="baggio-admin.html">Quản lý</a></li>
+      <li><a href="baggio-report.html" data-i18n="ft_report">Báo cáo</a></li>
+    </ul>
+  </div>
+  <div>
+    <div class="ft-title" data-i18n="ft_support">Hỗ trợ</div>
+    <ul class="ft-links">
+      <li><a href="tel:0906306286" data-i18n="ft_hotline">Hotline: 0906 306 286</a></li>
+      <li><a href="https://zalo.me/0906306286" target="_blank">Zalo: 0906 306 286</a></li>
+      <li><a href="mailto:thanhphathung@gmail.com">Email hỗ trợ</a></li>
+      <li><a href="#" data-i18n="ft_policy">Chính sách hoàn hủy</a></li>
+    </ul>
+    <div style="margin-top:1rem;font-size:.7rem;color:rgba(250,248,243,.3);line-height:1.6">
+      © 2026 Baggio Travel Inc.<br>
+      <span data-i18n="ft_license">Giấy phép kinh doanh lữ hành quốc tế</span>
+    </div>
+  </div>
 </footer>
 
 <script>
@@ -754,9 +807,6 @@ async function openModal(tourId) {
   document.getElementById('modalBookBtn').onclick = () => {
     window.location.href = `booking.html?tour=${t.slug}`
   }
- document.getElementById('modalDetailBtn').onclick = () => {
-    window.location.href = `baggio-tour-detail.html?slug=${t.slug}`
-  }
 
   document.getElementById('modalBg').classList.add('open')
   document.body.style.overflow = 'hidden'
@@ -858,6 +908,89 @@ function updateFooterDests() {
   }
 }
 
+// ══════════════════════════════════════════════════════
+// I18N — 3 NGÔN NGỮ: VI / EN / ZH
+// ══════════════════════════════════════════════════════
+const I18N = {
+  vi: {
+    nav_tours:'Tour', nav_guides:'HDV', nav_reviews:'Đánh giá', nav_book:'Đặt tour ngay',
+    ft_desc:'Nền tảng đặt tour du lịch Việt Nam trọn gói — từ vé máy bay, khách sạn đến hướng dẫn viên địa phương.',
+    ft_destinations:'Điểm đến', ft_services:'Dịch vụ', ft_support:'Hỗ trợ',
+    ft_book:'Đặt tour', ft_report:'Báo cáo', ft_hotline:'Hotline: 0906 306 286',
+    ft_policy:'Chính sách hoàn hủy', ft_hours:'Thứ 2 – Thứ 7 · 8:00 – 18:00',
+    ft_license:'Giấy phép kinh doanh lữ hành quốc tế',
+    filter_all_region:'Tất cả vùng', filter_all_dest:'Tất cả điểm đến', filter_any_day:'Bất kỳ',
+    region_north:'Miền Bắc', region_central:'Miền Trung', region_south:'Miền Nam',
+    hero_sub:'Từ vé máy bay, khách sạn, hướng dẫn viên địa phương đến xe đón sân bay — chúng tôi lo tất cả.',
+    sec_tours_eye:'Gói tour', sec_tours_title:'Chọn tour phù hợp',
+    sec_guides_eye:'Hướng dẫn viên', sec_guides_title:'Đội ngũ HDV địa phương',
+    sec_reviews_eye:'Đánh giá', sec_reviews_title:'Khách hàng nói gì',
+  },
+  en: {
+    nav_tours:'Tours', nav_guides:'Guides', nav_reviews:'Reviews', nav_book:'Book Now',
+    ft_desc:'Vietnam\'s all-inclusive tour booking platform — flights, hotels and local guides in one place.',
+    ft_destinations:'Destinations', ft_services:'Services', ft_support:'Support',
+    ft_book:'Book a Tour', ft_report:'Reports', ft_hotline:'Hotline: +84 906 306 286',
+    ft_policy:'Cancellation Policy', ft_hours:'Mon – Sat · 8:00 AM – 6:00 PM',
+    ft_license:'International Travel Business License',
+    filter_all_region:'All regions', filter_all_dest:'All destinations', filter_any_day:'Any',
+    region_north:'North Vietnam', region_central:'Central Vietnam', region_south:'South Vietnam',
+    hero_sub:'From flights, hotels and local guides to airport transfers — we handle everything.',
+    sec_tours_eye:'Tour Packages', sec_tours_title:'Find your perfect tour',
+    sec_guides_eye:'Tour Guides', sec_guides_title:'Our local expert guides',
+    sec_reviews_eye:'Reviews', sec_reviews_title:'What our customers say',
+  },
+  zh: {
+    nav_tours:'旅游', nav_guides:'导游', nav_reviews:'评价', nav_book:'立即预订',
+    ft_desc:'越南一站式旅游预订平台——机票、酒店和当地导游一网打尽。',
+    ft_destinations:'目的地', ft_services:'服务', ft_support:'支持',
+    ft_book:'预订旅游', ft_report:'报告', ft_hotline:'热线：+84 906 306 286',
+    ft_policy:'取消政策', ft_hours:'周一至周六 · 8:00 – 18:00',
+    ft_license:'国际旅行业营业执照',
+    filter_all_region:'所有地区', filter_all_dest:'所有目的地', filter_any_day:'不限',
+    region_north:'北部越南', region_central:'中部越南', region_south:'南部越南',
+    hero_sub:'从机票、酒店、当地导游到机场接送——我们一站式搞定。',
+    sec_tours_eye:'旅游套餐', sec_tours_title:'找到适合您的旅游',
+    sec_guides_eye:'导游', sec_guides_title:'我们的本地专家导游',
+    sec_reviews_eye:'评价', sec_reviews_title:'客户怎么说',
+  }
+}
+
+let currentLang = localStorage.getItem('baggio_lang') || 'vi'
+function t(key){ return I18N[currentLang]?.[key] || I18N.vi[key] || key }
+
+function applyLang(){
+  document.documentElement.lang = currentLang==='zh'?'zh-CN':currentLang
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    el.textContent = t(el.dataset.i18n)
+  })
+  document.querySelectorAll('.lang-btn').forEach(btn=>{
+    const code = btn.textContent.trim()
+    btn.classList.toggle('active',
+      (code==='VI'&&currentLang==='vi')||(code==='EN'&&currentLang==='en')||(code==='中'&&currentLang==='zh'))
+  })
+  const r=document.getElementById('filterRegion')
+  if(r&&r.options.length>=4){
+    r.options[0].text=t('filter_all_region')
+    r.options[1].text=t('region_north')
+    r.options[2].text=t('region_central')
+    r.options[3].text=t('region_south')
+  }
+  const d=document.getElementById('filterDest')
+  if(d&&d.options[0]) d.options[0].text=t('filter_all_dest')
+  const dy=document.getElementById('filterDays')
+  if(dy&&dy.options[0]) dy.options[0].text=t('filter_any_day')
+  document.title = currentLang==='en'?'Baggio Travel — Vietnam Tours'
+    :currentLang==='zh'?'Baggio Travel — 越南旅游'
+    :'Baggio Travel — Tour Du Lịch Việt Nam'
+}
+
+function setLang(lang){
+  currentLang=lang
+  localStorage.setItem('baggio_lang',lang)
+  applyLang()
+}
+
 // ══════════════════════════════════════════════════════════════
 // INIT — chạy tất cả khi trang load
 // ══════════════════════════════════════════════════════════════
@@ -865,7 +998,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   populateDestFilter('') // load đủ 63 tỉnh ngay khi mở trang
   await Promise.all([loadTours(), loadGuides(), loadReviews()])
   updateFooterDests()
-  toast('✅ Dữ liệu đã tải từ Supabase')
+  applyLang()
 })
 
 // Đóng modal bằng Escape
