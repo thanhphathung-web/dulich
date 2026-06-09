@@ -76,7 +76,54 @@ nav{background:var(--card);border-bottom:1px solid var(--border);padding:.9rem 2
 .marquee-item b{color:var(--gold);font-style:normal}
 @keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 
-/* ── SEARCH BAR ── */
+/* ── TRIP PLANNER ── */
+#trip-planner{background:linear-gradient(135deg,var(--ink) 0%,#1a2035 100%);padding:3rem 2rem;position:relative;overflow:hidden}
+#trip-planner::before{content:'';position:absolute;top:-60px;right:-60px;width:300px;height:300px;border-radius:50%;background:rgba(197,55,43,.08);pointer-events:none}
+#trip-planner::after{content:'';position:absolute;bottom:-80px;left:10%;width:200px;height:200px;border-radius:50%;background:rgba(184,134,11,.06);pointer-events:none}
+.tp-wrap{max-width:960px;margin:0 auto;position:relative;z-index:1}
+.tp-header{text-align:center;margin-bottom:2rem}
+.tp-eyebrow{font-family:var(--mono);font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:.65rem;display:flex;align-items:center;justify-content:center;gap:.5rem}
+.tp-eyebrow::before,.tp-eyebrow::after{content:'';width:20px;height:1px;background:var(--gold);opacity:.5}
+.tp-title{font-family:var(--serif);font-size:clamp(1.6rem,3vw,2.4rem);font-weight:900;color:#fff;line-height:1.1;letter-spacing:-.02em;margin-bottom:.5rem}
+.tp-title span{color:var(--gold)}
+.tp-sub{font-size:.88rem;color:rgba(255,255,255,.45);font-weight:300}
+.tp-form{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:1.5rem;backdrop-filter:blur(10px)}
+.tp-row{display:grid;grid-template-columns:repeat(5,1fr);gap:.75rem;margin-bottom:.75rem}
+.tp-group{display:flex;flex-direction:column;gap:.3rem}
+.tp-label{font-family:var(--mono);font-size:.55rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.35);padding-left:.1rem}
+.tp-select,.tp-input{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);color:#fff;font-family:var(--font);font-size:.85rem;padding:.6rem .85rem;outline:none;transition:all .2s;width:100%;-webkit-appearance:none;border-radius:6px}
+.tp-select:focus,.tp-input:focus{border-color:var(--gold);background:rgba(255,255,255,.12)}
+.tp-select option{background:#1a2035;color:#fff}
+.tp-select::placeholder,.tp-input::placeholder{color:rgba(255,255,255,.3)}
+.tp-interests{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:1rem}
+.tp-interest-btn{font-family:var(--mono);font-size:.6rem;letter-spacing:.06em;text-transform:uppercase;padding:.3rem .75rem;border:1px solid rgba(255,255,255,.15);background:none;color:rgba(255,255,255,.45);cursor:pointer;transition:all .2s;border-radius:4px}
+.tp-interest-btn:hover{border-color:rgba(255,255,255,.35);color:rgba(255,255,255,.8)}
+.tp-interest-btn.active{border-color:var(--gold);background:rgba(184,134,11,.15);color:var(--gold)}
+.tp-actions{display:flex;align-items:center;gap:.85rem}
+.tp-btn{background:var(--red);color:#fff;border:none;padding:.85rem 2.5rem;font-family:var(--font);font-weight:700;font-size:.95rem;cursor:pointer;transition:all .2s;flex-shrink:0;border-radius:6px;display:flex;align-items:center;gap:.5rem}
+.tp-btn:hover{background:#a82d22;transform:translateY(-2px);box-shadow:0 8px 24px rgba(197,55,43,.35)}
+.tp-hint{font-size:.78rem;color:rgba(255,255,255,.3);font-style:italic;flex:1}
+/* RESULTS */
+.tp-results{margin-top:1.5rem;display:none}
+.tp-results.show{display:block}
+.tp-results-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+.tp-results-title{font-family:var(--serif);font-size:1.1rem;font-weight:700;color:#fff}
+.tp-results-count{font-family:var(--mono);font-size:.65rem;color:rgba(255,255,255,.35);letter-spacing:.08em}
+.tp-results-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.85rem}
+.tp-card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:8px;overflow:hidden;cursor:pointer;transition:all .25s}
+.tp-card:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2);transform:translateY(-3px)}
+.tp-card-img{width:100%;height:130px;object-fit:cover;display:block;filter:brightness(.75)}
+.tp-card-body{padding:.85rem}
+.tp-card-dest{font-family:var(--mono);font-size:.55rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);margin-bottom:.3rem}
+.tp-card-name{font-family:var(--serif);font-size:.95rem;font-weight:700;color:#fff;margin-bottom:.4rem;line-height:1.2}
+.tp-card-meta{font-size:.75rem;color:rgba(255,255,255,.45);margin-bottom:.65rem}
+.tp-card-footer{display:flex;align-items:center;justify-content:space-between}
+.tp-card-price{font-family:var(--serif);font-size:1rem;font-weight:700;color:var(--gold)}
+.tp-card-btn{font-family:var(--mono);font-size:.58rem;letter-spacing:.06em;text-transform:uppercase;background:var(--red);color:#fff;border:none;padding:.3rem .75rem;cursor:pointer;border-radius:3px;transition:background .2s}
+.tp-card-btn:hover{background:#a82d22}
+.tp-no-results{text-align:center;padding:2rem;color:rgba(255,255,255,.3);font-size:.88rem}
+@media(max-width:900px){.tp-row{grid-template-columns:1fr 1fr}.tp-results-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:640px){.tp-row{grid-template-columns:1fr}.tp-results-grid{grid-template-columns:1fr}.tp-actions{flex-direction:column;align-items:stretch}}
 #search-section{background:var(--card);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:1.5rem 2rem}
 .search-wrap{max-width:900px;margin:0 auto;display:flex;gap:.75rem;align-items:flex-end}
 .sf-group{display:flex;flex-direction:column;gap:.35rem;flex:1}
@@ -333,6 +380,99 @@ footer{background:var(--ink);color:rgba(250,248,243,.55);padding:3rem 2rem 1.5re
     <span class="marquee-item"><b>Nha Trang</b> · Biển & Đảo · </span>
   </div>
 </div>
+
+<!-- TRIP PLANNER -->
+<section id="trip-planner">
+  <div class="tp-wrap">
+    <div class="tp-header">
+      <div class="tp-eyebrow">Lên kế hoạch chuyến đi</div>
+      <h2 class="tp-title">Plan a <span>full day trip</span></h2>
+      <p class="tp-sub">Điền thông tin — hệ thống gợi ý tour phù hợp nhất cho bạn</p>
+    </div>
+    <div class="tp-form">
+      <div class="tp-row">
+        <div class="tp-group">
+          <label class="tp-label">Điểm đến</label>
+          <select class="tp-select" id="tp_dest">
+            <option value="">🗺 Tất cả</option>
+          </select>
+        </div>
+        <div class="tp-group">
+          <label class="tp-label">Số ngày</label>
+          <select class="tp-select" id="tp_days">
+            <option value="">Bất kỳ</option>
+            <option value="1">1 ngày</option>
+            <option value="2">2 ngày</option>
+            <option value="3">3 ngày</option>
+            <option value="4">4–5 ngày</option>
+            <option value="7">7+ ngày</option>
+          </select>
+        </div>
+        <div class="tp-group">
+          <label class="tp-label">Số người</label>
+          <select class="tp-select" id="tp_pax">
+            <option value="">Bất kỳ</option>
+            <option value="1">1 người</option>
+            <option value="2">2 người</option>
+            <option value="4">3–5 người</option>
+            <option value="10">6–10 người</option>
+            <option value="20">Đoàn lớn 10+</option>
+          </select>
+        </div>
+        <div class="tp-group">
+          <label class="tp-label">Ngân sách/người</label>
+          <select class="tp-select" id="tp_budget">
+            <option value="">Không giới hạn</option>
+            <option value="2000000">Dưới 2 triệu</option>
+            <option value="5000000">2–5 triệu</option>
+            <option value="10000000">5–10 triệu</option>
+            <option value="99999999">Trên 10 triệu</option>
+          </select>
+        </div>
+        <div class="tp-group">
+          <label class="tp-label">Vùng miền</label>
+          <select class="tp-select" id="tp_region">
+            <option value="">Tất cả</option>
+            <option value="north">🏔 Miền Bắc</option>
+            <option value="central">🏖 Miền Trung</option>
+            <option value="south">🌊 Miền Nam</option>
+          </select>
+        </div>
+      </div>
+      <!-- SỞ THÍCH -->
+      <div style="margin-bottom:.85rem">
+        <div class="tp-label" style="margin-bottom:.5rem">Sở thích (chọn nhiều)</div>
+        <div class="tp-interests" id="tp_interests">
+          <button class="tp-interest-btn" data-val="beach" onclick="toggleInterest(this)">🏖 Biển & Đảo</button>
+          <button class="tp-interest-btn" data-val="mountain" onclick="toggleInterest(this)">🏔 Núi & Trekking</button>
+          <button class="tp-interest-btn" data-val="culture" onclick="toggleInterest(this)">🏛 Văn hóa</button>
+          <button class="tp-interest-btn" data-val="food" onclick="toggleInterest(this)">🍜 Ẩm thực</button>
+          <button class="tp-interest-btn" data-val="adventure" onclick="toggleInterest(this)">🧗 Phiêu lưu</button>
+          <button class="tp-interest-btn" data-val="family" onclick="toggleInterest(this)">👨‍👩‍👧 Gia đình</button>
+          <button class="tp-interest-btn" data-val="couple" onclick="toggleInterest(this)">💑 Cặp đôi</button>
+          <button class="tp-interest-btn" data-val="wellness" onclick="toggleInterest(this)">🧘 Nghỉ dưỡng</button>
+          <button class="tp-interest-btn" data-val="photography" onclick="toggleInterest(this)">📸 Nhiếp ảnh</button>
+          <button class="tp-interest-btn" data-val="festival" onclick="toggleInterest(this)">🎉 Lễ hội</button>
+        </div>
+      </div>
+      <div class="tp-actions">
+        <button class="tp-btn" onclick="runTripPlanner()">
+          <span>🔍</span> Tìm tour phù hợp
+        </button>
+        <div class="tp-hint">Hệ thống sẽ gợi ý tour tốt nhất dựa trên tiêu chí của bạn</div>
+        <button class="tp-btn" style="background:transparent;border:1px solid rgba(255,255,255,.2);color:rgba(255,255,255,.5);padding:.85rem 1.25rem" onclick="resetTripPlanner()">↺ Xóa</button>
+      </div>
+    </div>
+    <!-- KẾT QUẢ -->
+    <div class="tp-results" id="tp_results">
+      <div class="tp-results-header">
+        <div class="tp-results-title" id="tp_results_title">Tour gợi ý cho bạn</div>
+        <div class="tp-results-count" id="tp_results_count"></div>
+      </div>
+      <div class="tp-results-grid" id="tp_results_grid"></div>
+    </div>
+  </div>
+</section>
 
 <!-- SEARCH -->
 <div id="search-section">
@@ -1047,9 +1187,134 @@ function setLang(lang){
 }
 
 // ══════════════════════════════════════════════════════════════
+// TRIP PLANNER
+// ══════════════════════════════════════════════════════════════
+let tpInterests = []
+
+function toggleInterest(btn) {
+  const val = btn.dataset.val
+  if (tpInterests.includes(val)) {
+    tpInterests = tpInterests.filter(v => v !== val)
+    btn.classList.remove('active')
+  } else {
+    tpInterests.push(val)
+    btn.classList.add('active')
+  }
+}
+
+function resetTripPlanner() {
+  document.getElementById('tp_dest').value = ''
+  document.getElementById('tp_days').value = ''
+  document.getElementById('tp_pax').value = ''
+  document.getElementById('tp_budget').value = ''
+  document.getElementById('tp_region').value = ''
+  tpInterests = []
+  document.querySelectorAll('.tp-interest-btn').forEach(b => b.classList.remove('active'))
+  document.getElementById('tp_results').classList.remove('show')
+}
+
+async function runTripPlanner() {
+  const dest    = document.getElementById('tp_dest').value
+  const days    = document.getElementById('tp_days').value
+  const budget  = document.getElementById('tp_budget').value
+  const region  = document.getElementById('tp_region').value
+  const grid    = document.getElementById('tp_results_grid')
+  const results = document.getElementById('tp_results')
+
+  // Loading state
+  grid.innerHTML = `<div class="tp-no-results" style="grid-column:1/-1">⏳ Đang tìm tour phù hợp...</div>`
+  results.classList.add('show')
+  results.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+
+  // Build query
+  let q = sb.from('tours')
+    .select('id,name,slug,destination,region,duration_days,duration_nights,base_price,cover_image,travel_styles,tour_type')
+    .eq('status', 'ACTIVE')
+
+  if (dest)   q = q.eq('destination', dest)
+  if (region) q = q.eq('region', region)
+
+  // Days logic
+  if (days === '1') q = q.eq('duration_days', 1)
+  else if (days === '2') q = q.eq('duration_days', 2)
+  else if (days === '3') q = q.eq('duration_days', 3)
+  else if (days === '4') q = q.gte('duration_days', 4).lte('duration_days', 5)
+  else if (days === '7') q = q.gte('duration_days', 7)
+
+  // Budget
+  if (budget === '2000000') q = q.lte('base_price', 2000000)
+  else if (budget === '5000000') q = q.gte('base_price', 2000000).lte('base_price', 5000000)
+  else if (budget === '10000000') q = q.gte('base_price', 5000000).lte('base_price', 10000000)
+  else if (budget === '99999999') q = q.gte('base_price', 10000000)
+
+  q = q.order('base_price', { ascending: true }).limit(6)
+
+  const { data, error } = await q
+
+  if (error || !data) {
+    grid.innerHTML = `<div class="tp-no-results" style="grid-column:1/-1">❌ Lỗi tìm kiếm. Thử lại!</div>`
+    return
+  }
+
+  // Filter by interests client-side (travel_styles)
+  let filtered = data
+  if (tpInterests.length > 0) {
+    filtered = data.filter(t => {
+      const styles = t.travel_styles || []
+      return tpInterests.some(i => styles.includes(i))
+    })
+    // Nếu không có kết quả theo sở thích → hiện tất cả và ghi chú
+    if (!filtered.length) filtered = data
+  }
+
+  // Build summary
+  const parts = []
+  if (dest)   parts.push(dest)
+  if (region) parts.push({north:'Miền Bắc',central:'Miền Trung',south:'Miền Nam'}[region])
+  if (days)   parts.push(`${days}+ ngày`)
+  if (tpInterests.length) parts.push(tpInterests.join(', '))
+
+  document.getElementById('tp_results_title').textContent =
+    parts.length ? `Tour gợi ý: ${parts.join(' · ')}` : 'Tour gợi ý cho bạn'
+  document.getElementById('tp_results_count').textContent =
+    `${filtered.length} tour phù hợp`
+
+  if (!filtered.length) {
+    grid.innerHTML = `<div class="tp-no-results" style="grid-column:1/-1">
+      <div style="font-size:1.5rem;margin-bottom:.5rem">🗺️</div>
+      <div>Không tìm thấy tour phù hợp</div>
+      <div style="font-size:.75rem;margin-top:.3rem;color:rgba(255,255,255,.2)">Thử thay đổi tiêu chí tìm kiếm</div>
+    </div>`
+    return
+  }
+
+  grid.innerHTML = filtered.map(t => `
+    <div class="tp-card" onclick="openModal('${t.id}')">
+      <img class="tp-card-img"
+        src="${t.cover_image || 'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=400&q=70'}"
+        alt="${t.name}" loading="lazy"
+        onerror="this.src='https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=400&q=70'">
+      <div class="tp-card-body">
+        <div class="tp-card-dest">${t.destination} · ${{north:'Miền Bắc',central:'Miền Trung',south:'Miền Nam'}[t.region]||t.region}</div>
+        <div class="tp-card-name">${t.name.slice(0,50)}${t.name.length>50?'...':''}</div>
+        <div class="tp-card-meta">📅 ${t.duration_days}N${t.duration_nights||0}Đ</div>
+        <div class="tp-card-footer">
+          <div class="tp-card-price">${fmt(t.base_price)}<span style="font-size:.68rem;font-weight:400;color:rgba(255,255,255,.4)">đ</span></div>
+          <button class="tp-card-btn" onclick="event.stopPropagation();window.location.href='baggio-booking-live.html?tour=${t.slug}'">Đặt ngay</button>
+        </div>
+      </div>
+    </div>`).join('')
+}
+
+// ══════════════════════════════════════════════════════════════
 // INIT — chạy tất cả khi trang load
 // ══════════════════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', async () => {
+  // Populate trip planner dest dropdown (top destinations)
+  const topDests = ['Hội An','Hạ Long','Phú Quốc','Sa Pa','Đà Lạt','Nha Trang','Đà Nẵng','Huế','Hà Nội','Mũi Né','Cần Thơ','Ninh Bình']
+  const tpDestSel = document.getElementById('tp_dest')
+  topDests.forEach(d => { const o = document.createElement('option'); o.value=d; o.textContent=d; tpDestSel.appendChild(o) })
+
   populateDestFilter('') // load đủ 63 tỉnh ngay khi mở trang
   await Promise.all([loadTours(), loadGuides(), loadReviews()])
   updateFooterDests()
