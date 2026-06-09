@@ -20,89 +20,105 @@ const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz
   --blue:#58a6ff;--bdim:rgba(88,166,255,.1);--bbrd:rgba(88,166,255,.25);
   --amber:#d29922;--adim:rgba(210,153,34,.1);--abrd:rgba(210,153,34,.25);
   --red:#f85149;--rdim:rgba(248,81,73,.1);--rbrd:rgba(248,81,73,.25);
-  --purple:#bc8cff;--pdim:rgba(188,140,255,.1);
+  --purple:#bc8cff;--pdim:rgba(188,140,255,.1);--pbrd:rgba(188,140,255,.3);
+  --teal:#26a69a;--tdim:rgba(38,166,154,.1);--tbrd:rgba(38,166,154,.3);
   --font:'Be Vietnam Pro',sans-serif;--mono:'Space Mono',monospace;
 }
 html,body{height:100%;overflow:hidden}
-body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:13px;display:grid;grid-template-columns:220px 1fr;grid-template-rows:52px 1fr}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:13px;display:grid;grid-template-columns:240px 1fr;grid-template-rows:52px 1fr}
 
 .topbar{grid-column:1/-1;background:var(--s1);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 1.25rem;gap:1rem}
 .tb-logo{font-family:var(--mono);font-size:.88rem;font-weight:700;color:var(--text)}
 .tb-logo span{color:var(--green)}
-.tb-right{margin-left:auto;display:flex;align-items:center;gap:.75rem}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:.65rem}
 
-.sidebar{background:var(--s1);border-right:1px solid var(--border);overflow-y:auto;padding:.75rem 0}
-.sb-section{font-family:var(--mono);font-size:.55rem;letter-spacing:.18em;text-transform:uppercase;color:var(--text3);padding:.65rem 1.1rem .25rem}
-.sb-item{display:flex;align-items:center;gap:.6rem;padding:.48rem 1.1rem;font-size:.8rem;color:var(--text2);cursor:pointer;border-left:2px solid transparent;transition:all .15s}
+.sidebar{background:var(--s1);border-right:1px solid var(--border);overflow-y:auto;padding:.75rem 0;display:flex;flex-direction:column}
+.sb-section{font-family:var(--mono);font-size:.52rem;letter-spacing:.18em;text-transform:uppercase;color:var(--text3);padding:.65rem 1.1rem .25rem}
+.sb-item{display:flex;align-items:center;gap:.6rem;padding:.45rem 1.1rem;font-size:.8rem;color:var(--text2);cursor:pointer;border-left:2px solid transparent;transition:all .15s}
 .sb-item:hover{color:var(--text);background:rgba(255,255,255,.03)}
 .sb-item.active{color:var(--blue);border-left-color:var(--blue);background:var(--bdim)}
-.sb-count{margin-left:auto;font-family:var(--mono);font-size:.58rem;background:var(--s3);border:1px solid var(--border);padding:.15rem .4rem;border-radius:4px;color:var(--text3)}
+.sb-count{margin-left:auto;font-family:var(--mono);font-size:.55rem;background:var(--s3);border:1px solid var(--border);padding:.12rem .38rem;border-radius:4px;color:var(--text3)}
 
-.main{overflow-y:auto;padding:1.5rem}
-.page{display:none}.page.active{display:block}
+.main{overflow-y:auto}
+.page{display:none;height:100%}.page.active{display:flex;flex-direction:column}
 
-/* CARDS */
-.card{background:var(--s2);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:1rem}
-.card-header{background:var(--s3);border-bottom:1px solid var(--border);padding:.75rem 1.1rem;display:flex;align-items:center;justify-content:space-between;gap:.75rem;flex-wrap:wrap}
-.card-title{font-weight:600;font-size:.85rem;color:var(--text)}
-.card-body{padding:1.1rem}
-.card-actions{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center}
+/* TOOLBAR */
+.toolbar{background:var(--s1);border-bottom:1px solid var(--border);padding:.65rem 1.25rem;display:flex;align-items:center;gap:.65rem;flex-shrink:0;flex-wrap:wrap}
+.toolbar-title{font-weight:600;font-size:.85rem;color:var(--text);margin-right:auto}
 
-/* FORM */
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:.85rem}
-.form-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.85rem}
-.form-group{display:flex;flex-direction:column;gap:.35rem}
+/* TWO-PANE */
+.two-pane{display:grid;grid-template-columns:380px 1fr;flex:1;overflow:hidden;min-height:0}
+.list-pane{border-right:1px solid var(--border);overflow-y:auto;display:flex;flex-direction:column}
+.editor-pane{overflow-y:auto;padding:1.25rem;background:var(--bg)}
+
+/* TOUR LIST ITEMS */
+.tour-list-item{padding:.75rem 1rem;border-bottom:1px solid rgba(255,255,255,.04);cursor:pointer;transition:background .15s;position:relative}
+.tour-list-item:hover{background:rgba(255,255,255,.03)}
+.tour-list-item.active{background:var(--bdim);border-left:2px solid var(--blue)}
+.tli-name{font-weight:500;font-size:.82rem;color:var(--text);margin-bottom:.2rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tli-meta{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}
+.tli-dest{font-size:.7rem;color:var(--text2)}
+.tli-price{font-family:var(--mono);font-size:.68rem;color:var(--amber)}
+.tli-img{width:48px;height:36px;object-fit:cover;border-radius:3px;border:1px solid var(--border);flex-shrink:0}
+
+/* EDITOR FORM */
+.editor-section{background:var(--s2);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:1rem}
+.es-header{background:var(--s3);border-bottom:1px solid var(--border);padding:.6rem 1rem;font-family:var(--mono);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);display:flex;align-items:center;gap:.5rem}
+.es-body{padding:1rem;display:flex;flex-direction:column;gap:.75rem}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+.form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.75rem}
+.form-row-4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:.65rem}
+.form-group{display:flex;flex-direction:column;gap:.3rem}
 .form-group.full{grid-column:1/-1}
-.form-label{font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text3)}
-.form-input,.form-select,.form-textarea{background:var(--s1);border:1px solid var(--border);color:var(--text);font-family:var(--font);font-size:.85rem;padding:.6rem .85rem;border-radius:5px;outline:none;transition:border-color .2s;width:100%}
+.form-label{font-family:var(--mono);font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text3)}
+.form-input,.form-select,.form-textarea{background:var(--s1);border:1px solid var(--border);color:var(--text);font-family:var(--font);font-size:.83rem;padding:.55rem .8rem;border-radius:5px;outline:none;transition:border-color .2s;width:100%}
 .form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--blue)}
 .form-select option{background:var(--s2)}
-.form-textarea{resize:vertical;min-height:100px;line-height:1.6}
+.form-textarea{resize:vertical;line-height:1.6}
+.form-input.ok{border-color:var(--green)!important}
 .form-input.warn{border-color:var(--amber)!important}
 .form-input.err{border-color:var(--red)!important}
-.form-input.ok{border-color:var(--green)!important}
-.field-hint{font-size:.72rem;margin-top:.25rem;padding:.35rem .65rem;border-radius:4px;display:none}
+.field-hint{font-size:.7rem;padding:.28rem .6rem;border-radius:3px;margin-top:.2rem;display:none}
 .field-hint.show{display:block}
+.field-hint.ok{background:var(--gdim);border:1px solid var(--gbrd);color:var(--green)}
 .field-hint.warn{background:var(--adim);border:1px solid var(--abrd);color:var(--amber)}
 .field-hint.err{background:var(--rdim);border:1px solid var(--rbrd);color:var(--red)}
-.field-hint.ok{background:var(--gdim);border:1px solid var(--gbrd);color:var(--green)}
 
-/* VALIDATION PANEL */
-.validation-panel{background:var(--s3);border:1px solid var(--border);border-radius:6px;padding:.85rem;margin-top:.75rem}
-.vp-title{font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:.5rem}
-.vp-items{display:flex;flex-direction:column;gap:.3rem}
-.vp-item{display:flex;align-items:flex-start;gap:.5rem;font-size:.78rem;padding:.3rem 0;border-bottom:1px solid rgba(255,255,255,.04)}
-.vp-item:last-child{border-bottom:none}
-.vp-icon{flex-shrink:0;font-size:.85rem}
-.vp-text{color:var(--text2);line-height:1.5}
-.vp-text strong{color:var(--text)}
+/* CHECKBOX GROUPS */
+.check-group{display:flex;flex-wrap:wrap;gap:.5rem}
+.check-tag{display:flex;align-items:center;gap:.35rem;font-size:.78rem;cursor:pointer;background:var(--s3);border:1px solid var(--border);padding:.3rem .65rem;border-radius:4px;transition:all .15s}
+.check-tag:hover{border-color:var(--border2)}
+.check-tag input{display:none}
+.check-tag.checked{background:var(--bdim);border-color:var(--bbrd);color:var(--blue)}
+.check-tag.checked.green{background:var(--gdim);border-color:var(--gbrd);color:var(--green)}
 
-/* IMAGE UPLOAD */
-.img-upload-area{border:2px dashed var(--border);border-radius:6px;padding:1.5rem;text-align:center;cursor:pointer;transition:all .2s;position:relative}
-.img-upload-area:hover{border-color:var(--blue);background:var(--bdim)}
-.img-upload-area.dragging{border-color:var(--green);background:var(--gdim)}
-.img-upload-area input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
-.img-preview-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;margin-top:.75rem}
-.img-preview-item{position:relative;aspect-ratio:4/3;border-radius:4px;overflow:hidden;border:1px solid var(--border)}
-.img-preview-item img{width:100%;height:100%;object-fit:cover}
-.img-preview-item .img-remove{position:absolute;top:.25rem;right:.25rem;background:rgba(0,0,0,.7);border:none;color:#fff;width:20px;height:20px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.7rem}
-.img-url-input{display:flex;gap:.5rem;margin-top:.5rem}
+/* STAR RATING */
+.star-rating{display:flex;gap:.3rem}
+.star-btn{background:none;border:none;font-size:1.1rem;cursor:pointer;color:var(--border2);transition:color .15s;line-height:1}
+.star-btn.on{color:var(--amber)}
 
-/* TABLE */
-table{width:100%;border-collapse:collapse}
-th{font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);padding:.6rem 1rem;text-align:left;font-weight:400;border-bottom:1px solid var(--border);white-space:nowrap}
-td{padding:.7rem 1rem;border-bottom:1px solid rgba(255,255,255,.04);font-size:.8rem;vertical-align:middle}
-tr:last-child td{border-bottom:none}
-tr:hover td{background:rgba(255,255,255,.02)}
+/* IMAGE GRID */
+.img-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.4rem;margin-top:.4rem}
+.img-item{position:relative;aspect-ratio:4/3;border-radius:4px;overflow:hidden;border:1px solid var(--border);background:var(--s3)}
+.img-item img{width:100%;height:100%;object-fit:cover}
+.img-item .img-del{position:absolute;top:.2rem;right:.2rem;background:rgba(0,0,0,.7);border:none;color:#fff;width:18px;height:18px;border-radius:50%;cursor:pointer;font-size:.6rem;display:flex;align-items:center;justify-content:center}
+.img-item.add-btn{display:flex;align-items:center;justify-content:center;color:var(--text3);font-size:1.2rem;cursor:pointer;transition:all .2s}
+.img-item.add-btn:hover{border-color:var(--blue);color:var(--blue)}
+
+/* VALIDATION BOX */
+.val-box{background:var(--s3);border:1px solid var(--border);border-radius:6px;padding:.75rem}
+.val-title{font-family:var(--mono);font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:.5rem}
+.val-item{display:flex;gap:.45rem;align-items:flex-start;font-size:.75rem;padding:.2rem 0;color:var(--text2)}
 
 /* BADGE */
-.badge{font-family:var(--mono);font-size:.58rem;letter-spacing:.06em;text-transform:uppercase;padding:.2rem .5rem;border-radius:4px;display:inline-flex;align-items:center;gap:.25rem;white-space:nowrap}
-.badge-active{background:var(--gdim);border:1px solid var(--gbrd);color:var(--green)}
-.badge-draft{background:var(--s3);border:1px solid var(--border);color:var(--text3)}
-.badge-featured{background:var(--adim);border:1px solid var(--abrd);color:var(--amber)}
+.badge{font-family:var(--mono);font-size:.55rem;letter-spacing:.06em;text-transform:uppercase;padding:.18rem .45rem;border-radius:3px;display:inline-flex;align-items:center;gap:.25rem;white-space:nowrap}
+.b-active{background:var(--gdim);border:1px solid var(--gbrd);color:var(--green)}
+.b-draft{background:var(--s3);border:1px solid var(--border);color:var(--text3)}
+.b-featured{background:var(--adim);border:1px solid var(--abrd);color:var(--amber)}
+.b-inactive{background:var(--rdim);border:1px solid var(--rbrd);color:var(--red)}
 
 /* BTN */
-.btn{font-family:var(--mono);font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;padding:.4rem .9rem;border-radius:5px;cursor:pointer;transition:all .15s;border:1px solid;text-decoration:none;display:inline-flex;align-items:center;gap:.35rem}
+.btn{font-family:var(--mono);font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;padding:.38rem .85rem;border-radius:5px;cursor:pointer;transition:all .15s;border:1px solid;display:inline-flex;align-items:center;gap:.35rem;text-decoration:none}
 .btn-default{background:none;border-color:var(--border);color:var(--text2)}
 .btn-default:hover{border-color:var(--border2);color:var(--text)}
 .btn-primary{background:var(--blue);border-color:var(--blue);color:#0d1117}
@@ -112,94 +128,233 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .btn-danger:hover{background:var(--rdim)}
 .btn-amber{background:var(--amber);border-color:var(--amber);color:#0d1117}
 
-/* MODAL */
-.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:500;display:none;align-items:flex-start;justify-content:center;backdrop-filter:blur(4px);padding:2rem 1rem;overflow-y:auto}
-.modal-bg.open{display:flex}
-.modal{background:var(--s2);border:1px solid var(--border);border-radius:10px;width:100%;max-width:780px;position:relative}
-.modal-header{background:var(--s3);border-bottom:1px solid var(--border);padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;border-radius:10px 10px 0 0}
-.modal-title{font-weight:600;font-size:.9rem;color:var(--text)}
-.modal-close{background:none;border:none;color:var(--text2);font-size:1.2rem;cursor:pointer;transition:color .2s}
-.modal-close:hover{color:var(--text)}
-.modal-body{padding:1.25rem}
-.modal-footer{padding:.85rem 1.25rem;border-top:1px solid var(--border);display:flex;gap:.5rem;justify-content:flex-end;align-items:center}
-
-/* TABS inside modal */
-.modal-tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:1.25rem;gap:0}
-.modal-tab{font-family:var(--mono);font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;padding:.6rem 1rem;cursor:pointer;color:var(--text3);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;background:none;border-top:none;border-left:none;border-right:none}
-.modal-tab:hover{color:var(--text2)}
-.modal-tab.active{color:var(--blue);border-bottom-color:var(--blue)}
-.modal-panel{display:none}.modal-panel.active{display:block}
+/* BLOG GRID */
+.blog-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.85rem;padding:1.25rem}
+.blog-card{background:var(--s2);border:1px solid var(--border);border-radius:8px;overflow:hidden;transition:border-color .2s}
+.blog-card:hover{border-color:var(--border2)}
+.blog-thumb{width:100%;height:120px;object-fit:cover;display:block}
+.blog-body{padding:.85rem}
+.blog-cat{font-family:var(--mono);font-size:.55rem;text-transform:uppercase;letter-spacing:.08em;color:var(--teal);margin-bottom:.3rem}
+.blog-title{font-weight:600;font-size:.88rem;margin-bottom:.3rem;line-height:1.3}
+.blog-excerpt{font-size:.75rem;color:var(--text2);line-height:1.5;margin-bottom:.65rem}
 
 /* BANNER */
-.banner-preview{background:var(--s3);border:1px solid var(--border);border-radius:6px;padding:1rem;margin-top:.75rem;position:relative;overflow:hidden;min-height:120px}
-.banner-preview-img{position:absolute;inset:0;object-fit:cover;width:100%;height:100%;opacity:.4;border-radius:6px}
-.banner-preview-content{position:relative;z-index:1}
-
-/* STAT */
-.stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem;margin-bottom:1.25rem}
-.stat{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:.9rem 1rem;position:relative}
-.stat::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:8px 8px 0 0}
-.stat.g::before{background:var(--green)}.stat.b::before{background:var(--blue)}
-.stat.a::before{background:var(--amber)}.stat.p::before{background:var(--purple)}
-.stat-label{font-family:var(--mono);font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-bottom:.4rem}
-.stat-val{font-family:var(--mono);font-size:1.4rem;font-weight:700;line-height:1;margin-bottom:.2rem}
-.stat-sub{font-size:.72rem;color:var(--text2)}
+.banner-card{border-radius:8px;padding:1.1rem;position:relative;overflow:hidden;min-height:110px;cursor:pointer}
+.banner-card-content{position:relative;z-index:1}
+.banner-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.35}
 
 /* TOAST */
 .toast-wrap{position:fixed;bottom:1.5rem;right:1.5rem;z-index:999;display:flex;flex-direction:column;gap:.5rem}
 .toast{background:var(--s2);border:1px solid var(--border);color:var(--text);padding:.65rem 1rem;font-size:.8rem;border-radius:6px;display:flex;align-items:center;gap:.5rem;min-width:240px;animation:toastIn .2s ease;box-shadow:0 8px 24px rgba(0,0,0,.4)}
 @keyframes toastIn{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:none}}
 
-.empty-state{text-align:center;padding:3rem 1rem}
+.empty-state{text-align:center;padding:3rem 1rem;color:var(--text2)}
 .empty-icon{font-size:2.5rem;opacity:.3;margin-bottom:.75rem}
 ::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
-@media(max-width:900px){body{grid-template-columns:1fr}.sidebar{display:none}.stat-row{grid-template-columns:1fr 1fr}.form-grid,.form-grid-3{grid-template-columns:1fr}}
+@media(max-width:1100px){.two-pane{grid-template-columns:300px 1fr}}
+@media(max-width:900px){body{grid-template-columns:1fr}.sidebar{display:none}.two-pane{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <div class="toast-wrap" id="toastWrap"></div>
 
-<!-- MODAL TOUR -->
-<div class="modal-bg" id="tourModal">
-  <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title" id="tourModalTitle">✏️ Thêm tour mới</div>
-      <button class="modal-close" onclick="closeTourModal()">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="modal-tabs">
-        <button class="modal-tab active" onclick="switchModalTab('info',this)">📋 Thông tin</button>
-        <button class="modal-tab" onclick="switchModalTab('price',this)">💰 Giá & Lịch</button>
-        <button class="modal-tab" onclick="switchModalTab('gallery',this)">🖼 Gallery ảnh</button>
-        <button class="modal-tab" onclick="switchModalTab('content',this)">📝 Nội dung</button>
-      </div>
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="tb-logo">Baggio<span>.</span>CMS</div>
+  <span style="font-size:.75rem;color:var(--text3)">/ Quản lý nội dung</span>
+  <div class="tb-right">
+    <a href="baggio-admin.html" class="btn btn-default">← Admin</a>
+    <a href="index.html" target="_blank" class="btn btn-default">🌐 Xem web</a>
+    <button class="btn btn-green" id="globalSaveBtn" onclick="saveCurrent()" style="display:none">💾 Lưu</button>
+  </div>
+</header>
 
-      <!-- INFO TAB -->
-      <div class="modal-panel active" id="mpanel-info">
-        <div class="form-grid" style="margin-bottom:.85rem">
-          <div class="form-group full">
-            <label class="form-label">Tên tour *</label>
-            <input class="form-input" id="tf_name" placeholder="VD: Tour Hội An – Mỹ Sơn 3N2Đ" oninput="validateTourName(this.value)">
-            <div class="field-hint" id="tf_name_hint"></div>
-          </div>
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sb-section">Tour & Trải nghiệm</div>
+  <div class="sb-item active" onclick="nav('tours',this)">🗺️ Quản lý Tour<span class="sb-count" id="sb_tours">—</span></div>
+  <div class="sb-item" onclick="nav('new_tour',this)">➕ Thêm tour mới</div>
+  <div class="sb-section">Bài viết</div>
+  <div class="sb-item" onclick="nav('blog',this)">📝 Blog & Tin tức<span class="sb-count" id="sb_blogs">0</span></div>
+  <div class="sb-item" onclick="nav('new_blog',this)">➕ Bài viết mới</div>
+  <div class="sb-section">Trang chủ</div>
+  <div class="sb-item" onclick="nav('banners',this)">🎯 Banner & Promo<span class="sb-count" id="sb_banners">0</span></div>
+  <div class="sb-item" onclick="nav('featured',this)">⭐ Tour nổi bật</div>
+  <div class="sb-section">Kiểm tra</div>
+  <div class="sb-item" onclick="nav('validate',this)">🛡 Kiểm tra nội dung</div>
+  <div style="flex:1"></div>
+  <div style="padding:.75rem 1rem;font-size:.68rem;color:var(--text3);border-top:1px solid var(--border);line-height:1.6">
+    <div style="font-family:var(--mono);font-size:.55rem;color:var(--text3);margin-bottom:.2rem">HỌC TỪ</div>
+    Tatinta · Viator · GetYourGuide · Booking.com · Klook
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main class="main">
+
+<!-- ═══ TOUR LIST ═══ -->
+<div class="page active" id="page-tours">
+  <div class="toolbar">
+    <div class="toolbar-title">🗺️ Danh sách tour</div>
+    <input class="form-input" style="width:200px;font-size:.78rem;padding:.38rem .7rem" placeholder="🔍 Tìm tour..." id="tourListSearch" oninput="filterTourList(this.value)">
+    <select class="form-select" style="width:130px;font-size:.72rem;padding:.38rem .6rem" id="tourListStatus" onchange="loadTourList()">
+      <option value="">Tất cả</option>
+      <option value="ACTIVE">Đang bán</option>
+      <option value="DRAFT">Nháp</option>
+      <option value="INACTIVE">Tạm dừng</option>
+    </select>
+    <select class="form-select" style="width:130px;font-size:.72rem;padding:.38rem .6rem" id="tourListRegion" onchange="loadTourList()">
+      <option value="">Tất cả vùng</option>
+      <option value="north">Miền Bắc</option>
+      <option value="central">Miền Trung</option>
+      <option value="south">Miền Nam</option>
+    </select>
+    <button class="btn btn-primary" onclick="nav('new_tour',document.querySelector('[onclick*=new_tour]'))">+ Tour mới</button>
+  </div>
+  <div class="two-pane">
+    <div class="list-pane" id="tourListPane">
+      <div style="padding:2rem;text-align:center;color:var(--text3);font-family:var(--mono);font-size:.75rem">⏳ Đang tải...</div>
+    </div>
+    <div class="editor-pane" style="display:flex;align-items:center;justify-content:center">
+      <div class="empty-state"><div class="empty-icon">🗺️</div><div style="font-size:.88rem;font-weight:500">Chọn một tour để xem chi tiết</div><div style="font-size:.78rem;color:var(--text3);margin-top:.3rem">hoặc nhấn "+ Tour mới" để tạo tour mới</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ TOUR EDITOR ═══ -->
+<div class="page" id="page-new_tour">
+  <div class="toolbar">
+    <div class="toolbar-title" id="tourEditorTitle">➕ Thêm tour mới</div>
+    <div id="tourStatusBadge"></div>
+    <div style="margin-left:auto;display:flex;gap:.5rem;align-items:center">
+      <div id="tourSaveWarn" style="font-size:.72rem;color:var(--amber)"></div>
+      <button class="btn btn-default" onclick="nav('tours',document.querySelector('[onclick*=\'tours\']'))">← Danh sách</button>
+      <button class="btn btn-default" onclick="saveTourDraft()">💾 Lưu nháp</button>
+      <button class="btn btn-green" onclick="saveTour('ACTIVE')">🚀 Đăng bán</button>
+    </div>
+  </div>
+  <div class="editor-pane" style="flex:1">
+
+    <!-- BASIC INFO -->
+    <div class="editor-section">
+      <div class="es-header">📋 Thông tin cơ bản</div>
+      <div class="es-body">
+        <div class="form-group">
+          <label class="form-label">Tên tour *</label>
+          <input class="form-input" id="tf_name" placeholder="VD: Tour Hội An – Mỹ Sơn 3N2Đ trọn gói" oninput="onNameInput(this.value)">
+          <div class="field-hint" id="tf_name_hint"></div>
+        </div>
+        <div class="form-row">
           <div class="form-group">
-            <label class="form-label">Điểm đến *</label>
-            <input class="form-input" id="tf_dest" placeholder="VD: Hội An" oninput="validateDestination(this.value)" list="destSuggestions">
-            <datalist id="destSuggestions"></datalist>
+            <label class="form-label">Điểm đến chính *</label>
+            <input class="form-input" id="tf_dest" placeholder="VD: Hội An" oninput="onDestInput(this.value)" list="destDL">
+            <datalist id="destDL"></datalist>
             <div class="field-hint" id="tf_dest_hint"></div>
           </div>
           <div class="form-group">
             <label class="form-label">Vùng miền *</label>
-            <select class="form-select" id="tf_region" onchange="validateRegionMatch()">
+            <select class="form-select" id="tf_region" onchange="onRegionChange()">
               <option value="">-- Chọn vùng --</option>
-              <option value="north">Miền Bắc</option>
-              <option value="central">Miền Trung</option>
-              <option value="south">Miền Nam</option>
+              <option value="north">🏔 Miền Bắc</option>
+              <option value="central">🏖 Miền Trung</option>
+              <option value="south">🌊 Miền Nam</option>
             </select>
             <div class="field-hint" id="tf_region_hint"></div>
           </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Điểm đến phụ (nếu ghép tour nhiều điểm)</label>
+          <input class="form-input" id="tf_sub_dests" placeholder="VD: Đà Nẵng, Mỹ Sơn, Phố Cổ Hội An">
+        </div>
+      </div>
+    </div>
+
+    <!-- CLASSIFICATION — học từ Tatinta -->
+    <div class="editor-section">
+      <div class="es-header">🏷 Phân loại tour (học từ Tatinta / Viator)</div>
+      <div class="es-body">
+        <div class="form-row">
           <div class="form-group">
-            <label class="form-label">Số ngày</label>
+            <label class="form-label">Loại tour chính *</label>
+            <select class="form-select" id="tf_type">
+              <option value="">-- Chọn loại --</option>
+              <option value="day_tour">🌅 Day Tour (1 ngày)</option>
+              <option value="multi_day">📅 Multi-day (nhiều ngày)</option>
+              <option value="seat_in_coach">🚌 Seat-in-Coach (ghép đoàn)</option>
+              <option value="private">🔒 Private Tour (riêng)</option>
+              <option value="self_guided">🗺 Free & Easy (tự túc)</option>
+              <option value="hop_on_off">🎫 Hop-on Hop-off</option>
+              <option value="cruise">🚢 Cruise Tour</option>
+              <option value="medical">🏥 Medical & Wellness</option>
+              <option value="educational">🎓 Educational / Workshop</option>
+              <option value="mice">💼 MICE / Team Building</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Hạng dịch vụ</label>
+            <select class="form-select" id="tf_class">
+              <option value="budget">💚 Budget (Tiết kiệm)</option>
+              <option value="standard" selected>🔵 Standard (Tiêu chuẩn)</option>
+              <option value="premium">🟡 Premium (Cao cấp)</option>
+              <option value="luxury">👑 Luxury (Sang trọng)</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Phong cách du lịch (Travel Style — chọn nhiều)</label>
+          <div class="check-group" id="travelStyleGroup">
+            ${[
+              ['family','👨‍👩‍👧 Gia đình'],['couple','💑 Cặp đôi/Honeymoon'],['solo','🧍 Du lịch solo'],
+              ['group','👥 Nhóm bạn'],['adventure','🧗 Phiêu lưu mạo hiểm'],['culture','🏛 Văn hóa lịch sử'],
+              ['beach','🏖 Biển & Đảo'],['mountain','🏔 Núi & Trekking'],['food','🍜 Ẩm thực'],
+              ['golf','⛳ Golf'],['photography','📸 Nhiếp ảnh'],['wellness','🧘 Wellness & Spa'],
+              ['festival','🎉 Lễ hội'],['sustainable','🌿 Du lịch bền vững'],['business','💼 Công tác'],
+              ['nightlife','🌙 Khám phá đêm'],['picnic','🧺 Picnic dã ngoại'],['cruise','🚢 Tàu thuyền'],
+            ].map(([k,v])=>`<label class="check-tag" data-key="${k}"><input type="checkbox" value="${k}" style="display:none">${v}</label>`).join('')}
+          </div>
+        </div>
+        <div class="form-row-3">
+          <div class="form-group">
+            <label class="form-label">Đối tượng phù hợp</label>
+            <select class="form-select" id="tf_audience">
+              <option value="all">👥 Tất cả mọi người</option>
+              <option value="adult">🧑 Người lớn (18+)</option>
+              <option value="senior">👴 Cao tuổi (55+)</option>
+              <option value="kid_friendly">👶 Thân thiện với trẻ em</option>
+              <option value="no_kid">🚫 Không phù hợp trẻ nhỏ</option>
+              <option value="disable_friendly">♿ Người khuyết tật</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Độ khó thể lực</label>
+            <select class="form-select" id="tf_difficulty">
+              <option value="easy">😌 Dễ (Không cần sức)</option>
+              <option value="moderate">🚶 Trung bình (Đi bộ nhẹ)</option>
+              <option value="challenging">🏃 Khó (Cần thể lực tốt)</option>
+              <option value="extreme">🧗 Thử thách (Trekking nặng)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Ngôn ngữ HDV</label>
+            <select class="form-select" id="tf_guide_lang">
+              <option value="vi">🇻🇳 Tiếng Việt</option>
+              <option value="en">🇬🇧 English</option>
+              <option value="zh">🇨🇳 中文</option>
+              <option value="ko">🇰🇷 한국어</option>
+              <option value="vi_en">🇻🇳🇬🇧 Việt + Anh</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TIME & CAPACITY -->
+    <div class="editor-section">
+      <div class="es-header">⏱ Thời gian & Sức chứa</div>
+      <div class="es-body">
+        <div class="form-row-4">
+          <div class="form-group">
+            <label class="form-label">Số ngày *</label>
             <input class="form-input" id="tf_days" type="number" min="1" max="30" value="3">
           </div>
           <div class="form-group">
@@ -207,403 +362,322 @@ tr:hover td{background:rgba(255,255,255,.02)}
             <input class="form-input" id="tf_nights" type="number" min="0" max="29" value="2">
           </div>
           <div class="form-group">
-            <label class="form-label">Sức chứa tối đa</label>
-            <input class="form-input" id="tf_pax" type="number" min="1" value="20">
+            <label class="form-label">Tối thiểu</label>
+            <input class="form-input" id="tf_min_pax" type="number" min="1" value="2" placeholder="2">
           </div>
           <div class="form-group">
-            <label class="form-label">Trạng thái</label>
-            <select class="form-select" id="tf_status">
-              <option value="ACTIVE">Đang bán</option>
-              <option value="DRAFT">Nháp</option>
-              <option value="INACTIVE">Tạm dừng</option>
+            <label class="form-label">Tối đa</label>
+            <input class="form-input" id="tf_max_pax" type="number" min="1" value="20" placeholder="20">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Giờ khởi hành điển hình</label>
+            <input class="form-input" id="tf_depart_time" placeholder="VD: 7:30 SA tại sân bay Đà Nẵng">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Thời điểm tốt nhất</label>
+            <select class="form-select" id="tf_best_season">
+              <option value="">Quanh năm</option>
+              <option value="spring">🌸 Mùa xuân (T1-T4)</option>
+              <option value="summer">☀️ Mùa hè (T5-T8)</option>
+              <option value="autumn">🍂 Mùa thu (T9-T11)</option>
+              <option value="winter">❄️ Mùa đông (T12-T2)</option>
+              <option value="dry">🏜 Mùa khô</option>
+              <option value="rainy">🌧 Mùa mưa</option>
             </select>
           </div>
         </div>
-        <!-- SMART VALIDATION PANEL -->
-        <div class="validation-panel" id="validationPanel">
-          <div class="vp-title">🛡 Kiểm tra thông minh</div>
-          <div class="vp-items" id="validationItems">
-            <div class="vp-item"><span class="vp-icon">⚪</span><span class="vp-text">Nhập tên tour và điểm đến để kiểm tra tự động</span></div>
+        <!-- SCHEDULE -->
+        <div>
+          <label class="form-label" style="display:block;margin-bottom:.4rem">Lịch khởi hành</label>
+          <div style="display:flex;gap:.5rem;margin-bottom:.4rem">
+            <input class="form-input" id="sched_date" type="date" style="flex:1">
+            <input class="form-input" id="sched_slots" type="number" value="20" style="width:70px" placeholder="Chỗ">
+            <input class="form-input" id="sched_price" type="number" style="width:110px" placeholder="Giá riêng (đ)">
+            <button class="btn btn-green" onclick="addSched()">+ Thêm</button>
           </div>
+          <div id="schedList" style="display:flex;flex-direction:column;gap:.3rem;max-height:140px;overflow-y:auto"></div>
         </div>
       </div>
+    </div>
 
-      <!-- PRICE TAB -->
-      <div class="modal-panel" id="mpanel-price">
-        <div class="form-grid" style="margin-bottom:.85rem">
+    <!-- PRICING -->
+    <div class="editor-section">
+      <div class="es-header">💰 Giá & Thanh toán</div>
+      <div class="es-body">
+        <div class="form-row-3">
           <div class="form-group">
             <label class="form-label">Giá người lớn (đ) *</label>
-            <input class="form-input" id="tf_price" type="number" min="0" placeholder="1500000">
+            <input class="form-input" id="tf_price" type="number" min="0" placeholder="0" oninput="updatePriceSummary()">
           </div>
           <div class="form-group">
-            <label class="form-label">% Giá trẻ em</label>
-            <input class="form-input" id="tf_child_pct" type="number" min="0" max="100" value="70">
+            <label class="form-label">Giá trẻ em (% người lớn)</label>
+            <input class="form-input" id="tf_child_pct" type="number" min="0" max="100" value="70" oninput="updatePriceSummary()">
           </div>
-          <div class="form-group full">
-            <label class="form-label">Bao gồm trong tour</label>
-            <div style="display:flex;gap:.65rem;flex-wrap:wrap;margin-top:.25rem">
-              <label style="display:flex;align-items:center;gap:.35rem;font-size:.82rem;cursor:pointer"><input type="checkbox" id="inc_flights" style="accent-color:var(--blue)"> ✈️ Vé máy bay</label>
-              <label style="display:flex;align-items:center;gap:.35rem;font-size:.82rem;cursor:pointer"><input type="checkbox" id="inc_hotel" checked style="accent-color:var(--blue)"> 🏨 Khách sạn</label>
-              <label style="display:flex;align-items:center;gap:.35rem;font-size:.82rem;cursor:pointer"><input type="checkbox" id="inc_guide" checked style="accent-color:var(--blue)"> 🧑‍💼 HDV</label>
-              <label style="display:flex;align-items:center;gap:.35rem;font-size:.82rem;cursor:pointer"><input type="checkbox" id="inc_transfer" checked style="accent-color:var(--blue)"> 🚌 Xe đưa đón</label>
-              <label style="display:flex;align-items:center;gap:.35rem;font-size:.82rem;cursor:pointer"><input type="checkbox" id="inc_meals" checked style="accent-color:var(--blue)"> 🍽️ Ăn uống</label>
-              <label style="display:flex;align-items:center;gap:.35rem;font-size:.82rem;cursor:pointer"><input type="checkbox" id="inc_insurance" style="accent-color:var(--blue)"> 🛡️ Bảo hiểm</label>
-              <label style="display:flex;align-items:center;gap:.35rem;font-size:.82rem;cursor:pointer"><input type="checkbox" id="inc_entrance" style="accent-color:var(--blue)"> 🎟️ Vé tham quan</label>
-            </div>
+          <div class="form-group">
+            <label class="form-label">Phụ thu phòng đơn</label>
+            <input class="form-input" id="tf_single_sup" type="number" min="0" placeholder="0" oninput="updatePriceSummary()">
           </div>
         </div>
-        <div style="background:var(--s3);border:1px solid var(--border);border-radius:6px;padding:.85rem;margin-bottom:.85rem">
-          <div style="font-family:var(--mono);font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.5rem">Thêm lịch khởi hành</div>
-          <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
-            <input class="form-input" id="sched_date" type="date" style="flex:1;min-width:140px">
-            <input class="form-input" id="sched_slots" type="number" value="20" style="width:80px" placeholder="Chỗ">
-            <button class="btn btn-green" onclick="addSchedule()">+ Thêm</button>
-          </div>
-          <div id="scheduleList" style="margin-top:.65rem;display:flex;flex-direction:column;gap:.3rem"></div>
-        </div>
-      </div>
-
-      <!-- GALLERY TAB -->
-      <div class="modal-panel" id="mpanel-gallery">
-        <div class="form-group" style="margin-bottom:.85rem">
-          <label class="form-label">Ảnh bìa (Cover image URL)</label>
-          <div class="img-url-input">
-            <input class="form-input" id="tf_cover" placeholder="https://images.unsplash.com/...">
-            <button class="btn btn-default" onclick="previewCover()">👁 Xem</button>
-          </div>
-          <div id="coverPreview" style="margin-top:.5rem;display:none">
-            <img id="coverImg" style="width:100%;max-height:200px;object-fit:cover;border-radius:5px;border:1px solid var(--border)" src="" alt="">
-          </div>
-        </div>
+        <div id="priceSummary" style="background:var(--s3);border:1px solid var(--border);border-radius:5px;padding:.65rem .85rem;font-size:.78rem;display:flex;gap:1.5rem;flex-wrap:wrap"></div>
         <div class="form-group">
-          <label class="form-label">Gallery ảnh (tối đa 10 ảnh) — nhập URL từng ảnh</label>
-          <div id="galleryInputs" style="display:flex;flex-direction:column;gap:.4rem">
-            <div class="img-url-input">
-              <input class="form-input gallery-url" placeholder="URL ảnh 1...">
-              <button class="btn btn-default" onclick="addGalleryInput()">+</button>
-            </div>
+          <label class="form-label">Bao gồm trong tour</label>
+          <div class="check-group" id="includesGroup">
+            ${[
+              ['flights','✈️ Vé máy bay'],['hotel','🏨 Khách sạn'],['guide','🧑‍💼 HDV'],
+              ['transfer','🚌 Xe đưa đón'],['meals','🍽️ Ăn uống'],['insurance','🛡️ Bảo hiểm'],
+              ['entrance','🎟️ Vé tham quan'],['boat','⛵ Tàu thuyền'],['activity','🏄 Hoạt động'],
+              ['photo','📸 Ảnh chuyên nghiệp'],
+            ].map(([k,v])=>`<label class="check-tag green" data-key="${k}"><input type="checkbox" value="${k}" style="display:none">${v}</label>`).join('')}
           </div>
-          <div id="galleryPreview" class="img-preview-grid" style="margin-top:.75rem"></div>
-          <div style="margin-top:.5rem;font-size:.72rem;color:var(--text3)">💡 Gợi ý: dùng Unsplash (<code>unsplash.com/photos/[id]</code>) hoặc upload lên Cloudinary rồi dán URL vào đây</div>
         </div>
-      </div>
-
-      <!-- CONTENT TAB -->
-      <div class="modal-panel" id="mpanel-content">
-        <div class="form-group" style="margin-bottom:.85rem">
-          <label class="form-label">Mô tả ngắn</label>
-          <textarea class="form-textarea" id="tf_desc" placeholder="Mô tả hấp dẫn về tour, điểm nổi bật, phù hợp với ai..." style="min-height:80px"></textarea>
-        </div>
-        <div class="form-group" style="margin-bottom:.85rem">
-          <label class="form-label">Lịch trình chi tiết (mỗi ngày một dòng, format: Ngày 1: Nội dung)</label>
-          <textarea class="form-textarea" id="tf_itinerary" placeholder="Ngày 1: Đón khách tại sân bay – Check-in khách sạn – Tham quan phố cổ&#10;Ngày 2: Làng gốm Thanh Hà – Rừng dừa Bảy Mẫu – Ẩm thực Hội An&#10;Ngày 3: Tự do mua sắm – Tiễn khách sân bay" style="min-height:150px"></textarea>
-          <div style="margin-top:.35rem;font-size:.72rem;color:var(--text3)">Format: <code>Ngày 1: Tiêu đề – Hoạt động 1 – Hoạt động 2</code></div>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Tags (phân cách bằng dấu phẩy)</label>
-          <input class="form-input" id="tf_tags" placeholder="biển, gia đình, văn hóa, ẩm thực, trekking...">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Chính sách hoàn hủy</label>
+            <select class="form-select" id="tf_cancel_policy">
+              <option value="flexible">🟢 Linh hoạt (hoàn 100% nếu hủy 24h trước)</option>
+              <option value="moderate" selected>🟡 Trung bình (hoàn 100% nếu hủy 7 ngày)</option>
+              <option value="strict">🔴 Nghiêm ngặt (không hoàn tiền)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Đặt cọc tối thiểu (%)</label>
+            <input class="form-input" id="tf_deposit_pct" type="number" min="0" max="100" value="30">
+          </div>
         </div>
       </div>
     </div>
-    <div class="modal-footer">
-      <div id="tourModalWarn" style="font-size:.75rem;color:var(--amber);flex:1"></div>
-      <button class="btn btn-green" onclick="saveTour()">💾 Lưu tour</button>
-      <button class="btn btn-default" onclick="closeTourModal()">Hủy</button>
+
+    <!-- MEDIA -->
+    <div class="editor-section">
+      <div class="es-header">🖼 Ảnh & Media</div>
+      <div class="es-body">
+        <div class="form-group">
+          <label class="form-label">Ảnh bìa (Cover) *</label>
+          <div style="display:flex;gap:.5rem">
+            <input class="form-input" id="tf_cover" placeholder="URL ảnh bìa..." oninput="previewCover()">
+            <button class="btn btn-default" onclick="previewCover()">👁 Preview</button>
+          </div>
+          <div id="coverPreview" style="margin-top:.4rem;display:none"><img id="coverImg" style="width:100%;max-height:160px;object-fit:cover;border-radius:4px;border:1px solid var(--border)" src="" alt=""></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Gallery ảnh (tối đa 8 ảnh)</label>
+          <div style="display:flex;gap:.5rem;margin-bottom:.4rem">
+            <input class="form-input" id="galleryUrlInput" placeholder="Dán URL ảnh vào đây...">
+            <button class="btn btn-green" onclick="addGalleryUrl()">+ Thêm</button>
+          </div>
+          <div class="img-grid" id="galleryGrid">
+            <div class="img-item add-btn" onclick="document.getElementById('galleryUrlInput').focus()">+</div>
+          </div>
+          <div style="font-size:.68rem;color:var(--text3);margin-top:.3rem">💡 Upload ảnh thật lên Cloudinary.com rồi dán URL vào đây. Cloudinary free: 25GB.</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Video YouTube (URL, tùy chọn)</label>
+          <input class="form-input" id="tf_video" placeholder="https://youtube.com/watch?v=...">
+        </div>
+      </div>
     </div>
+
+    <!-- CONTENT -->
+    <div class="editor-section">
+      <div class="es-header">📝 Nội dung & SEO</div>
+      <div class="es-body">
+        <div class="form-group">
+          <label class="form-label">Điểm nổi bật (Highlights — mỗi dòng 1 điểm)</label>
+          <textarea class="form-textarea" id="tf_highlights" style="min-height:90px" placeholder="Khám phá phố cổ Hội An lung linh ánh đèn&#10;Thăm thánh địa Mỹ Sơn huyền bí&#10;Trải nghiệm làm đèn lồng truyền thống&#10;Thưởng thức ẩm thực địa phương cùng bếp trưởng người bản địa"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Mô tả chi tiết</label>
+          <textarea class="form-textarea" id="tf_desc" style="min-height:100px" placeholder="Mô tả hấp dẫn về tour..."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Lịch trình (mỗi ngày một dòng: "Ngày 1: Tiêu đề – HĐ1 – HĐ2")</label>
+          <textarea class="form-textarea" id="tf_itinerary" style="min-height:140px" placeholder="Ngày 1: Đón sân bay Đà Nẵng – Tham quan Hội An – Check-in khách sạn&#10;Ngày 2: Làng gốm Thanh Hà – Thánh địa Mỹ Sơn – Phố đêm Hội An&#10;Ngày 3: Tự do mua sắm – Tiễn sân bay"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Lưu ý quan trọng cho khách</label>
+          <textarea class="form-textarea" id="tf_notes" style="min-height:72px" placeholder="Mang theo CCCD bản gốc&#10;Mặc đồ thoải mái, đi giày bằng&#10;Trẻ em dưới 5 tuổi miễn phí (không có suất ăn)"></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Tags SEO</label>
+            <input class="form-input" id="tf_tags" placeholder="hội an, phố cổ, văn hóa, ẩm thực...">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Meta description (SEO)</label>
+            <input class="form-input" id="tf_meta_desc" placeholder="Mô tả ngắn hiển thị trên Google (120-160 ký tự)">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SMART VALIDATION -->
+    <div class="val-box" id="valBox">
+      <div class="val-title">🛡 Kiểm tra thông minh</div>
+      <div id="valItems"><div class="val-item"><span>⚪</span><span>Điền thông tin để kiểm tra tự động...</span></div></div>
+    </div>
+
+    <input type="hidden" id="tf_edit_id">
+    <div style="height:2rem"></div>
   </div>
 </div>
 
-<!-- MODAL BLOG -->
-<div class="modal-bg" id="blogModal">
-  <div class="modal">
-    <div class="modal-header">
-      <div class="modal-title" id="blogModalTitle">✏️ Bài viết mới</div>
-      <button class="modal-close" onclick="closeBlogModal()">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="form-group" style="margin-bottom:.85rem">
-        <label class="form-label">Tiêu đề bài viết *</label>
-        <input class="form-input" id="bf_title" placeholder="VD: Top 10 điểm đến không thể bỏ qua ở Hội An">
-      </div>
-      <div class="form-grid" style="margin-bottom:.85rem">
-        <div class="form-group">
-          <label class="form-label">Danh mục</label>
-          <select class="form-select" id="bf_cat">
-            <option value="tips">Mẹo du lịch</option>
-            <option value="destination">Điểm đến</option>
-            <option value="food">Ẩm thực</option>
-            <option value="culture">Văn hóa</option>
-            <option value="news">Tin tức</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Trạng thái</label>
-          <select class="form-select" id="bf_status">
-            <option value="published">Đã đăng</option>
-            <option value="draft">Nháp</option>
-          </select>
-        </div>
-        <div class="form-group full">
-          <label class="form-label">Ảnh thumbnail (URL)</label>
-          <input class="form-input" id="bf_thumb" placeholder="https://...">
-        </div>
-        <div class="form-group full">
-          <label class="form-label">Tóm tắt</label>
-          <textarea class="form-textarea" id="bf_excerpt" placeholder="Mô tả ngắn hiển thị ở trang danh sách..." style="min-height:72px"></textarea>
-        </div>
-        <div class="form-group full">
-          <label class="form-label">Nội dung (Markdown hoặc HTML)</label>
-          <textarea class="form-textarea" id="bf_content" placeholder="Viết nội dung bài viết ở đây..." style="min-height:200px"></textarea>
-        </div>
-        <div class="form-group">
-          <label class="form-label">Tags</label>
-          <input class="form-input" id="bf_tags" placeholder="hội an, du lịch, ẩm thực...">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Tour liên quan (slug)</label>
-          <input class="form-input" id="bf_tour" placeholder="slug-cua-tour...">
-        </div>
-      </div>
-    </div>
-    <div class="modal-footer">
+<!-- ═══ BLOG ═══ -->
+<div class="page" id="page-blog">
+  <div class="toolbar">
+    <div class="toolbar-title">📝 Blog & Tin tức</div>
+    <button class="btn btn-primary" onclick="nav('new_blog',document.querySelector('[onclick*=new_blog]'))">+ Bài viết mới</button>
+  </div>
+  <div class="blog-grid" id="blogGrid">
+    <div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">📝</div><div style="font-weight:600;margin-bottom:.3rem">Chưa có bài viết</div><div style="font-size:.82rem">Viết blog để tăng SEO và thu hút khách hàng</div></div>
+  </div>
+</div>
+
+<!-- ═══ NEW BLOG ═══ -->
+<div class="page" id="page-new_blog">
+  <div class="toolbar">
+    <div class="toolbar-title" id="blogEditorTitle">📝 Bài viết mới</div>
+    <div style="margin-left:auto;display:flex;gap:.5rem">
+      <button class="btn btn-default" onclick="nav('blog',document.querySelector('[onclick*=\'blog\']'))">← Danh sách</button>
       <button class="btn btn-green" onclick="saveBlog()">💾 Lưu bài viết</button>
-      <button class="btn btn-default" onclick="closeBlogModal()">Hủy</button>
     </div>
   </div>
-</div>
-
-<!-- MODAL BANNER -->
-<div class="modal-bg" id="bannerModal">
-  <div class="modal" style="max-width:560px">
-    <div class="modal-header">
-      <div class="modal-title" id="bannerModalTitle">🎯 Tạo banner</div>
-      <button class="modal-close" onclick="closeBannerModal()">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="form-group" style="margin-bottom:.75rem">
-        <label class="form-label">Tiêu đề banner *</label>
-        <input class="form-input" id="bnf_title" placeholder="VD: Khuyến mãi hè 2026 — Giảm 20%" oninput="previewBanner()">
-      </div>
-      <div class="form-group" style="margin-bottom:.75rem">
-        <label class="form-label">Mô tả phụ</label>
-        <input class="form-input" id="bnf_sub" placeholder="Đặt tour trước 30/6 nhận ưu đãi" oninput="previewBanner()">
-      </div>
-      <div class="form-grid" style="margin-bottom:.75rem">
-        <div class="form-group">
-          <label class="form-label">Màu nền</label>
-          <input class="form-input" id="bnf_color" type="color" value="#c5372b" style="height:40px;padding:.25rem">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Loại</label>
-          <select class="form-select" id="bnf_type">
-            <option value="promo">Khuyến mãi</option>
-            <option value="new">Tour mới</option>
-            <option value="seasonal">Theo mùa</option>
-            <option value="featured">Nổi bật</option>
-          </select>
-        </div>
-        <div class="form-group full">
-          <label class="form-label">Ảnh nền (URL, tùy chọn)</label>
-          <input class="form-input" id="bnf_img" placeholder="https://..." oninput="previewBanner()">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Nút CTA</label>
-          <input class="form-input" id="bnf_btn" placeholder="Xem ngay" value="Xem ngay">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Link CTA</label>
-          <input class="form-input" id="bnf_link" placeholder="#tours">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Hiển thị từ</label>
-          <input class="form-input" id="bnf_from" type="date">
-        </div>
-        <div class="form-group">
-          <label class="form-label">Hiển thị đến</label>
-          <input class="form-input" id="bnf_to" type="date">
-        </div>
-      </div>
-      <div class="banner-preview" id="bannerPreview">
-        <img id="bannerPreviewImg" class="banner-preview-img" src="" alt="" style="display:none">
-        <div class="banner-preview-content">
-          <div style="font-family:var(--mono);font-size:.6rem;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.3rem">Preview</div>
-          <div id="bnp_title" style="font-size:1.1rem;font-weight:700;color:#fff;margin-bottom:.2rem">Tiêu đề banner</div>
-          <div id="bnp_sub" style="font-size:.8rem;color:rgba(255,255,255,.7)">Mô tả phụ</div>
-        </div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-green" onclick="saveBanner()">💾 Lưu banner</button>
-      <button class="btn btn-default" onclick="closeBannerModal()">Hủy</button>
-    </div>
-  </div>
-</div>
-
-<!-- TOPBAR -->
-<header class="topbar">
-  <div class="tb-logo">Baggio<span>.</span>CMS</div>
-  <div style="font-size:.75rem;color:var(--text3)">/ Quản lý nội dung</div>
-  <div class="tb-right">
-    <a href="baggio-admin.html" class="btn btn-default" style="text-decoration:none;font-size:.6rem">← Admin</a>
-    <a href="index.html" class="btn btn-default" target="_blank" style="text-decoration:none;font-size:.6rem">🌐 Xem trang</a>
-  </div>
-</header>
-
-<!-- SIDEBAR -->
-<nav class="sidebar">
-  <div class="sb-section">Nội dung</div>
-  <div class="sb-item active" onclick="nav('tours',this)"><span>🗺️</span> Quản lý Tour<span class="sb-count" id="sbTours">0</span></div>
-  <div class="sb-item" onclick="nav('blog',this)"><span>📝</span> Blog / Tin tức<span class="sb-count" id="sbBlogs">0</span></div>
-  <div class="sb-item" onclick="nav('banners',this)"><span>🎯</span> Banner & Promo<span class="sb-count" id="sbBanners">0</span></div>
-  <div class="sb-section">Media</div>
-  <div class="sb-item" onclick="nav('gallery',this)"><span>🖼</span> Gallery ảnh</div>
-  <div class="sb-section">Công cụ</div>
-  <div class="sb-item" onclick="nav('validate',this)"><span>🛡</span> Kiểm tra nội dung</div>
-</nav>
-
-<!-- MAIN -->
-<main class="main">
-
-  <!-- ═══ TOURS ═══ -->
-  <div class="page active" id="page-tours">
-    <div class="stat-row">
-      <div class="stat g"><div class="stat-label">Tổng tour</div><div class="stat-val" id="stTotal">—</div><div class="stat-sub">Trong DB</div></div>
-      <div class="stat b"><div class="stat-label">Đang bán</div><div class="stat-val" id="stActive">—</div></div>
-      <div class="stat a"><div class="stat-label">Nháp</div><div class="stat-val" id="stDraft">—</div></div>
-      <div class="stat p"><div class="stat-label">Tỉnh thành</div><div class="stat-val" id="stDest">63</div></div>
-    </div>
-    <div class="card">
-      <div class="card-header">
-        <div class="card-title">🗺️ Danh sách tour</div>
-        <div class="card-actions">
-          <input style="background:var(--s1);border:1px solid var(--border);color:var(--text);font-family:var(--font);font-size:.78rem;padding:.4rem .75rem;border-radius:5px;outline:none;width:200px" placeholder="🔍 Tìm tour..." id="tourSearch" oninput="searchTours(this.value)">
-          <select style="background:var(--s1);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:.65rem;padding:.4rem .5rem;border-radius:5px;outline:none;cursor:pointer" id="tourStatusFilter" onchange="loadTours()">
-            <option value="">Tất cả</option>
-            <option value="ACTIVE">Đang bán</option>
-            <option value="DRAFT">Nháp</option>
-            <option value="INACTIVE">Tạm dừng</option>
-          </select>
-          <button class="btn btn-primary" onclick="openTourModal()">+ Tour mới</button>
-        </div>
-      </div>
-      <table>
-        <thead><tr><th>Tên tour</th><th>Điểm đến</th><th>Vùng</th><th>Ngày</th><th>Giá</th><th>Trạng thái</th><th>Ảnh</th><th>Thao tác</th></tr></thead>
-        <tbody id="toursTbl"><tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--text3);font-family:var(--mono)">⏳ Đang tải...</td></tr></tbody>
-      </table>
-      <div id="tourPagination" style="padding:.75rem 1rem;border-top:1px solid var(--border);display:flex;gap:.5rem;align-items:center"></div>
-    </div>
-  </div>
-
-  <!-- ═══ BLOG ═══ -->
-  <div class="page" id="page-blog">
-    <div class="card">
-      <div class="card-header">
-        <div class="card-title">📝 Bài viết & Blog</div>
-        <div class="card-actions">
-          <button class="btn btn-primary" onclick="openBlogModal()">+ Bài viết mới</button>
-        </div>
-      </div>
-      <div class="card-body" id="blogList">
-        <div class="empty-state"><div class="empty-icon">📝</div><div style="font-weight:600;margin-bottom:.3rem">Chưa có bài viết</div><div style="font-size:.82rem;color:var(--text2)">Tạo bài blog để tăng SEO và thu hút khách hàng</div><button class="btn btn-primary" style="margin-top:1rem" onclick="openBlogModal()">+ Viết bài đầu tiên</button></div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ═══ BANNERS ═══ -->
-  <div class="page" id="page-banners">
-    <div class="card">
-      <div class="card-header">
-        <div class="card-title">🎯 Banner & Khuyến mãi</div>
-        <div class="card-actions">
-          <button class="btn btn-primary" onclick="openBannerModal()">+ Banner mới</button>
-        </div>
-      </div>
-      <div class="card-body">
-        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:.85rem" id="bannerGrid">
-          <div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">🎯</div><div style="font-weight:600;margin-bottom:.3rem">Chưa có banner</div><div style="font-size:.82rem;color:var(--text2)">Tạo banner khuyến mãi để hiển thị trên trang chủ</div></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ═══ GALLERY ═══ -->
-  <div class="page" id="page-gallery">
-    <div class="card">
-      <div class="card-header">
-        <div class="card-title">🖼 Gallery ảnh tour</div>
-        <div class="card-actions">
-          <button class="btn btn-primary" onclick="toast('Tính năng upload ảnh thật — cần Cloudinary. Đang phát triển!','warn')">📤 Upload ảnh</button>
-        </div>
-      </div>
-      <div class="card-body">
-        <div style="background:var(--s3);border:1px solid var(--border);border-radius:6px;padding:1.25rem;margin-bottom:1rem">
-          <div style="font-weight:600;font-size:.85rem;margin-bottom:.5rem">🔗 Cách thêm ảnh thật vào tour</div>
-          <div style="display:flex;flex-direction:column;gap:.5rem;font-size:.82rem;color:var(--text2)">
-            <div style="display:flex;gap:.65rem;align-items:flex-start"><span style="color:var(--blue);font-weight:600;flex-shrink:0">1.</span>Upload ảnh lên <strong style="color:var(--text)">Cloudinary</strong> (miễn phí, 25GB) hoặc <strong style="color:var(--text)">Imgur</strong></div>
-            <div style="display:flex;gap:.65rem;align-items:flex-start"><span style="color:var(--blue);font-weight:600;flex-shrink:0">2.</span>Copy URL ảnh từ Cloudinary → Dán vào gallery trong form tour</div>
-            <div style="display:flex;gap:.65rem;align-items:flex-start"><span style="color:var(--blue);font-weight:600;flex-shrink:0">3.</span>Ảnh tự động xuất hiện trong trang chi tiết tour</div>
+  <div class="editor-pane" style="flex:1">
+    <div class="editor-section">
+      <div class="es-header">📋 Thông tin bài viết</div>
+      <div class="es-body">
+        <div class="form-group"><label class="form-label">Tiêu đề *</label><input class="form-input" id="bf_title" placeholder="VD: Top 10 điểm check-in đẹp nhất Hội An 2026"></div>
+        <div class="form-row-3">
+          <div class="form-group">
+            <label class="form-label">Danh mục</label>
+            <select class="form-select" id="bf_cat">
+              <option value="tips">✈️ Mẹo du lịch</option>
+              <option value="destination">📍 Điểm đến</option>
+              <option value="food">🍜 Ẩm thực</option>
+              <option value="culture">🏛 Văn hóa</option>
+              <option value="experience">🎯 Trải nghiệm</option>
+              <option value="news">📰 Tin tức</option>
+              <option value="promotion">🎁 Khuyến mãi</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Trạng thái</label>
+            <select class="form-select" id="bf_status"><option value="draft">📝 Nháp</option><option value="published">🟢 Đã đăng</option></select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tour liên quan (slug)</label>
+            <input class="form-input" id="bf_tour_slug" placeholder="slug-cua-tour">
           </div>
         </div>
-        <div id="galleryGrid" style="display:grid;grid-template-columns:repeat(5,1fr);gap:.5rem">
-          <div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">🖼</div><div>Chưa có ảnh gallery</div></div>
+        <div class="form-group"><label class="form-label">Ảnh thumbnail</label><input class="form-input" id="bf_thumb" placeholder="URL ảnh..."></div>
+        <div class="form-group"><label class="form-label">Tóm tắt (hiển thị ở danh sách)</label><textarea class="form-textarea" id="bf_excerpt" style="min-height:72px" placeholder="Mô tả ngắn hấp dẫn, 1-2 câu..."></textarea></div>
+        <div class="form-group"><label class="form-label">Nội dung đầy đủ</label><textarea class="form-textarea" id="bf_content" style="min-height:250px" placeholder="Viết nội dung bài viết... (hỗ trợ HTML cơ bản)"></textarea></div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Tags</label><input class="form-input" id="bf_tags" placeholder="hội an, check-in, du lịch 2026..."></div>
+          <div class="form-group"><label class="form-label">Author</label><input class="form-input" id="bf_author" placeholder="Baggio Travel" value="Baggio Travel"></div>
         </div>
       </div>
     </div>
+    <input type="hidden" id="bf_edit_id">
+    <div style="height:2rem"></div>
   </div>
+</div>
 
-  <!-- ═══ VALIDATE ═══ -->
-  <div class="page" id="page-validate">
-    <div class="card">
-      <div class="card-header"><div class="card-title">🛡 Kiểm tra tính nhất quán nội dung</div></div>
-      <div class="card-body">
-        <div style="margin-bottom:1.25rem;padding:.85rem;background:var(--s3);border-radius:6px;font-size:.82rem;color:var(--text2);line-height:1.7">
-          Công cụ này tự động phát hiện các lỗi phổ biến khi tạo tour: <strong style="color:var(--text)">tên điểm đến không khớp với vùng miền</strong>, 
-          từ khóa địa điểm bị nhầm lẫn (VD: tour Yên Bái nhưng nội dung có "Mê Kông", "Cà Mau"), 
-          tour thiếu ảnh bìa, giá = 0, hoặc lịch trình trống.
+<!-- ═══ BANNERS ═══ -->
+<div class="page" id="page-banners">
+  <div class="toolbar">
+    <div class="toolbar-title">🎯 Banner & Khuyến mãi</div>
+    <button class="btn btn-primary" onclick="openBannerEditor()">+ Banner mới</button>
+  </div>
+  <div style="padding:1.25rem">
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:.85rem;margin-bottom:1rem" id="bannerGrid">
+      <div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">🎯</div><div>Chưa có banner</div></div>
+    </div>
+    <div class="editor-section" id="bannerEditor" style="display:none">
+      <div class="es-header">✏️ Tạo/sửa banner</div>
+      <div class="es-body">
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Tiêu đề *</label><input class="form-input" id="bnf_title" oninput="previewBanner()"></div>
+          <div class="form-group"><label class="form-label">Mô tả phụ</label><input class="form-input" id="bnf_sub" oninput="previewBanner()"></div>
         </div>
-        <button class="btn btn-primary" onclick="runValidation()" style="margin-bottom:1rem">🔍 Chạy kiểm tra toàn bộ</button>
-        <div id="validateResults">
-          <div class="empty-state"><div class="empty-icon">🛡</div><div>Nhấn "Chạy kiểm tra" để bắt đầu</div></div>
+        <div class="form-row-4">
+          <div class="form-group"><label class="form-label">Loại</label><select class="form-select" id="bnf_type"><option value="promo">Khuyến mãi</option><option value="new">Tour mới</option><option value="seasonal">Theo mùa</option><option value="featured">Nổi bật</option></select></div>
+          <div class="form-group"><label class="form-label">Màu nền</label><input class="form-input" id="bnf_color" type="color" value="#c5372b" style="height:40px;padding:.2rem" oninput="previewBanner()"></div>
+          <div class="form-group"><label class="form-label">Nút CTA</label><input class="form-input" id="bnf_btn" value="Xem ngay"></div>
+          <div class="form-group"><label class="form-label">Link CTA</label><input class="form-input" id="bnf_link" value="#tours"></div>
         </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">Ảnh nền (URL)</label><input class="form-input" id="bnf_img" oninput="previewBanner()"></div>
+          <div class="form-group"><label class="form-label">Hiệu lực: từ → đến</label><div style="display:flex;gap:.4rem"><input class="form-input" id="bnf_from" type="date" style="flex:1"><input class="form-input" id="bnf_to" type="date" style="flex:1"></div></div>
+        </div>
+        <div id="bannerPreviewBox" style="border-radius:6px;padding:1rem;min-height:80px;position:relative;overflow:hidden;background:#c5372b">
+          <img id="bannerPreviewImg" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.3;display:none">
+          <div style="position:relative;z-index:1"><div id="bnp_title" style="font-weight:700;font-size:1rem;color:#fff">Tiêu đề banner</div><div id="bnp_sub" style="font-size:.8rem;color:rgba(255,255,255,.7);margin-top:.15rem"></div></div>
+        </div>
+        <div style="display:flex;gap:.5rem;margin-top:.5rem">
+          <button class="btn btn-green" onclick="saveBanner()">💾 Lưu banner</button>
+          <button class="btn btn-default" onclick="document.getElementById('bannerEditor').style.display='none'">Hủy</button>
+        </div>
+        <input type="hidden" id="bnf_edit_id">
       </div>
     </div>
   </div>
+</div>
+
+<!-- ═══ FEATURED ═══ -->
+<div class="page" id="page-featured">
+  <div class="toolbar"><div class="toolbar-title">⭐ Tour nổi bật trang chủ</div></div>
+  <div style="padding:1.25rem">
+    <div style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:1rem;margin-bottom:1rem;font-size:.82rem;color:var(--text2);line-height:1.7">
+      Chọn tối đa <strong style="color:var(--text)">6 tour nổi bật</strong> để hiển thị ưu tiên trên trang chủ và trong kết quả tìm kiếm. Tour nổi bật được đánh dấu ⭐ và hiển thị đầu tiên.
+    </div>
+    <div id="featuredTourList" style="display:flex;flex-direction:column;gap:.4rem">
+      <div style="text-align:center;padding:2rem;color:var(--text3);font-family:var(--mono)">⏳ Đang tải...</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ VALIDATE ═══ -->
+<div class="page" id="page-validate">
+  <div class="toolbar">
+    <div class="toolbar-title">🛡 Kiểm tra nội dung toàn bộ</div>
+    <button class="btn btn-primary" onclick="runFullValidation()">🔍 Chạy kiểm tra</button>
+  </div>
+  <div style="padding:1.25rem;flex:1;overflow-y:auto">
+    <div style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:1rem;margin-bottom:1rem;font-size:.82rem;color:var(--text2);line-height:1.7">
+      Hệ thống sẽ kiểm tra: <strong style="color:var(--text)">vùng miền sai · từ khóa địa điểm nhầm · thiếu ảnh bìa · giá = 0 · tour thiếu lịch trình · tên quá ngắn</strong>.<br>
+      <em style="color:var(--teal)">Học từ Tatinta: mỗi tour phải có đủ thông tin để khách đưa ra quyết định đặt tour mà không cần hỏi thêm.</em>
+    </div>
+    <div id="validateResults"><div class="empty-state"><div class="empty-icon">🛡</div><div>Nhấn "Chạy kiểm tra" để bắt đầu</div></div></div>
+  </div>
+</div>
 
 </main>
 
 <script>
+// ════════════════════════════════════════════
+// CORE
+// ════════════════════════════════════════════
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON)
 const fmt = n => Number(n||0).toLocaleString('vi-VN')
-const fmtD = d => d ? new Date(d).toLocaleDateString('vi-VN') : '—'
+const fmtD = d => d ? new Date(d).toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit',year:'numeric'}) : '—'
+const slug_vi = s => s.toLowerCase()
+  .replace(/[àáâãạảấầẩẫậắằẳẵặ]/g,'a').replace(/[èéêẹẻẽếềểễệ]/g,'e')
+  .replace(/[ìíîịỉĩ]/g,'i').replace(/[òóôõọỏốồổỗộớờởỡợ]/g,'o')
+  .replace(/[ùúûụủũứừửữự]/g,'u').replace(/[ỳýỵỷỹ]/g,'y').replace(/đ/g,'d')
+  .replace(/[^a-z0-9\s]/g,'').replace(/\s+/g,'-').replace(/-+/g,'-').slice(0,70)
 
-// ── SMART VALIDATION DATA ─────────────────────
-const REGION_PROVINCES = {
-  north: ['Hà Nội','Hải Phòng','Hà Giang','Cao Bằng','Bắc Kạn','Lạng Sơn','Tuyên Quang','Lào Cai','Yên Bái','Thái Nguyên','Phú Thọ','Bắc Giang','Quảng Ninh','Vĩnh Phúc','Bắc Ninh','Hải Dương','Hưng Yên','Hà Nam','Nam Định','Thái Bình','Ninh Bình','Hòa Bình','Điện Biên','Lai Châu','Sơn La','Hạ Long','Sa Pa'],
-  central: ['Thanh Hóa','Nghệ An','Hà Tĩnh','Quảng Bình','Quảng Trị','Thừa Thiên Huế','Huế','Đà Nẵng','Quảng Nam','Hội An','Quảng Ngãi','Bình Định','Phú Yên','Khánh Hòa','Nha Trang','Ninh Thuận','Bình Thuận','Kon Tum','Gia Lai','Đắk Lắk','Đắk Nông','Lâm Đồng','Đà Lạt'],
-  south: ['Hồ Chí Minh','TP Hồ Chí Minh','Bà Rịa - Vũng Tàu','Vũng Tàu','Bình Dương','Bình Phước','Tây Ninh','Đồng Nai','Long An','Tiền Giang','Bến Tre','Trà Vinh','Vĩnh Long','Đồng Tháp','An Giang','Kiên Giang','Phú Quốc','Cần Thơ','Hậu Giang','Sóc Trăng','Bạc Liêu','Cà Mau','Mê Kông'],
-}
-const REGION_KEYWORDS = {
-  north: ['hà nội','hạ long','sapa','sa pa','lào cai','ninh bình','hà giang','cao bằng','điện biên','yên bái','sơn la'],
-  central: ['hội an','đà nẵng','huế','nha trang','đà lạt','mỹ sơn','phú yên','quy nhơn','đắk lắk'],
-  south: ['phú quốc','cần thơ','mê kông','cà mau','vũng tàu','bến tre','an giang','tiền giang','hồ chí minh','sài gòn'],
-}
-const ALL_PROVINCES = [...REGION_PROVINCES.north, ...REGION_PROVINCES.central, ...REGION_PROVINCES.south]
-
-let toursCache = []
-let blogsCache = JSON.parse(localStorage.getItem('baggio_blogs')||'[]')
-let bannersCache = JSON.parse(localStorage.getItem('baggio_banners')||'[]')
 let schedules = []
-let editTourId = null, editBlogId = null, editBannerId = null
-let tourPage = 0
-const TOUR_PER_PAGE = 20
-
-setInterval(()=>{}, 1000)
+let galleryUrls = []
+let currentEditTourId = null
+let blogsLS = () => JSON.parse(localStorage.getItem('baggio_blogs_v2')||'[]')
+let bannersLS = () => JSON.parse(localStorage.getItem('baggio_banners_v2')||'[]')
 
 function toast(msg,type='ok'){
   const w=document.getElementById('toastWrap'),t=document.createElement('div')
-  t.className='toast'
-  t.style.borderLeft=`3px solid ${type==='err'?'var(--red)':type==='warn'?'var(--amber)':'var(--green)'}`
-  t.textContent=msg;w.appendChild(t)
+  t.className='toast'; t.style.borderLeft=`3px solid ${type==='err'?'var(--red)':type==='warn'?'var(--amber)':'var(--green)'}`
+  t.textContent=msg; w.appendChild(t)
   setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity .3s';setTimeout(()=>t.remove(),300)},3500)
 }
 
@@ -611,456 +685,471 @@ function nav(page,el){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'))
   document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'))
   document.getElementById('page-'+page).classList.add('active')
-  if(el)el.classList.add('active')
-  const loaders={tours:loadTours,blog:renderBlogs,banners:renderBanners,gallery:loadGallery,validate:()=>{}}
-  if(loaders[page])loaders[page]()
+  if(el) el.classList.add('active')
+  document.getElementById('globalSaveBtn').style.display='none'
+  const loaders={tours:loadTourList,blog:renderBlogList,banners:renderBanners,featured:loadFeatured,validate:()=>{},new_tour:resetTourEditor,new_blog:resetBlogEditor}
+  if(loaders[page]) loaders[page]()
 }
 
-function switchModalTab(tab,btn){
-  document.querySelectorAll('.modal-panel').forEach(p=>p.classList.remove('active'))
-  document.querySelectorAll('.modal-tab').forEach(b=>b.classList.remove('active'))
-  document.getElementById('mpanel-'+tab).classList.add('active')
-  btn.classList.add('active')
-}
+function saveCurrent(){}
 
-// ── SMART VALIDATION ──────────────────────────
-function getProvinceRegion(dest){
-  for(const [region, provs] of Object.entries(REGION_PROVINCES)){
-    if(provs.some(p=>dest.toLowerCase().includes(p.toLowerCase())||p.toLowerCase().includes(dest.toLowerCase()))){
-      return region
-    }
+// ════════════════════════════════════════════
+// VALIDATION DATA
+// ════════════════════════════════════════════
+const REGION_PROV = {
+  north:['Hà Nội','Hải Phòng','Hà Giang','Cao Bằng','Bắc Kạn','Lạng Sơn','Tuyên Quang','Lào Cai','Yên Bái','Thái Nguyên','Phú Thọ','Bắc Giang','Quảng Ninh','Vĩnh Phúc','Bắc Ninh','Hải Dương','Hưng Yên','Hà Nam','Nam Định','Thái Bình','Ninh Bình','Hòa Bình','Điện Biên','Lai Châu','Sơn La','Hạ Long','Sa Pa'],
+  central:['Thanh Hóa','Nghệ An','Hà Tĩnh','Quảng Bình','Quảng Trị','Thừa Thiên Huế','Huế','Đà Nẵng','Quảng Nam','Hội An','Quảng Ngãi','Bình Định','Phú Yên','Khánh Hòa','Nha Trang','Ninh Thuận','Bình Thuận','Kon Tum','Gia Lai','Đắk Lắk','Đắk Nông','Lâm Đồng','Đà Lạt'],
+  south:['Hồ Chí Minh','TP Hồ Chí Minh','Bà Rịa - Vũng Tàu','Vũng Tàu','Bình Dương','Bình Phước','Tây Ninh','Đồng Nai','Long An','Tiền Giang','Bến Tre','Trà Vinh','Vĩnh Long','Đồng Tháp','An Giang','Kiên Giang','Phú Quốc','Cần Thơ','Hậu Giang','Sóc Trăng','Bạc Liêu','Cà Mau'],
+}
+const REGION_KW = {
+  north:['hà nội','hạ long','sa pa','sapa','lào cai','ninh bình','hà giang','cao bằng','điện biên','yên bái'],
+  central:['hội an','đà nẵng','huế','nha trang','đà lạt','mỹ sơn','phú yên','quy nhơn','đắk lắk','kon tum'],
+  south:['phú quốc','cần thơ','mê kông','cà mau','vũng tàu','bến tre','an giang','hồ chí minh','sài gòn','đồng tháp'],
+}
+const ALL_PROV = [...REGION_PROV.north,...REGION_PROV.central,...REGION_PROV.south]
+
+function getRegion(dest){
+  for(const [r,provs] of Object.entries(REGION_PROV)){
+    if(provs.some(p=>dest.toLowerCase().includes(p.toLowerCase())||p.toLowerCase().includes(dest.toLowerCase()))) return r
   }
   return null
 }
 
-function checkKeywordMismatch(dest, content, selectedRegion){
-  const issues = []
-  const contentLow = (content||'').toLowerCase()
-  const destRegion = getProvinceRegion(dest) || selectedRegion
-  if(!destRegion) return issues
-  // Check if content has keywords from OTHER regions
-  for(const [region, keywords] of Object.entries(REGION_KEYWORDS)){
-    if(region === destRegion) continue
-    const found = keywords.filter(kw => contentLow.includes(kw))
-    if(found.length){
-      const regionNames = {north:'Miền Bắc', central:'Miền Trung', south:'Miền Nam'}
-      issues.push({type:'warn', msg:`Nội dung có từ khóa "${found[0]}" thuộc ${regionNames[region]} nhưng tour được gán cho ${regionNames[destRegion]}. Kiểm tra lại!`})
-    }
+function checkKeywords(dest,content,region){
+  const issues=[], low=(content||'').toLowerCase(), destR=getRegion(dest)||region
+  if(!destR) return issues
+  const RN={north:'Miền Bắc',central:'Miền Trung',south:'Miền Nam'}
+  for(const [r,kws] of Object.entries(REGION_KW)){
+    if(r===destR) continue
+    const found=kws.filter(k=>low.includes(k))
+    if(found.length) issues.push(`⚠️ Từ khóa "${found[0]}" thuộc ${RN[r]} nhưng tour gán cho ${RN[destR]}`)
   }
   return issues
 }
 
-function validateDestination(dest){
-  const input = document.getElementById('tf_dest')
-  const hint = document.getElementById('tf_dest_hint')
-  if(!dest){input.className='form-input';hint.className='field-hint';return}
-  const matched = ALL_PROVINCES.find(p=>p.toLowerCase()===dest.toLowerCase())
-  const partial = ALL_PROVINCES.find(p=>p.toLowerCase().includes(dest.toLowerCase())||dest.toLowerCase().includes(p.toLowerCase()))
-  if(matched){
-    input.className='form-input ok';hint.className='field-hint ok show';hint.textContent='✓ Điểm đến hợp lệ — nằm trong danh sách 63 tỉnh thành'
-    // Auto suggest region
-    const region = getProvinceRegion(dest)
-    if(region){
-      const regionSel = document.getElementById('tf_region')
-      if(!regionSel.value) regionSel.value = region
-    }
-  } else if(partial){
-    input.className='form-input warn';hint.className='field-hint warn show';hint.textContent=`⚠ Có thể bạn muốn nhập "${partial}"?`
-  } else {
-    input.className='form-input warn';hint.className='field-hint warn show';hint.textContent='⚠ Điểm đến không có trong danh sách 63 tỉnh thành — kiểm tra lại chính tả'
-  }
-  validateRegionMatch()
-}
-
-function validateRegionMatch(){
-  const dest = document.getElementById('tf_dest').value
-  const region = document.getElementById('tf_region').value
-  const hint = document.getElementById('tf_region_hint')
-  if(!dest||!region){hint.className='field-hint';return}
-  const expectedRegion = getProvinceRegion(dest)
-  if(expectedRegion && expectedRegion !== region){
-    const regionNames = {north:'Miền Bắc', central:'Miền Trung', south:'Miền Nam'}
-    hint.className='field-hint err show'
-    hint.textContent=`❌ "${dest}" thuộc ${regionNames[expectedRegion]}, không phải ${regionNames[region]}. Chọn lại vùng miền!`
-    document.getElementById('tf_region').style.borderColor='var(--red)'
-  } else {
-    hint.className='field-hint ok show'
-    hint.textContent='✓ Vùng miền khớp với điểm đến'
-    document.getElementById('tf_region').style.borderColor='var(--green)'
-  }
-  updateValidationPanel()
-}
-
-function validateTourName(name){
-  const hint = document.getElementById('tf_name_hint')
-  const input = document.getElementById('tf_name')
-  if(!name){input.className='form-input';hint.className='field-hint';return}
-  if(name.length < 10){
-    input.className='form-input warn';hint.className='field-hint warn show';hint.textContent='⚠ Tên tour quá ngắn — nên trên 20 ký tự để SEO tốt hơn'
-  } else if(name.length > 120){
-    input.className='form-input warn';hint.className='field-hint warn show';hint.textContent='⚠ Tên tour quá dài — nên dưới 80 ký tự'
-  } else {
-    input.className='form-input ok';hint.className='field-hint ok show';hint.textContent=`✓ Tên tour hợp lệ (${name.length} ký tự)`
-  }
-  updateValidationPanel()
-}
-
-function updateValidationPanel(){
-  const name = document.getElementById('tf_name').value
-  const dest = document.getElementById('tf_dest').value
-  const region = document.getElementById('tf_region').value
-  const itinerary = document.getElementById('tf_itinerary')?.value||''
-  const price = document.getElementById('tf_price')?.value||''
-  const items = []
-
-  // Name check
-  if(!name) items.push({icon:'⚪',msg:'Chưa nhập tên tour'})
-  else if(name.length<10) items.push({icon:'⚠️',msg:`Tên quá ngắn (${name.length} ký tự)`})
-  else items.push({icon:'✅',msg:`Tên tour OK (${name.length} ký tự)`})
-
-  // Dest check
-  if(!dest) items.push({icon:'⚪',msg:'Chưa nhập điểm đến'})
-  else {
-    const matched = ALL_PROVINCES.find(p=>p.toLowerCase()===dest.toLowerCase())
-    items.push(matched
-      ? {icon:'✅',msg:`Điểm đến "${dest}" hợp lệ`}
-      : {icon:'⚠️',msg:`"${dest}" không khớp danh sách tỉnh thành`})
-  }
-
-  // Region match
-  if(dest&&region){
-    const exp = getProvinceRegion(dest)
-    if(exp&&exp!==region){
-      const rn={north:'Miền Bắc',central:'Miền Trung',south:'Miền Nam'}
-      items.push({icon:'❌',msg:`Vùng miền sai: "${dest}" thuộc ${rn[exp]}`})
-    } else if(exp) items.push({icon:'✅',msg:'Vùng miền khớp điểm đến'})
-  }
-
-  // Keyword mismatch
-  const mismatches = checkKeywordMismatch(dest, itinerary+' '+name, region)
-  mismatches.forEach(m=>items.push({icon:'⚠️',msg:m.msg}))
-
-  // Price check
-  if(!price||Number(price)===0) items.push({icon:'⚠️',msg:'Chưa nhập giá tour'})
-  else items.push({icon:'✅',msg:`Giá: ${fmt(price)}đ`})
-
-  const panel = document.getElementById('validationItems')
-  panel.innerHTML = items.map(it=>`
-    <div class="vp-item">
-      <span class="vp-icon">${it.icon}</span>
-      <span class="vp-text">${it.msg}</span>
-    </div>`).join('')
-
-  const hasError = items.some(i=>i.icon==='❌')
-  const hasWarn = items.some(i=>i.icon==='⚠️')
-  document.getElementById('tourModalWarn').textContent = hasError
-    ? '❌ Có lỗi cần sửa trước khi lưu'
-    : hasWarn ? '⚠️ Có cảnh báo — kiểm tra lại trước khi lưu' : ''
-}
-
-// ── LOAD TOURS ────────────────────────────────
-async function loadTours(){
-  const status = document.getElementById('tourStatusFilter').value
-  const search = document.getElementById('tourSearch').value.trim()
-  const from = tourPage*TOUR_PER_PAGE, to = from+TOUR_PER_PAGE-1
-  let q = sb.from('tours').select('id,name,slug,destination,region,duration_days,duration_nights,base_price,status,cover_image',{count:'exact'})
+// ════════════════════════════════════════════
+// TOUR LIST
+// ════════════════════════════════════════════
+async function loadTourList(){
+  const status=document.getElementById('tourListStatus')?.value||''
+  const region=document.getElementById('tourListRegion')?.value||''
+  const search=document.getElementById('tourListSearch')?.value?.trim()||''
+  let q=sb.from('tours').select('id,name,slug,destination,region,base_price,status,cover_image',{count:'exact'})
   if(status) q=q.eq('status',status)
+  if(region) q=q.eq('region',region)
   if(search) q=q.or(`name.ilike.%${search}%,destination.ilike.%${search}%`)
-  q=q.order('created_at',{ascending:false}).range(from,to)
-  const {data,count,error}=await q
-  if(error){toast('Lỗi tải tour','err');return}
-  toursCache=data||[]
-
-  // Stats
-  const {count:total}=await sb.from('tours').select('id',{count:'exact'})
-  const {count:active}=await sb.from('tours').select('id',{count:'exact'}).eq('status','ACTIVE')
-  document.getElementById('stTotal').textContent=total||0
-  document.getElementById('stActive').textContent=active||0
-  document.getElementById('sbTours').textContent=total||0
-
-  const REGION_LABELS={north:'Miền Bắc',central:'Miền Trung',south:'Miền Nam'}
-  document.getElementById('toursTbl').innerHTML=(data||[]).map(t=>`
-    <tr>
-      <td><div style="font-weight:500;max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${t.name}">${t.name}</div><div style="font-family:var(--mono);font-size:.6rem;color:var(--text3)">/${t.slug}</div></td>
-      <td style="font-size:.78rem;color:var(--text2)">${t.destination||'—'}</td>
-      <td style="font-size:.75rem;color:var(--text2)">${REGION_LABELS[t.region]||t.region||'—'}</td>
-      <td><span style="font-family:var(--mono);font-size:.72rem">${t.duration_days||1}N${t.duration_nights||0}Đ</span></td>
-      <td><span style="font-family:var(--mono);font-size:.72rem;color:var(--amber)">${fmt(t.base_price)}đ</span></td>
-      <td><span class="badge ${t.status==='ACTIVE'?'badge-active':'badge-draft'}">${t.status}</span></td>
-      <td>${t.cover_image?`<img src="${t.cover_image}" style="width:48px;height:32px;object-fit:cover;border-radius:3px;border:1px solid var(--border)" onerror="this.style.display='none'">`:'<span style="color:var(--red);font-size:.7rem">⚠ Chưa có</span>'}</td>
-      <td style="display:flex;gap:.3rem;flex-wrap:wrap">
-        <button class="btn btn-default" style="font-size:.58rem" onclick="editTour('${t.id}')">✏️ Sửa</button>
-        <button class="btn btn-danger" style="font-size:.58rem" onclick="deleteTour('${t.id}','${t.name.replace(/'/g,"\\'")}')">🗑</button>
-        <a href="baggio-tour-detail.html?slug=${t.slug}" target="_blank" class="btn btn-default" style="font-size:.58rem;text-decoration:none">🔗</a>
-      </td>
-    </tr>`).join('')||'<tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--text3)">Không tìm thấy tour</td></tr>'
-
-  // Pagination
-  const pages = Math.ceil((count||0)/TOUR_PER_PAGE)
-  const pag = document.getElementById('tourPagination')
-  if(pages<=1){pag.innerHTML='';return}
-  pag.innerHTML=`<span style="font-family:var(--mono);font-size:.65rem;color:var(--text3);margin-right:auto">Trang ${tourPage+1}/${pages} · ${count} tour</span>
-    <button class="btn btn-default" onclick="tourPage=${Math.max(0,tourPage-1)};loadTours()" ${tourPage===0?'disabled':''}>←</button>
-    <button class="btn btn-default" onclick="tourPage=${Math.min(pages-1,tourPage+1)};loadTours()" ${tourPage===pages-1?'disabled':''}>→</button>`
+  q=q.order('created_at',{ascending:false}).limit(50)
+  const {data,count}=await q
+  document.getElementById('sb_tours').textContent=count||0
+  const pane=document.getElementById('tourListPane')
+  if(!data?.length){pane.innerHTML='<div class="empty-state"><div>Không có tour</div></div>';return}
+  const BADGE={ACTIVE:'b-active',DRAFT:'b-draft',INACTIVE:'b-inactive'}
+  pane.innerHTML=data.map(t=>`
+    <div class="tour-list-item" onclick="openTourForEdit('${t.id}')">
+      <div style="display:flex;gap:.65rem;align-items:flex-start">
+        ${t.cover_image?`<img src="${t.cover_image}" class="tli-img" onerror="this.style.display='none'">`:'<div style="width:48px;height:36px;background:var(--s3);border-radius:3px;flex-shrink:0;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.75rem">📷</div>'}
+        <div style="flex:1;min-width:0">
+          <div class="tli-name" title="${t.name}">${t.name}</div>
+          <div class="tli-meta">
+            <span class="tli-dest">📍 ${t.destination||'—'}</span>
+            <span class="tli-price">${fmt(t.base_price)}đ</span>
+            <span class="badge ${BADGE[t.status]||'b-draft'}">${t.status}</span>
+          </div>
+        </div>
+      </div>
+    </div>`).join('')
 }
 
-let searchTimer
-function searchTours(q){ clearTimeout(searchTimer); searchTimer=setTimeout(()=>{tourPage=0;loadTours()},400) }
+let filterTimer
+function filterTourList(q){ clearTimeout(filterTimer); filterTimer=setTimeout(loadTourList,350) }
 
-// ── TOUR MODAL ────────────────────────────────
-function openTourModal(){
-  editTourId=null
-  document.getElementById('tourModalTitle').textContent='✏️ Thêm tour mới'
-  ;['tf_name','tf_dest','tf_cover','tf_desc','tf_itinerary','tf_tags'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''})
-  ;['tf_days','tf_nights','tf_pax'].forEach((id,i)=>{const el=document.getElementById(id);if(el)el.value=[3,2,20][i]})
-  document.getElementById('tf_region').value=''
+async function openTourForEdit(id){
+  // Highlight in list
+  document.querySelectorAll('.tour-list-item').forEach(el=>el.classList.remove('active'))
+  document.querySelector(`[onclick="openTourForEdit('${id}')"]`)?.classList.add('active')
+  // Load data and switch to editor
+  const {data:t}=await sb.from('tours').select('*').eq('id',id).single()
+  if(!t) return
+  // Switch to editor page WITHOUT resetting
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'))
+  document.getElementById('page-new_tour').classList.add('active')
+  populateTourEditor(t)
+}
+
+function resetTourEditor(){
+  currentEditTourId=null
+  document.getElementById('tourEditorTitle').textContent='➕ Thêm tour mới'
+  document.getElementById('tourStatusBadge').innerHTML=''
+  document.getElementById('tf_edit_id').value=''
+  ;['tf_name','tf_dest','tf_sub_dests','tf_cover','tf_desc','tf_itinerary','tf_highlights','tf_notes','tf_tags','tf_meta_desc','tf_video','tf_depart_time'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''})
+  document.getElementById('tf_days').value=3
+  document.getElementById('tf_nights').value=2
+  document.getElementById('tf_min_pax').value=2
+  document.getElementById('tf_max_pax').value=20
   document.getElementById('tf_price').value=''
-  document.getElementById('tf_child_pct').value='70'
-  document.getElementById('tf_status').value='ACTIVE'
-  ;['inc_hotel','inc_guide','inc_transfer','inc_meals'].forEach(id=>document.getElementById(id).checked=true)
-  ;['inc_flights','inc_insurance','inc_entrance'].forEach(id=>document.getElementById(id).checked=false)
-  schedules=[]
-  renderScheduleList()
+  document.getElementById('tf_child_pct').value=70
+  document.getElementById('tf_single_sup').value=''
+  document.getElementById('tf_deposit_pct').value=30
+  document.getElementById('tf_region').value=''
+  document.getElementById('tf_type').value=''
+  document.getElementById('tf_class').value='standard'
+  document.getElementById('tf_audience').value='all'
+  document.getElementById('tf_difficulty').value='easy'
+  document.getElementById('tf_cancel_policy').value='moderate'
+  document.getElementById('tf_best_season').value=''
+  document.getElementById('tf_guide_lang').value='vi'
+  // Clear check groups
+  document.querySelectorAll('#travelStyleGroup .check-tag').forEach(el=>{el.classList.remove('checked');el.querySelector('input').checked=false})
+  document.querySelectorAll('#includesGroup .check-tag').forEach(el=>{el.classList.remove('checked');el.querySelector('input').checked=false})
+  schedules=[]; galleryUrls=[]
+  renderSchedList(); renderGallery()
   document.getElementById('coverPreview').style.display='none'
-  document.getElementById('galleryPreview').innerHTML=''
-  document.getElementById('tourModalWarn').textContent=''
-  document.getElementById('validationItems').innerHTML='<div class="vp-item"><span class="vp-icon">⚪</span><span class="vp-text">Nhập tên tour và điểm đến để kiểm tra tự động</span></div>'
-  // Populate dest suggestions
-  const dl = document.getElementById('destSuggestions')
-  dl.innerHTML = ALL_PROVINCES.map(p=>`<option value="${p}">`).join('')
-  switchModalTab('info',document.querySelector('.modal-tab'))
-  document.getElementById('tourModal').classList.add('open')
+  updatePriceSummary()
+  // Datalist
+  const dl=document.getElementById('destDL')
+  dl.innerHTML=ALL_PROV.map(p=>`<option value="${p}">`).join('')
 }
 
-async function editTour(id){
-  const {data:t,error}=await sb.from('tours').select('*').eq('id',id).single()
-  if(error||!t){toast('Lỗi tải tour','err');return}
-  editTourId=id
-  document.getElementById('tourModalTitle').textContent=`✏️ Sửa: ${t.name.slice(0,40)}`
+function populateTourEditor(t){
+  currentEditTourId=t.id
+  document.getElementById('tf_edit_id').value=t.id
+  document.getElementById('tourEditorTitle').textContent=`✏️ ${t.name?.slice(0,40)||'Sửa tour'}`
   document.getElementById('tf_name').value=t.name||''
   document.getElementById('tf_dest').value=t.destination||''
   document.getElementById('tf_region').value=t.region||''
   document.getElementById('tf_days').value=t.duration_days||3
   document.getElementById('tf_nights').value=t.duration_nights||2
-  document.getElementById('tf_pax').value=t.max_pax||20
+  document.getElementById('tf_min_pax').value=t.min_pax||2
+  document.getElementById('tf_max_pax').value=t.max_pax||20
   document.getElementById('tf_price').value=t.base_price||''
   document.getElementById('tf_child_pct').value=t.child_price_pct||70
-  document.getElementById('tf_status').value=t.status||'ACTIVE'
+  document.getElementById('tf_single_sup').value=t.single_supplement||''
+  document.getElementById('tf_deposit_pct').value=t.deposit_pct||30
+  document.getElementById('tf_type').value=t.tour_type||''
+  document.getElementById('tf_class').value=t.service_class||'standard'
+  document.getElementById('tf_audience').value=t.audience||'all'
+  document.getElementById('tf_difficulty').value=t.difficulty||'easy'
+  document.getElementById('tf_cancel_policy').value=t.cancel_policy||'moderate'
+  document.getElementById('tf_best_season').value=t.best_season||''
+  document.getElementById('tf_guide_lang').value=t.guide_language||'vi'
+  document.getElementById('tf_sub_dests').value=(t.sub_destinations||[]).join(', ')
   document.getElementById('tf_cover').value=t.cover_image||''
   document.getElementById('tf_desc').value=t.description||''
   document.getElementById('tf_tags').value=(t.tags||[]).join(', ')
+  document.getElementById('tf_video').value=t.video_url||''
+  document.getElementById('tf_meta_desc').value=t.meta_description||''
+  document.getElementById('tf_depart_time').value=t.depart_time||''
   // Itinerary
-  const itin=Array.isArray(t.itinerary)?t.itinerary:(typeof t.itinerary==='string'?JSON.parse(t.itinerary||'[]'):[])
+  const itin=Array.isArray(t.itinerary)?t.itinerary:[]
   document.getElementById('tf_itinerary').value=itin.map(d=>`Ngày ${d.day}: ${d.title}${d.activities?.length?' – '+d.activities.join(' – '):''}`).join('\n')
+  // Highlights
+  document.getElementById('tf_highlights').value=(t.highlights||[]).join('\n')
+  document.getElementById('tf_notes').value=(t.notes||[]).join('\n')
   // Includes
   const inc=t.includes||{}
-  ;['flights','hotel','guide','transfer','meals','insurance','entrance'].forEach(k=>{
-    const el=document.getElementById(`inc_${k}`)
-    if(el) el.checked=!!inc[k]
+  document.querySelectorAll('#includesGroup .check-tag').forEach(el=>{
+    const k=el.dataset.key, checked=!!inc[k]
+    el.classList.toggle('checked',checked); el.querySelector('input').checked=checked
   })
+  // Travel styles
+  const styles=t.travel_styles||[]
+  document.querySelectorAll('#travelStyleGroup .check-tag').forEach(el=>{
+    const k=el.dataset.key, checked=styles.includes(k)
+    el.classList.toggle('checked',checked); el.querySelector('input').checked=checked
+  })
+  // Gallery
+  galleryUrls=t.gallery||[]; renderGallery()
   if(t.cover_image){document.getElementById('coverImg').src=t.cover_image;document.getElementById('coverPreview').style.display='block'}
-  const dl=document.getElementById('destSuggestions')
-  dl.innerHTML=ALL_PROVINCES.map(p=>`<option value="${p}">`).join('')
-  validateDestination(t.destination||'')
-  validateTourName(t.name||'')
-  document.getElementById('tourModal').classList.add('open')
+  updatePriceSummary()
+  runValidation()
+  // Datalist
+  document.getElementById('destDL').innerHTML=ALL_PROV.map(p=>`<option value="${p}">`).join('')
 }
 
-function closeTourModal(){ document.getElementById('tourModal').classList.remove('open'); editTourId=null }
+// ════════════════════════════════════════════
+// TOUR VALIDATION (real-time)
+// ════════════════════════════════════════════
+function onNameInput(v){ runValidation() }
+function onDestInput(v){ runValidation(); autoSuggestRegion(v) }
+function onRegionChange(){ runValidation() }
 
-async function saveTour(){
-  const name=document.getElementById('tf_name').value.trim()
-  const dest=document.getElementById('tf_dest').value.trim()
-  const region=document.getElementById('tf_region').value
-  const price=Number(document.getElementById('tf_price').value)||0
-  if(!name||!dest||!region){toast('Vui lòng điền đủ: Tên, Điểm đến, Vùng miền','warn');return}
-
-  // Check region mismatch — block if wrong
-  const expRegion=getProvinceRegion(dest)
-  if(expRegion&&expRegion!==region){
-    const rn={north:'Miền Bắc',central:'Miền Trung',south:'Miền Nam'}
-    if(!confirm(`⚠ "${dest}" thuộc ${rn[expRegion]} nhưng bạn chọn ${rn[region]}. Vẫn lưu?`)) return
-  }
-
-  // Parse itinerary
-  const itinText=document.getElementById('tf_itinerary').value
-  const itinerary=itinText.split('\n').filter(l=>l.trim()).map((line,i)=>{
-    const m=line.match(/^Ngày\s*(\d+):\s*(.+)/)
-    const content=m?m[2]:line
-    const parts=content.split(/\s*[–-]\s*/)
-    return{day:m?Number(m[1]):i+1,title:parts[0]||`Ngày ${i+1}`,activities:parts.slice(1)}
-  })
-
-  // Build includes
-  const includes={
-    flights:document.getElementById('inc_flights').checked,
-    hotel:document.getElementById('inc_hotel').checked?'3-4★':false,
-    guide:document.getElementById('inc_guide').checked,
-    transfer:document.getElementById('inc_transfer').checked,
-    meals:document.getElementById('inc_meals').checked,
-    insurance:document.getElementById('inc_insurance').checked,
-    entrance_fees:document.getElementById('inc_entrance').checked,
-  }
-
-  // Generate slug
-  const slug=editTourId?undefined:name.toLowerCase()
-    .replace(/[àáâãạảấầẩẫậắằẳẵặ]/g,'a').replace(/[èéêẹẻẽếềểễệ]/g,'e')
-    .replace(/[ìíîịỉĩ]/g,'i').replace(/[òóôõọỏốồổỗộớờởỡợ]/g,'o')
-    .replace(/[ùúûụủũứừửữự]/g,'u').replace(/[ỳýỵỷỹ]/g,'y').replace(/đ/g,'d')
-    .replace(/[^a-z0-9\s]/g,'').replace(/\s+/g,'-').slice(0,60)
-    +'-'+Date.now().toString().slice(-6)
-
-  const data={
-    name,destination:dest,region,
-    duration_days:Number(document.getElementById('tf_days').value)||3,
-    duration_nights:Number(document.getElementById('tf_nights').value)||2,
-    max_pax:Number(document.getElementById('tf_pax').value)||20,
-    base_price:price,
-    child_price_pct:Number(document.getElementById('tf_child_pct').value)||70,
-    status:document.getElementById('tf_status').value,
-    cover_image:document.getElementById('tf_cover').value.trim()||null,
-    description:document.getElementById('tf_desc').value.trim()||null,
-    itinerary,includes,
-    tags:document.getElementById('tf_tags').value.split(',').map(t=>t.trim()).filter(Boolean),
-    ...(slug?{slug}:{}),
-  }
-
-  let error
-  if(editTourId){ ({error}=await sb.from('tours').update(data).eq('id',editTourId)) }
-  else { ({error}=await sb.from('tours').insert(data)) }
-
-  if(error){toast('Lỗi lưu tour: '+error.message,'err');return}
-  toast(editTourId?'✅ Đã cập nhật tour':'✅ Đã thêm tour mới')
-  closeTourModal()
-  loadTours()
+function autoSuggestRegion(dest){
+  if(!dest) return
+  const r=getRegion(dest)
+  if(r&&!document.getElementById('tf_region').value) document.getElementById('tf_region').value=r
 }
 
-async function deleteTour(id,name){
-  if(!confirm(`Xóa tour "${name}"?\nHành động này không thể hoàn tác.`)) return
-  const {error}=await sb.from('tours').delete().eq('id',id)
-  if(error){toast('Lỗi xóa tour','err');return}
-  toast('🗑 Đã xóa tour','warn')
-  loadTours()
+function runValidation(){
+  const name=document.getElementById('tf_name')?.value||''
+  const dest=document.getElementById('tf_dest')?.value||''
+  const region=document.getElementById('tf_region')?.value||''
+  const price=document.getElementById('tf_price')?.value||''
+  const itin=document.getElementById('tf_itinerary')?.value||''
+  const cover=document.getElementById('tf_cover')?.value||''
+  const items=[]
+
+  // Name
+  if(!name) items.push({i:'⚪',t:'Chưa nhập tên tour'})
+  else if(name.length<15) items.push({i:'⚠️',t:`Tên quá ngắn (${name.length} ký tự) — nên 20+ ký tự`})
+  else items.push({i:'✅',t:`Tên hợp lệ (${name.length} ký tự)`})
+
+  // Destination
+  if(!dest) items.push({i:'⚪',t:'Chưa nhập điểm đến'})
+  else {
+    const matched=ALL_PROV.find(p=>p.toLowerCase()===dest.toLowerCase())
+    const partial=ALL_PROV.find(p=>p.toLowerCase().includes(dest.toLowerCase())||dest.toLowerCase().includes(p.toLowerCase()))
+    if(matched) items.push({i:'✅',t:`Điểm đến "${dest}" hợp lệ`})
+    else if(partial) items.push({i:'⚠️',t:`Có thể bạn muốn nhập "${partial}"?`})
+    else items.push({i:'⚠️',t:`"${dest}" không có trong danh sách 63 tỉnh thành`})
+  }
+
+  // Region match
+  if(dest&&region){
+    const exp=getRegion(dest)
+    const RN={north:'Miền Bắc',central:'Miền Trung',south:'Miền Nam'}
+    if(exp&&exp!==region) items.push({i:'❌',t:`Vùng miền sai: "${dest}" thuộc ${RN[exp]} chứ không phải ${RN[region]}`})
+    else if(exp) items.push({i:'✅',t:'Vùng miền khớp điểm đến'})
+  }
+
+  // Keyword mismatch
+  checkKeywords(dest,itin+' '+name,region).forEach(msg=>items.push({i:'⚠️',t:msg}))
+
+  // Price
+  if(!price||Number(price)===0) items.push({i:'⚠️',t:'Chưa có giá tour'})
+  else items.push({i:'✅',t:`Giá: ${fmt(price)}đ`})
+
+  // Cover image
+  if(!cover) items.push({i:'⚠️',t:'Chưa có ảnh bìa — bắt buộc để đăng bán'})
+  else items.push({i:'✅',t:'Có ảnh bìa'})
+
+  // Itinerary
+  const itinLines=itin.split('\n').filter(l=>l.trim()).length
+  if(itinLines<1) items.push({i:'⚠️',t:'Chưa có lịch trình — khách cần biết sẽ làm gì từng ngày'})
+  else items.push({i:'✅',t:`Lịch trình: ${itinLines} ngày`})
+
+  document.getElementById('valItems').innerHTML=items.map(it=>`<div class="val-item"><span>${it.i}</span><span>${it.t}</span></div>`).join('')
+
+  const hasErr=items.some(i=>i.i==='❌')
+  const hasWarn=items.some(i=>i.i==='⚠️')
+  document.getElementById('tourSaveWarn').textContent=hasErr?'❌ Có lỗi cần sửa':hasWarn?'⚠️ Có cảnh báo':''
 }
 
-// ── SCHEDULE ──────────────────────────────────
-function addSchedule(){
+// ════════════════════════════════════════════
+// PRICE SUMMARY
+// ════════════════════════════════════════════
+function updatePriceSummary(){
+  const adult=Number(document.getElementById('tf_price')?.value)||0
+  const childPct=Number(document.getElementById('tf_child_pct')?.value)||70
+  const sup=Number(document.getElementById('tf_single_sup')?.value)||0
+  const el=document.getElementById('priceSummary')
+  if(!adult){el.innerHTML='<span style="color:var(--text3)">Nhập giá để xem tóm tắt</span>';return}
+  const child=Math.round(adult*childPct/100)
+  el.innerHTML=`
+    <span>👤 Người lớn: <strong style="color:var(--amber)">${fmt(adult)}đ</strong></span>
+    <span>👶 Trẻ em (${childPct}%): <strong style="color:var(--blue)">${fmt(child)}đ</strong></span>
+    ${sup>0?`<span>🛏 Phụ thu phòng đơn: <strong style="color:var(--red)">+${fmt(sup)}đ</strong></span>`:''}
+    <span>💰 Cọc 30%: <strong style="color:var(--green)">${fmt(Math.round(adult*.3))}đ</strong></span>`
+}
+
+// ════════════════════════════════════════════
+// SCHEDULE
+// ════════════════════════════════════════════
+function addSched(){
   const date=document.getElementById('sched_date').value
   const slots=Number(document.getElementById('sched_slots').value)||20
+  const price=Number(document.getElementById('sched_price').value)||0
   if(!date){toast('Chọn ngày khởi hành','warn');return}
-  schedules.push({date,slots,id:`s_${Date.now()}`})
-  renderScheduleList()
+  schedules.push({date,slots,price,id:`s_${Date.now()}`})
+  renderSchedList()
   document.getElementById('sched_date').value=''
+  document.getElementById('sched_price').value=''
 }
-function renderScheduleList(){
-  document.getElementById('scheduleList').innerHTML=schedules.map((s,i)=>`
-    <div style="display:flex;align-items:center;gap:.5rem;padding:.35rem .65rem;background:var(--s2);border:1px solid var(--border);border-radius:4px;font-size:.78rem">
+function renderSchedList(){
+  document.getElementById('schedList').innerHTML=schedules.map((s,i)=>`
+    <div style="display:flex;align-items:center;gap:.5rem;padding:.3rem .65rem;background:var(--s2);border:1px solid var(--border);border-radius:4px;font-size:.78rem">
       <span style="font-family:var(--mono)">${fmtD(s.date)}</span>
-      <span style="color:var(--text2)">·</span>
-      <span>${s.slots} chỗ</span>
-      <button style="margin-left:auto;background:none;border:none;color:var(--red);cursor:pointer;font-size:.8rem" onclick="schedules.splice(${i},1);renderScheduleList()">✕</button>
+      <span style="color:var(--text2)">·</span><span>${s.slots} chỗ</span>
+      ${s.price?`<span style="color:var(--amber)">· ${fmt(s.price)}đ</span>`:''}
+      <button style="margin-left:auto;background:none;border:none;color:var(--red);cursor:pointer" onclick="schedules.splice(${i},1);renderSchedList()">✕</button>
     </div>`).join('')
 }
 
-// ── GALLERY ───────────────────────────────────
+// ════════════════════════════════════════════
+// GALLERY
+// ════════════════════════════════════════════
+function addGalleryUrl(){
+  const url=document.getElementById('galleryUrlInput').value.trim()
+  if(!url){toast('Nhập URL ảnh','warn');return}
+  if(galleryUrls.length>=8){toast('Tối đa 8 ảnh','warn');return}
+  galleryUrls.push(url)
+  document.getElementById('galleryUrlInput').value=''
+  renderGallery()
+}
+function renderGallery(){
+  const grid=document.getElementById('galleryGrid')
+  grid.innerHTML=galleryUrls.map((u,i)=>`
+    <div class="img-item">
+      <img src="${u}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2280%22 height=%2260%22><rect fill=%22%23253047%22 width=%2280%22 height=%2260%22/></svg>'">
+      <button class="img-del" onclick="galleryUrls.splice(${i},1);renderGallery()">✕</button>
+    </div>`).join('')
+  +`<div class="img-item add-btn" onclick="document.getElementById('galleryUrlInput').focus()">+</div>`
+  grid.innerHTML+='<div class="img-item add-btn" onclick="document.getElementById(\'galleryUrlInput\').focus()">+</div>'
+}
 function previewCover(){
   const url=document.getElementById('tf_cover').value.trim()
   if(!url) return
   document.getElementById('coverImg').src=url
   document.getElementById('coverPreview').style.display='block'
 }
-function addGalleryInput(){
-  const wrap=document.getElementById('galleryInputs')
-  if(wrap.children.length>=10){toast('Tối đa 10 ảnh','warn');return}
-  const div=document.createElement('div')
-  div.className='img-url-input'
-  div.innerHTML=`<input class="form-input gallery-url" placeholder="URL ảnh ${wrap.children.length+1}..."><button class="btn btn-danger" onclick="this.parentElement.remove();updateGalleryPreview()" style="font-size:.65rem">✕</button>`
-  div.querySelector('input').addEventListener('input',updateGalleryPreview)
-  wrap.appendChild(div)
-}
-function updateGalleryPreview(){
-  const urls=[...document.querySelectorAll('.gallery-url')].map(i=>i.value.trim()).filter(Boolean)
-  document.getElementById('galleryPreview').innerHTML=urls.map(u=>`
-    <div class="img-preview-item"><img src="${u}" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22><rect fill=%22%23253047%22 width=%22100%22 height=%22100%22/><text y=%2250%%22 x=%2250%%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 fill=%22%234a5580%22 font-size=%2212%22>❌</text></svg>'"></div>`).join('')
+
+// ════════════════════════════════════════════
+// SAVE TOUR
+// ════════════════════════════════════════════
+async function saveTourDraft(){ await saveTour('DRAFT') }
+
+async function saveTour(status='ACTIVE'){
+  const name=document.getElementById('tf_name').value.trim()
+  const dest=document.getElementById('tf_dest').value.trim()
+  const region=document.getElementById('tf_region').value
+  if(!name||!dest||!region){toast('Cần điền: Tên, Điểm đến, Vùng miền','warn');return}
+
+  const expR=getRegion(dest)
+  const RN={north:'Miền Bắc',central:'Miền Trung',south:'Miền Nam'}
+  if(expR&&expR!==region&&!confirm(`⚠ "${dest}" thuộc ${RN[expR]} nhưng bạn chọn ${RN[region]}. Vẫn lưu?`)) return
+
+  // Parse itinerary
+  const itinText=document.getElementById('tf_itinerary').value
+  const itinerary=itinText.split('\n').filter(l=>l.trim()).map((line,i)=>{
+    const m=line.match(/^Ngày\s*(\d+):\s*(.+)/i)
+    const content=m?m[2]:line
+    const parts=content.split(/\s*[–\-]\s*/)
+    return{day:m?Number(m[1]):i+1,title:parts[0]||`Ngày ${i+1}`,activities:parts.slice(1)}
+  })
+
+  const includes={}
+  document.querySelectorAll('#includesGroup .check-tag input:checked').forEach(cb=>{includes[cb.value]=true})
+  const travel_styles=[...document.querySelectorAll('#travelStyleGroup .check-tag input:checked')].map(cb=>cb.value)
+
+  const editId=document.getElementById('tf_edit_id').value
+  const data={
+    name, destination:dest, region, status,
+    duration_days:Number(document.getElementById('tf_days').value)||3,
+    duration_nights:Number(document.getElementById('tf_nights').value)||2,
+    min_pax:Number(document.getElementById('tf_min_pax').value)||2,
+    max_pax:Number(document.getElementById('tf_max_pax').value)||20,
+    base_price:Number(document.getElementById('tf_price').value)||0,
+    child_price_pct:Number(document.getElementById('tf_child_pct').value)||70,
+    single_supplement:Number(document.getElementById('tf_single_sup').value)||0,
+    deposit_pct:Number(document.getElementById('tf_deposit_pct').value)||30,
+    tour_type:document.getElementById('tf_type').value||null,
+    service_class:document.getElementById('tf_class').value||'standard',
+    audience:document.getElementById('tf_audience').value||'all',
+    difficulty:document.getElementById('tf_difficulty').value||'easy',
+    cancel_policy:document.getElementById('tf_cancel_policy').value||'moderate',
+    best_season:document.getElementById('tf_best_season').value||null,
+    guide_language:document.getElementById('tf_guide_lang').value||'vi',
+    sub_destinations:document.getElementById('tf_sub_dests').value.split(',').map(s=>s.trim()).filter(Boolean),
+    cover_image:document.getElementById('tf_cover').value.trim()||null,
+    gallery:galleryUrls,
+    description:document.getElementById('tf_desc').value.trim()||null,
+    highlights:document.getElementById('tf_highlights').value.split('\n').map(s=>s.trim()).filter(Boolean),
+    notes:document.getElementById('tf_notes').value.split('\n').map(s=>s.trim()).filter(Boolean),
+    itinerary, includes, travel_styles,
+    tags:document.getElementById('tf_tags').value.split(',').map(t=>t.trim()).filter(Boolean),
+    meta_description:document.getElementById('tf_meta_desc').value.trim()||null,
+    video_url:document.getElementById('tf_video').value.trim()||null,
+    depart_time:document.getElementById('tf_depart_time').value.trim()||null,
+    ...(editId?{}:{slug:slug_vi(name)+'-'+Date.now().toString().slice(-5)}),
+  }
+
+  let error
+  if(editId){ ({error}=await sb.from('tours').update(data).eq('id',editId)) }
+  else { ({error}=await sb.from('tours').insert(data)) }
+  if(error){toast('Lỗi lưu: '+error.message,'err');return}
+  toast(editId?`✅ Đã cập nhật "${name.slice(0,30)}"`:`✅ Tour "${name.slice(0,30)}" ${status==='ACTIVE'?'đã đăng bán':'lưu nháp'}`)
+  loadTourList()
+  nav('tours',document.querySelector('[onclick*="\'tours\'"]'))
 }
 
-// ── BLOG ──────────────────────────────────────
-const BLOG_KEY='baggio_blogs_v1'
-function openBlogModal(id=null){
-  editBlogId=id
-  const b=id?blogsCache.find(x=>x.id===id):null
-  document.getElementById('blogModalTitle').textContent=b?`✏️ Sửa: ${b.title.slice(0,30)}...`:'✏️ Bài viết mới'
-  document.getElementById('bf_title').value=b?.title||''
-  document.getElementById('bf_cat').value=b?.cat||'tips'
-  document.getElementById('bf_status').value=b?.status||'draft'
-  document.getElementById('bf_thumb').value=b?.thumb||''
-  document.getElementById('bf_excerpt').value=b?.excerpt||''
-  document.getElementById('bf_content').value=b?.content||''
-  document.getElementById('bf_tags').value=(b?.tags||[]).join(', ')
-  document.getElementById('bf_tour').value=b?.tour||''
-  document.getElementById('blogModal').classList.add('open')
+// ════════════════════════════════════════════
+// BLOG
+// ════════════════════════════════════════════
+const CAT_MAP={tips:'✈️ Mẹo du lịch',destination:'📍 Điểm đến',food:'🍜 Ẩm thực',culture:'🏛 Văn hóa',experience:'🎯 Trải nghiệm',news:'📰 Tin tức',promotion:'🎁 Khuyến mãi'}
+
+function resetBlogEditor(){
+  document.getElementById('bf_edit_id').value=''
+  document.getElementById('blogEditorTitle').textContent='📝 Bài viết mới'
+  ;['bf_title','bf_thumb','bf_excerpt','bf_content','bf_tags','bf_tour_slug'].forEach(id=>document.getElementById(id).value='')
+  document.getElementById('bf_author').value='Baggio Travel'
+  document.getElementById('bf_cat').value='tips'
+  document.getElementById('bf_status').value='draft'
 }
-function closeBlogModal(){ document.getElementById('blogModal').classList.remove('open') }
+
+function renderBlogList(){
+  const blogs=blogsLS()
+  document.getElementById('sb_blogs').textContent=blogs.length
+  const grid=document.getElementById('blogGrid')
+  if(!blogs.length){grid.innerHTML='<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">📝</div><div style="font-weight:600;margin-bottom:.3rem">Chưa có bài viết</div><div style="font-size:.82rem">Viết blog để tăng SEO và thu hút khách hàng</div><button class="btn btn-primary" style="margin-top:1rem" onclick="nav(\'new_blog\',null)">+ Bài viết đầu tiên</button></div>';return}
+  grid.innerHTML=blogs.map(b=>`
+    <div class="blog-card">
+      ${b.thumb?`<img src="${b.thumb}" class="blog-thumb" onerror="this.style.display='none'">`:''}
+      <div class="blog-body">
+        <div class="blog-cat">${CAT_MAP[b.cat]||b.cat}</div>
+        <div class="blog-title">${b.title}</div>
+        <div class="blog-excerpt">${b.excerpt?.slice(0,100)||''}...</div>
+        <div style="display:flex;gap:.4rem;align-items:center">
+          <span class="badge ${b.status==='published'?'b-active':'b-draft'}">${b.status==='published'?'● Đã đăng':'Nháp'}</span>
+          <div style="margin-left:auto;display:flex;gap:.3rem">
+            <button class="btn btn-default" style="font-size:.58rem" onclick="editBlog('${b.id}')">✏️ Sửa</button>
+            <button class="btn btn-danger" style="font-size:.58rem" onclick="deleteBlog('${b.id}')">🗑</button>
+          </div>
+        </div>
+      </div>
+    </div>`).join('')
+}
+
+function editBlog(id){
+  const b=blogsLS().find(x=>x.id===id); if(!b) return
+  document.getElementById('bf_edit_id').value=id
+  document.getElementById('blogEditorTitle').textContent=`✏️ ${b.title.slice(0,30)}...`
+  document.getElementById('bf_title').value=b.title||''
+  document.getElementById('bf_cat').value=b.cat||'tips'
+  document.getElementById('bf_status').value=b.status||'draft'
+  document.getElementById('bf_thumb').value=b.thumb||''
+  document.getElementById('bf_excerpt').value=b.excerpt||''
+  document.getElementById('bf_content').value=b.content||''
+  document.getElementById('bf_tags').value=(b.tags||[]).join(', ')
+  document.getElementById('bf_tour_slug').value=b.tour_slug||''
+  document.getElementById('bf_author').value=b.author||'Baggio Travel'
+  nav('new_blog',null)
+}
+
 function saveBlog(){
   const title=document.getElementById('bf_title').value.trim()
   if(!title){toast('Nhập tiêu đề bài viết','warn');return}
-  const data={
-    id:editBlogId||`blog_${Date.now()}`,
-    title, cat:document.getElementById('bf_cat').value,
-    status:document.getElementById('bf_status').value,
-    thumb:document.getElementById('bf_thumb').value.trim(),
-    excerpt:document.getElementById('bf_excerpt').value.trim(),
-    content:document.getElementById('bf_content').value.trim(),
-    tags:document.getElementById('bf_tags').value.split(',').map(t=>t.trim()).filter(Boolean),
-    tour:document.getElementById('bf_tour').value.trim(),
-    createdAt:editBlogId?blogsCache.find(b=>b.id===editBlogId)?.createdAt:new Date().toISOString(),
-    updatedAt:new Date().toISOString(),
-  }
-  if(editBlogId){ const i=blogsCache.findIndex(b=>b.id===editBlogId);if(i>=0)blogsCache[i]=data }
-  else blogsCache.unshift(data)
-  localStorage.setItem(BLOG_KEY,JSON.stringify(blogsCache))
-  closeBlogModal(); renderBlogs()
-  document.getElementById('sbBlogs').textContent=blogsCache.length
-  toast(editBlogId?'✅ Đã cập nhật bài viết':'✅ Đã thêm bài viết')
-}
-function renderBlogs(){
-  blogsCache=JSON.parse(localStorage.getItem(BLOG_KEY)||'[]')
-  const el=document.getElementById('blogList')
-  if(!blogsCache.length){el.innerHTML='<div class="empty-state"><div class="empty-icon">📝</div><div style="font-weight:600;margin-bottom:.3rem">Chưa có bài viết</div><div style="font-size:.82rem;color:var(--text2)">Tạo bài blog để tăng SEO và thu hút khách hàng</div><button class="btn btn-primary" style="margin-top:1rem" onclick="openBlogModal()">+ Viết bài đầu tiên</button></div>';return}
-  const CAT_LABELS={tips:'Mẹo du lịch',destination:'Điểm đến',food:'Ẩm thực',culture:'Văn hóa',news:'Tin tức'}
-  el.innerHTML=`<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:.85rem">
-  ${blogsCache.map(b=>`
-    <div style="background:var(--s3);border:1px solid var(--border);border-radius:7px;overflow:hidden">
-      ${b.thumb?`<img src="${b.thumb}" style="width:100%;height:130px;object-fit:cover" onerror="this.style.display='none'">`:''}
-      <div style="padding:.9rem">
-        <div style="display:flex;gap:.5rem;align-items:center;margin-bottom:.4rem">
-          <span class="badge ${b.status==='published'?'badge-active':'badge-draft'}">${b.status==='published'?'● Đã đăng':'Nháp'}</span>
-          <span style="font-family:var(--mono);font-size:.58rem;color:var(--text3)">${CAT_LABELS[b.cat]||b.cat}</span>
-        </div>
-        <div style="font-weight:600;font-size:.9rem;margin-bottom:.35rem;line-height:1.3">${b.title}</div>
-        <div style="font-size:.78rem;color:var(--text2);line-height:1.5;margin-bottom:.75rem">${b.excerpt?.slice(0,80)||''}${(b.excerpt?.length||0)>80?'...':''}</div>
-        <div style="display:flex;gap:.4rem">
-          <button class="btn btn-default" style="font-size:.58rem" onclick="openBlogModal('${b.id}')">✏️ Sửa</button>
-          <button class="btn btn-danger" style="font-size:.58rem" onclick="deleteBlog('${b.id}')">🗑</button>
-        </div>
-      </div>
-    </div>`).join('')}
-  </div>`
-  document.getElementById('sbBlogs').textContent=blogsCache.length
-}
-function deleteBlog(id){
-  if(!confirm('Xóa bài viết này?')) return
-  blogsCache=blogsCache.filter(b=>b.id!==id)
-  localStorage.setItem(BLOG_KEY,JSON.stringify(blogsCache))
-  renderBlogs(); toast('🗑 Đã xóa bài viết','warn')
+  const editId=document.getElementById('bf_edit_id').value
+  const data={id:editId||`blog_${Date.now()}`,title,cat:document.getElementById('bf_cat').value,status:document.getElementById('bf_status').value,thumb:document.getElementById('bf_thumb').value.trim(),excerpt:document.getElementById('bf_excerpt').value.trim(),content:document.getElementById('bf_content').value.trim(),tags:document.getElementById('bf_tags').value.split(',').map(t=>t.trim()).filter(Boolean),tour_slug:document.getElementById('bf_tour_slug').value.trim(),author:document.getElementById('bf_author').value.trim()||'Baggio Travel',createdAt:new Date().toISOString()}
+  const blogs=blogsLS()
+  if(editId){const i=blogs.findIndex(b=>b.id===editId);if(i>=0)blogs[i]=data}else blogs.unshift(data)
+  localStorage.setItem('baggio_blogs_v2',JSON.stringify(blogs))
+  toast(editId?'✅ Đã cập nhật bài viết':'✅ Đã thêm bài viết mới')
+  nav('blog',document.querySelector('[onclick*="\'blog\'"]'))
 }
 
-// ── BANNER ────────────────────────────────────
-const BANNER_KEY='baggio_banners_v1'
-function openBannerModal(id=null){
-  editBannerId=id
-  const b=id?bannersCache.find(x=>x.id===id):null
-  document.getElementById('bannerModalTitle').textContent=b?'✏️ Sửa banner':'🎯 Tạo banner mới'
+function deleteBlog(id){
+  if(!confirm('Xóa bài viết này?'))return
+  const blogs=blogsLS().filter(b=>b.id!==id)
+  localStorage.setItem('baggio_blogs_v2',JSON.stringify(blogs))
+  renderBlogList(); toast('🗑 Đã xóa','warn')
+}
+
+// ════════════════════════════════════════════
+// BANNER
+// ════════════════════════════════════════════
+function openBannerEditor(id=null){
+  const el=document.getElementById('bannerEditor'); el.style.display='block'
+  const b=id?bannersLS().find(x=>x.id===id):null
+  document.getElementById('bnf_edit_id').value=id||''
   document.getElementById('bnf_title').value=b?.title||''
   document.getElementById('bnf_sub').value=b?.sub||''
   document.getElementById('bnf_img').value=b?.img||''
@@ -1071,135 +1160,151 @@ function openBannerModal(id=null){
   document.getElementById('bnf_from').value=b?.from||''
   document.getElementById('bnf_to').value=b?.to||''
   previewBanner()
-  document.getElementById('bannerModal').classList.add('open')
+  el.scrollIntoView({behavior:'smooth'})
 }
-function closeBannerModal(){ document.getElementById('bannerModal').classList.remove('open') }
+
 function previewBanner(){
-  const title=document.getElementById('bnf_title').value||'Tiêu đề banner'
-  const sub=document.getElementById('bnf_sub').value||'Mô tả phụ'
-  const img=document.getElementById('bnf_img').value
-  const color=document.getElementById('bnf_color').value
+  const title=document.getElementById('bnf_title')?.value||'Tiêu đề'
+  const sub=document.getElementById('bnf_sub')?.value||''
+  const img=document.getElementById('bnf_img')?.value||''
+  const color=document.getElementById('bnf_color')?.value||'#c5372b'
   document.getElementById('bnp_title').textContent=title
   document.getElementById('bnp_sub').textContent=sub
-  document.getElementById('bannerPreview').style.background=color
+  document.getElementById('bannerPreviewBox').style.background=color
   const imgEl=document.getElementById('bannerPreviewImg')
-  if(img){imgEl.src=img;imgEl.style.display='block'}else{imgEl.style.display='none'}
+  imgEl.src=img; imgEl.style.display=img?'block':'none'
 }
+
 function saveBanner(){
   const title=document.getElementById('bnf_title').value.trim()
   if(!title){toast('Nhập tiêu đề banner','warn');return}
-  const data={
-    id:editBannerId||`bn_${Date.now()}`,
-    title,sub:document.getElementById('bnf_sub').value.trim(),
-    img:document.getElementById('bnf_img').value.trim(),
-    btn:document.getElementById('bnf_btn').value.trim(),
-    link:document.getElementById('bnf_link').value.trim(),
-    type:document.getElementById('bnf_type').value,
-    color:document.getElementById('bnf_color').value,
-    from:document.getElementById('bnf_from').value,
-    to:document.getElementById('bnf_to').value,
-    active:true, createdAt:new Date().toISOString(),
-  }
-  bannersCache=JSON.parse(localStorage.getItem(BANNER_KEY)||'[]')
-  if(editBannerId){ const i=bannersCache.findIndex(b=>b.id===editBannerId);if(i>=0)bannersCache[i]=data }
-  else bannersCache.unshift(data)
-  localStorage.setItem(BANNER_KEY,JSON.stringify(bannersCache))
-  closeBannerModal(); renderBanners()
-  toast(editBannerId?'✅ Đã cập nhật banner':'✅ Đã tạo banner mới')
+  const editId=document.getElementById('bnf_edit_id').value
+  const data={id:editId||`bn_${Date.now()}`,title,sub:document.getElementById('bnf_sub').value.trim(),img:document.getElementById('bnf_img').value.trim(),btn:document.getElementById('bnf_btn').value.trim(),link:document.getElementById('bnf_link').value.trim(),type:document.getElementById('bnf_type').value,color:document.getElementById('bnf_color').value,from:document.getElementById('bnf_from').value,to:document.getElementById('bnf_to').value,active:true}
+  const banners=bannersLS()
+  if(editId){const i=banners.findIndex(b=>b.id===editId);if(i>=0)banners[i]=data}else banners.unshift(data)
+  localStorage.setItem('baggio_banners_v2',JSON.stringify(banners))
+  document.getElementById('bannerEditor').style.display='none'
+  renderBanners(); toast('✅ Đã lưu banner')
 }
+
 function renderBanners(){
-  bannersCache=JSON.parse(localStorage.getItem(BANNER_KEY)||'[]')
-  const el=document.getElementById('bannerGrid')
-  document.getElementById('sbBanners').textContent=bannersCache.length
-  if(!bannersCache.length){el.innerHTML='<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">🎯</div><div style="font-weight:600;margin-bottom:.3rem">Chưa có banner</div></div>';return}
-  el.innerHTML=bannersCache.map(b=>`
-    <div style="background:${b.color||'#c5372b'};border-radius:8px;padding:1.25rem;position:relative;overflow:hidden;min-height:100px">
-      ${b.img?`<img src="${b.img}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.3;border-radius:8px">`:''}
-      <div style="position:relative;z-index:1">
-        <div style="font-family:var(--mono);font-size:.55rem;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.25rem">${b.type}</div>
-        <div style="font-weight:700;font-size:1rem;color:#fff;margin-bottom:.2rem">${b.title}</div>
-        <div style="font-size:.78rem;color:rgba(255,255,255,.7);margin-bottom:.75rem">${b.sub||''}</div>
-        <div style="display:flex;gap:.4rem;align-items:center">
-          <span style="background:rgba(255,255,255,.2);color:#fff;font-size:.72rem;font-weight:600;padding:.3rem .75rem;border-radius:4px">${b.btn}</span>
-          <div style="margin-left:auto;display:flex;gap:.3rem">
-            <button class="btn" style="background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.2);color:#fff;font-size:.58rem" onclick="openBannerModal('${b.id}')">✏️</button>
-            <button class="btn" style="background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.2);color:#fff;font-size:.58rem" onclick="deleteBanner('${b.id}')">🗑</button>
-          </div>
+  const banners=bannersLS()
+  document.getElementById('sb_banners').textContent=banners.length
+  const grid=document.getElementById('bannerGrid')
+  if(!banners.length){grid.innerHTML='<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">🎯</div><div>Chưa có banner</div></div>';return}
+  grid.innerHTML=banners.map(b=>`
+    <div class="banner-card" style="background:${b.color||'#c5372b'}">
+      ${b.img?`<img src="${b.img}" class="banner-bg">`:''}
+      <div class="banner-card-content">
+        <div style="font-family:var(--mono);font-size:.55rem;color:rgba(255,255,255,.4);text-transform:uppercase;margin-bottom:.2rem">${b.type} ${b.from?'· '+fmtD(b.from)+' → '+fmtD(b.to):''}</div>
+        <div style="font-weight:700;font-size:.95rem;color:#fff">${b.title}</div>
+        <div style="font-size:.78rem;color:rgba(255,255,255,.7);margin:.15rem 0 .6rem">${b.sub||''}</div>
+        <div style="display:flex;gap:.4rem">
+          <span style="background:rgba(255,255,255,.2);color:#fff;font-size:.72rem;font-weight:600;padding:.28rem .7rem;border-radius:3px">${b.btn}</span>
+          <button class="btn" style="background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.15);color:#fff;font-size:.58rem" onclick="openBannerEditor('${b.id}')">✏️</button>
+          <button class="btn" style="background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.15);color:#fff;font-size:.58rem" onclick="deleteBanner('${b.id}')">🗑</button>
         </div>
-        ${b.from||b.to?`<div style="font-size:.65rem;color:rgba(255,255,255,.4);margin-top:.4rem;font-family:var(--mono)">${b.from?fmtD(b.from):''} ${b.from&&b.to?'→':''} ${b.to?fmtD(b.to):''}</div>`:''}
       </div>
     </div>`).join('')
 }
+
 function deleteBanner(id){
-  bannersCache=bannersCache.filter(b=>b.id!==id)
-  localStorage.setItem(BANNER_KEY,JSON.stringify(bannersCache))
+  const banners=bannersLS().filter(b=>b.id!==id)
+  localStorage.setItem('baggio_banners_v2',JSON.stringify(banners))
   renderBanners(); toast('🗑 Đã xóa banner','warn')
 }
 
-// ── GALLERY ───────────────────────────────────
-async function loadGallery(){
-  const {data}=await sb.from('tours').select('cover_image,name').not('cover_image','is',null).limit(40)
-  const el=document.getElementById('galleryGrid')
-  if(!data?.length){el.innerHTML='<div class="empty-state" style="grid-column:1/-1"><div>Chưa có ảnh gallery</div></div>';return}
-  el.innerHTML=data.map(t=>`
-    <div style="position:relative;aspect-ratio:4/3;border-radius:4px;overflow:hidden;border:1px solid var(--border)" title="${t.name}">
-      <img src="${t.cover_image}" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.style.display='none'">
-    </div>`).join('')
+// ════════════════════════════════════════════
+// FEATURED
+// ════════════════════════════════════════════
+async function loadFeatured(){
+  const FEAT_KEY='baggio_featured_tours'
+  const featIds=JSON.parse(localStorage.getItem(FEAT_KEY)||'[]')
+  const {data:tours}=await sb.from('tours').select('id,name,destination,base_price,status,cover_image').eq('status','ACTIVE').limit(30)
+  const el=document.getElementById('featuredTourList')
+  if(!tours?.length){el.innerHTML='<div class="empty-state">Không có tour active</div>';return}
+  el.innerHTML=tours.map(t=>{
+    const isFeat=featIds.includes(t.id)
+    return`<div style="display:flex;align-items:center;gap:.75rem;padding:.55rem .85rem;background:var(--s2);border:1px solid ${isFeat?'var(--amber)':'var(--border)'};border-radius:5px;margin-bottom:.35rem">
+      ${t.cover_image?`<img src="${t.cover_image}" style="width:44px;height:32px;object-fit:cover;border-radius:3px" onerror="this.style.display='none'">`:''}
+      <div style="flex:1"><div style="font-size:.83rem;font-weight:500">${t.name.slice(0,45)}</div><div style="font-size:.72rem;color:var(--text2)">${t.destination} · ${fmt(t.base_price)}đ</div></div>
+      <button class="btn ${isFeat?'btn-amber':'btn-default'}" style="font-size:.6rem" onclick="toggleFeatured('${t.id}')">
+        ${isFeat?'⭐ Nổi bật':'☆ Thêm nổi bật'}
+      </button>
+    </div>`}).join('')
 }
 
-// ── FULL VALIDATION ───────────────────────────
-async function runValidation(){
+function toggleFeatured(id){
+  const FEAT_KEY='baggio_featured_tours'
+  let ids=JSON.parse(localStorage.getItem(FEAT_KEY)||'[]')
+  if(ids.includes(id)){ids=ids.filter(x=>x!==id);toast('Đã bỏ tour nổi bật','warn')}
+  else if(ids.length>=6){toast('Tối đa 6 tour nổi bật','warn');return}
+  else{ids.push(id);toast('⭐ Đã thêm vào nổi bật')}
+  localStorage.setItem(FEAT_KEY,JSON.stringify(ids))
+  loadFeatured()
+}
+
+// ════════════════════════════════════════════
+// FULL VALIDATE
+// ════════════════════════════════════════════
+async function runFullValidation(){
   const el=document.getElementById('validateResults')
-  el.innerHTML='<div style="text-align:center;padding:2rem;color:var(--text3);font-family:var(--mono)">⏳ Đang kiểm tra toàn bộ tour...</div>'
-  const {data:tours}=await sb.from('tours').select('id,name,slug,destination,region,base_price,cover_image,itinerary,duration_days').eq('status','ACTIVE')
-  if(!tours){el.innerHTML='<div style="color:var(--red)">Lỗi tải dữ liệu</div>';return}
+  el.innerHTML='<div style="text-align:center;padding:2rem;color:var(--text3);font-family:var(--mono)">⏳ Đang kiểm tra...</div>'
+  const {data:tours}=await sb.from('tours').select('id,name,slug,destination,region,base_price,cover_image,itinerary,description,travel_styles,tour_type').eq('status','ACTIVE')
+  if(!tours){el.innerHTML='<div style="color:var(--red);padding:1rem">Lỗi tải dữ liệu</div>';return}
   const issues=[]
   tours.forEach(t=>{
-    const tIssues=[]
-    // Region mismatch
-    const expR=getProvinceRegion(t.destination||'')
-    if(expR&&expR!==t.region){
-      const rn={north:'Miền Bắc',central:'Miền Trung',south:'Miền Nam'}
-      tIssues.push({sev:'err',msg:`Vùng miền sai: "${t.destination}" thuộc ${rn[expR]} nhưng gán ${rn[t.region]}`})
-    }
-    // Missing cover
-    if(!t.cover_image) tIssues.push({sev:'warn',msg:'Chưa có ảnh bìa'})
-    // Price = 0
-    if(!t.base_price||t.base_price===0) tIssues.push({sev:'warn',msg:'Giá = 0đ'})
-    // Keyword mismatch in itinerary
-    const itinStr=JSON.stringify(t.itinerary||'')
-    const km=checkKeywordMismatch(t.destination||'',itinStr,t.region)
-    km.forEach(k=>tIssues.push({sev:'warn',msg:k.msg}))
-    // Missing slug
-    if(!t.slug) tIssues.push({sev:'warn',msg:'Chưa có slug URL'})
-    if(tIssues.length) issues.push({tour:t,issues:tIssues})
+    const ti=[]
+    const exp=getRegion(t.destination||'')
+    const RN={north:'Miền Bắc',central:'Miền Trung',south:'Miền Nam'}
+    if(exp&&exp!==t.region) ti.push({s:'❌',m:`Vùng miền sai: "${t.destination}" thuộc ${RN[exp]}`})
+    if(!t.cover_image) ti.push({s:'⚠️',m:'Thiếu ảnh bìa'})
+    if(!t.base_price||t.base_price===0) ti.push({s:'⚠️',m:'Giá = 0đ'})
+    if(!t.itinerary||!t.itinerary.length) ti.push({s:'⚠️',m:'Thiếu lịch trình'})
+    if(!t.tour_type) ti.push({s:'💡',m:'Chưa chọn loại tour (Day Tour / Private / ...)'})
+    if(!t.travel_styles||!t.travel_styles.length) ti.push({s:'💡',m:'Chưa chọn phong cách du lịch (Travel Style)'})
+    const km=checkKeywords(t.destination||'',JSON.stringify(t.itinerary||''),t.region)
+    km.forEach(msg=>ti.push({s:'⚠️',m:msg}))
+    if(t.name&&t.name.length<15) ti.push({s:'💡',m:`Tên tour khá ngắn (${t.name.length} ký tự)`})
+    if(ti.length) issues.push({tour:t,ti})
   })
   if(!issues.length){
-    el.innerHTML=`<div style="text-align:center;padding:2rem"><div style="font-size:2rem;margin-bottom:.75rem">🎉</div><div style="font-weight:600;color:var(--green)">Tất cả ${tours.length} tour đều ổn!</div><div style="font-size:.82rem;color:var(--text2);margin-top:.3rem">Không phát hiện lỗi nghiêm trọng nào</div></div>`
+    el.innerHTML=`<div style="text-align:center;padding:2.5rem"><div style="font-size:2rem;margin-bottom:.5rem">🎉</div><div style="font-weight:600;color:var(--green);font-size:.95rem">Tất cả ${tours.length} tour đều ổn!</div></div>`
     return
   }
-  el.innerHTML=`<div style="margin-bottom:.75rem;font-size:.82rem;color:var(--text2)">Tìm thấy vấn đề trong <strong style="color:var(--red)">${issues.length}/${tours.length}</strong> tour</div>`
-  +issues.map(({tour,issues:iList})=>`
-    <div style="background:var(--s3);border:1px solid var(--border);border-radius:6px;padding:.85rem;margin-bottom:.65rem">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.5rem">
-        <div style="font-weight:600;font-size:.85rem">${tour.name.slice(0,50)}</div>
-        <button class="btn btn-default" style="font-size:.58rem" onclick="editTour('${tour.id}')">✏️ Sửa</button>
-      </div>
-      ${iList.map(i=>`<div style="display:flex;gap:.5rem;padding:.25rem 0;font-size:.78rem;color:${i.sev==='err'?'var(--red)':'var(--amber)'}">
-        <span>${i.sev==='err'?'❌':'⚠️'}</span><span>${i.msg}</span>
-      </div>`).join('')}
-    </div>`).join('')
+  el.innerHTML=`<div style="margin-bottom:.75rem;font-size:.82rem;color:var(--text2)">Phát hiện vấn đề trong <strong style="color:var(--red)">${issues.length}</strong> / ${tours.length} tour</div>`
+    +issues.map(({tour,ti})=>`
+      <div style="background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:.85rem;margin-bottom:.6rem">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.45rem">
+          <div style="font-weight:600;font-size:.85rem">${tour.name?.slice(0,50)||'—'}</div>
+          <button class="btn btn-default" style="font-size:.58rem" onclick="openTourForEdit('${tour.id}')">✏️ Sửa</button>
+        </div>
+        ${ti.map(i=>`<div style="display:flex;gap:.5rem;padding:.2rem 0;font-size:.78rem;color:${i.s==='❌'?'var(--red)':i.s==='⚠️'?'var(--amber)':'var(--text2)'}"><span>${i.s}</span><span>${i.m}</span></div>`).join('')}
+      </div>`).join('')
 }
 
-// ── INIT ─────────────────────────────────────
+// ════════════════════════════════════════════
+// CHECK TAGS
+// ════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded',()=>{
-  loadTours()
-  renderBlogs()
+  // Click-to-toggle check tags
+  document.querySelectorAll('.check-tag').forEach(tag=>{
+    tag.addEventListener('click',()=>{
+      const cb=tag.querySelector('input')
+      cb.checked=!cb.checked
+      tag.classList.toggle('checked',cb.checked)
+    })
+  })
+  // Pre-check some includes
+  ;['hotel','guide','transfer','meals'].forEach(k=>{
+    const el=document.querySelector(`#includesGroup [data-key="${k}"]`)
+    if(el){el.classList.add('checked');el.querySelector('input').checked=true}
+  })
+  loadTourList()
+  renderBlogList()
   renderBanners()
-  document.querySelectorAll('.gallery-url').forEach(i=>i.addEventListener('input',updateGalleryPreview))
-})
-document.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){closeTourModal();closeBlogModal();closeBannerModal()}
+  // Datalist
+  document.getElementById('destDL').innerHTML=ALL_PROV.map(p=>`<option value="${p}">`).join('')
 })
 </script>
 </body>
