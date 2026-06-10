@@ -871,7 +871,7 @@ async function loadTourList(){
   const region=document.getElementById('tourListRegion')?.value||''
   const search=document.getElementById('tourListSearch')?.value?.trim()||''
   const i18n=document.getElementById('tourListI18n')?.value||''
-  let q=sb.from('tours').select('id,name,slug,destination,region,base_price,status,cover_image',{count:'exact'})
+  let q=sb.from('tours').select('id,name_vi,slug,destination,region,base_price,status,cover_image',{count:'exact'})
   if(status) q=q.eq('status',status)
   if(region) q=q.eq('region',region)
   if(i18n) q=q.eq('translation_status',i18n)
@@ -887,7 +887,7 @@ async function loadTourList(){
       <div style="display:flex;gap:.65rem;align-items:flex-start">
         ${t.cover_image?`<img src="${t.cover_image}" class="tli-img" onerror="this.style.display='none'">`:'<div style="width:48px;height:36px;background:var(--s3);border-radius:3px;flex-shrink:0;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:.75rem">📷</div>'}
         <div style="flex:1;min-width:0">
-          <div class="tli-name" title="${t.name}">${t.name}</div>
+          <div class="tli-name" title="${t.name_vi}">${t.name_vi}</div>
           <div class="tli-meta">
             <span class="tli-dest">📍 ${t.destination||'—'}</span>
             <span class="tli-price">${fmt(t.base_price)}đ</span>
@@ -957,8 +957,8 @@ function resetTourEditor(){
 function populateTourEditor(t){
   currentEditTourId=t.id
   document.getElementById('tf_edit_id').value=t.id
-  document.getElementById('tourEditorTitle').textContent=`✏️ ${t.name?.slice(0,40)||'Sửa tour'}`
-  document.getElementById('tf_name').value=t.name||''
+  document.getElementById('tourEditorTitle').textContent=`✏️ ${t.name_vi?.slice(0,40)||'Sửa tour'}`
+  document.getElementById('tf_name').value=t.name_vi||''
   document.getElementById('tf_dest').value=t.destination||''
   document.getElementById('tf_region').value=t.region||''
   document.getElementById('tf_days').value=t.duration_days||3
@@ -984,13 +984,13 @@ function populateTourEditor(t){
   document.getElementById('tf_meta_desc').value=t.meta_description||''
   document.getElementById('tf_depart_time').value=t.depart_time||''
   // Itinerary
-  const itin=Array.isArray(t.itinerary)?t.itinerary:[]
+  const itin=Array.isArray(t.itinerary_vi)?t.itinerary_vi:[]
   document.getElementById('tf_itinerary').value=itin.map(d=>`Ngày ${d.day}: ${d.title}${d.activities?.length?' – '+d.activities.join(' – '):''}`).join('\n')
   // Highlights
-  document.getElementById('tf_highlights').value=(t.highlights||[]).join('\n')
+  document.getElementById('tf_highlights').value=(t.highlights_vi||[]).join('\n')
   document.getElementById('tf_notes').value=(t.notes||[]).join('\n')
   // Includes
-  const inc=t.includes||{}
+  const inc=t.includes_vi||{}
   document.querySelectorAll('#includesGroup .check-tag').forEach(el=>{
     const k=el.dataset.key, checked=!!inc[k]
     el.classList.toggle('checked',checked); el.querySelector('input').checked=checked
@@ -1183,7 +1183,7 @@ async function saveTour(status='ACTIVE'){
 
   const editId=document.getElementById('tf_edit_id').value
   const data={
-    name, destination:dest, region, status,
+    name_vi:name, destination:dest, region, status,
     duration_days:Number(document.getElementById('tf_days').value)||3,
     duration_nights:Number(document.getElementById('tf_nights').value)||2,
     min_pax:Number(document.getElementById('tf_min_pax').value)||2,
@@ -1205,7 +1205,7 @@ async function saveTour(status='ACTIVE'){
     description:document.getElementById('tf_desc').value.trim()||null,
     highlights:document.getElementById('tf_highlights').value.split('\n').map(s=>s.trim()).filter(Boolean),
     notes:document.getElementById('tf_notes').value.split('\n').map(s=>s.trim()).filter(Boolean),
-    itinerary, includes, travel_styles,
+    itinerary_vi:itinerary, includes_vi:includes, travel_styles,
     tags:document.getElementById('tf_tags').value.split(',').map(t=>t.trim()).filter(Boolean),
     meta_description:document.getElementById('tf_meta_desc').value.trim()||null,
     video_url:document.getElementById('tf_video').value.trim()||null,
@@ -1218,14 +1218,6 @@ async function saveTour(status='ACTIVE'){
   else { ({error}=await sb.from('tours').insert(data)) }
   if(error){toast('Lỗi lưu: '+error.message,'err');return}
   toast(editId?`✅ Đã cập nhật "${name.slice(0,30)}"`:`✅ Tour "${name.slice(0,30)}" ${status==='ACTIVE'?'đã đăng bán':'lưu nháp'}`)
-
-  // Save EN fields if editor manually edited them
-  if(editId && enModified){
-    const enData = collectEnFields()
-    await sb.from('tours').update({...enData, translation_status:'manual'}).eq('id',editId)
-    enModified = false
-    toast('🌐 Đã lưu bản dịch EN (manual)')
-  }
 
   loadTourList()
   nav('tours',document.querySelector('[onclick*="\'tours\'"]'))
@@ -1380,14 +1372,14 @@ function deleteBanner(id){
 async function loadFeatured(){
   const FEAT_KEY='baggio_featured_tours'
   const featIds=JSON.parse(localStorage.getItem(FEAT_KEY)||'[]')
-  const {data:tours}=await sb.from('tours').select('id,name,destination,base_price,status,cover_image').eq('status','ACTIVE').limit(30)
+  const {data:tours}=await sb.from('tours').select('id,name_vi,destination,base_price,status,cover_image').eq('status','ACTIVE').limit(30)
   const el=document.getElementById('featuredTourList')
   if(!tours?.length){el.innerHTML='<div class="empty-state">Không có tour active</div>';return}
   el.innerHTML=tours.map(t=>{
     const isFeat=featIds.includes(t.id)
     return`<div style="display:flex;align-items:center;gap:.75rem;padding:.55rem .85rem;background:var(--s2);border:1px solid ${isFeat?'var(--amber)':'var(--border)'};border-radius:5px;margin-bottom:.35rem">
       ${t.cover_image?`<img src="${t.cover_image}" style="width:44px;height:32px;object-fit:cover;border-radius:3px" onerror="this.style.display='none'">`:''}
-      <div style="flex:1"><div style="font-size:.83rem;font-weight:500">${t.name.slice(0,45)}</div><div style="font-size:.72rem;color:var(--text2)">${t.destination} · ${fmt(t.base_price)}đ</div></div>
+      <div style="flex:1"><div style="font-size:.83rem;font-weight:500">${t.name_vi.slice(0,45)}</div><div style="font-size:.72rem;color:var(--text2)">${t.destination} · ${fmt(t.base_price)}đ</div></div>
       <button class="btn ${isFeat?'btn-amber':'btn-default'}" style="font-size:.6rem" onclick="toggleFeatured('${t.id}')">
         ${isFeat?'⭐ Nổi bật':'☆ Thêm nổi bật'}
       </button>
@@ -1410,7 +1402,7 @@ function toggleFeatured(id){
 async function runFullValidation(){
   const el=document.getElementById('validateResults')
   el.innerHTML='<div style="text-align:center;padding:2rem;color:var(--text3);font-family:var(--mono)">⏳ Đang kiểm tra...</div>'
-  const {data:tours}=await sb.from('tours').select('id,name,slug,destination,region,base_price,cover_image,itinerary,description,travel_styles,tour_type').eq('status','ACTIVE')
+  const {data:tours}=await sb.from('tours').select('id,name_vi,slug,destination,region,base_price,cover_image,itinerary_vi,travel_styles,tour_type').eq('status','ACTIVE')
   if(!tours){el.innerHTML='<div style="color:var(--red);padding:1rem">Lỗi tải dữ liệu</div>';return}
   const issues=[]
   tours.forEach(t=>{
@@ -1420,12 +1412,12 @@ async function runFullValidation(){
     if(exp&&exp!==t.region) ti.push({s:'❌',m:`Vùng miền sai: "${t.destination}" thuộc ${RN[exp]}`})
     if(!t.cover_image) ti.push({s:'⚠️',m:'Thiếu ảnh bìa'})
     if(!t.base_price||t.base_price===0) ti.push({s:'⚠️',m:'Giá = 0đ'})
-    if(!t.itinerary||!t.itinerary.length) ti.push({s:'⚠️',m:'Thiếu lịch trình'})
+    if(!t.itinerary_vi||!t.itinerary_vi.length) ti.push({s:'⚠️',m:'Thiếu lịch trình'})
     if(!t.tour_type) ti.push({s:'💡',m:'Chưa chọn loại tour (Day Tour / Private / ...)'})
     if(!t.travel_styles||!t.travel_styles.length) ti.push({s:'💡',m:'Chưa chọn phong cách du lịch (Travel Style)'})
-    const km=checkKeywords(t.destination||'',JSON.stringify(t.itinerary||''),t.region)
+    const km=checkKeywords(t.destination||'',JSON.stringify(t.itinerary_vi||''),t.region)
     km.forEach(msg=>ti.push({s:'⚠️',m:msg}))
-    if(t.name&&t.name.length<15) ti.push({s:'💡',m:`Tên tour khá ngắn (${t.name.length} ký tự)`})
+    if(t.name_vi&&t.name_vi.length<15) ti.push({s:'💡',m:`Tên tour khá ngắn (${t.name_vi.length} ký tự)`})
     if(ti.length) issues.push({tour:t,ti})
   })
   if(!issues.length){
@@ -1436,7 +1428,7 @@ async function runFullValidation(){
     +issues.map(({tour,ti})=>`
       <div style="background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:.85rem;margin-bottom:.6rem">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.45rem">
-          <div style="font-weight:600;font-size:.85rem">${tour.name?.slice(0,50)||'—'}</div>
+          <div style="font-weight:600;font-size:.85rem">${tour.name_vi?.slice(0,50)||'—'}</div>
           <button class="btn btn-default" style="font-size:.58rem" onclick="openTourForEdit('${tour.id}')">✏️ Sửa</button>
         </div>
         ${ti.map(i=>`<div style="display:flex;gap:.5rem;padding:.2rem 0;font-size:.78rem;color:${i.s==='❌'?'var(--red)':i.s==='⚠️'?'var(--amber)':'var(--text2)'}"><span>${i.s}</span><span>${i.m}</span></div>`).join('')}
