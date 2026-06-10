@@ -355,10 +355,10 @@ async function loadTour() {
 
 function renderTour(t) {
   // Meta
-  document.title = `${t.name} — Baggio Travel`
+  document.title = `${t.name_vi} — Baggio Travel`
   document.getElementById('heroImg').src = t.cover_image || 'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=1200&q=80'
-  document.getElementById('heroImg').alt = t.name
-  document.getElementById('heroTitle').textContent = t.name
+  document.getElementById('heroImg').alt = t.name_vi
+  document.getElementById('heroTitle').textContent = t.name_vi
   document.getElementById('heroDest').textContent = t.destination
   document.getElementById('heroDestTag').textContent = `${t.destination} · ${regionLabel(t.region)}`
   document.getElementById('heroDays').textContent = `${t.duration_days} ngày ${t.duration_nights} đêm`
@@ -392,7 +392,7 @@ function renderTour(t) {
   }
 
   // Itinerary
-  const itin = Array.isArray(t.itinerary) ? t.itinerary : (typeof t.itinerary==='string'?JSON.parse(t.itinerary||'[]'):[])
+  const itin = Array.isArray(t.itinerary_vi) ? t.itinerary_vi : (typeof t.itinerary_vi==='string'?JSON.parse(t.itinerary_vi||'[]'):[])
   document.getElementById('itineraryContent').innerHTML = itin.length ? itin.map(day=>`
     <div class="itin-day" data-day="${day.day}">
       <div class="itin-title">Ngày ${day.day}: ${day.title}</div>
@@ -400,7 +400,7 @@ function renderTour(t) {
     </div>`).join('') : '<div style="color:var(--muted);font-size:.88rem">Lịch trình chi tiết sẽ được cung cấp sau khi đặt tour.</div>'
 
   // Includes
-  const inc = t.includes || {}
+  const inc = t.includes_vi || {}
   const includeItems = [
     inc.flights && {icon:'✈️', title:'Vé máy bay', desc: inc.flights===true?'Khứ hồi':inc.flights},
     inc.hotel   && {icon:'🏨', title:'Khách sạn', desc: inc.hotel},
@@ -465,14 +465,14 @@ function bookNow() {
 }
 
 function consultZalo() {
-  const msg = tour ? `Xin chào Baggio Travel! Tôi muốn tư vấn về tour: ${tour.name}` : 'Xin chào Baggio Travel!'
+  const msg = tour ? `Xin chào Baggio Travel! Tôi muốn tư vấn về tour: ${tour.name_vi}` : 'Xin chào Baggio Travel!'
   window.open(`https://zalo.me/0901234567?text=${encodeURIComponent(msg)}`, '_blank')
 }
 
 // ── RELATED ────────────────────────────────────────────
 async function loadRelated(destination, excludeId, region) {
   const {data} = await sb.from('tours')
-    .select('id,name,slug,destination,base_price,cover_image,duration_days')
+    .select('id,name_vi,slug,destination,base_price,cover_image,duration_days')
     .eq('status','ACTIVE')
     .eq('region', region)
     .neq('id', excludeId)
@@ -480,10 +480,10 @@ async function loadRelated(destination, excludeId, region) {
 
   document.getElementById('relatedGrid').innerHTML = (data||[]).map(t=>`
     <a class="rel-card" href="baggio-tour-detail.html?slug=${t.slug}">
-      <img class="rel-img" src="${t.cover_image||'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=400&q=70'}" alt="${t.name}" onerror="this.src='https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=400&q=70'">
+      <img class="rel-img" src="${t.cover_image||'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=400&q=70'}" alt="${t.name_vi}" onerror="this.src='https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=400&q=70'">
       <div class="rel-body">
         <div class="rel-dest">${t.destination} · ${t.duration_days}N</div>
-        <div class="rel-name">${t.name.slice(0,50)}${t.name.length>50?'...':''}</div>
+        <div class="rel-name">${t.name_vi.slice(0,50)}${t.name_vi.length>50?'...':''}</div>
         <div class="rel-price">${fmt(t.base_price)}đ <span style="font-size:.72rem;font-weight:400;color:var(--muted)">/người</span></div>
       </div>
     </a>`).join('')
