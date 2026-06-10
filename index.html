@@ -710,7 +710,7 @@ async function loadTours(page = 0) {
     const f    = getFilters()
 
     let q = sb.from('tours')
-      .select('id,name,slug,destination,region,duration_days,duration_nights,base_price,max_pax,cover_image,includes,status,tour_schedules(available_slots,depart_date,status)', { count: 'exact' })
+      .select('id,name_vi,slug,destination,region,duration_days,duration_nights,base_price,max_pax,cover_image,includes_vi,status,tour_schedules(available_slots,depart_date,status)', { count: 'exact' })
       .eq('status', 'ACTIVE')
 
     // Server-side filters
@@ -795,7 +795,7 @@ function renderTours(tours) {
   }
 
   grid.innerHTML = tours.map(t => {
-    const inc   = t.includes || {}
+    const inc   = t.includes_vi || {}
     const schedOpen = (t.tour_schedules || []).filter(s => s.status === 'OPEN' && s.available_slots > 0)
     const hasSoon   = schedOpen.length > 0
     const incList   = buildIncludesList(inc)
@@ -806,13 +806,13 @@ function renderTours(tours) {
       <div class="tc-img-wrap">
         <img class="tc-img"
           src="${t.cover_image || 'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=600&q=70'}"
-          alt="${t.name}" loading="lazy"
+          alt="${t.name_vi}" loading="lazy"
           onerror="this.src='https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=600&q=70'">
         ${badgeHtml}
       </div>
       <div class="tc-body">
         <div class="tc-dest">${t.destination} · ${regionLabel(t.region)}</div>
-        <div class="tc-name">${t.name}</div>
+        <div class="tc-name">${t.name_vi}</div>
         <div class="tc-meta">
           <span>📅 ${t.duration_days}N${t.duration_nights}Đ</span>
           <span>👥 Tối đa ${t.max_pax} khách</span>
@@ -909,12 +909,12 @@ async function openModal(tourId) {
   currentTour = allTours.find(t => t.id === tourId)
   if (!currentTour) return
   const t = currentTour
-  const inc = t.includes || {}
+  const inc = t.includes_vi || {}
 
   document.getElementById('modalImg').src     = t.cover_image || ''
-  document.getElementById('modalImg').alt     = t.name
+  document.getElementById('modalImg').alt     = t.name_vi
   document.getElementById('modalDest').textContent  = `${t.destination} · ${regionLabel(t.region)}`
-  document.getElementById('modalName').textContent  = t.name
+  document.getElementById('modalName').textContent  = t.name_vi
   document.getElementById('modalPrice').innerHTML   = `${fmt(t.base_price)} <sub>đ/người</sub>`
 
   document.getElementById('modalMetas').innerHTML = `
@@ -928,7 +928,7 @@ async function openModal(tourId) {
     `<ul class="tc-includes">${incItems.map(i => `<li>${i}</li>`).join('')}</ul>`
 
   // Itinerary
-  const itin = Array.isArray(t.itinerary) ? t.itinerary : []
+  const itin = Array.isArray(t.itinerary_vi) ? t.itinerary_vi : []
   document.getElementById('modalItinerary').innerHTML = itin.map(day => `
     <div class="itinerary-day">
       <div class="itinerary-day-title">Ngày ${day.day}: ${day.title}</div>
@@ -936,7 +936,7 @@ async function openModal(tourId) {
     </div>`).join('')
 
   // Highlights
-  const hl = t.highlights || []
+  const hl = t.highlights_vi || []
   if (hl.length) {
     document.getElementById('modalHighSection').style.display = 'block'
     document.getElementById('modalHighlights').innerHTML = hl.map(h => `<li>${h}</li>`).join('')
@@ -1009,7 +1009,7 @@ async function loadReviews() {
   try {
     const { data, error } = await sb
       .from('reviews')
-      .select('id,reviewer_name,rating,comment,tour_id,tours(name)')
+      .select('id,reviewer_name,rating,comment,tour_id,tours(name_vi)')
       .eq('is_published', true)
       .order('created_at', { ascending: false })
       .limit(6)
@@ -1228,7 +1228,7 @@ async function runTripPlanner() {
 
   // Build query
   let q = sb.from('tours')
-    .select('id,name,slug,destination,region,duration_days,duration_nights,base_price,cover_image')
+    .select('id,name_vi,slug,destination,region,duration_days,duration_nights,base_price,cover_image')
     .eq('status', 'ACTIVE')
 
   if (dest)   q = q.eq('destination', dest)
@@ -1301,11 +1301,11 @@ async function runTripPlanner() {
     <div class="tp-card" onclick="openModal('${t.id}')">
       <img class="tp-card-img"
         src="${t.cover_image || 'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=400&q=70'}"
-        alt="${t.name}" loading="lazy"
+        alt="${t.name_vi}" loading="lazy"
         onerror="this.src='https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=400&q=70'">
       <div class="tp-card-body">
         <div class="tp-card-dest">${t.destination} · ${{north:'Miền Bắc',central:'Miền Trung',south:'Miền Nam'}[t.region]||t.region}</div>
-        <div class="tp-card-name">${t.name.slice(0,50)}${t.name.length>50?'...':''}</div>
+        <div class="tp-card-name">${t.name_vi.slice(0,50)}${t.name_vi.length>50?'...':''}</div>
         <div class="tp-card-meta">📅 ${t.duration_days}N${t.duration_nights||0}Đ</div>
         <div class="tp-card-footer">
           <div class="tp-card-price">${fmt(t.base_price)}<span style="font-size:.68rem;font-weight:400;color:rgba(255,255,255,.4)">đ</span></div>
