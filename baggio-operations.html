@@ -535,7 +535,7 @@ let bookingsCache = []
 async function loadChecklist() {
   const filter = document.getElementById('filterStatus').value
   let q = sb.from('bookings')
-    .select('id,booking_ref,guest_name,guest_phone,status,deposit_amount,created_at,tours(name,destination,duration_days),guides(full_name)')
+    .select('id,booking_ref,guest_name,guest_phone,status,deposit_amount,created_at,tours(name_vi,destination,duration_days),guides(full_name)')
     .in('status',['PENDING','CONFIRMED','ONGOING'])
     .order('created_at',{ascending:false})
     .limit(30)
@@ -717,7 +717,7 @@ async function loadGuideSchedule(){
 // ══════════════════════════════════════════════
 async function loadReminders(){
   const {data:bookings}=await sb.from('bookings')
-    .select('id,booking_ref,guest_name,guest_phone,status,tours(name)')
+    .select('id,booking_ref,guest_name,guest_phone,status,tours(name_vi)')
     .in('status',['CONFIRMED','PENDING'])
 
   const reminders=[]
@@ -816,7 +816,7 @@ function loadTemplates(){
   document.getElementById('templatesEl').innerHTML=TEMPLATES.map(t=>`
     <div style="background:var(--s3);border:1px solid var(--border);border-radius:8px;padding:1.1rem">
       <div style="font-size:1.5rem;margin-bottom:.5rem">${t.icon}</div>
-      <div style="font-weight:600;font-size:.9rem;margin-bottom:.75rem">${t.name}</div>
+      <div style="font-weight:600;font-size:.9rem;margin-bottom:.75rem">${t.name_vi}</div>
       <div style="display:flex;flex-direction:column;gap:.3rem">
         ${t.tasks.map(task=>`<div style="font-size:.78rem;color:var(--text2);display:flex;align-items:center;gap:.4rem"><span style="color:var(--teal,var(--green))">✓</span>${task}</div>`).join('')}
       </div>
