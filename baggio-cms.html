@@ -193,26 +193,6 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:13
 <body>
 <div class="toast-wrap" id="toastWrap"></div>
 
-<!-- API KEY MODAL -->
-<div class="modal-overlay hidden" id="apiKeyModal">
-  <div class="modal-box">
-    <div class="modal-title">🔑 Nhập Claude API Key</div>
-    <div class="modal-sub">
-      Key chỉ lưu trong <strong>localStorage</strong> của trình duyệt này, không gửi lên server.<br>
-      Lấy key tại <a href="https://console.anthropic.com/settings/keys" target="_blank">console.anthropic.com</a>
-    </div>
-    <div class="form-group" style="margin-bottom:.85rem">
-      <label class="form-label">API Key</label>
-      <input class="form-input" id="apiKeyInput" type="password" placeholder="sk-ant-api03-..." autocomplete="off">
-    </div>
-    <div style="display:flex;gap:.5rem">
-      <button class="btn btn-primary" style="flex:1" onclick="saveApiKey()">💾 Lưu & Dịch ngay</button>
-      <button class="btn btn-default" onclick="closeApiKeyModal()">Hủy</button>
-    </div>
-    <div id="apiKeyError" style="margin-top:.6rem;font-size:.75rem;color:var(--red);display:none"></div>
-  </div>
-</div>
-
 <!-- TOPBAR -->
 <header class="topbar">
   <div class="tb-logo">Baggio<span>.</span>CMS</div>
@@ -220,7 +200,6 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:13
   <div class="tb-right">
     <a href="baggio-admin.html" class="btn btn-default">← Admin</a>
     <a href="index.html" target="_blank" class="btn btn-default">🌐 Xem web</a>
-    <button class="btn btn-default" id="apiKeyIndicator" onclick="promptApiKey()" style="font-size:.6rem" title="Claude API Key cho Auto-translate">🔑 API Key</button>
     <button class="btn btn-green" id="globalSaveBtn" onclick="saveCurrent()" style="display:none">💾 Lưu</button>
   </div>
 </header>
@@ -1546,58 +1525,44 @@ function markEnModified(){
 }
 
 // ════════════════════════════════════════════
-// I18N — API KEY MANAGEMENT
+// I18N — AUTO TRANSLATE (MyMemory API — free, no key)
 // ════════════════════════════════════════════
-const API_KEY_LS = 'baggio_claude_api_key'
 
-function getApiKey(){ return localStorage.getItem(API_KEY_LS)||'' }
-
-function updateApiKeyIndicator(){
-  const btn = document.getElementById('apiKeyIndicator')
-  if(!btn) return
-  const has = !!getApiKey()
-  btn.textContent = has ? '🔑 Key ✓' : '🔑 API Key'
-  btn.style.borderColor = has ? 'var(--gbrd)' : 'var(--border)'
-  btn.style.color = has ? 'var(--green)' : 'var(--text2)'
+async function mymemory(text){
+  if(!text?.trim()) return ''
+  const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=vi|en`
+  const res = await fetch(url)
+  if(!res.ok) throw new Error(`MyMemory lỗi ${res.status}`)
+  const data = await res.json()
+  if(data.responseStatus !== 200) throw new Error(data.responseDetails || 'Dịch thất bại')
+  return data.responseData.translatedText
 }
 
-function promptApiKey(){
-  document.getElementById('apiKeyInput').value = getApiKey()
-  document.getElementById('apiKeyError').style.display = 'none'
-  document.getElementById('apiKeyModal').classList.remove('hidden')
-  setTimeout(()=>document.getElementById('apiKeyInput').focus(), 80)
-}
-
-function closeApiKeyModal(){
-  document.getElementById('apiKeyModal').classList.add('hidden')
-}
-
-function saveApiKey(){
-  const val = document.getElementById('apiKeyInput').value.trim()
-  const errEl = document.getElementById('apiKeyError')
-  if(!val.startsWith('sk-ant-')){ errEl.textContent='Key không hợp lệ — phải bắt đầu bằng sk-ant-'; errEl.style.display='block'; return }
-  localStorage.setItem(API_KEY_LS, val)
-  closeApiKeyModal()
-  updateApiKeyIndicator()
-  toast('🔑 Đã lưu API key')
-  // Nếu đang chờ dịch, chạy ngay
-  if(_pendingTranslate){ _pendingTranslate=false; autoTranslateTour() }
+// Dịch mảng: gộp thành 1 request, tách lại sau
+async function mymemoryArray(arr){
+  if(!arr?.length) return []
+  const SEP = ' |||| '
+  const joined = arr.join(SEP)
+  // MyMemory giới hạn 500 ký tự/request — nếu dài thì dịch từng item
+  if(joined.length <= 450){
+    const translated = await mymemory(joined)
+    return translated.split('||||').map(s=>s.trim())
+  }
+  // Dịch từng item nếu gộp lại quá dài
+  const results = []
+  for(const item of arr){
+    results.push(await mymemory(item))
+    await new Promise(r=>setTimeout(r,200)) // tránh rate limit
+  }
+  return results
 }
 
 let _pendingTranslate = false
 
-// ════════════════════════════════════════════
-// I18N — AUTO TRANSLATE (Claude API trực tiếp từ browser)
-// ════════════════════════════════════════════
 async function autoTranslateTour(){
   const id = currentEditTourId
   if(!id){ toast('Lưu tour trước khi dịch','warn'); return }
 
-  // Kiểm tra API key
-  const apiKey = getApiKey()
-  if(!apiKey){ _pendingTranslate=true; promptApiKey(); return }
-
-  // Nếu đã reviewed → hỏi trước
   const badge = document.getElementById('tabBadgeEn')
   if(badge?.textContent==='đã duyệt'){
     if(!confirm('Tour này đã được approve. Dịch lại sẽ ghi đè bản EN hiện tại. Tiếp tục?')) return
@@ -1607,101 +1572,49 @@ async function autoTranslateTour(){
   btns.forEach(b=>{ if(b){ b.disabled=true; b.innerHTML='⏳ Đang dịch...' } })
 
   try {
-    // Thu thập nội dung VI từ form hiện tại
-    const nameVi        = document.getElementById('tf_name').value.trim()
-    const descVi        = document.getElementById('tf_desc').value.trim()
-    const itinVi        = document.getElementById('tf_itinerary').value.trim()
-    const highlightsVi  = document.getElementById('tf_highlights').value.split('\n').map(s=>s.trim()).filter(Boolean)
-    const includesVi    = [...document.querySelectorAll('#includesGroup .check-tag.checked')].map(el=>el.textContent.trim())
-    const notesVi       = document.getElementById('tf_notes').value.split('\n').map(s=>s.trim()).filter(Boolean)
+    const nameVi       = document.getElementById('tf_name').value.trim()
+    const descVi       = document.getElementById('tf_desc').value.trim()
+    const itinViRaw    = document.getElementById('tf_itinerary').value.trim()
+    const highlightsVi = document.getElementById('tf_highlights').value.split('\n').map(s=>s.trim()).filter(Boolean)
+    const includesVi   = [...document.querySelectorAll('#includesGroup .check-tag.checked')].map(el=>el.textContent.trim())
+    const notesVi      = document.getElementById('tf_notes').value.split('\n').map(s=>s.trim()).filter(Boolean)
+    const summaryVi    = descVi.split(/[.!?]\s+/).slice(0,2).join('. ').trim()
 
-    // Build summary từ 2 câu đầu của description
-    const summaryVi = descVi.split(/[.!?]\s+/).slice(0,2).join('. ').trim()
+    // MyMemory có rate limit — dịch tuần tự, không song song
+    toast('🌐 Đang dịch tên tour...')
+    const nameEn      = await mymemory(nameVi)
+    const summaryEn   = await mymemory(summaryVi)
+    const descEn      = await mymemory(descVi.slice(0, 480)) // giới hạn 500 ký tự
+    const itinEn      = await mymemory(itinViRaw.slice(0, 480))
+    const highlightsEn = await mymemoryArray(highlightsVi)
+    const includesEn  = await mymemoryArray(includesVi)
+    const notesEn     = await mymemoryArray(notesVi)
 
-    const payload = { nameVi, summaryVi, descVi, itinVi, highlightsVi, includesVi, notesVi }
+    document.getElementById('tf_name_en').value       = nameEn
+    document.getElementById('tf_summary_en').value    = summaryEn
+    document.getElementById('tf_desc_en').value       = descEn
+    document.getElementById('tf_itinerary_en').value  = itinEn
+    document.getElementById('tf_highlights_en').value = highlightsEn.join('\n')
+    document.getElementById('tf_includes_en').value   = includesEn.join('\n')
+    document.getElementById('tf_excludes_en').value   = notesEn.join('\n')
 
-    const prompt = `You are a professional travel copywriter translating Vietnamese tour content to English for an international travel website (Baggio Travel, Vietnam).
-
-Rules:
-- Tone: engaging, vivid, professional travel writing — make it appealing to international tourists
-- Preserve structure exactly
-- For itinerary: keep "Day N:" prefix, translate the rest
-- Return ONLY a JSON object, no markdown fences, no explanation
-
-Input JSON (Vietnamese):
-${JSON.stringify(payload, null, 2)}
-
-Return JSON with these exact keys:
-{
-  "nameEn": "...",
-  "summaryEn": "...",
-  "descriptionEn": "...",
-  "itineraryEn": "...",
-  "highlightsEn": ["...", "..."],
-  "includesEn": ["...", "..."],
-  "notesEn": ["...", "..."]
-}`
-
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true',
-      },
-      body: JSON.stringify({
-        model: 'claude-opus-4-5',
-        max_tokens: 4096,
-        messages: [{ role: 'user', content: prompt }]
-      })
-    })
-
-    if(res.status === 401){
-      localStorage.removeItem(API_KEY_LS)
-      updateApiKeyIndicator()
-      throw new Error('API key không hợp lệ hoặc đã hết hạn')
-    }
-    if(!res.ok){
-      const e = await res.json()
-      throw new Error(e.error?.message || `HTTP ${res.status}`)
-    }
-
-    const data = await res.json()
-    const raw = data.content?.[0]?.text?.trim() || ''
-    // Strip markdown fences nếu model vẫn trả về
-    const clean = raw.replace(/^```json\s*/,'').replace(/\s*```$/,'').trim()
-    const translated = JSON.parse(clean)
-
-    // Điền vào EN fields
-    document.getElementById('tf_name_en').value        = translated.nameEn || ''
-    document.getElementById('tf_summary_en').value     = translated.summaryEn || ''
-    document.getElementById('tf_desc_en').value        = translated.descriptionEn || ''
-    document.getElementById('tf_itinerary_en').value   = translated.itineraryEn || ''
-    document.getElementById('tf_highlights_en').value  = (translated.highlightsEn||[]).join('\n')
-    document.getElementById('tf_includes_en').value    = (translated.includesEn||[]).join('\n')
-    document.getElementById('tf_excludes_en').value    = (translated.notesEn||[]).join('\n')
-
-    // Lưu EN fields + status 'auto' vào Supabase
+    // Lưu vào Supabase nếu migration đã chạy
     const enData = collectEnFields()
     const {error: saveErr} = await sb.from('tours').update({
       ...enData,
       translation_status: 'auto',
       translated_at: new Date().toISOString(),
     }).eq('id', id)
-
-    if(saveErr) throw new Error('Dịch xong nhưng lưu DB thất bại: ' + saveErr.message)
+    // Bỏ qua lỗi nếu cột chưa có (migration chưa chạy)
+    if(saveErr && !saveErr.message?.includes('column')) throw new Error('Lưu DB thất bại: ' + saveErr.message)
 
     updateEnTabBadge('auto', new Date().toISOString())
-    toast(`✅ Đã dịch: "${translated.nameEn?.slice(0,40)}"`)
-    // Switch sang tab EN để editor review
+    toast(`✅ Đã dịch: "${nameEn?.slice(0,40)}"`)
     switchLangTab('en', document.getElementById('tab-en'))
 
   } catch(err){
     toast('Lỗi dịch: ' + err.message, 'err')
     console.error('[autoTranslate]', err)
-    // Nếu lỗi key → mở modal lại
-    if(err.message.includes('API key')) promptApiKey()
   } finally {
     btns.forEach(b=>{ if(b){ b.disabled=false; b.innerHTML = b.id==='btnAutoTranslate' ? '🌐 Auto-translate EN' : '✨ Auto-translate' } })
   }
@@ -1756,9 +1669,6 @@ function collectEnFields(){
 // (EN fields saved via approveTourTranslation or auto-translate flow)
 
 document.addEventListener('DOMContentLoaded',()=>{
-  updateApiKeyIndicator()
-  // Close modal on Escape
-  document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeApiKeyModal() })
   // Click-to-toggle check tags
   document.querySelectorAll('.check-tag').forEach(tag=>{
     tag.addEventListener('click',()=>{
