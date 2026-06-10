@@ -3,7 +3,6 @@
     { "source": "/cms", "destination": "/baggio-cms.html" },
     { "source": "/booking.html", "destination": "/baggio-booking-live.html" },
     { "source": "/booking",  "destination": "/baggio-booking-live.html" },
-    { "source": "/cms1",  "destination": "/baggio-cms-i18n.html" },
     { "source": "/admin",    "destination": "/baggio-admin.html" },
     { "source": "/operations", "destination": "/baggio-operations.html" },
     { "source": "/guides-mgmt", "destination": "/baggio-guides-mgmt.html" },
