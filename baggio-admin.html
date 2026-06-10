@@ -593,7 +593,7 @@ function nav(page, el) {
 async function loadDashboard() {
   try {
     // Bookings stats
-    const {data:bookings} = await sb.from('bookings').select('id,status,payment_status,total_price,deposit_amount,created_at,guest_name,guest_phone,booking_ref,tours(name)')
+    const {data:bookings} = await sb.from('bookings').select('id,status,payment_status,total_price,deposit_amount,created_at,guest_name,guest_phone,booking_ref,tours(name_vi)')
     if(bookings) {
       const now=new Date(), m=now.getMonth(), y=now.getFullYear()
       const thisMonth=bookings.filter(b=>{const d=new Date(b.created_at);return d.getMonth()===m&&d.getFullYear()===y})
@@ -685,7 +685,7 @@ async function loadBookings(page=0) {
   const search=document.getElementById('bookingSearch').value.trim()
 
   const from=page*PAGE, to=from+PAGE-1
-  let q=sb.from('bookings').select('id,booking_ref,guest_name,guest_phone,guest_email,status,payment_status,total_price,deposit_amount,adult_count,child_count,room_type,special_requests,created_at,confirmed_at,cancel_reason,tours(name,destination,duration_days),guides(full_name,phone)',{count:'exact'})
+  let q=sb.from('bookings').select('id,booking_ref,guest_name,guest_phone,guest_email,status,payment_status,total_price,deposit_amount,adult_count,child_count,room_type,special_requests,created_at,confirmed_at,cancel_reason,tours(name_vi,destination,duration_days),guides(full_name,phone)',{count:'exact'})
   if(status) q=q.eq('status',status)
   if(pay)    q=q.eq('payment_status',pay)
   if(search) q=q.or(`guest_name.ilike.%${search}%,guest_phone.ilike.%${search}%,booking_ref.ilike.%${search}%`)
@@ -729,7 +729,7 @@ function searchBookings() { loadBookings(0) }
 async function openBookingDetail(id) {
   currentBookingId=id
   const {data:b,error}=await sb.from('bookings')
-    .select('*,tours(name,destination,duration_days,duration_nights),guides(full_name,phone)')
+    .select('*,tours(name_vi,destination,duration_days,duration_nights),guides(full_name,phone)')
     .eq('id',id).single()
   if(error||!b){toast('Không tải được chi tiết đơn','err');return}
 
@@ -838,7 +838,7 @@ async function loadGuides() {
 // ══════════════════════════════════════════════════════
 async function loadSchedule() {
   const filter=document.getElementById('scheduleFilter').value
-  let q=sb.from('tour_schedules').select('*,tours(name,destination,duration_days)').order('depart_date',{ascending:true})
+  let q=sb.from('tour_schedules').select('*,tours(name_vi,destination,duration_days)').order('depart_date',{ascending:true})
   if(filter==='upcoming') q=q.gte('depart_date',new Date().toISOString().split('T')[0])
   const {data,error}=await q.limit(50)
   if(error){toast('Lỗi tải lịch','err');return}
@@ -861,7 +861,7 @@ async function loadSchedule() {
 // FINANCE
 // ══════════════════════════════════════════════════════
 async function loadFinance() {
-  const {data:bookings}=await sb.from('bookings').select('status,payment_status,total_price,deposit_amount,created_at,tours(name,duration_days),guides(daily_rate)')
+  const {data:bookings}=await sb.from('bookings').select('status,payment_status,total_price,deposit_amount,created_at,tours(name_vi,duration_days),guides(daily_rate)')
   const {data:guides}=await sb.from('guides').select('daily_rate')
 
   const paid=(bookings||[]).filter(b=>b.payment_status==='SUCCESS')
@@ -943,7 +943,7 @@ async function loadToursList(page=0) {
   const region=document.getElementById('tourRegionFilter').value
   const search=document.getElementById('tourSearch').value.trim()
   const from=page*PAGE, to=from+PAGE-1
-  let q=sb.from('tours').select('id,name,destination,region,duration_days,base_price,status,tour_schedules(id,status,available_slots)',{count:'exact'})
+  let q=sb.from('tours').select('id,name_vi,destination,region,duration_days,base_price,status,tour_schedules(id,status,available_slots)',{count:'exact'})
   if(region) q=q.eq('region',region)
   if(search) q=q.or(`name.ilike.%${search}%,destination.ilike.%${search}%`)
   q=q.order('base_price',{ascending:true}).range(from,to)
@@ -954,7 +954,7 @@ async function loadToursList(page=0) {
   document.getElementById('toursTbl').innerHTML=(data||[]).map(t=>{
     const openScheds=(t.tour_schedules||[]).filter(s=>s.status==='OPEN'&&s.available_slots>0).length
     return`<tr>
-      <td><div class="td-name">${t.name?.slice(0,40)||'—'}${(t.name||'').length>40?'...':''}</div></td>
+      <td><div class="td-name">${t.name_vi?.slice(0,40)||'—'}${(t.name_vi||'').length>40?'...':''}</div></td>
       <td><span class="td-muted">${t.destination||'—'}</span></td>
       <td>${regionLabel(t.region)}</td>
       <td><span class="td-mono">${t.duration_days||1}N</span></td>
@@ -972,7 +972,7 @@ function searchTours(){ loadToursList(0) }
 // ══════════════════════════════════════════════════════
 async function loadReviews() {
   const filter=document.getElementById('reviewFilter').value
-  let q=sb.from('reviews').select('*,tours(name)').order('created_at',{ascending:false}).limit(50)
+  let q=sb.from('reviews').select('*,tours(name_vi)').order('created_at',{ascending:false}).limit(50)
   if(filter!=='') q=q.eq('is_published',filter==='true')
   const {data,error}=await q
   if(error){toast('Lỗi tải reviews','err');return}
@@ -1025,7 +1025,7 @@ function renderPagination(elId, page, total, fn) {
 // EXPORT CSV
 // ══════════════════════════════════════════════════════
 async function exportCSV() {
-  const {data}=await sb.from('bookings').select('booking_ref,guest_name,guest_phone,guest_email,status,payment_status,total_price,deposit_amount,adult_count,child_count,created_at,tours(name,destination)').order('created_at',{ascending:false})
+  const {data}=await sb.from('bookings').select('booking_ref,guest_name,guest_phone,guest_email,status,payment_status,total_price,deposit_amount,adult_count,child_count,created_at,tours(name_vi,destination)').order('created_at',{ascending:false})
   const rows=[['Mã đơn','Khách hàng','SĐT','Email','Tour','Điểm đến','NL','TE','Tổng tiền','Tiền cọc','Trạng thái','Thanh toán','Ngày đặt']]
   ;(data||[]).forEach(b=>rows.push([b.booking_ref||b.id,b.guest_name||'',b.guest_phone||'',b.guest_email||'',b.tours?.name||'',b.tours?.destination||'',b.adult_count||1,b.child_count||0,b.total_price||0,b.deposit_amount||0,b.status,b.payment_status,fmtDT(b.created_at)]))
   downloadCSV(rows,'baggio-bookings.csv')
