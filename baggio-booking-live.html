@@ -500,7 +500,7 @@ async function loadTours(){
     if(slug){
       // Chỉ load đúng 1 tour theo slug
       const {data,error}=await sb.from('tours')
-        .select('id,name,slug,destination,region,duration_days,duration_nights,base_price,child_price_pct,max_pax,cover_image,includes')
+        .select('id,name_vi,slug,destination,region,duration_days,duration_nights,base_price,child_price_pct,max_pax,cover_image,includes_vi')
         .eq('slug',slug).eq('status','ACTIVE').limit(1)
       if(error)throw error
       if(data&&data.length>0){
@@ -511,7 +511,7 @@ async function loadTours(){
     } else {
       // Không có slug → load 20 tour để chọn
       const {data,error}=await sb.from('tours')
-        .select('id,name,slug,destination,region,duration_days,duration_nights,base_price,child_price_pct,max_pax,cover_image,includes')
+        .select('id,name_vi,slug,destination,region,duration_days,duration_nights,base_price,child_price_pct,max_pax,cover_image,includes_vi')
         .eq('status','ACTIVE').order('base_price',{ascending:true}).limit(20)
       if(error)throw error
       S.allTours=data||[]
@@ -527,10 +527,10 @@ function renderTourList(){
   document.getElementById('tourList').innerHTML=S.allTours.map(t=>`
     <div class="tour-pick" id="tp-${t.id}" onclick="selectTour('${t.id}')">
       <div class="tp-check">✓</div>
-      <img class="tp-img" src="${t.cover_image||'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=200&q=60'}" alt="${t.name}" onerror="this.src='https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=200&q=60'">
+      <img class="tp-img" src="${t.cover_image||'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=200&q=60'}" alt="${t.name_vi}" onerror="this.src='https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=200&q=60'">
       <div>
         <div class="tp-dest">${t.destination} · ${regionLbl(t.region)}</div>
-        <div class="tp-name">${t.name}</div>
+        <div class="tp-name">${t.name_vi}</div>
         <div class="tp-meta">📅 ${t.duration_days}N${t.duration_nights}Đ · Tối đa ${t.max_pax} khách</div>
       </div>
       <div class="tp-price">
@@ -687,7 +687,7 @@ function updateSummary(){
   const t=S.tour
   if(t){
     document.getElementById('sumImg').src=t.cover_image||'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=400&q=70'
-    document.getElementById('sumName').textContent=t.name
+    document.getElementById('sumName').textContent=t.name_vi
     document.getElementById('sumDest').textContent=t.destination+' · '+regionLbl(t.region)
   }
   const f=(id,val,empty)=>{const el=document.getElementById(id);el.textContent=val||'—';el.className='sum-val'+((!val||empty)?(' sum-empty'):'')}
@@ -745,7 +745,7 @@ function buildConfirm(){
   const t=S.tour;if(!t)return
   const total=calcTotal()
   document.getElementById('confirmBox').innerHTML=`
-    <div class="confirm-row"><span class="confirm-label">Tour</span><span class="confirm-val">${t.name}</span></div>
+    <div class="confirm-row"><span class="confirm-label">Tour</span><span class="confirm-val">${t.name_vi}</span></div>
     <div class="confirm-row"><span class="confirm-label">Ngày đi</span><span class="confirm-val">${S.startDate?fmtDate(S.startDate):'—'}</span></div>
     <div class="confirm-row"><span class="confirm-label">Ngày về</span><span class="confirm-val">${S.endDate?fmtDate(S.endDate):'—'}</span></div>
     <div class="confirm-row"><span class="confirm-label">Số khách</span><span class="confirm-val">${S.adults} người lớn${S.children>0?', '+S.children+' trẻ em':''}</span></div>
