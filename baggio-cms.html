@@ -143,6 +143,41 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:13
 .banner-card-content{position:relative;z-index:1}
 .banner-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.35}
 
+/* I18N TABS */
+.lang-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:1rem;flex-shrink:0}
+.lang-tab{font-family:var(--mono);font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;padding:.5rem 1rem;cursor:pointer;color:var(--text3);border-bottom:2px solid transparent;margin-bottom:-1px;transition:all .15s;display:flex;align-items:center;gap:.4rem}
+.lang-tab:hover{color:var(--text2)}
+.lang-tab.active{color:var(--blue);border-bottom-color:var(--blue)}
+.lang-tab .tab-badge{font-size:.52rem;padding:.1rem .35rem;border-radius:3px;font-family:var(--mono)}
+.tab-badge.pending{background:var(--s3);border:1px solid var(--border);color:var(--text3)}
+.tab-badge.auto{background:var(--adim);border:1px solid var(--abrd);color:var(--amber)}
+.tab-badge.reviewed{background:var(--gdim);border:1px solid var(--gbrd);color:var(--green)}
+.lang-panel{display:none}.lang-panel.active{display:block}
+
+/* TRANSLATE TOOLBAR */
+.translate-bar{background:var(--s3);border:1px solid var(--border);border-radius:6px;padding:.65rem .85rem;display:flex;align-items:center;gap:.65rem;margin-bottom:1rem;flex-wrap:wrap}
+.translate-bar .tbar-status{font-size:.75rem;color:var(--text2);flex:1}
+.translate-bar .tbar-status strong{color:var(--text)}
+.btn-translate{background:linear-gradient(135deg,var(--purple),var(--blue));border-color:transparent;color:#fff;font-family:var(--mono);font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;padding:.42rem .9rem;border-radius:5px;cursor:pointer;transition:opacity .15s;border:none;display:inline-flex;align-items:center;gap:.35rem}
+.btn-translate:hover{opacity:.85}
+.btn-translate:disabled{opacity:.5;cursor:not-allowed}
+.btn-approve{background:var(--gdim);border:1px solid var(--gbrd);color:var(--green)}
+.btn-approve:hover{background:var(--green);color:#0d1117}
+
+/* DIFF HIGHLIGHT (khi so sánh VI vs EN) */
+.en-field-wrap{position:relative}
+.en-field-wrap .vi-ref{background:var(--s1);border:1px solid var(--border);border-radius:4px;padding:.45rem .75rem;font-size:.75rem;color:var(--text3);line-height:1.5;margin-bottom:.3rem;max-height:72px;overflow-y:auto;white-space:pre-wrap}
+.vi-ref-label{font-family:var(--mono);font-size:.52rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:.2rem}
+
+/* API KEY MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:900;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.modal-overlay.hidden{display:none}
+.modal-box{background:var(--s2);border:1px solid var(--border2);border-radius:10px;padding:1.75rem;width:440px;max-width:90vw;box-shadow:0 24px 60px rgba(0,0,0,.6)}
+.modal-title{font-weight:700;font-size:.95rem;margin-bottom:.3rem;display:flex;align-items:center;gap:.5rem}
+.modal-sub{font-size:.78rem;color:var(--text2);margin-bottom:1.1rem;line-height:1.6}
+.modal-sub a{color:var(--blue);text-decoration:none}
+.modal-sub a:hover{text-decoration:underline}
+
 /* TOAST */
 .toast-wrap{position:fixed;bottom:1.5rem;right:1.5rem;z-index:999;display:flex;flex-direction:column;gap:.5rem}
 .toast{background:var(--s2);border:1px solid var(--border);color:var(--text);padding:.65rem 1rem;font-size:.8rem;border-radius:6px;display:flex;align-items:center;gap:.5rem;min-width:240px;animation:toastIn .2s ease;box-shadow:0 8px 24px rgba(0,0,0,.4)}
@@ -158,6 +193,26 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:13
 <body>
 <div class="toast-wrap" id="toastWrap"></div>
 
+<!-- API KEY MODAL -->
+<div class="modal-overlay hidden" id="apiKeyModal">
+  <div class="modal-box">
+    <div class="modal-title">🔑 Nhập Claude API Key</div>
+    <div class="modal-sub">
+      Key chỉ lưu trong <strong>localStorage</strong> của trình duyệt này, không gửi lên server.<br>
+      Lấy key tại <a href="https://console.anthropic.com/settings/keys" target="_blank">console.anthropic.com</a>
+    </div>
+    <div class="form-group" style="margin-bottom:.85rem">
+      <label class="form-label">API Key</label>
+      <input class="form-input" id="apiKeyInput" type="password" placeholder="sk-ant-api03-..." autocomplete="off">
+    </div>
+    <div style="display:flex;gap:.5rem">
+      <button class="btn btn-primary" style="flex:1" onclick="saveApiKey()">💾 Lưu & Dịch ngay</button>
+      <button class="btn btn-default" onclick="closeApiKeyModal()">Hủy</button>
+    </div>
+    <div id="apiKeyError" style="margin-top:.6rem;font-size:.75rem;color:var(--red);display:none"></div>
+  </div>
+</div>
+
 <!-- TOPBAR -->
 <header class="topbar">
   <div class="tb-logo">Baggio<span>.</span>CMS</div>
@@ -165,6 +220,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:13
   <div class="tb-right">
     <a href="baggio-admin.html" class="btn btn-default">← Admin</a>
     <a href="index.html" target="_blank" class="btn btn-default">🌐 Xem web</a>
+    <button class="btn btn-default" id="apiKeyIndicator" onclick="promptApiKey()" style="font-size:.6rem" title="Claude API Key cho Auto-translate">🔑 API Key</button>
     <button class="btn btn-green" id="globalSaveBtn" onclick="saveCurrent()" style="display:none">💾 Lưu</button>
   </div>
 </header>
@@ -209,6 +265,12 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:13
       <option value="central">Miền Trung</option>
       <option value="south">Miền Nam</option>
     </select>
+    <select class="form-select" style="width:140px;font-size:.72rem;padding:.38rem .6rem" id="tourListI18n" onchange="loadTourList()">
+      <option value="">🌐 Tất cả dịch thuật</option>
+      <option value="pending">🔴 Chưa dịch EN</option>
+      <option value="auto">🟡 Chờ review</option>
+      <option value="reviewed">🟢 Đã duyệt</option>
+    </select>
     <button class="btn btn-primary" onclick="nav('new_tour',document.querySelector('[onclick*=new_tour]'))">+ Tour mới</button>
   </div>
   <div class="two-pane">
@@ -229,11 +291,23 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:13
     <div style="margin-left:auto;display:flex;gap:.5rem;align-items:center">
       <div id="tourSaveWarn" style="font-size:.72rem;color:var(--amber)"></div>
       <button class="btn btn-default" onclick="nav('tours',document.querySelector('[onclick*=\'tours\']'))">← Danh sách</button>
+      <button class="btn btn-default" id="btnAutoTranslate" onclick="autoTranslateTour()" style="display:none">🌐 Auto-translate EN</button>
       <button class="btn btn-default" onclick="saveTourDraft()">💾 Lưu nháp</button>
       <button class="btn btn-green" onclick="saveTour('ACTIVE')">🚀 Đăng bán</button>
     </div>
   </div>
-  <div class="editor-pane" style="flex:1">
+  <div class="editor-pane" style="flex:1;padding:0;display:flex;flex-direction:column">
+
+    <!-- LANG TABS -->
+    <div style="padding:.75rem 1.25rem 0;background:var(--s1);border-bottom:1px solid var(--border);flex-shrink:0">
+      <div class="lang-tabs" id="langTabs">
+        <div class="lang-tab active" onclick="switchLangTab('vi',this)" id="tab-vi">🇻🇳 Tiếng Việt</div>
+        <div class="lang-tab" onclick="switchLangTab('en',this)" id="tab-en">🇬🇧 English <span class="tab-badge pending" id="tabBadgeEn">chưa dịch</span></div>
+      </div>
+    </div>
+
+    <!-- VI PANEL -->
+    <div class="lang-panel active" id="panel-vi" style="flex:1;overflow-y:auto;padding:1.25rem">
 
     <!-- BASIC INFO -->
     <div class="editor-section">
@@ -520,8 +594,91 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:13
 
     <input type="hidden" id="tf_edit_id">
     <div style="height:2rem"></div>
-  </div>
-</div>
+  </div><!-- /panel-vi -->
+
+  <!-- EN PANEL -->
+  <div class="lang-panel" id="panel-en" style="flex:1;overflow-y:auto;padding:1.25rem">
+
+    <!-- TRANSLATE BAR -->
+    <div class="translate-bar" id="translateBar">
+      <div class="tbar-status" id="translateStatus">
+        <strong>🌐 Bản dịch Tiếng Anh</strong> — Nhấn "Auto-translate" để dịch tự động bằng AI
+      </div>
+      <button class="btn btn-translate" id="btnTranslateInPanel" onclick="autoTranslateTour()">
+        ✨ Auto-translate
+      </button>
+      <button class="btn btn-default btn-approve" id="btnApprove" onclick="approveTourTranslation()" style="display:none">
+        ✅ Approve bản dịch
+      </button>
+    </div>
+
+    <!-- EN: Basic Info -->
+    <div class="editor-section">
+      <div class="es-header">📋 Basic Info (EN)</div>
+      <div class="es-body">
+        <div class="form-group en-field-wrap">
+          <div class="vi-ref-label">🇻🇳 Bản VI (tham chiếu)</div>
+          <div class="vi-ref" id="ref_name"></div>
+          <label class="form-label">Tour Name (EN) *</label>
+          <input class="form-input" id="tf_name_en" placeholder="E.g. Hoi An – My Son 3D2N Full Package Tour" oninput="markEnModified()">
+        </div>
+        <div class="form-group en-field-wrap" style="margin-top:.5rem">
+          <div class="vi-ref-label">🇻🇳 Mô tả tóm tắt VI</div>
+          <div class="vi-ref" id="ref_summary"></div>
+          <label class="form-label">Summary (EN) — 1–2 sentences for listing card</label>
+          <textarea class="form-textarea" id="tf_summary_en" style="min-height:72px" placeholder="A captivating summary for the tour card..." oninput="markEnModified()"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- EN: Content -->
+    <div class="editor-section">
+      <div class="es-header">📝 Content (EN)</div>
+      <div class="es-body">
+        <div class="form-group en-field-wrap">
+          <div class="vi-ref-label">🇻🇳 Điểm nổi bật VI</div>
+          <div class="vi-ref" id="ref_highlights"></div>
+          <label class="form-label">Highlights (EN) — one per line</label>
+          <textarea class="form-textarea" id="tf_highlights_en" style="min-height:90px" placeholder="Explore the ancient Hoi An lantern-lit streets&#10;Visit the mystical My Son Sanctuary&#10;Experience traditional lantern-making workshop" oninput="markEnModified()"></textarea>
+        </div>
+        <div class="form-group en-field-wrap" style="margin-top:.5rem">
+          <div class="vi-ref-label">🇻🇳 Mô tả chi tiết VI</div>
+          <div class="vi-ref" id="ref_desc"></div>
+          <label class="form-label">Full Description (EN)</label>
+          <textarea class="form-textarea" id="tf_desc_en" style="min-height:100px" placeholder="Engaging full tour description in English..." oninput="markEnModified()"></textarea>
+        </div>
+        <div class="form-group en-field-wrap" style="margin-top:.5rem">
+          <div class="vi-ref-label">🇻🇳 Lịch trình VI</div>
+          <div class="vi-ref" id="ref_itinerary"></div>
+          <label class="form-label">Itinerary (EN) — "Day N: Title – Activity – Activity"</label>
+          <textarea class="form-textarea" id="tf_itinerary_en" style="min-height:140px" placeholder="Day 1: Da Nang Airport pickup – Hoi An check-in – Old Town evening walk&#10;Day 2: Thanh Ha Pottery Village – My Son Sanctuary – Hoi An Night Market&#10;Day 3: Free time & shopping – Airport transfer" oninput="markEnModified()"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- EN: Includes/Excludes -->
+    <div class="editor-section">
+      <div class="es-header">✅ Includes / Excludes (EN)</div>
+      <div class="es-body">
+        <div class="form-group en-field-wrap">
+          <div class="vi-ref-label">🇻🇳 Bao gồm VI</div>
+          <div class="vi-ref" id="ref_includes"></div>
+          <label class="form-label">Includes (EN) — one per line</label>
+          <textarea class="form-textarea" id="tf_includes_en" style="min-height:80px" placeholder="Round-trip airport transfers&#10;2 nights hotel (twin/double)&#10;Daily breakfast" oninput="markEnModified()"></textarea>
+        </div>
+        <div class="form-group" style="margin-top:.5rem">
+          <label class="form-label">Excludes (EN) — one per line</label>
+          <textarea class="form-textarea" id="tf_excludes_en" style="min-height:72px" placeholder="International / domestic airfare&#10;Personal expenses&#10;Tips & gratuities" oninput="markEnModified()"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div style="height:2rem"></div>
+  </div><!-- /panel-en -->
+
+  </div><!-- /editor-pane -->
+
+</div><!-- /page-new_tour -->
 
 <!-- ═══ BLOG ═══ -->
 <div class="page" id="page-blog">
@@ -734,9 +891,11 @@ async function loadTourList(){
   const status=document.getElementById('tourListStatus')?.value||''
   const region=document.getElementById('tourListRegion')?.value||''
   const search=document.getElementById('tourListSearch')?.value?.trim()||''
+  const i18n=document.getElementById('tourListI18n')?.value||''
   let q=sb.from('tours').select('id,name,slug,destination,region,base_price,status,cover_image',{count:'exact'})
   if(status) q=q.eq('status',status)
   if(region) q=q.eq('region',region)
+  if(i18n) q=q.eq('translation_status',i18n)
   if(search) q=q.or(`name.ilike.%${search}%,destination.ilike.%${search}%`)
   q=q.order('created_at',{ascending:false}).limit(50)
   const {data,count}=await q
@@ -808,6 +967,12 @@ function resetTourEditor(){
   // Datalist
   const dl=document.getElementById('destDL')
   dl.innerHTML=ALL_PROV.map(p=>`<option value="${p}">`).join('')
+  // Clear EN panel
+  ;['tf_name_en','tf_summary_en','tf_desc_en','tf_highlights_en','tf_includes_en','tf_excludes_en','tf_itinerary_en'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''})
+  updateEnTabBadge('pending', null)
+  enModified = false
+  document.getElementById('btnAutoTranslate').style.display='none'
+  switchLangTab('vi', document.getElementById('tab-vi'))
 }
 
 function populateTourEditor(t){
@@ -864,6 +1029,13 @@ function populateTourEditor(t){
   runValidation()
   // Datalist
   document.getElementById('destDL').innerHTML=ALL_PROV.map(p=>`<option value="${p}">`).join('')
+
+  // ── i18n: populate EN fields ──
+  populateEnPanel(t)
+  // Show translate button only for existing tours
+  document.getElementById('btnAutoTranslate').style.display = t.id ? 'inline-flex' : 'none'
+  // Reset to VI tab when opening a tour
+  switchLangTab('vi', document.getElementById('tab-vi'))
 }
 
 // ════════════════════════════════════════════
@@ -1067,6 +1239,15 @@ async function saveTour(status='ACTIVE'){
   else { ({error}=await sb.from('tours').insert(data)) }
   if(error){toast('Lỗi lưu: '+error.message,'err');return}
   toast(editId?`✅ Đã cập nhật "${name.slice(0,30)}"`:`✅ Tour "${name.slice(0,30)}" ${status==='ACTIVE'?'đã đăng bán':'lưu nháp'}`)
+
+  // Save EN fields if editor manually edited them
+  if(editId && enModified){
+    const enData = collectEnFields()
+    await sb.from('tours').update({...enData, translation_status:'manual'}).eq('id',editId)
+    enModified = false
+    toast('🌐 Đã lưu bản dịch EN (manual)')
+  }
+
   loadTourList()
   nav('tours',document.querySelector('[onclick*="\'tours\'"]'))
 }
@@ -1286,7 +1467,298 @@ async function runFullValidation(){
 // ════════════════════════════════════════════
 // CHECK TAGS
 // ════════════════════════════════════════════
+// ════════════════════════════════════════════
+// I18N — TAB SWITCH
+// ════════════════════════════════════════════
+function switchLangTab(lang, el){
+  document.querySelectorAll('.lang-tab').forEach(t=>t.classList.remove('active'))
+  document.querySelectorAll('.lang-panel').forEach(p=>p.classList.remove('active'))
+  if(el) el.classList.add('active')
+  document.getElementById('panel-'+lang)?.classList.add('active')
+  // Update VI refs when switching to EN
+  if(lang==='en') updateViRefs()
+}
+
+function updateViRefs(){
+  const name=document.getElementById('tf_name')?.value||''
+  const desc=document.getElementById('tf_desc')?.value||''
+  const itin=document.getElementById('tf_itinerary')?.value||''
+  const hl=document.getElementById('tf_highlights')?.value||''
+  // Includes: build text from checked boxes
+  const inc=[...document.querySelectorAll('#includesGroup .check-tag.checked')].map(el=>el.textContent.trim()).join(', ')
+
+  const set=(id,val)=>{const el=document.getElementById(id);if(el)el.textContent=val||'(chưa nhập)'}
+  set('ref_name', name)
+  set('ref_desc', desc)
+  set('ref_itinerary', itin)
+  set('ref_highlights', hl)
+  set('ref_includes', inc)
+  set('ref_summary', desc.slice(0,200)+(desc.length>200?'...':''))
+}
+
+// ════════════════════════════════════════════
+// I18N — POPULATE / CLEAR EN PANEL
+// ════════════════════════════════════════════
+function populateEnPanel(t){
+  const ts = t.translation_status || 'pending'
+
+  // Fill EN fields — guard nulls (columns may not exist yet in DB)
+  document.getElementById('tf_name_en').value       = t.name_en || ''
+  document.getElementById('tf_summary_en').value    = t.summary_en || ''
+  document.getElementById('tf_desc_en').value       = t.description_en || ''
+  document.getElementById('tf_highlights_en').value = (t.highlights_en||[]).join('\n')
+  document.getElementById('tf_includes_en').value   = (t.includes_en||[]).join('\n')
+  document.getElementById('tf_excludes_en').value   = (t.excludes_en||[]).join('\n')
+  const itinEn = Array.isArray(t.itinerary_en) ? t.itinerary_en : []
+  document.getElementById('tf_itinerary_en').value  = itinEn.map(d=>`Day ${d.day}: ${d.title}${d.activities?.length?' – '+d.activities.join(' – '):''}`).join('\n')
+
+  updateEnTabBadge(ts, t.translated_at || null)
+}
+
+function updateEnTabBadge(status, translatedAt){
+  const badge = document.getElementById('tabBadgeEn')
+  const approveBtn = document.getElementById('btnApprove')
+  const statusEl = document.getElementById('translateStatus')
+
+  const labels = { pending:'chưa dịch', auto:'chờ review', reviewed:'đã duyệt', manual:'manual' }
+  badge.textContent = labels[status] || 'chưa dịch'
+  badge.className = `tab-badge ${status==='reviewed'||status==='manual'?'reviewed':status==='auto'?'auto':'pending'}`
+
+  if(statusEl){
+    const dateStr = translatedAt ? new Date(translatedAt).toLocaleDateString('vi-VN') : ''
+    if(status==='pending') statusEl.innerHTML='<strong>🌐 Bản dịch Tiếng Anh</strong> — Nhấn "Auto-translate" để dịch tự động bằng AI'
+    else if(status==='auto') statusEl.innerHTML=`<strong>🟡 Đã dịch tự động ${dateStr}</strong> — Vui lòng review rồi nhấn "Approve"`
+    else if(status==='reviewed') statusEl.innerHTML=`<strong>🟢 Đã duyệt ${dateStr}</strong> — Bản dịch đã được editor approve`
+    else if(status==='manual') statusEl.innerHTML=`<strong>🟢 Nhập tay ${dateStr}</strong> — Bản dịch được nhập thủ công`
+  }
+
+  approveBtn.style.display = (status==='auto') ? 'inline-flex' : 'none'
+}
+
+let enModified = false
+function markEnModified(){
+  enModified = true
+  // If status was 'auto', signal editor has modified it
+  const badge = document.getElementById('tabBadgeEn')
+  if(badge.classList.contains('auto')){
+    badge.textContent = 'đang sửa'
+  }
+}
+
+// ════════════════════════════════════════════
+// I18N — API KEY MANAGEMENT
+// ════════════════════════════════════════════
+const API_KEY_LS = 'baggio_claude_api_key'
+
+function getApiKey(){ return localStorage.getItem(API_KEY_LS)||'' }
+
+function updateApiKeyIndicator(){
+  const btn = document.getElementById('apiKeyIndicator')
+  if(!btn) return
+  const has = !!getApiKey()
+  btn.textContent = has ? '🔑 Key ✓' : '🔑 API Key'
+  btn.style.borderColor = has ? 'var(--gbrd)' : 'var(--border)'
+  btn.style.color = has ? 'var(--green)' : 'var(--text2)'
+}
+
+function promptApiKey(){
+  document.getElementById('apiKeyInput').value = getApiKey()
+  document.getElementById('apiKeyError').style.display = 'none'
+  document.getElementById('apiKeyModal').classList.remove('hidden')
+  setTimeout(()=>document.getElementById('apiKeyInput').focus(), 80)
+}
+
+function closeApiKeyModal(){
+  document.getElementById('apiKeyModal').classList.add('hidden')
+}
+
+function saveApiKey(){
+  const val = document.getElementById('apiKeyInput').value.trim()
+  const errEl = document.getElementById('apiKeyError')
+  if(!val.startsWith('sk-ant-')){ errEl.textContent='Key không hợp lệ — phải bắt đầu bằng sk-ant-'; errEl.style.display='block'; return }
+  localStorage.setItem(API_KEY_LS, val)
+  closeApiKeyModal()
+  updateApiKeyIndicator()
+  toast('🔑 Đã lưu API key')
+  // Nếu đang chờ dịch, chạy ngay
+  if(_pendingTranslate){ _pendingTranslate=false; autoTranslateTour() }
+}
+
+let _pendingTranslate = false
+
+// ════════════════════════════════════════════
+// I18N — AUTO TRANSLATE (Claude API trực tiếp từ browser)
+// ════════════════════════════════════════════
+async function autoTranslateTour(){
+  const id = currentEditTourId
+  if(!id){ toast('Lưu tour trước khi dịch','warn'); return }
+
+  // Kiểm tra API key
+  const apiKey = getApiKey()
+  if(!apiKey){ _pendingTranslate=true; promptApiKey(); return }
+
+  // Nếu đã reviewed → hỏi trước
+  const badge = document.getElementById('tabBadgeEn')
+  if(badge?.textContent==='đã duyệt'){
+    if(!confirm('Tour này đã được approve. Dịch lại sẽ ghi đè bản EN hiện tại. Tiếp tục?')) return
+  }
+
+  const btns = [document.getElementById('btnAutoTranslate'), document.getElementById('btnTranslateInPanel')]
+  btns.forEach(b=>{ if(b){ b.disabled=true; b.innerHTML='⏳ Đang dịch...' } })
+
+  try {
+    // Thu thập nội dung VI từ form hiện tại
+    const nameVi        = document.getElementById('tf_name').value.trim()
+    const descVi        = document.getElementById('tf_desc').value.trim()
+    const itinVi        = document.getElementById('tf_itinerary').value.trim()
+    const highlightsVi  = document.getElementById('tf_highlights').value.split('\n').map(s=>s.trim()).filter(Boolean)
+    const includesVi    = [...document.querySelectorAll('#includesGroup .check-tag.checked')].map(el=>el.textContent.trim())
+    const notesVi       = document.getElementById('tf_notes').value.split('\n').map(s=>s.trim()).filter(Boolean)
+
+    // Build summary từ 2 câu đầu của description
+    const summaryVi = descVi.split(/[.!?]\s+/).slice(0,2).join('. ').trim()
+
+    const payload = { nameVi, summaryVi, descVi, itinVi, highlightsVi, includesVi, notesVi }
+
+    const prompt = `You are a professional travel copywriter translating Vietnamese tour content to English for an international travel website (Baggio Travel, Vietnam).
+
+Rules:
+- Tone: engaging, vivid, professional travel writing — make it appealing to international tourists
+- Preserve structure exactly
+- For itinerary: keep "Day N:" prefix, translate the rest
+- Return ONLY a JSON object, no markdown fences, no explanation
+
+Input JSON (Vietnamese):
+${JSON.stringify(payload, null, 2)}
+
+Return JSON with these exact keys:
+{
+  "nameEn": "...",
+  "summaryEn": "...",
+  "descriptionEn": "...",
+  "itineraryEn": "...",
+  "highlightsEn": ["...", "..."],
+  "includesEn": ["...", "..."],
+  "notesEn": ["...", "..."]
+}`
+
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model: 'claude-opus-4-5',
+        max_tokens: 4096,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    })
+
+    if(res.status === 401){
+      localStorage.removeItem(API_KEY_LS)
+      updateApiKeyIndicator()
+      throw new Error('API key không hợp lệ hoặc đã hết hạn')
+    }
+    if(!res.ok){
+      const e = await res.json()
+      throw new Error(e.error?.message || `HTTP ${res.status}`)
+    }
+
+    const data = await res.json()
+    const raw = data.content?.[0]?.text?.trim() || ''
+    // Strip markdown fences nếu model vẫn trả về
+    const clean = raw.replace(/^```json\s*/,'').replace(/\s*```$/,'').trim()
+    const translated = JSON.parse(clean)
+
+    // Điền vào EN fields
+    document.getElementById('tf_name_en').value        = translated.nameEn || ''
+    document.getElementById('tf_summary_en').value     = translated.summaryEn || ''
+    document.getElementById('tf_desc_en').value        = translated.descriptionEn || ''
+    document.getElementById('tf_itinerary_en').value   = translated.itineraryEn || ''
+    document.getElementById('tf_highlights_en').value  = (translated.highlightsEn||[]).join('\n')
+    document.getElementById('tf_includes_en').value    = (translated.includesEn||[]).join('\n')
+    document.getElementById('tf_excludes_en').value    = (translated.notesEn||[]).join('\n')
+
+    // Lưu EN fields + status 'auto' vào Supabase
+    const enData = collectEnFields()
+    const {error: saveErr} = await sb.from('tours').update({
+      ...enData,
+      translation_status: 'auto',
+      translated_at: new Date().toISOString(),
+    }).eq('id', id)
+
+    if(saveErr) throw new Error('Dịch xong nhưng lưu DB thất bại: ' + saveErr.message)
+
+    updateEnTabBadge('auto', new Date().toISOString())
+    toast(`✅ Đã dịch: "${translated.nameEn?.slice(0,40)}"`)
+    // Switch sang tab EN để editor review
+    switchLangTab('en', document.getElementById('tab-en'))
+
+  } catch(err){
+    toast('Lỗi dịch: ' + err.message, 'err')
+    console.error('[autoTranslate]', err)
+    // Nếu lỗi key → mở modal lại
+    if(err.message.includes('API key')) promptApiKey()
+  } finally {
+    btns.forEach(b=>{ if(b){ b.disabled=false; b.innerHTML = b.id==='btnAutoTranslate' ? '🌐 Auto-translate EN' : '✨ Auto-translate' } })
+  }
+}
+
+// ════════════════════════════════════════════
+// I18N — APPROVE TRANSLATION
+// ════════════════════════════════════════════
+async function approveTourTranslation(){
+  const id = currentEditTourId
+  if(!id) return
+
+  const enData = collectEnFields()
+  const {error} = await sb.from('tours').update({
+    ...enData,
+    translation_status: 'reviewed',
+  }).eq('id', id)
+
+  if(error){
+    if(error.message?.includes('column') || error.code === '42703'){
+      toast('⚠️ Chưa chạy migration i18n — cột EN chưa có trong DB','warn')
+    } else {
+      toast('Lỗi lưu: '+error.message,'err')
+    }
+    return
+  }
+  updateEnTabBadge('reviewed', new Date().toISOString())
+  enModified = false
+  toast('🟢 Đã approve bản dịch EN')
+}
+
+function collectEnFields(){
+  // Parse itinerary EN text → array
+  const itinText = document.getElementById('tf_itinerary_en').value
+  const itinerary_en = itinText.split('\n').filter(l=>l.trim()).map((line,i)=>{
+    const m = line.match(/^Day\s*(\d+):\s*(.+)/i)
+    const content = m?m[2]:line
+    const parts = content.split(/\s*[–\-]\s*/)
+    return{day:m?Number(m[1]):i+1, title:parts[0]||`Day ${i+1}`, activities:parts.slice(1)}
+  })
+  return {
+    name_en:           document.getElementById('tf_name_en').value.trim()||null,
+    summary_en:        document.getElementById('tf_summary_en').value.trim()||null,
+    description_en:    document.getElementById('tf_desc_en').value.trim()||null,
+    highlights_en:     document.getElementById('tf_highlights_en').value.split('\n').map(s=>s.trim()).filter(Boolean),
+    includes_en:       document.getElementById('tf_includes_en').value.split('\n').map(s=>s.trim()).filter(Boolean),
+    excludes_en:       document.getElementById('tf_excludes_en').value.split('\n').map(s=>s.trim()).filter(Boolean),
+    itinerary_en,
+  }
+}
+
+// (EN fields saved via approveTourTranslation or auto-translate flow)
+
 document.addEventListener('DOMContentLoaded',()=>{
+  updateApiKeyIndicator()
+  // Close modal on Escape
+  document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeApiKeyModal() })
   // Click-to-toggle check tags
   document.querySelectorAll('.check-tag').forEach(tag=>{
     tag.addEventListener('click',()=>{
