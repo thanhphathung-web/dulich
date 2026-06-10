@@ -131,6 +131,10 @@ nav{background:var(--card);border-bottom:1px solid var(--border);padding:.9rem 2
 .sf-input,.sf-select{border:1px solid var(--border);background:var(--cream);padding:.65rem 1rem;font-family:var(--font);font-size:.9rem;color:var(--ink);outline:none;transition:border-color .2s;width:100%;-webkit-appearance:none}
 .sf-input:focus,.sf-select:focus{border-color:var(--red)}
 .sf-input::placeholder{color:#c8c0b4}
+.sf-search-wrap{position:relative;flex:1.8}
+.sf-search-wrap .sf-input{padding-right:2.5rem}
+.sf-search-clear{position:absolute;right:.75rem;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);font-size:1rem;line-height:1;padding:0;display:none}
+.sf-search-clear:hover{color:var(--ink)}
 .sf-select option{background:#fff}
 .btn-search{background:var(--red);color:#fff;border:none;padding:.7rem 1.75rem;font-family:var(--font);font-weight:600;font-size:.9rem;cursor:pointer;transition:background .2s;white-space:nowrap;align-self:flex-end;height:42px}
 .btn-search:hover{background:#a82d22}
@@ -477,6 +481,13 @@ footer{background:var(--ink);color:rgba(250,248,243,.55);padding:3rem 2rem 1.5re
 <!-- SEARCH -->
 <div id="search-section">
   <div class="search-wrap">
+    <div class="sf-group sf-search-wrap">
+      <label class="sf-label" data-i18n="filter_search">Tìm kiếm tour</label>
+      <input class="sf-input" id="searchInput" type="search"
+        placeholder="Nhập tên tour, điểm đến..." autocomplete="off"
+        oninput="onSearchInput(this.value)">
+      <button class="sf-search-clear" id="searchClear" onclick="clearSearch()" title="Xóa">✕</button>
+    </div>
     <div class="sf-group">
       <label class="sf-label" data-i18n="filter_region">Vùng miền</label>
       <select class="sf-select" id="filterRegion" onchange="onRegionChange()">
@@ -694,6 +705,7 @@ const ALL_PROVINCES = [...PROVINCES.north, ...PROVINCES.central, ...PROVINCES.so
 
 function getFilters() {
   return {
+    search:   document.getElementById('searchInput')?.value.trim() || '',
     region:   document.getElementById('filterRegion')?.value || '',
     dest:     document.getElementById('filterDest')?.value || '',
     priceMin: document.getElementById('filterPriceMin')?.value || '',
@@ -714,6 +726,7 @@ async function loadTours(page = 0) {
       .eq('status', 'ACTIVE')
 
     // Server-side filters
+    if (f.search)   q = q.or(`name_vi.ilike.%${f.search}%,destination.ilike.%${f.search}%`)
     if (f.dest)     q = q.eq('destination', f.dest)
     if (f.region)   q = q.eq('region', f.region)
     if (f.priceMin) q = q.gte('base_price', +f.priceMin)
@@ -849,7 +862,22 @@ function changePageSize(val) {
 // ══════════════════════════════════════════════════════════════
 // FILTERS — SERVER-SIDE
 // ══════════════════════════════════════════════════════════════
-let activeRegion = ''
+let searchTimer
+function onSearchInput(val) {
+  // Hiện/ẩn nút X
+  document.getElementById('searchClear').style.display = val ? 'block' : 'none'
+  // Debounce 350ms — không query liên tục khi đang gõ
+  clearTimeout(searchTimer)
+  searchTimer = setTimeout(() => applyFilters(), 350)
+}
+
+function clearSearch() {
+  const input = document.getElementById('searchInput')
+  input.value = ''
+  document.getElementById('searchClear').style.display = 'none'
+  input.focus()
+  applyFilters()
+}
 
 function populateDestFilter(region) {
   const sel  = document.getElementById('filterDest')
@@ -892,11 +920,13 @@ function filterTours() { applyFilters() }
 
 function resetFilters() {
   activeRegion = ''
-  document.getElementById('filterRegion').value  = ''
-  document.getElementById('filterDest').value    = ''
+  document.getElementById('searchInput').value    = ''
+  document.getElementById('searchClear').style.display = 'none'
+  document.getElementById('filterRegion').value   = ''
+  document.getElementById('filterDest').value     = ''
   document.getElementById('filterPriceMin').value = ''
   document.getElementById('filterPriceMax').value = ''
-  document.getElementById('filterDays').value    = ''
+  document.getElementById('filterDays').value     = ''
   document.querySelectorAll('.fchip').forEach((b, i) => b.classList.toggle('active', i === 0))
   populateDestFilter('')
   loadTours(0)
