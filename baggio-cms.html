@@ -1647,7 +1647,9 @@ async function approveTourTranslation(){
 }
 
 function collectEnFields(){
-  // Parse itinerary EN text → array
+  // Chỉ gửi các cột thực tế có trong DB:
+  // name_en, highlights_en (TEXT[]), itinerary_en (JSONB), includes_en (JSONB)
+  // KHÔNG có: summary_en, description_en, excludes_en
   const itinText = document.getElementById('tf_itinerary_en').value
   const itinerary_en = itinText.split('\n').filter(l=>l.trim()).map((line,i)=>{
     const m = line.match(/^Day\s*(\d+):\s*(.+)/i)
@@ -1656,12 +1658,9 @@ function collectEnFields(){
     return{day:m?Number(m[1]):i+1, title:parts[0]||`Day ${i+1}`, activities:parts.slice(1)}
   })
   return {
-    name_en:           document.getElementById('tf_name_en').value.trim()||null,
-    summary_en:        document.getElementById('tf_summary_en').value.trim()||null,
-    description_en:    document.getElementById('tf_desc_en').value.trim()||null,
-    highlights_en:     document.getElementById('tf_highlights_en').value.split('\n').map(s=>s.trim()).filter(Boolean),
-    includes_en:       document.getElementById('tf_includes_en').value.split('\n').map(s=>s.trim()).filter(Boolean),
-    excludes_en:       document.getElementById('tf_excludes_en').value.split('\n').map(s=>s.trim()).filter(Boolean),
+    name_en:        document.getElementById('tf_name_en').value.trim()||null,
+    highlights_en:  document.getElementById('tf_highlights_en').value.split('\n').map(s=>s.trim()).filter(Boolean),
+    includes_en:    document.getElementById('tf_includes_en').value.split('\n').map(s=>s.trim()).filter(Boolean),
     itinerary_en,
   }
 }
