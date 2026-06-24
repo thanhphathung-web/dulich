@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Baggio Travel — Quản trị</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<!-- ═══════════════════════════════════
+     SUPABASE CONFIG — ĐỔI 2 DÒNG NÀY
+     ═══════════════════════════════════ -->
+<script>
+  const SUPABASE_URL  = 'https://lfnlezfphwjtdunyungi.supabase.co'
+  const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxmbmxlemZwaHdqdGR1bnl1bmdpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0NjkwNzcsImV4cCI6MjA5NjA0NTA3N30.fmjvqhyiPcjB6qT5GDtfzMfY-C-WXP4QUIk-YW7FhJg'
+</script>
+
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0d1117;--s1:#161b22;--s2:#1c2230;--s3:#21283a;
+  --border:#253047;--border2:#2d3a55;
+  --text:#e6edf3;--text2:#8b949e;--text3:#3d4f6e;
+  --green:#3fb950;--gdim:rgba(63,185,80,.12);--gbrd:rgba(63,185,80,.3);
+  --blue:#58a6ff;--bdim:rgba(88,166,255,.1);--bbrd:rgba(88,166,255,.25);
+  --amber:#d29922;--adim:rgba(210,153,34,.1);--abrd:rgba(210,153,34,.25);
+  --red:#f85149;--rdim:rgba(248,81,73,.1);--rbrd:rgba(248,81,73,.25);
+  --purple:#bc8cff;--pdim:rgba(188,140,255,.1);
+  --font:'Be Vietnam Pro',sans-serif;--mono:'Space Mono',monospace;
+}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:13px;display:grid;grid-template-columns:220px 1fr;grid-template-rows:52px 1fr}
+
+/* TOPBAR */
+.topbar{grid-column:1/-1;background:var(--s1);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 1.25rem;gap:1rem;position:sticky;top:0;z-index:100}
+.tb-logo{font-family:var(--mono);font-size:.88rem;font-weight:700;color:var(--text)}
+.tb-logo span{color:var(--green)}
+.tb-sep{color:var(--text3);font-size:.75rem}
+.tb-title{font-size:.82rem;color:var(--text2)}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:.75rem}
+.tb-badge{font-family:var(--mono);font-size:.58rem;letter-spacing:.08em;text-transform:uppercase;padding:.25rem .65rem;border-radius:20px;border:1px solid var(--gbrd);background:var(--gdim);color:var(--green)}
+.tb-time{font-family:var(--mono);font-size:.68rem;color:var(--text3)}
+
+/* SIDEBAR */
+.sidebar{background:var(--s1);border-right:1px solid var(--border);overflow-y:auto;padding:.75rem 0}
+.sb-section{font-family:var(--mono);font-size:.55rem;letter-spacing:.18em;text-transform:uppercase;color:var(--text3);padding:.65rem 1.1rem .25rem}
+.sb-item{display:flex;align-items:center;gap:.6rem;padding:.48rem 1.1rem;font-size:.8rem;color:var(--text2);cursor:pointer;border-left:2px solid transparent;transition:all .15s;border-radius:0 4px 4px 0}
+.sb-item:hover{color:var(--text);background:rgba(255,255,255,.03)}
+.sb-item.active{color:var(--blue);border-left-color:var(--blue);background:var(--bdim)}
+.sb-item .sb-icon{font-size:1rem;flex-shrink:0}
+.sb-count{margin-left:auto;font-family:var(--mono);font-size:.58rem;background:var(--s3);border:1px solid var(--border);padding:.15rem .4rem;border-radius:4px;color:var(--text3)}
+
+/* MAIN */
+.main{overflow-y:auto;padding:1.5rem}
+.page{display:none}
+.page.active{display:block}
+
+/* STAT CARDS */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.85rem;margin-bottom:1.5rem}
+.stat-card{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:1.1rem 1.25rem;position:relative;overflow:hidden;transition:border-color .2s}
+.stat-card:hover{border-color:var(--border2)}
+.stat-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.stat-card.green::before{background:var(--green)}
+.stat-card.blue::before{background:var(--blue)}
+.stat-card.amber::before{background:var(--amber)}
+.stat-card.red::before{background:var(--red)}
+.stat-card.purple::before{background:var(--purple)}
+.sc-label{font-family:var(--mono);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-bottom:.5rem}
+.sc-value{font-family:var(--mono);font-size:1.6rem;font-weight:700;color:var(--text);line-height:1;margin-bottom:.35rem}
+.sc-sub{font-size:.72rem;color:var(--text2);display:flex;align-items:center;gap:.3rem}
+.sc-trend{font-family:var(--mono);font-size:.65rem;padding:.15rem .4rem;border-radius:3px}
+.sc-trend.up{background:var(--gdim);color:var(--green)}
+.sc-trend.dn{background:var(--rdim);color:var(--red)}
+
+/* CHARTS */
+.charts-row{display:grid;grid-template-columns:2fr 1fr;gap:.85rem;margin-bottom:1.5rem}
+.chart-card{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:1.1rem}
+.cc-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+.cc-title{font-weight:600;font-size:.85rem;color:var(--text)}
+.cc-sub{font-size:.72rem;color:var(--text3);font-family:var(--mono)}
+.chart-wrap{position:relative;height:200px}
+
+/* TABLE */
+.table-card{background:var(--s2);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:1.25rem}
+.tc-header{background:var(--s3);border-bottom:1px solid var(--border);padding:.75rem 1.1rem;display:flex;align-items:center;justify-content:space-between;gap:.75rem}
+.tc-title{font-weight:600;font-size:.85rem;color:var(--text)}
+.tc-actions{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}
+.tc-search{background:var(--s1);border:1px solid var(--border);color:var(--text);font-family:var(--font);font-size:.78rem;padding:.4rem .75rem;border-radius:5px;outline:none;width:200px;transition:border-color .2s}
+.tc-search:focus{border-color:var(--blue)}
+.tc-search::placeholder{color:var(--text3)}
+.tc-filter{background:var(--s1);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:.65rem;padding:.4rem .65rem;border-radius:5px;outline:none;cursor:pointer;-webkit-appearance:none}
+.tc-filter option{background:var(--s2)}
+.tc-btn{font-family:var(--mono);font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;padding:.38rem .85rem;border-radius:5px;border:1px solid var(--border);background:none;color:var(--text2);cursor:pointer;transition:all .15s}
+.tc-btn:hover{border-color:var(--border2);color:var(--text)}
+.tc-btn.primary{background:var(--blue);border-color:var(--blue);color:#0d1117}
+.tc-btn.primary:hover{background:#79b8ff}
+
+table{width:100%;border-collapse:collapse}
+thead tr{background:var(--s3)}
+th{font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);padding:.65rem 1rem;text-align:left;font-weight:400;border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:.75rem 1rem;border-bottom:1px solid rgba(255,255,255,.04);font-size:.8rem;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.02)}
+.td-mono{font-family:var(--mono);font-size:.72rem}
+.td-name{font-weight:500;color:var(--text)}
+.td-muted{color:var(--text2);font-size:.75rem}
+
+/* BADGES */
+.badge{font-family:var(--mono);font-size:.58rem;letter-spacing:.06em;text-transform:uppercase;padding:.22rem .55rem;border-radius:4px;display:inline-flex;align-items:center;gap:.3rem;white-space:nowrap}
+.badge-pending{background:var(--adim);border:1px solid var(--abrd);color:var(--amber)}
+.badge-confirmed{background:var(--bdim);border:1px solid var(--bbrd);color:var(--blue)}
+.badge-completed{background:var(--gdim);border:1px solid var(--gbrd);color:var(--green)}
+.badge-cancelled{background:var(--rdim);border:1px solid var(--rbrd);color:var(--red)}
+.badge-ongoing{background:var(--pdim);border:1px solid rgba(188,140,255,.3);color:var(--purple)}
+.badge-deposit{background:var(--adim);border:1px solid var(--abrd);color:var(--amber)}
+.badge-paid{background:var(--gdim);border:1px solid var(--gbrd);color:var(--green)}
+.badge-refunded{background:var(--rdim);border:1px solid var(--rbrd);color:var(--red)}
+
+/* ACTION BUTTONS */
+.action-btn{background:none;border:1px solid var(--border);color:var(--text2);font-family:var(--mono);font-size:.58rem;padding:.22rem .5rem;border-radius:4px;cursor:pointer;transition:all .15s;text-transform:uppercase;letter-spacing:.04em}
+.action-btn:hover{border-color:var(--border2);color:var(--text)}
+.action-btn.confirm{border-color:var(--gbrd);color:var(--green)}
+.action-btn.confirm:hover{background:var(--gdim)}
+.action-btn.cancel{border-color:var(--rbrd);color:var(--red)}
+.action-btn.cancel:hover{background:var(--rdim)}
+
+/* MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:500;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.modal-bg.open{display:flex}
+.modal{background:var(--s2);border:1px solid var(--border);border-radius:10px;width:100%;max-width:580px;max-height:85vh;overflow-y:auto;position:relative}
+.modal-header{background:var(--s3);border-bottom:1px solid var(--border);padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0}
+.modal-title{font-weight:600;font-size:.9rem}
+.modal-close{background:none;border:none;color:var(--text2);font-size:1.2rem;cursor:pointer;line-height:1;transition:color .2s}
+.modal-close:hover{color:var(--text)}
+.modal-body{padding:1.25rem}
+.modal-footer{padding:.85rem 1.25rem;border-top:1px solid var(--border);display:flex;gap:.65rem;justify-content:flex-end}
+
+/* FORM */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:.85rem}
+.form-group{display:flex;flex-direction:column;gap:.35rem}
+.form-group.full{grid-column:1/-1}
+.form-label{font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text3)}
+.form-input,.form-select,.form-textarea{background:var(--s1);border:1px solid var(--border);color:var(--text);font-family:var(--font);font-size:.85rem;padding:.6rem .85rem;border-radius:5px;outline:none;transition:border-color .2s;width:100%}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--blue)}
+.form-select option{background:var(--s2)}
+.form-textarea{resize:vertical;min-height:80px}
+
+/* DETAIL ROWS */
+.detail-row{display:flex;justify-content:space-between;padding:.5rem 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:.82rem}
+.detail-row:last-child{border-bottom:none}
+.detail-label{color:var(--text2);font-weight:300}
+.detail-value{font-weight:500;color:var(--text);text-align:right;max-width:60%}
+
+/* PAGINATION */
+.pagination{display:flex;align-items:center;justify-content:between;padding:.75rem 1rem;border-top:1px solid var(--border);gap:.5rem}
+.pag-info{font-family:var(--mono);font-size:.65rem;color:var(--text3);margin-right:auto}
+.pag-btn{background:none;border:1px solid var(--border);color:var(--text2);font-family:var(--mono);font-size:.65rem;padding:.3rem .65rem;border-radius:4px;cursor:pointer;transition:all .15s}
+.pag-btn:hover:not(:disabled){border-color:var(--border2);color:var(--text)}
+.pag-btn:disabled{opacity:.35;cursor:not-allowed}
+.pag-btn.active{background:var(--blue);border-color:var(--blue);color:#0d1117}
+
+/* FINANCE */
+.finance-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.85rem;margin-bottom:1.5rem}
+.fin-card{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:1.1rem}
+.fc-label{font-family:var(--mono);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-bottom:.4rem}
+.fc-value{font-family:var(--mono);font-size:1.4rem;font-weight:700;line-height:1;margin-bottom:.25rem}
+.fc-sub{font-size:.72rem;color:var(--text2)}
+
+/* EMPTY / LOADING */
+.empty{text-align:center;padding:3rem 1rem}
+.empty-icon{font-size:2.5rem;margin-bottom:.75rem;opacity:.3}
+.empty-title{font-size:.9rem;font-weight:600;color:var(--text);margin-bottom:.3rem}
+.empty-sub{font-size:.78rem;color:var(--text2)}
+.loading-row td{text-align:center;padding:2rem;color:var(--text3);font-family:var(--mono);font-size:.75rem}
+
+/* TOAST */
+.toast-wrap{position:fixed;bottom:1.5rem;right:1.5rem;z-index:999;display:flex;flex-direction:column;gap:.5rem}
+.toast{background:var(--s2);border:1px solid var(--border);color:var(--text);padding:.65rem 1rem;font-size:.8rem;border-radius:6px;display:flex;align-items:center;gap:.5rem;min-width:240px;animation:toastIn .2s ease;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+@keyframes toastIn{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:none}}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+@media(max-width:900px){body{grid-template-columns:1fr}.sidebar{display:none}.stats-grid{grid-template-columns:1fr 1fr}.charts-row{grid-template-columns:1fr}.finance-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<!-- MODAL CHI TIẾT ĐƠN -->
+<div class="modal-bg" id="bookingModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">Chi tiết đơn đặt tour</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-footer">
+      <button class="tc-btn" id="modalCancelBtn" onclick="cancelBookingFromModal()" style="display:none">❌ Hủy đơn</button>
+      <button class="tc-btn primary" id="modalConfirmBtn" onclick="confirmBookingFromModal()" style="display:none">✅ Xác nhận</button>
+      <button class="tc-btn" onclick="closeModal()">Đóng</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PHÂN CÔNG HDV -->
+<div class="modal-bg" id="assignModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Phân công Hướng dẫn viên</div>
+      <button class="modal-close" onclick="closeAssignModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group" style="margin-bottom:1rem">
+        <label class="form-label">Chọn HDV</label>
+        <select class="form-select" id="assignGuideSelect">
+          <option value="">-- Chọn HDV --</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Ghi chú</label>
+        <textarea class="form-textarea" id="assignNote" placeholder="Ghi chú cho HDV..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="tc-btn primary" onclick="saveAssign()">💾 Lưu phân công</button>
+      <button class="tc-btn" onclick="closeAssignModal()">Hủy</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="tb-logo">Baggio<span>.</span>Admin</div>
+  <div class="tb-sep">/</div>
+  <div class="tb-title" id="topbarTitle">Dashboard</div>
+  <div class="tb-right">
+    <div class="tb-badge">● Live</div>
+    <div class="tb-time" id="clockEl"></div>
+  </div>
+</header>
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sb-section">Tổng quan</div>
+  <div class="sb-item active" onclick="nav('dashboard',this)">
+    <span class="sb-icon">📊</span> Dashboard
+  </div>
+  <div class="sb-section">Vận hành</div>
+  <div class="sb-item" onclick="nav('bookings',this)">
+    <span class="sb-icon">📋</span> Đơn đặt tour
+    <span class="sb-count" id="sbBookingCount">—</span>
+  </div>
+  <div class="sb-item" onclick="nav('guides',this)">
+    <span class="sb-icon">🧑‍💼</span> Hướng dẫn viên
+  </div>
+  <div class="sb-item" onclick="nav('schedule',this)">
+    <span class="sb-icon">📅</span> Lịch khởi hành
+  </div>
+  <div class="sb-section">Tài chính</div>
+  <div class="sb-item" onclick="nav('finance',this)">
+    <span class="sb-icon">💰</span> Doanh thu & Lợi nhuận
+  </div>
+  <div class="sb-section">Nội dung</div>
+  <div class="sb-item" onclick="nav('tours',this)">
+    <span class="sb-icon">🗺️</span> Quản lý tour
+    <span class="sb-count" id="sbTourCount">—</span>
+  </div>
+  <div class="sb-item" onclick="nav('reviews',this)">
+    <span class="sb-icon">⭐</span> Đánh giá
+  </div>
+</nav>
+
+<!-- MAIN CONTENT -->
+<main class="main">
+
+  <!-- ═══ DASHBOARD ═══ -->
+  <div class="page active" id="page-dashboard">
+    <div class="stats-grid">
+      <div class="stat-card green">
+        <div class="sc-label">Doanh thu tháng này</div>
+        <div class="sc-value" id="statRevMonth">—</div>
+        <div class="sc-sub"><span class="sc-trend up" id="statRevTrend">↑</span> <span id="statRevSub">đang tải...</span></div>
+      </div>
+      <div class="stat-card blue">
+        <div class="sc-label">Đơn đặt tour</div>
+        <div class="sc-value" id="statTotalBookings">—</div>
+        <div class="sc-sub"><span class="sc-trend up" id="statBookTrend">↑</span> <span id="statBookSub">tháng này</span></div>
+      </div>
+      <div class="stat-card amber">
+        <div class="sc-label">Chờ xác nhận</div>
+        <div class="sc-value" id="statPending">—</div>
+        <div class="sc-sub" style="color:var(--amber)">Cần xử lý ngay</div>
+      </div>
+      <div class="stat-card purple">
+        <div class="sc-label">Tour đang hoạt động</div>
+        <div class="sc-value" id="statActiveTours">—</div>
+        <div class="sc-sub">Trong <span id="statTotalTours">—</span> tour</div>
+      </div>
+    </div>
+
+    <div class="charts-row">
+      <div class="chart-card">
+        <div class="cc-header">
+          <div>
+            <div class="cc-title">Doanh thu 6 tháng gần nhất</div>
+            <div class="cc-sub" id="chartRevLabel">Tổng tiền cọc đã thu</div>
+          </div>
+        </div>
+        <div class="chart-wrap"><canvas id="revenueChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="cc-header">
+          <div class="cc-title">Trạng thái đơn hàng</div>
+          <div class="cc-sub">Phân bổ hiện tại</div>
+        </div>
+        <div class="chart-wrap"><canvas id="statusChart"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Đơn mới nhất -->
+    <div class="table-card">
+      <div class="tc-header">
+        <div class="tc-title">Đơn đặt tour mới nhất</div>
+        <button class="tc-btn" onclick="nav('bookings',document.querySelector('[onclick*=bookings]'))">Xem tất cả →</button>
+      </div>
+      <table>
+        <thead><tr>
+          <th>Mã đơn</th><th>Khách hàng</th><th>Tour</th><th>Ngày đặt</th><th>Tiền cọc</th><th>Trạng thái</th>
+        </tr></thead>
+        <tbody id="recentBookingsTbl">
+          <tr class="loading-row"><td colspan="6">⏳ Đang tải...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ═══ BOOKINGS ═══ -->
+  <div class="page" id="page-bookings">
+    <div class="table-card">
+      <div class="tc-header">
+        <div class="tc-title">Quản lý đơn đặt tour</div>
+        <div class="tc-actions">
+          <input class="tc-search" id="bookingSearch" placeholder="🔍 Tìm tên, SĐT, mã đơn..." oninput="searchBookings()">
+          <select class="tc-filter" id="bookingStatusFilter" onchange="loadBookings(0)">
+            <option value="">Tất cả trạng thái</option>
+            <option value="PENDING">Chờ xác nhận</option>
+            <option value="CONFIRMED">Đã xác nhận</option>
+            <option value="ONGOING">Đang diễn ra</option>
+            <option value="COMPLETED">Hoàn thành</option>
+            <option value="CANCELLED">Đã hủy</option>
+          </select>
+          <select class="tc-filter" id="bookingPayFilter" onchange="loadBookings(0)">
+            <option value="">Thanh toán</option>
+            <option value="PENDING">Chưa thanh toán</option>
+            <option value="SUCCESS">Đã cọc</option>
+          </select>
+          <button class="tc-btn" onclick="loadBookings(0)">↺ Tải lại</button>
+          <button class="tc-btn primary" onclick="exportCSV()">📥 Xuất CSV</button>
+        </div>
+      </div>
+      <table>
+        <thead><tr>
+          <th>Mã đơn</th><th>Khách hàng</th><th>SĐT</th><th>Tour</th><th>Ngày đặt</th><th>Khách</th><th>Tổng tiền</th><th>Cọc 30%</th><th>Trạng thái</th><th>Thanh toán</th><th>HDV</th><th>Thao tác</th>
+        </tr></thead>
+        <tbody id="bookingsTbl">
+          <tr class="loading-row"><td colspan="12">⏳ Đang tải dữ liệu...</td></tr>
+        </tbody>
+      </table>
+      <div class="pagination" id="bookingPagination"></div>
+    </div>
+  </div>
+
+  <!-- ═══ GUIDES ═══ -->
+  <div class="page" id="page-guides">
+    <div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
+      <div class="stat-card green"><div class="sc-label">HDV đang hoạt động</div><div class="sc-value" id="statActiveGuides">—</div><div class="sc-sub">Sẵn sàng nhận tour</div></div>
+      <div class="stat-card amber"><div class="sc-label">Đang dẫn tour</div><div class="sc-value" id="statOnTourGuides">—</div></div>
+      <div class="stat-card blue"><div class="sc-label">Rating trung bình</div><div class="sc-value" id="statAvgRating">—</div><div class="sc-sub">★ Trên thang 5</div></div>
+    </div>
+    <div class="table-card">
+      <div class="tc-header">
+        <div class="tc-title">Danh sách Hướng dẫn viên</div>
+        <div class="tc-actions">
+          <button class="tc-btn" onclick="loadGuides()">↺ Tải lại</button>
+        </div>
+      </div>
+      <table>
+        <thead><tr>
+          <th>Họ tên</th><th>SĐT</th><th>Ngôn ngữ</th><th>Vùng phụ trách</th><th>Tổng tour</th><th>Rating</th><th>Phí ngày</th><th>Trạng thái</th><th>Thao tác</th>
+        </tr></thead>
+        <tbody id="guidesTbl">
+          <tr class="loading-row"><td colspan="9">⏳ Đang tải...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ═══ SCHEDULE ═══ -->
+  <div class="page" id="page-schedule">
+    <div class="table-card">
+      <div class="tc-header">
+        <div class="tc-title">Lịch khởi hành sắp tới</div>
+        <div class="tc-actions">
+          <select class="tc-filter" id="scheduleFilter" onchange="loadSchedule()">
+            <option value="upcoming">Sắp diễn ra</option>
+            <option value="all">Tất cả</option>
+          </select>
+          <button class="tc-btn" onclick="loadSchedule()">↺ Tải lại</button>
+        </div>
+      </div>
+      <table>
+        <thead><tr>
+          <th>Tour</th><th>Ngày đi</th><th>Ngày về</th><th>Tổng chỗ</th><th>Đã đặt</th><th>Còn lại</th><th>Trạng thái</th><th>Thao tác</th>
+        </tr></thead>
+        <tbody id="scheduleTbl">
+          <tr class="loading-row"><td colspan="8">⏳ Đang tải...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ═══ FINANCE ═══ -->
+  <div class="page" id="page-finance">
+    <div class="finance-grid">
+      <div class="fin-card" style="border-left:3px solid var(--green)">
+        <div class="fc-label">Tổng doanh thu (đã cọc)</div>
+        <div class="fc-value" style="color:var(--green)" id="finRevenue">—</div>
+        <div class="fc-sub">Tổng tiền cọc đã thu từ khách</div>
+      </div>
+      <div class="fin-card" style="border-left:3px solid var(--red)">
+        <div class="fc-label">Chi phí HDV (ước tính)</div>
+        <div class="fc-value" style="color:var(--red)" id="finCost">—</div>
+        <div class="fc-sub">Dựa trên phí ngày × số ngày tour</div>
+      </div>
+      <div class="fin-card" style="border-left:3px solid var(--blue)">
+        <div class="fc-label">Lợi nhuận gộp (ước tính)</div>
+        <div class="fc-value" style="color:var(--blue)" id="finProfit">—</div>
+        <div class="fc-sub" id="finMargin">Biên lợi nhuận: —%</div>
+      </div>
+    </div>
+    <div class="charts-row" style="grid-template-columns:1fr 1fr">
+      <div class="chart-card">
+        <div class="cc-header"><div class="cc-title">Doanh thu theo tháng</div></div>
+        <div class="chart-wrap"><canvas id="finRevenueChart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="cc-header"><div class="cc-title">Top 5 tour doanh thu cao nhất</div></div>
+        <div class="chart-wrap"><canvas id="topToursChart"></canvas></div>
+      </div>
+    </div>
+    <div class="table-card">
+      <div class="tc-header">
+        <div class="tc-title">Báo cáo tài chính theo tháng</div>
+        <button class="tc-btn primary" onclick="exportFinanceCSV()">📥 Xuất báo cáo</button>
+      </div>
+      <table>
+        <thead><tr>
+          <th>Tháng</th><th>Số đơn</th><th>Doanh thu</th><th>Chi phí HDV</th><th>Lợi nhuận</th><th>Biên LN</th>
+        </tr></thead>
+        <tbody id="financeTbl">
+          <tr class="loading-row"><td colspan="6">⏳ Đang tải...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ═══ TOURS ═══ -->
+  <div class="page" id="page-tours">
+    <div class="table-card">
+      <div class="tc-header">
+        <div class="tc-title">Quản lý Tour (<span id="tourTotalCount">—</span>)</div>
+        <div class="tc-actions">
+          <input class="tc-search" id="tourSearch" placeholder="🔍 Tìm tên tour, điểm đến..." oninput="searchTours()">
+          <select class="tc-filter" id="tourRegionFilter" onchange="loadToursList(0)">
+            <option value="">Tất cả vùng</option>
+            <option value="north">Miền Bắc</option>
+            <option value="central">Miền Trung</option>
+            <option value="south">Miền Nam</option>
+          </select>
+          <button class="tc-btn" onclick="loadToursList(0)">↺ Tải lại</button>
+        </div>
+      </div>
+      <table>
+        <thead><tr>
+          <th>Tên tour</th><th>Điểm đến</th><th>Vùng</th><th>Ngày</th><th>Giá/người</th><th>Lịch còn</th><th>Trạng thái</th><th>Thao tác</th>
+        </tr></thead>
+        <tbody id="toursTbl">
+          <tr class="loading-row"><td colspan="8">⏳ Đang tải...</td></tr>
+        </tbody>
+      </table>
+      <div class="pagination" id="tourPagination"></div>
+    </div>
+  </div>
+
+  <!-- ═══ REVIEWS ═══ -->
+  <div class="page" id="page-reviews">
+    <div class="table-card">
+      <div class="tc-header">
+        <div class="tc-title">Quản lý đánh giá</div>
+        <div class="tc-actions">
+          <select class="tc-filter" id="reviewFilter" onchange="loadReviews()">
+            <option value="">Tất cả</option>
+            <option value="true">Đã duyệt</option>
+            <option value="false">Chờ duyệt</option>
+          </select>
+          <button class="tc-btn" onclick="loadReviews()">↺ Tải lại</button>
+        </div>
+      </div>
+      <table>
+        <thead><tr>
+          <th>Người đánh giá</th><th>Tour</th><th>Rating</th><th>Nhận xét</th><th>Ngày</th><th>Trạng thái</th><th>Thao tác</th>
+        </tr></thead>
+        <tbody id="reviewsTbl">
+          <tr class="loading-row"><td colspan="7">⏳ Đang tải...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</main>
+
+<script>
+// ══════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON)
+const fmt = n => Number(n||0).toLocaleString('vi-VN')
+const fmtD = d => d ? new Date(d).toLocaleDateString('vi-VN') : '—'
+const fmtDT = d => d ? new Date(d).toLocaleString('vi-VN',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '—'
+const regionLabel = r => ({north:'Miền Bắc',central:'Miền Trung',south:'Miền Nam'}[r]||r)
+
+let currentBookingId = null
+let currentPage = 0
+const PAGE = 15
+
+// Clock
+setInterval(() => {
+  document.getElementById('clockEl').textContent = new Date().toLocaleTimeString('vi-VN')
+}, 1000)
+
+function toast(msg, type='ok') {
+  const w=document.getElementById('toastWrap'), t=document.createElement('div')
+  t.className='toast'
+  t.style.borderLeft=`3px solid ${type==='err'?'var(--red)':type==='warn'?'var(--amber)':'var(--green)'}`
+  t.textContent=msg; w.appendChild(t)
+  setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity .3s';setTimeout(()=>t.remove(),300)},3000)
+}
+
+function statusBadge(s) {
+  const map={PENDING:'badge-pending ⏳',CONFIRMED:'badge-confirmed ✅',ONGOING:'badge-ongoing 🔄',COMPLETED:'badge-completed ✓',CANCELLED:'badge-cancelled ✕'}
+  const [cls,icon]=(map[s]||'badge-pending ⏳').split(' ')
+  return `<span class="badge ${cls}">${icon} ${s}</span>`
+}
+function payBadge(s) {
+  const map={PENDING:'badge-pending Chưa cọc',SUCCESS:'badge-paid Đã cọc',FAILED:'badge-cancelled Thất bại',REFUNDED:'badge-refunded Đã hoàn'}
+  const [cls,...rest]=(map[s]||'badge-pending Chưa cọc').split(' ')
+  return `<span class="badge ${cls}">${rest.join(' ')}</span>`
+}
+function starRating(r) { return '★'.repeat(r||0)+'☆'.repeat(5-(r||0)) }
+
+// ══════════════════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════════════════
+const pageLoaders = {
+  dashboard: loadDashboard,
+  bookings:  () => loadBookings(0),
+  guides:    loadGuides,
+  schedule:  loadSchedule,
+  finance:   loadFinance,
+  tours:     () => loadToursList(0),
+  reviews:   loadReviews,
+}
+const pageTitles = {
+  dashboard:'Dashboard',bookings:'Quản lý đơn đặt tour',guides:'Hướng dẫn viên',
+  schedule:'Lịch khởi hành',finance:'Doanh thu & Lợi nhuận',tours:'Quản lý Tour',reviews:'Đánh giá'
+}
+
+function nav(page, el) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'))
+  document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'))
+  document.getElementById('page-'+page).classList.add('active')
+  if(el) el.classList.add('active')
+  document.getElementById('topbarTitle').textContent = pageTitles[page]||page
+  if(pageLoaders[page]) pageLoaders[page]()
+}
+
+// ══════════════════════════════════════════════════════
+// DASHBOARD
+// ══════════════════════════════════════════════════════
+async function loadDashboard() {
+  try {
+    // Bookings stats
+    const {data:bookings} = await sb.from('bookings').select('id,status,payment_status,total_price,deposit_amount,created_at,guest_name,guest_phone,booking_ref,tours(name_vi)')
+    if(bookings) {
+      const now=new Date(), m=now.getMonth(), y=now.getFullYear()
+      const thisMonth=bookings.filter(b=>{const d=new Date(b.created_at);return d.getMonth()===m&&d.getFullYear()===y})
+      const lastMonth=bookings.filter(b=>{const d=new Date(b.created_at);return d.getMonth()===(m===0?11:m-1)&&d.getFullYear()===(m===0?y-1:y)})
+      const pending=bookings.filter(b=>b.status==='PENDING')
+      const revMonth=thisMonth.filter(b=>b.payment_status==='SUCCESS').reduce((s,b)=>s+Number(b.deposit_amount||0),0)
+      const revLast=lastMonth.filter(b=>b.payment_status==='SUCCESS').reduce((s,b)=>s+Number(b.deposit_amount||0),0)
+      const growth=revLast>0?Math.round((revMonth-revLast)/revLast*100):0
+
+      document.getElementById('statRevMonth').textContent=fmt(revMonth)+'đ'
+      document.getElementById('statTotalBookings').textContent=bookings.length
+      document.getElementById('statPending').textContent=pending.length
+      document.getElementById('statBookSub').textContent=`${thisMonth.length} đơn tháng này`
+      document.getElementById('statRevTrend').textContent=growth>=0?`↑ ${growth}%`:`↓ ${Math.abs(growth)}%`
+      document.getElementById('statRevTrend').className=`sc-trend ${growth>=0?'up':'dn'}`
+      document.getElementById('sbBookingCount').textContent=pending.length
+
+      // Recent bookings
+      const recent=bookings.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)).slice(0,8)
+      document.getElementById('recentBookingsTbl').innerHTML=recent.map(b=>`
+        <tr style="cursor:pointer" onclick="openBookingDetail('${b.id}')">
+          <td><span class="td-mono">${b.booking_ref||b.id.slice(-6)}</span></td>
+          <td><div class="td-name">${b.guest_name||'—'}</div></td>
+          <td><div class="td-muted">${b.tours?.name?.slice(0,35)||'—'}${(b.tours?.name||'').length>35?'...':''}</div></td>
+          <td><span class="td-mono">${fmtD(b.created_at)}</span></td>
+          <td><span class="td-mono" style="color:var(--green)">${fmt(b.deposit_amount)}đ</span></td>
+          <td>${statusBadge(b.status)}</td>
+        </tr>`).join('')
+
+      // Revenue chart (6 months)
+      buildRevenueChart(bookings)
+      buildStatusChart(bookings)
+    }
+
+    // Tours count
+    const {count:tourCount} = await sb.from('tours').select('id',{count:'exact'}).eq('status','ACTIVE')
+    const {count:allTours}  = await sb.from('tours').select('id',{count:'exact'})
+    document.getElementById('statActiveTours').textContent=tourCount||0
+    document.getElementById('statTotalTours').textContent=allTours||0
+    document.getElementById('sbTourCount').textContent=allTours||0
+
+  } catch(e) { console.error('loadDashboard:',e); toast('Lỗi tải dashboard','err') }
+}
+
+function buildRevenueChart(bookings) {
+  const months=[], revenues=[]
+  for(let i=5;i>=0;i--) {
+    const d=new Date(); d.setMonth(d.getMonth()-i)
+    const m=d.getMonth(), y=d.getFullYear()
+    const rev=bookings.filter(b=>{const bd=new Date(b.created_at);return bd.getMonth()===m&&bd.getFullYear()===y&&b.payment_status==='SUCCESS'})
+      .reduce((s,b)=>s+Number(b.deposit_amount||0),0)
+    months.push(`T${m+1}/${y.toString().slice(-2)}`)
+    revenues.push(rev)
+  }
+  const ctx=document.getElementById('revenueChart').getContext('2d')
+  if(window._revChart) window._revChart.destroy()
+  window._revChart=new Chart(ctx,{
+    type:'bar',
+    data:{labels:months,datasets:[{label:'Doanh thu (đ)',data:revenues,backgroundColor:'rgba(63,185,80,.25)',borderColor:'#3fb950',borderWidth:1.5,borderRadius:4}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${fmt(ctx.raw)}đ`}}},
+      scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8b949e',font:{size:11}}},y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8b949e',font:{size:10},callback:v=>`${(v/1e6).toFixed(0)}M`}}}}
+  })
+}
+
+function buildStatusChart(bookings) {
+  const counts={PENDING:0,CONFIRMED:0,COMPLETED:0,CANCELLED:0,ONGOING:0}
+  bookings.forEach(b=>{if(counts[b.status]!==undefined)counts[b.status]++})
+  const ctx=document.getElementById('statusChart').getContext('2d')
+  if(window._stChart) window._stChart.destroy()
+  window._stChart=new Chart(ctx,{
+    type:'doughnut',
+    data:{labels:['Chờ XN','Đã XN','Hoàn thành','Đã hủy','Đang đi'],
+      datasets:[{data:[counts.PENDING,counts.CONFIRMED,counts.COMPLETED,counts.CANCELLED,counts.ONGOING],
+        backgroundColor:['rgba(210,153,34,.7)','rgba(88,166,255,.7)','rgba(63,185,80,.7)','rgba(248,81,73,.7)','rgba(188,140,255,.7)'],
+        borderColor:['#d29922','#58a6ff','#3fb950','#f85149','#bc8cff'],borderWidth:1.5}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{color:'#8b949e',font:{size:10},boxWidth:12,padding:8}}}}
+  })
+}
+
+// ══════════════════════════════════════════════════════
+// BOOKINGS
+// ══════════════════════════════════════════════════════
+let allBookingsCache = []
+
+async function loadBookings(page=0) {
+  currentPage=page
+  const status=document.getElementById('bookingStatusFilter').value
+  const pay=document.getElementById('bookingPayFilter').value
+  const search=document.getElementById('bookingSearch').value.trim()
+
+  const from=page*PAGE, to=from+PAGE-1
+  let q=sb.from('bookings').select('id,booking_ref,guest_name,guest_phone,guest_email,status,payment_status,total_price,deposit_amount,adult_count,child_count,room_type,special_requests,created_at,confirmed_at,cancel_reason,tours(name_vi,destination,duration_days),guides(full_name,phone)',{count:'exact'})
+  if(status) q=q.eq('status',status)
+  if(pay)    q=q.eq('payment_status',pay)
+  if(search) q=q.or(`guest_name.ilike.%${search}%,guest_phone.ilike.%${search}%,booking_ref.ilike.%${search}%`)
+  q=q.order('created_at',{ascending:false}).range(from,to)
+
+  const {data,count,error}=await q
+  if(error){toast('Lỗi tải đơn hàng','err');return}
+
+  allBookingsCache=data||[]
+  document.getElementById('sbBookingCount').textContent=count||0
+  renderBookings(data||[])
+  renderPagination('bookingPagination',page,count,loadBookings)
+}
+
+function renderBookings(bookings) {
+  const tbl=document.getElementById('bookingsTbl')
+  if(!bookings.length){tbl.innerHTML='<tr class="loading-row"><td colspan="12">Không có đơn nào</td></tr>';return}
+  tbl.innerHTML=bookings.map(b=>`
+    <tr style="cursor:pointer" onclick="openBookingDetail('${b.id}')">
+      <td><span class="td-mono" style="color:var(--blue)">${b.booking_ref||b.id.slice(-8)}</span></td>
+      <td><div class="td-name">${b.guest_name||'—'}</div><div class="td-muted">${b.guest_email||''}</div></td>
+      <td><span class="td-mono">${b.guest_phone||'—'}</span></td>
+      <td><div class="td-muted" title="${b.tours?.name||''}">${(b.tours?.name||'—').slice(0,30)}${(b.tours?.name||'').length>30?'...':''}</div></td>
+      <td><span class="td-mono">${fmtD(b.created_at)}</span></td>
+      <td><span class="td-mono">${b.adult_count||1}NL${b.child_count?` ${b.child_count}TE`:''}</span></td>
+      <td><span class="td-mono">${fmt(b.total_price)}đ</span></td>
+      <td><span class="td-mono" style="color:var(--green)">${fmt(b.deposit_amount)}đ</span></td>
+      <td>${statusBadge(b.status)}</td>
+      <td>${payBadge(b.payment_status)}</td>
+      <td><span class="td-muted">${b.guides?.full_name||'Chưa phân công'}</span></td>
+      <td onclick="event.stopPropagation()" style="display:flex;gap:.35rem;flex-wrap:wrap">
+        ${b.status==='PENDING'?`<button class="action-btn confirm" onclick="confirmBooking('${b.id}')">✅ XN</button>`:''}
+        ${['PENDING','CONFIRMED'].includes(b.status)?`<button class="action-btn cancel" onclick="cancelBooking('${b.id}')">✕ Hủy</button>`:''}
+        <button class="action-btn" onclick="openAssignModal('${b.id}')">👤 HDV</button>
+      </td>
+    </tr>`).join('')
+}
+
+function searchBookings() { loadBookings(0) }
+
+async function openBookingDetail(id) {
+  currentBookingId=id
+  const {data:b,error}=await sb.from('bookings')
+    .select('*,tours(name_vi,destination,duration_days,duration_nights),guides(full_name,phone)')
+    .eq('id',id).single()
+  if(error||!b){toast('Không tải được chi tiết đơn','err');return}
+
+  document.getElementById('modalTitle').textContent=`Đơn #${b.booking_ref||b.id.slice(-8)}`
+  document.getElementById('modalBody').innerHTML=`
+    <div class="detail-row"><span class="detail-label">Mã đơn</span><span class="detail-value td-mono" style="color:var(--blue)">${b.booking_ref||b.id}</span></div>
+    <div class="detail-row"><span class="detail-label">Trạng thái</span><span class="detail-value">${statusBadge(b.status)} ${payBadge(b.payment_status)}</span></div>
+    <div style="margin:.75rem 0;font-family:var(--mono);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text3)">THÔNG TIN KHÁCH</div>
+    <div class="detail-row"><span class="detail-label">Họ tên</span><span class="detail-value">${b.guest_name||'—'}</span></div>
+    <div class="detail-row"><span class="detail-label">SĐT</span><span class="detail-value td-mono">${b.guest_phone||'—'}</span></div>
+    <div class="detail-row"><span class="detail-label">Email</span><span class="detail-value">${b.guest_email||'—'}</span></div>
+    <div style="margin:.75rem 0;font-family:var(--mono);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text3)">CHI TIẾT TOUR</div>
+    <div class="detail-row"><span class="detail-label">Tour</span><span class="detail-value">${b.tours?.name||'—'}</span></div>
+    <div class="detail-row"><span class="detail-label">Điểm đến</span><span class="detail-value">${b.tours?.destination||'—'}</span></div>
+    <div class="detail-row"><span class="detail-label">Số khách</span><span class="detail-value">${b.adult_count||1} người lớn${b.child_count?`, ${b.child_count} trẻ em`:''}</span></div>
+    <div class="detail-row"><span class="detail-label">Phòng</span><span class="detail-value">${b.room_type||'STANDARD'}</span></div>
+    <div class="detail-row"><span class="detail-label">HDV phụ trách</span><span class="detail-value">${b.guides?.full_name||'Chưa phân công'}</span></div>
+    <div style="margin:.75rem 0;font-family:var(--mono);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text3)">TÀI CHÍNH</div>
+    <div class="detail-row"><span class="detail-label">Tổng tiền</span><span class="detail-value td-mono" style="font-size:1rem">${fmt(b.total_price)}đ</span></div>
+    <div class="detail-row"><span class="detail-label">Tiền cọc (30%)</span><span class="detail-value td-mono" style="color:var(--green)">${fmt(b.deposit_amount)}đ</span></div>
+    <div class="detail-row"><span class="detail-label">Còn lại</span><span class="detail-value td-mono" style="color:var(--amber)">${fmt(Number(b.total_price)-Number(b.deposit_amount))}đ</span></div>
+    <div style="margin:.75rem 0;font-family:var(--mono);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text3)">KHÁC</div>
+    <div class="detail-row"><span class="detail-label">Ngày đặt</span><span class="detail-value">${fmtDT(b.created_at)}</span></div>
+    <div class="detail-row"><span class="detail-label">Yêu cầu đặc biệt</span><span class="detail-value">${b.special_requests||'Không có'}</span></div>
+    ${b.cancel_reason?`<div class="detail-row"><span class="detail-label">Lý do hủy</span><span class="detail-value" style="color:var(--red)">${b.cancel_reason}</span></div>`:''}
+  `
+  document.getElementById('modalConfirmBtn').style.display=b.status==='PENDING'?'':'none'
+  document.getElementById('modalCancelBtn').style.display=['PENDING','CONFIRMED'].includes(b.status)?'':'none'
+  document.getElementById('bookingModal').classList.add('open')
+}
+
+function closeModal(){ document.getElementById('bookingModal').classList.remove('open') }
+
+async function confirmBooking(id) {
+  const {error}=await sb.from('bookings').update({status:'CONFIRMED',confirmed_at:new Date().toISOString()}).eq('id',id)
+  if(error){toast('Lỗi xác nhận đơn','err');return}
+  toast('✅ Đã xác nhận đơn tour')
+  loadBookings(currentPage)
+}
+async function confirmBookingFromModal(){ await confirmBooking(currentBookingId); closeModal() }
+
+async function cancelBooking(id) {
+  const reason=prompt('Lý do hủy tour:')
+  if(!reason)return
+  const {error}=await sb.from('bookings').update({status:'CANCELLED',cancel_reason:reason,cancelled_at:new Date().toISOString()}).eq('id',id)
+  if(error){toast('Lỗi hủy đơn','err');return}
+  toast('Đã hủy đơn tour','warn')
+  loadBookings(currentPage)
+}
+async function cancelBookingFromModal(){
+  closeModal()
+  await cancelBooking(currentBookingId)
+}
+
+// ══════════════════════════════════════════════════════
+// ASSIGN GUIDE
+// ══════════════════════════════════════════════════════
+let assignBookingId=null
+async function openAssignModal(bookingId) {
+  assignBookingId=bookingId
+  const {data:guides}=await sb.from('guides').select('id,full_name,status,regions').eq('status','ACTIVE')
+  const sel=document.getElementById('assignGuideSelect')
+  sel.innerHTML='<option value="">-- Chọn HDV --</option>'+(guides||[]).map(g=>`<option value="${g.id}">${g.full_name} (${(g.regions||[]).join(', ')})</option>`).join('')
+  document.getElementById('assignModal').classList.add('open')
+}
+function closeAssignModal(){ document.getElementById('assignModal').classList.remove('open') }
+async function saveAssign() {
+  const guideId=document.getElementById('assignGuideSelect').value
+  if(!guideId){toast('Vui lòng chọn HDV','warn');return}
+  const {error}=await sb.from('bookings').update({guide_id:guideId}).eq('id',assignBookingId)
+  if(error){toast('Lỗi phân công','err');return}
+  toast('✅ Đã phân công HDV')
+  closeAssignModal()
+  loadBookings(currentPage)
+}
+
+// ══════════════════════════════════════════════════════
+// GUIDES
+// ══════════════════════════════════════════════════════
+async function loadGuides() {
+  const {data:guides,error}=await sb.from('guides').select('*').order('rating_avg',{ascending:false})
+  if(error){toast('Lỗi tải HDV','err');return}
+  const active=(guides||[]).filter(g=>g.status==='ACTIVE')
+  const onTour=(guides||[]).filter(g=>g.status==='ON_TOUR')
+  const avgRating=guides?.length?((guides||[]).reduce((s,g)=>s+Number(g.rating_avg||0),0)/guides.length).toFixed(1):0
+  document.getElementById('statActiveGuides').textContent=active.length
+  document.getElementById('statOnTourGuides').textContent=onTour.length
+  document.getElementById('statAvgRating').textContent=avgRating
+  const langMap={vi:'🇻🇳',en:'🇬🇧',zh:'🇨🇳',ko:'🇰🇷',ja:'🇯🇵',fr:'🇫🇷'}
+  document.getElementById('guidesTbl').innerHTML=(guides||[]).map(g=>`
+    <tr>
+      <td><div class="td-name">${g.full_name}</div></td>
+      <td><span class="td-mono">${g.phone||'—'}</span></td>
+      <td>${(g.languages||['vi']).map(l=>langMap[l]||l).join(' ')}</td>
+      <td>${(g.regions||[]).map(r=>regionLabel(r)).join(', ')||'—'}</td>
+      <td><span class="td-mono">${g.total_tours||0}</span></td>
+      <td style="color:var(--amber)">${starRating(Math.round(g.rating_avg||0))} <span class="td-mono">${Number(g.rating_avg||0).toFixed(1)}</span></td>
+      <td><span class="td-mono">${fmt(g.daily_rate)}đ/ngày</span></td>
+      <td><span class="badge ${g.status==='ACTIVE'?'badge-confirmed':g.status==='ON_TOUR'?'badge-ongoing':'badge-cancelled'}">${g.status}</span></td>
+      <td><button class="action-btn" onclick="toast('Tính năng đang phát triển','warn')">✏️ Sửa</button></td>
+    </tr>`).join('')
+}
+
+// ══════════════════════════════════════════════════════
+// SCHEDULE
+// ══════════════════════════════════════════════════════
+async function loadSchedule() {
+  const filter=document.getElementById('scheduleFilter').value
+  let q=sb.from('tour_schedules').select('*,tours(name_vi,destination,duration_days)').order('depart_date',{ascending:true})
+  if(filter==='upcoming') q=q.gte('depart_date',new Date().toISOString().split('T')[0])
+  const {data,error}=await q.limit(50)
+  if(error){toast('Lỗi tải lịch','err');return}
+  document.getElementById('scheduleTbl').innerHTML=(data||[]).map(s=>{
+    const booked=(s.total_slots||20)-(s.available_slots||0)
+    const pct=Math.round(booked/(s.total_slots||20)*100)
+    return`<tr>
+      <td><div class="td-name">${s.tours?.name?.slice(0,40)||'—'}</div><div class="td-muted">${s.tours?.destination||''}</div></td>
+      <td><span class="td-mono">${fmtD(s.depart_date)}</span></td>
+      <td><span class="td-mono">${fmtD(s.return_date)}</span></td>
+      <td><span class="td-mono">${s.total_slots||20}</span></td>
+      <td><span class="td-mono">${booked}</span> <span style="font-size:.68rem;color:var(--${pct>=80?'red':pct>=50?'amber':'green'})">(${pct}%)</span></td>
+      <td><span class="td-mono" style="color:var(--${s.available_slots<=0?'red':s.available_slots<=3?'amber':'green'})">${s.available_slots||0}</span></td>
+      <td><span class="badge ${s.status==='OPEN'?'badge-confirmed':s.status==='FULL'?'badge-cancelled':'badge-pending'}">${s.status}</span></td>
+      <td><button class="action-btn" onclick="toast('Tính năng đang phát triển','warn')">✏️</button></td>
+    </tr>`}).join('')
+}
+
+// ══════════════════════════════════════════════════════
+// FINANCE
+// ══════════════════════════════════════════════════════
+async function loadFinance() {
+  const {data:bookings}=await sb.from('bookings').select('status,payment_status,total_price,deposit_amount,created_at,tours(name_vi,duration_days),guides(daily_rate)')
+  const {data:guides}=await sb.from('guides').select('daily_rate')
+
+  const paid=(bookings||[]).filter(b=>b.payment_status==='SUCCESS')
+  const totalRev=paid.reduce((s,b)=>s+Number(b.deposit_amount||0),0)
+
+  // Ước tính chi phí HDV
+  const estCost=(bookings||[]).filter(b=>['CONFIRMED','ONGOING','COMPLETED'].includes(b.status)).reduce((s,b)=>{
+    const days=b.tours?.duration_days||1, rate=Number(b.guides?.daily_rate||500000)
+    return s+days*rate
+  },0)
+  const profit=totalRev-estCost
+  const margin=totalRev>0?Math.round(profit/totalRev*100):0
+
+  document.getElementById('finRevenue').textContent=fmt(totalRev)+'đ'
+  document.getElementById('finCost').textContent=fmt(estCost)+'đ'
+  document.getElementById('finProfit').textContent=fmt(profit)+'đ'
+  document.getElementById('finMargin').textContent=`Biên lợi nhuận: ${margin}%`
+
+  // Monthly breakdown
+  const months={}
+  paid.forEach(b=>{
+    const d=new Date(b.created_at), key=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`
+    if(!months[key])months[key]={rev:0,cost:0,count:0}
+    months[key].rev+=Number(b.deposit_amount||0)
+    months[key].count++
+  })
+
+  const sortedMonths=Object.entries(months).sort((a,b)=>a[0].localeCompare(b[0]))
+  document.getElementById('financeTbl').innerHTML=sortedMonths.map(([k,v])=>{
+    const cost=Math.round(v.rev*0.3), profit=v.rev-cost, margin=v.rev>0?Math.round(profit/v.rev*100):0
+    return`<tr>
+      <td><span class="td-mono">${k}</span></td>
+      <td><span class="td-mono">${v.count}</span></td>
+      <td><span class="td-mono" style="color:var(--green)">${fmt(v.rev)}đ</span></td>
+      <td><span class="td-mono" style="color:var(--red)">${fmt(cost)}đ</span></td>
+      <td><span class="td-mono" style="color:var(--blue)">${fmt(profit)}đ</span></td>
+      <td><span class="td-mono">${margin}%</span></td>
+    </tr>`}).join('')||'<tr class="loading-row"><td colspan="6">Chưa có dữ liệu</td></tr>'
+
+  // Charts
+  if(sortedMonths.length) {
+    const ctx1=document.getElementById('finRevenueChart').getContext('2d')
+    if(window._finChart) window._finChart.destroy()
+    window._finChart=new Chart(ctx1,{type:'line',
+      data:{labels:sortedMonths.map(([k])=>k),datasets:[
+        {label:'Doanh thu',data:sortedMonths.map(([,v])=>v.rev),borderColor:'#3fb950',tension:.3,fill:true,backgroundColor:'rgba(63,185,80,.1)'},
+      ]},
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#8b949e',font:{size:10}}}},
+        scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8b949e',font:{size:10}}},y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8b949e',font:{size:10},callback:v=>`${(v/1e6).toFixed(0)}M`}}}}
+    })
+  }
+
+  // Top tours
+  const tourRevs={}
+  paid.forEach(b=>{const n=b.tours?.name||'Unknown';if(!tourRevs[n])tourRevs[n]=0;tourRevs[n]+=Number(b.deposit_amount||0)})
+  const top5=Object.entries(tourRevs).sort((a,b)=>b[1]-a[1]).slice(0,5)
+  if(top5.length){
+    const ctx2=document.getElementById('topToursChart').getContext('2d')
+    if(window._topChart) window._topChart.destroy()
+    window._topChart=new Chart(ctx2,{type:'bar',
+      data:{labels:top5.map(([n])=>n.slice(0,20)),datasets:[{data:top5.map(([,v])=>v),backgroundColor:['rgba(88,166,255,.7)','rgba(63,185,80,.7)','rgba(188,140,255,.7)','rgba(210,153,34,.7)','rgba(248,81,73,.7)'],borderRadius:4}]},
+      options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${fmt(ctx.raw)}đ`}}},
+        scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8b949e',font:{size:10},callback:v=>`${(v/1e6).toFixed(0)}M`}},y:{grid:{display:false},ticks:{color:'#8b949e',font:{size:10}}}}}
+    })
+  }
+}
+
+function exportFinanceCSV() {
+  const rows=[['Tháng','Số đơn','Doanh thu','Chi phí','Lợi nhuận','Biên LN']]
+  document.querySelectorAll('#financeTbl tr').forEach(tr=>{rows.push([...tr.querySelectorAll('td')].map(td=>td.innerText.replace(/đ|,/g,'')))})
+  downloadCSV(rows,'baggio-finance-report.csv')
+  toast('📥 Đã xuất báo cáo tài chính')
+}
+
+// ══════════════════════════════════════════════════════
+// TOURS
+// ══════════════════════════════════════════════════════
+async function loadToursList(page=0) {
+  const region=document.getElementById('tourRegionFilter').value
+  const search=document.getElementById('tourSearch').value.trim()
+  const from=page*PAGE, to=from+PAGE-1
+  let q=sb.from('tours').select('id,name_vi,destination,region,duration_days,base_price,status,tour_schedules(id,status,available_slots)',{count:'exact'})
+  if(region) q=q.eq('region',region)
+  if(search) q=q.or(`name.ilike.%${search}%,destination.ilike.%${search}%`)
+  q=q.order('base_price',{ascending:true}).range(from,to)
+  const {data,count,error}=await q
+  if(error){toast('Lỗi tải tour','err');return}
+  document.getElementById('tourTotalCount').textContent=count||0
+  document.getElementById('sbTourCount').textContent=count||0
+  document.getElementById('toursTbl').innerHTML=(data||[]).map(t=>{
+    const openScheds=(t.tour_schedules||[]).filter(s=>s.status==='OPEN'&&s.available_slots>0).length
+    return`<tr>
+      <td><div class="td-name">${t.name_vi?.slice(0,40)||'—'}${(t.name_vi||'').length>40?'...':''}</div></td>
+      <td><span class="td-muted">${t.destination||'—'}</span></td>
+      <td>${regionLabel(t.region)}</td>
+      <td><span class="td-mono">${t.duration_days||1}N</span></td>
+      <td><span class="td-mono">${fmt(t.base_price)}đ</span></td>
+      <td><span class="td-mono ${openScheds===0?'style="color:var(--red)"':''}">${openScheds} lịch</span></td>
+      <td><span class="badge ${t.status==='ACTIVE'?'badge-confirmed':'badge-pending'}">${t.status}</span></td>
+      <td><button class="action-btn" onclick="toast('Mở trang tour mới','warn')">🔗 Xem</button></td>
+    </tr>`}).join('')
+  renderPagination('tourPagination',page,count,loadToursList)
+}
+function searchTours(){ loadToursList(0) }
+
+// ══════════════════════════════════════════════════════
+// REVIEWS
+// ══════════════════════════════════════════════════════
+async function loadReviews() {
+  const filter=document.getElementById('reviewFilter').value
+  let q=sb.from('reviews').select('*,tours(name_vi)').order('created_at',{ascending:false}).limit(50)
+  if(filter!=='') q=q.eq('is_published',filter==='true')
+  const {data,error}=await q
+  if(error){toast('Lỗi tải reviews','err');return}
+  document.getElementById('reviewsTbl').innerHTML=(data||[]).map(r=>`
+    <tr>
+      <td><div class="td-name">${r.reviewer_name||'Ẩn danh'}</div></td>
+      <td><div class="td-muted">${(r.tours?.name||'—').slice(0,30)}</div></td>
+      <td style="color:var(--amber)">${starRating(r.rating)} <span class="td-mono">${r.rating}/5</span></td>
+      <td><div class="td-muted" style="max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${r.comment||'—'}</div></td>
+      <td><span class="td-mono">${fmtD(r.created_at)}</span></td>
+      <td><span class="badge ${r.is_published?'badge-confirmed':'badge-pending'}">${r.is_published?'✓ Đã duyệt':'⏳ Chờ duyệt'}</span></td>
+      <td style="display:flex;gap:.35rem">
+        ${!r.is_published?`<button class="action-btn confirm" onclick="publishReview('${r.id}',true)">✅ Duyệt</button>`:''}
+        ${r.is_published?`<button class="action-btn" onclick="publishReview('${r.id}',false)">↩ Bỏ duyệt</button>`:''}
+        <button class="action-btn cancel" onclick="deleteReview('${r.id}')">🗑</button>
+      </td>
+    </tr>`).join('')||'<tr class="loading-row"><td colspan="7">Không có đánh giá</td></tr>'
+}
+
+async function publishReview(id, pub) {
+  await sb.from('reviews').update({is_published:pub}).eq('id',id)
+  toast(pub?'✅ Đã duyệt đánh giá':'Đã bỏ duyệt')
+  loadReviews()
+}
+async function deleteReview(id) {
+  if(!confirm('Xóa đánh giá này?'))return
+  await sb.from('reviews').delete().eq('id',id)
+  toast('🗑 Đã xóa đánh giá','warn')
+  loadReviews()
+}
+
+// ══════════════════════════════════════════════════════
+// PAGINATION
+// ══════════════════════════════════════════════════════
+function renderPagination(elId, page, total, fn) {
+  const el=document.getElementById(elId)
+  const pages=Math.ceil((total||0)/PAGE)
+  if(pages<=1){el.innerHTML='';return}
+  const start=Math.max(0,page-2), end=Math.min(pages-1,page+2)
+  let html=`<span class="pag-info">Trang ${page+1}/${pages} · ${total} kết quả</span>`
+  html+=`<button class="pag-btn" onclick="${fn.name}(${page-1})" ${page===0?'disabled':''}>←</button>`
+  if(start>0) html+=`<button class="pag-btn" onclick="${fn.name}(0)">1</button><span style="color:var(--text3);font-size:.8rem">…</span>`
+  for(let i=start;i<=end;i++) html+=`<button class="pag-btn ${i===page?'active':''}" onclick="${fn.name}(${i})">${i+1}</button>`
+  if(end<pages-1) html+=`<span style="color:var(--text3);font-size:.8rem">…</span><button class="pag-btn" onclick="${fn.name}(${pages-1})">${pages}</button>`
+  html+=`<button class="pag-btn" onclick="${fn.name}(${page+1})" ${page===pages-1?'disabled':''}>→</button>`
+  el.innerHTML=html
+}
+
+// ══════════════════════════════════════════════════════
+// EXPORT CSV
+// ══════════════════════════════════════════════════════
+async function exportCSV() {
+  const {data}=await sb.from('bookings').select('booking_ref,guest_name,guest_phone,guest_email,status,payment_status,total_price,deposit_amount,adult_count,child_count,created_at,tours(name_vi,destination)').order('created_at',{ascending:false})
+  const rows=[['Mã đơn','Khách hàng','SĐT','Email','Tour','Điểm đến','NL','TE','Tổng tiền','Tiền cọc','Trạng thái','Thanh toán','Ngày đặt']]
+  ;(data||[]).forEach(b=>rows.push([b.booking_ref||b.id,b.guest_name||'',b.guest_phone||'',b.guest_email||'',b.tours?.name||'',b.tours?.destination||'',b.adult_count||1,b.child_count||0,b.total_price||0,b.deposit_amount||0,b.status,b.payment_status,fmtDT(b.created_at)]))
+  downloadCSV(rows,'baggio-bookings.csv')
+  toast('📥 Đã xuất danh sách đơn hàng')
+}
+
+function downloadCSV(rows, filename) {
+  const bom='\uFEFF'
+  const csv=bom+rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n')
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}))
+  a.download=filename; a.click()
+}
+
+// ══════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', ()=>{
+  loadDashboard()
+})
+document.addEventListener('keydown', e=>{
+  if(e.key==='Escape') { closeModal(); closeAssignModal() }
+})
+</script>
+</body>
+</html>

@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Baggio Travel — Đặt Tour</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600&family=Space+Mono&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --ink:#111118;
+  --cream:#faf8f3;
+  --paper:#f3efe6;
+  --card:#ffffff;
+  --red:#c8392b;
+  --red-light:#fdf1f0;
+  --gold:#b8860b;
+  --gold-light:#fdf8ec;
+  --teal:#1a6b5e;
+  --teal-light:#eef7f5;
+  --muted:#7a7468;
+  --border:#e5dfd3;
+  --border2:#d0c8b8;
+  --shadow:0 2px 12px rgba(17,17,24,.07);
+  --shadow-lg:0 8px 32px rgba(17,17,24,.12);
+  --font:'Be Vietnam Pro',sans-serif;
+  --serif:'Cormorant Garamond',Georgia,serif;
+  --mono:'Space Mono',monospace;
+  --r:10px;
+}
+html{scroll-behavior:smooth}
+body{background:var(--cream);color:var(--ink);font-family:var(--font);min-height:100vh;font-size:15px;line-height:1.6}
+
+/* ── TOP NAV ── */
+.top-nav{background:var(--card);border-bottom:1px solid var(--border);padding:.9rem 2rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:var(--shadow)}
+.nav-brand{font-family:var(--serif);font-size:1.4rem;font-weight:700;color:var(--ink);letter-spacing:-.01em}
+.nav-brand span{color:var(--red)}
+.nav-back{font-size:.82rem;color:var(--muted);text-decoration:none;display:flex;align-items:center;gap:.4rem;transition:color .2s}
+.nav-back:hover{color:var(--red)}
+.nav-secure{font-family:var(--mono);font-size:.62rem;color:var(--teal);display:flex;align-items:center;gap:.4rem;letter-spacing:.06em}
+.nav-secure::before{content:'🔒'}
+
+/* ── PROGRESS BAR ── */
+.progress-wrap{background:var(--card);border-bottom:1px solid var(--border);padding:1.25rem 2rem}
+.progress-inner{max-width:900px;margin:0 auto}
+.progress-steps{display:flex;align-items:center;gap:0;position:relative}
+.progress-line{position:absolute;top:18px;left:18px;right:18px;height:2px;background:var(--border);z-index:0}
+.progress-line-fill{position:absolute;top:18px;left:18px;height:2px;background:var(--red);z-index:1;transition:width .5s cubic-bezier(.23,1,.32,1)}
+.pstep{display:flex;flex-direction:column;align-items:center;gap:.5rem;flex:1;position:relative;z-index:2;cursor:pointer}
+.pstep-dot{width:36px;height:36px;border-radius:50%;border:2px solid var(--border);background:var(--card);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:.72rem;color:var(--muted);transition:all .3s;font-weight:700}
+.pstep.done .pstep-dot{background:var(--red);border-color:var(--red);color:#fff}
+.pstep.active .pstep-dot{border-color:var(--red);color:var(--red);box-shadow:0 0 0 4px rgba(200,57,43,.12)}
+.pstep-label{font-size:.72rem;font-weight:500;color:var(--muted);text-align:center;white-space:nowrap;transition:color .3s}
+.pstep.active .pstep-label{color:var(--red);font-weight:600}
+.pstep.done .pstep-label{color:var(--ink)}
+
+/* ── LAYOUT ── */
+.engine-wrap{max-width:900px;margin:0 auto;padding:2rem}
+.engine-grid{display:grid;grid-template-columns:1fr 340px;gap:1.75rem;align-items:start}
+.main-col{}
+.side-col{}
+
+/* ── STEP PANELS ── */
+.step-panel{display:none;animation:stepIn .3s ease}
+.step-panel.active{display:block}
+@keyframes stepIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+.step-title{font-family:var(--serif);font-size:1.8rem;font-weight:700;color:var(--ink);margin-bottom:.3rem;line-height:1.15;letter-spacing:-.02em}
+.step-sub{font-size:.88rem;color:var(--muted);margin-bottom:1.75rem;font-weight:300}
+
+/* ── TOUR PICKER (step 1) ── */
+.tour-cards{display:flex;flex-direction:column;gap:.9rem}
+.tour-pick{background:var(--card);border:2px solid var(--border);border-radius:var(--r);padding:1.1rem 1.25rem;cursor:pointer;display:grid;grid-template-columns:80px 1fr auto;gap:1rem;align-items:center;transition:border-color .2s,box-shadow .2s;position:relative}
+.tour-pick:hover{border-color:var(--border2);box-shadow:var(--shadow)}
+.tour-pick.selected{border-color:var(--red);box-shadow:0 0 0 3px rgba(200,57,43,.1)}
+.tour-pick-img{width:80px;height:64px;object-fit:cover;border-radius:6px;display:block}
+.tour-pick-info{}
+.tour-pick-dest{font-family:var(--mono);font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:var(--teal);margin-bottom:.2rem}
+.tour-pick-name{font-weight:600;font-size:.95rem;color:var(--ink);margin-bottom:.25rem;line-height:1.3}
+.tour-pick-meta{display:flex;gap:.75rem;font-size:.75rem;color:var(--muted)}
+.tour-pick-price{text-align:right}
+.tour-pick-from{font-size:.68rem;color:var(--muted);display:block;margin-bottom:.15rem}
+.tour-pick-val{font-family:var(--serif);font-size:1.3rem;font-weight:700;color:var(--ink);line-height:1}
+.tour-pick-per{font-size:.68rem;color:var(--muted);font-family:var(--font);font-weight:300}
+.tour-pick-check{position:absolute;top:.7rem;right:.8rem;width:22px;height:22px;border-radius:50%;background:var(--red);display:none;align-items:center;justify-content:center;color:#fff;font-size:.7rem}
+.tour-pick.selected .tour-pick-check{display:flex}
+.tour-pick-badge{position:absolute;top:.7rem;left:1.25rem;background:var(--gold);color:#fff;font-family:var(--mono);font-size:.55rem;letter-spacing:.08em;text-transform:uppercase;padding:.2rem .5rem;border-radius:3px}
+
+/* ── DATE PICKER (step 2) ── */
+.date-section{margin-bottom:1.5rem}
+.date-section-title{font-weight:600;font-size:.88rem;margin-bottom:.75rem;color:var(--ink)}
+.date-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal-header{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:6px}
+.cal-day-name{font-family:var(--mono);font-size:.6rem;color:var(--muted);text-align:center;padding:.3rem 0;letter-spacing:.06em}
+.cal-day{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:6px;cursor:pointer;font-size:.82rem;font-weight:500;border:1px solid transparent;transition:all .15s;position:relative;gap:1px}
+.cal-day:hover:not(.disabled):not(.selected){background:var(--paper);border-color:var(--border)}
+.cal-day.today{border-color:var(--teal);color:var(--teal)}
+.cal-day.selected{background:var(--red);color:#fff;border-color:var(--red)}
+.cal-day.in-range{background:rgba(200,57,43,.08);border-color:transparent}
+.cal-day.disabled{color:var(--border2);cursor:not-allowed}
+.cal-day.empty{cursor:default}
+.cal-day-num{font-size:.82rem;font-weight:600;line-height:1}
+.cal-day-avail{font-size:.52rem;color:var(--teal);font-family:var(--mono);line-height:1}
+.cal-day.selected .cal-day-avail{color:rgba(255,255,255,.7)}
+.cal-day.disabled .cal-day-avail{color:var(--border2)}
+.cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+.cal-month{font-family:var(--serif);font-size:1.1rem;font-weight:600;color:var(--ink)}
+.cal-btn{background:none;border:1px solid var(--border);padding:.35rem .75rem;cursor:pointer;font-size:.85rem;color:var(--muted);transition:all .2s;border-radius:5px}
+.cal-btn:hover{border-color:var(--red);color:var(--red)}
+.date-input-row{display:grid;grid-template-columns:1fr 1fr;gap:.9rem;margin-top:1.25rem}
+.date-field{}
+.date-label{font-family:var(--mono);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:.4rem}
+.date-val{background:var(--paper);border:1px solid var(--border);border-radius:6px;padding:.7rem 1rem;font-family:var(--font);font-size:.9rem;color:var(--ink);font-weight:500;min-height:40px;display:flex;align-items:center;gap:.5rem}
+.date-val.empty{color:var(--muted);font-weight:300}
+.nights-badge{background:var(--teal-light);color:var(--teal);font-family:var(--mono);font-size:.72rem;padding:.3rem .75rem;border-radius:20px;display:inline-flex;align-items:center;gap:.3rem;margin-top:.75rem}
+
+/* ── GUESTS (step 3) ── */
+.guest-section{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:1.25rem}
+.guest-row{display:flex;align-items:center;justify-content:space-between;padding:1.1rem 1.5rem;border-bottom:1px solid var(--border)}
+.guest-row:last-child{border-bottom:none}
+.guest-info{}
+.guest-type{font-weight:600;font-size:.9rem;color:var(--ink)}
+.guest-age{font-size:.78rem;color:var(--muted);margin-top:.1rem;font-weight:300}
+.guest-counter{display:flex;align-items:center;gap:1rem}
+.counter-btn{width:32px;height:32px;border-radius:50%;border:1.5px solid var(--border);background:none;cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center;color:var(--muted);transition:all .2s;font-weight:600}
+.counter-btn:hover:not(:disabled){border-color:var(--red);color:var(--red)}
+.counter-btn:disabled{opacity:.3;cursor:not-allowed}
+.counter-num{font-family:var(--serif);font-size:1.5rem;font-weight:700;color:var(--ink);min-width:28px;text-align:center;line-height:1}
+.room-section{margin-top:1.5rem}
+.room-label{font-weight:600;font-size:.88rem;margin-bottom:.75rem;color:var(--ink)}
+.room-options{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+.room-opt{border:2px solid var(--border);border-radius:var(--r);padding:1rem;cursor:pointer;transition:all .2s;position:relative}
+.room-opt:hover{border-color:var(--border2)}
+.room-opt.selected{border-color:var(--red);background:var(--red-light)}
+.room-opt-icon{font-size:1.4rem;margin-bottom:.5rem}
+.room-opt-name{font-weight:600;font-size:.88rem;color:var(--ink);margin-bottom:.2rem}
+.room-opt-desc{font-size:.75rem;color:var(--muted);font-weight:300;line-height:1.5}
+.room-opt-price{font-size:.8rem;color:var(--red);font-weight:600;margin-top:.5rem}
+.room-check{position:absolute;top:.6rem;right:.6rem;width:20px;height:20px;border-radius:50%;background:var(--red);display:none;align-items:center;justify-content:center;color:#fff;font-size:.65rem}
+.room-opt.selected .room-check{display:flex}
+
+/* ── ADD-ONS (step 4) ── */
+.addon-grid{display:grid;grid-template-columns:1fr 1fr;gap:.9rem}
+.addon-card{border:2px solid var(--border);border-radius:var(--r);padding:1.1rem;cursor:pointer;transition:all .2s;position:relative;background:var(--card)}
+.addon-card:hover{border-color:var(--border2);box-shadow:var(--shadow)}
+.addon-card.selected{border-color:var(--teal);background:var(--teal-light)}
+.addon-icon{font-size:1.5rem;margin-bottom:.6rem}
+.addon-name{font-weight:600;font-size:.88rem;color:var(--ink);margin-bottom:.25rem}
+.addon-desc{font-size:.75rem;color:var(--muted);line-height:1.55;font-weight:300;margin-bottom:.6rem}
+.addon-price{font-family:var(--serif);font-size:1.1rem;font-weight:700;color:var(--teal)}
+.addon-check{position:absolute;top:.7rem;right:.7rem;width:22px;height:22px;border-radius:50%;background:var(--teal);display:none;align-items:center;justify-content:center;color:#fff;font-size:.7rem}
+.addon-card.selected .addon-check{display:flex}
+.addon-note{font-size:.78rem;color:var(--muted);margin-top:1.25rem;padding:1rem;background:var(--paper);border-radius:6px;border-left:3px solid var(--gold);font-weight:300;line-height:1.6}
+
+/* ── CONFIRM (step 5) ── */
+.confirm-section{margin-bottom:1.5rem}
+.confirm-title{font-family:var(--serif);font-size:1.1rem;font-weight:700;margin-bottom:.9rem;color:var(--ink);display:flex;align-items:center;gap:.5rem}
+.confirm-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.confirm-tour-img{width:100%;height:140px;object-fit:cover;display:block;filter:brightness(.88)}
+.confirm-body{padding:1.25rem}
+.confirm-row{display:flex;justify-content:space-between;align-items:center;padding:.5rem 0;border-bottom:1px solid rgba(0,0,0,.05);font-size:.85rem}
+.confirm-row:last-child{border-bottom:none}
+.confirm-row-label{color:var(--muted);font-weight:300}
+.confirm-row-val{font-weight:600;color:var(--ink);text-align:right}
+.contact-form{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:1.25rem}
+.cf-grid{display:grid;grid-template-columns:1fr 1fr;gap:.9rem;margin-bottom:.9rem}
+.cf-group{display:flex;flex-direction:column;gap:.35rem}
+.cf-label{font-family:var(--mono);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.cf-input{border:1px solid var(--border);background:var(--cream);padding:.65rem .9rem;font-family:var(--font);font-size:.88rem;color:var(--ink);outline:none;border-radius:6px;transition:border-color .2s}
+.cf-input:focus{border-color:var(--red)}
+.cf-input::placeholder{color:var(--border2)}
+.terms-check{display:flex;align-items:flex-start;gap:.7rem;font-size:.8rem;color:var(--muted);margin-top:1rem;line-height:1.6;cursor:pointer}
+.terms-check input{margin-top:3px;accent-color:var(--red);cursor:pointer;flex-shrink:0}
+.terms-check a{color:var(--red);text-decoration:none}
+
+/* ── PAYMENT SECTION ── */
+.payment-methods{display:grid;grid-template-columns:repeat(3,1fr);gap:.65rem;margin-bottom:1.25rem}
+.pay-opt{border:2px solid var(--border);border-radius:8px;padding:.9rem .6rem;cursor:pointer;text-align:center;transition:all .2s;background:var(--card)}
+.pay-opt:hover{border-color:var(--border2)}
+.pay-opt.selected{border-color:var(--red);background:var(--red-light)}
+.pay-opt-icon{font-size:1.4rem;margin-bottom:.3rem;display:block}
+.pay-opt-name{font-family:var(--mono);font-size:.62rem;letter-spacing:.06em;color:var(--muted);font-weight:400}
+.pay-opt.selected .pay-opt-name{color:var(--red);font-weight:700}
+.deposit-note{background:var(--gold-light);border:1px solid rgba(184,134,11,.2);border-radius:8px;padding:1rem;font-size:.82rem;color:var(--ink);line-height:1.6;display:flex;gap:.75rem}
+.deposit-icon{font-size:1.2rem;flex-shrink:0}
+
+/* ── SUMMARY SIDEBAR ── */
+.summary-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;position:sticky;top:100px}
+.summary-img{width:100%;height:120px;object-fit:cover;display:block;filter:brightness(.85)}
+.summary-body{padding:1.25rem}
+.summary-tour-name{font-family:var(--serif);font-size:1.15rem;font-weight:700;color:var(--ink);margin-bottom:.2rem;line-height:1.2}
+.summary-dest{font-family:var(--mono);font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--teal);margin-bottom:1rem}
+.summary-rows{display:flex;flex-direction:column;gap:.1rem;margin-bottom:1rem}
+.sum-row{display:flex;justify-content:space-between;padding:.45rem 0;border-bottom:1px solid rgba(0,0,0,.05);font-size:.82rem}
+.sum-row:last-child{border-bottom:none}
+.sum-label{color:var(--muted);font-weight:300}
+.sum-val{font-weight:500;color:var(--ink);text-align:right}
+.sum-empty{color:var(--border2);font-style:italic;font-weight:300}
+.summary-divider{height:1px;background:var(--border);margin:.75rem 0}
+.price-breakdown{display:flex;flex-direction:column;gap:.3rem;margin-bottom:1rem}
+.price-row{display:flex;justify-content:space-between;font-size:.82rem}
+.price-label{color:var(--muted);font-weight:300}
+.price-val{font-weight:500;color:var(--ink)}
+.price-total{display:flex;justify-content:space-between;padding:.9rem 1rem;background:var(--ink);border-radius:7px;margin-bottom:.75rem}
+.price-total-label{font-family:var(--mono);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.6)}
+.price-total-val{font-family:var(--serif);font-size:1.35rem;font-weight:700;color:#fff;line-height:1}
+.deposit-row{display:flex;justify-content:space-between;font-size:.8rem}
+.deposit-label{color:var(--muted);font-weight:300}
+.deposit-val{font-weight:600;color:var(--red)}
+
+/* ── BUTTONS ── */
+.btn-row{display:flex;gap:.75rem;margin-top:1.75rem;align-items:center}
+.btn-next{background:var(--red);color:#fff;border:none;padding:1rem 2.5rem;font-family:var(--font);font-weight:700;font-size:.95rem;cursor:pointer;border-radius:7px;transition:background .2s,transform .2s,box-shadow .2s;display:flex;align-items:center;gap:.6rem;letter-spacing:.02em}
+.btn-next:hover{background:#b0322a;transform:translateY(-2px);box-shadow:0 6px 20px rgba(200,57,43,.25)}
+.btn-next:disabled{background:var(--border);cursor:not-allowed;transform:none;box-shadow:none}
+.btn-back{background:none;border:1.5px solid var(--border);color:var(--muted);padding:1rem 1.75rem;font-family:var(--font);font-weight:500;font-size:.9rem;cursor:pointer;border-radius:7px;transition:all .2s}
+.btn-back:hover{border-color:var(--border2);color:var(--ink)}
+
+/* ── SUCCESS ── */
+#step-success{display:none}
+#step-success.active{display:block}
+.success-wrap{text-align:center;padding:3rem 1rem}
+.success-icon{width:72px;height:72px;background:var(--teal-light);border-radius:50%;margin:0 auto 1.5rem;display:flex;align-items:center;justify-content:center;font-size:2rem;animation:popIn .4s cubic-bezier(.23,1,.32,1)}
+.success-title{font-family:var(--serif);font-size:2.2rem;font-weight:700;color:var(--ink);margin-bottom:.5rem}
+.success-sub{font-size:.95rem;color:var(--muted);font-weight:300;line-height:1.7;max-width:440px;margin:0 auto 2rem}
+.success-ref{font-family:var(--mono);font-size:.85rem;background:var(--paper);border:1px solid var(--border);padding:.75rem 1.5rem;border-radius:8px;display:inline-block;color:var(--ink);margin-bottom:2rem;letter-spacing:.08em}
+.success-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;max-width:540px;margin:0 auto 2.5rem;text-align:left}
+.success-step{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:1rem}
+.ss-icon{font-size:1.3rem;margin-bottom:.5rem}
+.ss-title{font-weight:600;font-size:.85rem;color:var(--ink);margin-bottom:.2rem}
+.ss-desc{font-size:.75rem;color:var(--muted);font-weight:300;line-height:1.5}
+.btn-home{background:var(--ink);color:#fff;border:none;padding:1rem 2.5rem;font-family:var(--font);font-weight:700;font-size:.95rem;cursor:pointer;border-radius:7px;transition:background .2s}
+.btn-home:hover{background:#2a2a35}
+@keyframes popIn{from{transform:scale(.5);opacity:0}to{transform:scale(1);opacity:1}}
+
+@media(max-width:768px){
+  .engine-grid{grid-template-columns:1fr}
+  .side-col{order:-1}
+  .summary-card{position:static}
+  .progress-wrap{padding:.9rem 1rem}
+  .engine-wrap{padding:1rem}
+  .addon-grid,.room-options,.cf-grid{grid-template-columns:1fr}
+  .payment-methods{grid-template-columns:repeat(2,1fr)}
+  .success-steps{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<div class="top-nav">
+  <a href="#" class="nav-back">← Quay lại</a>
+  <div class="nav-brand">Baggio<span>.</span>Travel</div>
+  <div class="nav-secure">Thanh toán bảo mật SSL</div>
+</div>
+
+<!-- PROGRESS -->
+<div class="progress-wrap">
+  <div class="progress-inner">
+    <div class="progress-steps">
+      <div class="progress-line"></div>
+      <div class="progress-line-fill" id="progressFill" style="width:0%"></div>
+      <div class="pstep active" id="pstep-1"><div class="pstep-dot">1</div><div class="pstep-label">Chọn tour</div></div>
+      <div class="pstep" id="pstep-2"><div class="pstep-dot">2</div><div class="pstep-label">Chọn ngày</div></div>
+      <div class="pstep" id="pstep-3"><div class="pstep-dot">3</div><div class="pstep-label">Số khách</div></div>
+      <div class="pstep" id="pstep-4"><div class="pstep-dot">4</div><div class="pstep-label">Dịch vụ thêm</div></div>
+      <div class="pstep" id="pstep-5"><div class="pstep-dot">5</div><div class="pstep-label">Xác nhận & Cọc</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ENGINE -->
+<div class="engine-wrap">
+  <div class="engine-grid" id="engineGrid">
+    <!-- MAIN -->
+    <div class="main-col">
+
+      <!-- STEP 1: PICK TOUR -->
+      <div class="step-panel active" id="step-1">
+        <div class="step-title">Chọn tour<br>của bạn</div>
+        <div class="step-sub">6 gói tour đang mở đặt chỗ — giá đã bao gồm vé bay, khách sạn và HDV</div>
+        <div class="tour-cards" id="tourCards"></div>
+        <div class="btn-row">
+          <button class="btn-next" id="btn1" onclick="nextStep(2)" disabled>Tiếp theo: Chọn ngày →</button>
+        </div>
+      </div>
+
+      <!-- STEP 2: DATE -->
+      <div class="step-panel" id="step-2">
+        <div class="step-title">Chọn ngày<br>khởi hành</div>
+        <div class="step-sub">Chọn ngày đi — lịch tour đã bao gồm số ngày trong gói</div>
+        <div class="cal-nav">
+          <button class="cal-btn" onclick="changeMonth(-1)">‹ Trước</button>
+          <div class="cal-month" id="calMonth"></div>
+          <button class="cal-btn" onclick="changeMonth(1)">Sau ›</button>
+        </div>
+        <div class="cal-header" id="calHeader"></div>
+        <div class="date-grid" id="calGrid"></div>
+        <div class="date-input-row">
+          <div class="date-field">
+            <span class="date-label">Ngày khởi hành</span>
+            <div class="date-val empty" id="dateStart">Chưa chọn</div>
+          </div>
+          <div class="date-field">
+            <span class="date-label">Ngày kết thúc</span>
+            <div class="date-val empty" id="dateEnd">Tự động tính</div>
+          </div>
+        </div>
+        <div id="nightsBadge" style="display:none"></div>
+        <div class="btn-row">
+          <button class="btn-back" onclick="nextStep(1)">← Quay lại</button>
+          <button class="btn-next" id="btn2" onclick="nextStep(3)" disabled>Tiếp theo: Số khách →</button>
+        </div>
+      </div>
+
+      <!-- STEP 3: GUESTS -->
+      <div class="step-panel" id="step-3">
+        <div class="step-title">Số khách<br>& Phòng ở</div>
+        <div class="step-sub">Điều chỉnh theo nhóm của bạn — giá sẽ tự cập nhật</div>
+        <div class="guest-section">
+          <div class="guest-row">
+            <div class="guest-info"><div class="guest-type">Người lớn</div><div class="guest-age">Từ 12 tuổi trở lên</div></div>
+            <div class="guest-counter">
+              <button class="counter-btn" onclick="changeGuest('adult',-1)" id="adultMinus">−</button>
+              <div class="counter-num" id="adultCount">2</div>
+              <button class="counter-btn" onclick="changeGuest('adult',1)">+</button>
+            </div>
+          </div>
+          <div class="guest-row">
+            <div class="guest-info"><div class="guest-type">Trẻ em</div><div class="guest-age">5–11 tuổi · giảm 30%</div></div>
+            <div class="guest-counter">
+              <button class="counter-btn" onclick="changeGuest('child',-1)" id="childMinus">−</button>
+              <div class="counter-num" id="childCount">0</div>
+              <button class="counter-btn" onclick="changeGuest('child',1)">+</button>
+            </div>
+          </div>
+          <div class="guest-row">
+            <div class="guest-info"><div class="guest-type">Em bé</div><div class="guest-age">Dưới 5 tuổi · miễn phí</div></div>
+            <div class="guest-counter">
+              <button class="counter-btn" onclick="changeGuest('infant',-1)" id="infantMinus">−</button>
+              <div class="counter-num" id="infantCount">0</div>
+              <button class="counter-btn" onclick="changeGuest('infant',1)">+</button>
+            </div>
+          </div>
+        </div>
+        <div class="room-section">
+          <div class="room-label">Loại phòng khách sạn</div>
+          <div class="room-options">
+            <div class="room-opt selected" onclick="selectRoom(this,'standard')">
+              <div class="room-check">✓</div>
+              <div class="room-opt-icon">🛏️</div>
+              <div class="room-opt-name">Phòng Tiêu chuẩn</div>
+              <div class="room-opt-desc">1 giường đôi hoặc 2 giường đơn, đầy đủ tiện nghi cơ bản</div>
+              <div class="room-opt-price">Đã bao gồm</div>
+            </div>
+            <div class="room-opt" onclick="selectRoom(this,'deluxe')">
+              <div class="room-check">✓</div>
+              <div class="room-opt-icon">🏨</div>
+              <div class="room-opt-name">Phòng Deluxe</div>
+              <div class="room-opt-desc">View đẹp, nội thất cao cấp, minibar và bồn tắm</div>
+              <div class="room-opt-price">+ 350.000đ / đêm</div>
+            </div>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn-back" onclick="nextStep(2)">← Quay lại</button>
+          <button class="btn-next" onclick="nextStep(4)">Tiếp theo: Dịch vụ thêm →</button>
+        </div>
+      </div>
+
+      <!-- STEP 4: ADD-ONS -->
+      <div class="step-panel" id="step-4">
+        <div class="step-title">Nâng cấp<br>trải nghiệm</div>
+        <div class="step-sub">Chọn thêm dịch vụ để chuyến đi hoàn hảo hơn — có thể bỏ qua</div>
+        <div class="addon-grid">
+          <div class="addon-card" onclick="toggleAddon(this,'airport_transfer',300000)">
+            <div class="addon-check">✓</div>
+            <div class="addon-icon">🚗</div>
+            <div class="addon-name">Xe đón sân bay riêng</div>
+            <div class="addon-desc">Xe riêng biển hiệu tên bạn, đón tại cửa đến, không chờ đợi</div>
+            <div class="addon-price">+ 300.000đ</div>
+          </div>
+          <div class="addon-card" onclick="toggleAddon(this,'private_guide',800000)">
+            <div class="addon-check">✓</div>
+            <div class="addon-icon">🧑‍💼</div>
+            <div class="addon-name">HDV cá nhân riêng</div>
+            <div class="addon-desc">HDV dành riêng cho nhóm bạn, linh hoạt lịch trình theo ý muốn</div>
+            <div class="addon-price">+ 800.000đ / ngày</div>
+          </div>
+          <div class="addon-card" onclick="toggleAddon(this,'photo',1200000)">
+            <div class="addon-check">✓</div>
+            <div class="addon-icon">📸</div>
+            <div class="addon-name">Photographer 1 buổi</div>
+            <div class="addon-desc">Nhiếp ảnh gia chuyên nghiệp đi cùng 4 tiếng, giao 50 ảnh đã chỉnh sửa</div>
+            <div class="addon-price">+ 1.200.000đ</div>
+          </div>
+          <div class="addon-card" onclick="toggleAddon(this,'spa',600000)">
+            <div class="addon-check">✓</div>
+            <div class="addon-icon">💆</div>
+            <div class="addon-name">Spa & Massage 90 phút</div>
+            <div class="addon-desc">Gói spa truyền thống Việt tại resort, đặt lịch linh hoạt trong ngày</div>
+            <div class="addon-price">+ 600.000đ / người</div>
+          </div>
+          <div class="addon-card" onclick="toggleAddon(this,'travel_insurance',250000)">
+            <div class="addon-check">✓</div>
+            <div class="addon-icon">🛡️</div>
+            <div class="addon-name">Bảo hiểm du lịch</div>
+            <div class="addon-desc">Bảo hiểm tai nạn, y tế, hủy chuyến và mất hành lý toàn chuyến đi</div>
+            <div class="addon-price">+ 250.000đ / người</div>
+          </div>
+          <div class="addon-card" onclick="toggleAddon(this,'dining',500000)">
+            <div class="addon-check">✓</div>
+            <div class="addon-icon">🍽️</div>
+            <div class="addon-name">Dinner đặc sản địa phương</div>
+            <div class="addon-desc">Bữa tối cao cấp tại nhà hàng nổi tiếng với thực đơn đặc sản vùng miền</div>
+            <div class="addon-price">+ 500.000đ / người</div>
+          </div>
+        </div>
+        <div class="addon-note">💡 Tất cả dịch vụ thêm đều có thể huỷ miễn phí trước 48 tiếng khởi hành. Phí sẽ được gộp vào tổng đơn hàng.</div>
+        <div class="btn-row">
+          <button class="btn-back" onclick="nextStep(3)">← Quay lại</button>
+          <button class="btn-next" onclick="nextStep(5)">Tiếp theo: Xác nhận & Đặt cọc →</button>
+        </div>
+      </div>
+
+      <!-- STEP 5: CONFIRM -->
+      <div class="step-panel" id="step-5">
+        <div class="step-title">Xác nhận<br>& Đặt cọc</div>
+        <div class="step-sub">Kiểm tra thông tin và điền liên hệ — đặt cọc 30% để giữ chỗ ngay</div>
+
+        <div class="confirm-section">
+          <div class="confirm-title">📋 Tóm tắt đơn hàng</div>
+          <div class="confirm-card">
+            <img class="confirm-tour-img" id="confirmImg" src="" alt="">
+            <div class="confirm-body" id="confirmBody"></div>
+          </div>
+        </div>
+
+        <div class="confirm-section">
+          <div class="confirm-title">💳 Phương thức thanh toán</div>
+          <div class="payment-methods">
+            <div class="pay-opt selected" onclick="selectPay(this,'momo')">
+              <span class="pay-opt-icon">📱</span>
+              <div class="pay-opt-name">MoMo</div>
+            </div>
+            <div class="pay-opt" onclick="selectPay(this,'vnpay')">
+              <span class="pay-opt-icon">💳</span>
+              <div class="pay-opt-name">VNPay QR</div>
+            </div>
+            <div class="pay-opt" onclick="selectPay(this,'bank')">
+              <span class="pay-opt-icon">🏦</span>
+              <div class="pay-opt-name">Chuyển khoản</div>
+            </div>
+            <div class="pay-opt" onclick="selectPay(this,'visa')">
+              <span class="pay-opt-icon">🌐</span>
+              <div class="pay-opt-name">Visa / Master</div>
+            </div>
+            <div class="pay-opt" onclick="selectPay(this,'zalopay')">
+              <span class="pay-opt-icon">💚</span>
+              <div class="pay-opt-name">ZaloPay</div>
+            </div>
+            <div class="pay-opt" onclick="selectPay(this,'cod')">
+              <span class="pay-opt-icon">💵</span>
+              <div class="pay-opt-name">Tiền mặt</div>
+            </div>
+          </div>
+          <div class="deposit-note">
+            <div class="deposit-icon">💡</div>
+            <div>Bạn chỉ cần đặt cọc <strong>30%</strong> ngay hôm nay để giữ chỗ. Số tiền còn lại thanh toán trước <strong>7 ngày khởi hành</strong>. Hoàn 100% nếu huỷ trước 7 ngày.</div>
+          </div>
+        </div>
+
+        <div class="confirm-section">
+          <div class="confirm-title">👤 Thông tin liên hệ</div>
+          <div class="contact-form">
+            <div class="cf-grid">
+              <div class="cf-group"><label class="cf-label">Họ và tên *</label><input class="cf-input" type="text" placeholder="Nguyễn Văn A" id="cfName"></div>
+              <div class="cf-group"><label class="cf-label">Số điện thoại *</label><input class="cf-input" type="tel" placeholder="0900 000 000" id="cfPhone"></div>
+            </div>
+            <div class="cf-grid">
+              <div class="cf-group"><label class="cf-label">Email *</label><input class="cf-input" type="email" placeholder="ban@email.com" id="cfEmail"></div>
+              <div class="cf-group"><label class="cf-label">CCCD / Passport</label><input class="cf-input" type="text" placeholder="012 345 678 910" id="cfId"></div>
+            </div>
+            <div class="cf-group"><label class="cf-label">Yêu cầu đặc biệt</label><input class="cf-input" type="text" placeholder="Ăn chay, dị ứng thực phẩm, cần ghế xe lăn..."></div>
+            <label class="terms-check">
+              <input type="checkbox" id="termsCheck" onchange="updateConfirmBtn()">
+              <span>Tôi đã đọc và đồng ý với <a href="#">Điều khoản dịch vụ</a> và <a href="#">Chính sách hoàn tiền</a> của Baggio Travel</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn-back" onclick="nextStep(4)">← Quay lại</button>
+          <button class="btn-next" id="btnConfirm" onclick="submitBooking()" disabled>🎒 Xác nhận & Đặt cọc ngay</button>
+        </div>
+      </div>
+
+      <!-- SUCCESS -->
+      <div id="step-success">
+        <div class="success-wrap">
+          <div class="success-icon">✅</div>
+          <div class="success-title">Đặt tour thành công!</div>
+          <div class="success-sub">Chúng tôi đã nhận đặt cọc và gửi email xác nhận về hộp thư của bạn. Tư vấn viên sẽ liên hệ trong vòng <strong>2 tiếng</strong> để xác nhận lịch trình.</div>
+          <div class="success-ref" id="successRef">Mã đặt tour: BT-XXXX</div>
+          <div class="success-steps">
+            <div class="success-step"><div class="ss-icon">📧</div><div class="ss-title">Email xác nhận</div><div class="ss-desc">Kiểm tra hộp thư — itinerary đầy đủ sẽ có trong 2 tiếng</div></div>
+            <div class="success-step"><div class="ss-icon">📞</div><div class="ss-title">Tư vấn viên gọi</div><div class="ss-desc">Xác nhận HDV, phòng khách sạn và mọi yêu cầu đặc biệt</div></div>
+            <div class="success-step"><div class="ss-icon">📱</div><div class="ss-title">Nhận e-voucher</div><div class="ss-desc">Voucher và hotline hỗ trợ 24/7 gửi trước ngày đi 48 tiếng</div></div>
+          </div>
+          <button class="btn-home" onclick="resetBooking()">← Đặt tour khác</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- SIDEBAR SUMMARY -->
+    <div class="side-col">
+      <div class="summary-card">
+        <img class="summary-img" id="summaryImg" src="https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=400&q=70" alt="">
+        <div class="summary-body">
+          <div class="summary-tour-name" id="summaryName">Chưa chọn tour</div>
+          <div class="summary-dest" id="summaryDest">Chọn tour để bắt đầu</div>
+          <div class="summary-rows">
+            <div class="sum-row"><span class="sum-label">Ngày đi</span><span class="sum-val sum-empty" id="sumDate">—</span></div>
+            <div class="sum-row"><span class="sum-label">Số đêm</span><span class="sum-val sum-empty" id="sumNights">—</span></div>
+            <div class="sum-row"><span class="sum-label">Người lớn</span><span class="sum-val" id="sumAdult">2</span></div>
+            <div class="sum-row"><span class="sum-label">Trẻ em</span><span class="sum-val" id="sumChild">0</span></div>
+            <div class="sum-row"><span class="sum-label">Phòng</span><span class="sum-val sum-empty" id="sumRoom">—</span></div>
+            <div class="sum-row"><span class="sum-label">Dịch vụ thêm</span><span class="sum-val sum-empty" id="sumAddons">—</span></div>
+          </div>
+          <div class="summary-divider"></div>
+          <div class="price-breakdown" id="priceBreakdown"></div>
+          <div class="price-total">
+            <span class="price-total-label">Tổng cộng</span>
+            <span class="price-total-val" id="totalPrice">—</span>
+          </div>
+          <div class="deposit-row">
+            <span class="deposit-label">Đặt cọc ngay (30%)</span>
+            <span class="deposit-val" id="depositPrice">—</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────
+const tours = [
+  {id:1,dest:'Quảng Nam',name:'Hội An – Phố Cổ & Ẩm Thực',days:3,nights:2,price:2800000,img:'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=400&q=70',badge:null,includes:'Vé bay · KS 3★ · HDV · Xe đưa đón · 2 bữa sáng'},
+  {id:2,dest:'Quảng Ninh',name:'Hạ Long – Du thuyền cao cấp',days:5,nights:4,price:5900000,img:'https://images.unsplash.com/photo-1557400128-9a431afe5ff5?w=400&q=70',badge:'Bestseller',includes:'Vé bay · Du thuyền 4★ · HDV song ngữ · Kayak · 4 bữa sáng'},
+  {id:3,dest:'Kiên Giang',name:'Phú Quốc Premium Resort',days:7,nights:6,price:15500000,img:'https://images.unsplash.com/photo-1596422846543-75c6fc197f07?w=400&q=70',badge:'Premium',includes:'Vé bay hạng TM · Resort 5★ · HDV riêng · Spa · All-inclusive'},
+  {id:4,dest:'Lào Cai',name:'Sa Pa – Trekking & Bản Làng',days:2,nights:1,price:2200000,img:'https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?w=400&q=70',badge:null,includes:'Vé tàu · KS 3★ · HDV trekking · 1 bữa sáng'},
+  {id:5,dest:'Lâm Đồng',name:'Đà Lạt – Thành Phố Sương Mù',days:3,nights:2,price:1900000,img:'https://images.unsplash.com/photo-1555400038-63f5ba517a47?w=400&q=70',badge:null,includes:'Vé bay · KS 3★ · HDV · Xe đưa đón · 2 bữa sáng'},
+  {id:6,dest:'Khánh Hoà',name:'Nha Trang – Biển & Đảo',days:4,nights:3,price:3800000,img:'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=400&q=70',badge:'Mới',includes:'Vé bay · KS 4★ · Tàu đảo · Lặn biển · 3 bữa sáng'},
+];
+
+// ── STATE ─────────────────────────────────────────────
+const state = {
+  step:1, tour:null, startDate:null, endDate:null,
+  adults:2, children:0, infants:0,
+  room:'standard', roomExtra:0,
+  addons:{}, addonTotal:0,
+  payMethod:'momo',
+};
+
+const AVAIL = {2:[2,5,9,13,16,20,23,27],4:[3,7,11,14,18,21,25,28],6:[1,6,10,15,19,22,26,30],8:[4,8,12,17,23,27]};
+let calYear = 2025, calMon = 5; // June 2025
+
+// ── TOUR CARDS ────────────────────────────────────────
+function renderTours(){
+  document.getElementById('tourCards').innerHTML = tours.map(t=>`
+    <div class="tour-pick" id="tpick-${t.id}" onclick="selectTour(${t.id})">
+      ${t.badge?`<div class="tour-pick-badge">${t.badge}</div>`:''}
+      <div class="tour-pick-check">✓</div>
+      <img class="tour-pick-img" src="${t.img}" alt="${t.name}" loading="lazy">
+      <div class="tour-pick-info">
+        <div class="tour-pick-dest">${t.dest}</div>
+        <div class="tour-pick-name">${t.name}</div>
+        <div class="tour-pick-meta">
+          <span>📅 ${t.days}N${t.nights}Đ</span>
+          <span>✈️ ${t.includes.split('·')[0].trim()}</span>
+        </div>
+      </div>
+      <div class="tour-pick-price">
+        <span class="tour-pick-from">Từ</span>
+        <div class="tour-pick-val">${fmt(t.price)}</div>
+        <span class="tour-pick-per">đ/người</span>
+      </div>
+    </div>`).join('');
+}
+
+function selectTour(id){
+  state.tour = tours.find(t=>t.id===id);
+  document.querySelectorAll('.tour-pick').forEach(el=>el.classList.remove('selected'));
+  document.getElementById('tpick-'+id).classList.add('selected');
+  document.getElementById('btn1').disabled = false;
+  updateSummary();
+}
+
+// ── CALENDAR ─────────────────────────────────────────
+const dayNames = ['CN','T2','T3','T4','T5','T6','T7'];
+const monthNames = ['Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6','Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12'];
+
+function renderCal(){
+  document.getElementById('calMonth').textContent = `${monthNames[calMon]} ${calYear}`;
+  document.getElementById('calHeader').innerHTML = dayNames.map(d=>`<div class="cal-day-name">${d}</div>`).join('');
+  const first = new Date(calYear,calMon,1).getDay();
+  const days = new Date(calYear,calMon+1,0).getDate();
+  const avail = AVAIL[(calMon+1)] || [];
+  const today = new Date();
+  let html='';
+  for(let i=0;i<first;i++) html+=`<div class="cal-day empty"></div>`;
+  for(let d=1;d<=days;d++){
+    const date = new Date(calYear,calMon,d);
+    const isPast = date < new Date(today.getFullYear(),today.getMonth(),today.getDate());
+    const isAvail = avail.includes(d);
+    const isSelected = state.startDate && state.startDate.getDate()===d && state.startDate.getMonth()===calMon;
+    let cls='cal-day';
+    if(isPast||!isAvail) cls+=' disabled';
+    if(isSelected) cls+=' selected';
+    const availTxt = (!isPast&&isAvail)?`<span class="cal-day-avail">✓</span>`:'';
+    html+=`<div class="${cls}" onclick="pickDate(${d},${calMon},${calYear},${isAvail&&!isPast})">
+      <span class="cal-day-num">${d}</span>${availTxt}
+    </div>`;
+  }
+  document.getElementById('calGrid').innerHTML = html;
+}
+
+function changeMonth(dir){
+  calMon+=dir;
+  if(calMon>11){calMon=0;calYear++;}
+  if(calMon<0){calMon=11;calYear--;}
+  renderCal();
+}
+
+function pickDate(d,m,y,avail){
+  if(!avail) return;
+  const tour = state.tour;
+  if(!tour){alert('Vui lòng chọn tour trước!');return;}
+  state.startDate = new Date(y,m,d);
+  const end = new Date(y,m,d);
+  end.setDate(end.getDate()+tour.nights);
+  state.endDate = end;
+  document.getElementById('dateStart').className='date-val';
+  document.getElementById('dateStart').textContent='📅 '+fmtDate(state.startDate);
+  document.getElementById('dateEnd').className='date-val';
+  document.getElementById('dateEnd').textContent='📅 '+fmtDate(state.endDate);
+  const nb=document.getElementById('nightsBadge');
+  nb.style.display='inline-flex';
+  nb.innerHTML=`<span class="nights-badge">🌙 ${tour.nights} đêm · ${tour.days} ngày</span>`;
+  document.getElementById('btn2').disabled=false;
+  updateSummary();
+  renderCal();
+}
+
+// ── GUESTS ───────────────────────────────────────────
+function changeGuest(type,delta){
+  if(type==='adult'){
+    state.adults=Math.max(1,state.adults+delta);
+    document.getElementById('adultCount').textContent=state.adults;
+    document.getElementById('adultMinus').disabled=state.adults<=1;
+  } else if(type==='child'){
+    state.children=Math.max(0,state.children+delta);
+    document.getElementById('childCount').textContent=state.children;
+    document.getElementById('childMinus').disabled=state.children<=0;
+  } else {
+    state.infants=Math.max(0,state.infants+delta);
+    document.getElementById('infantCount').textContent=state.infants;
+    document.getElementById('infantMinus').disabled=state.infants<=0;
+  }
+  updateSummary();
+}
+
+function selectRoom(el,type){
+  document.querySelectorAll('.room-opt').forEach(r=>r.classList.remove('selected'));
+  el.classList.add('selected');
+  state.room=type;
+  state.roomExtra = type==='deluxe' ? 350000*(state.tour?state.tour.nights:1) : 0;
+  updateSummary();
+}
+
+// ── ADD-ONS ───────────────────────────────────────────
+function toggleAddon(el,key,price){
+  if(el.classList.contains('selected')){
+    el.classList.remove('selected');
+    delete state.addons[key];
+  } else {
+    el.classList.add('selected');
+    state.addons[key]=price;
+  }
+  state.addonTotal = Object.values(state.addons).reduce((a,b)=>a+b,0);
+  updateSummary();
+}
+
+// ── PAYMENT ──────────────────────────────────────────
+function selectPay(el,method){
+  document.querySelectorAll('.pay-opt').forEach(p=>p.classList.remove('selected'));
+  el.classList.add('selected');
+  state.payMethod=method;
+}
+
+// ── SUMMARY ──────────────────────────────────────────
+function fmt(n){return n.toLocaleString('vi-VN')}
+function fmtDate(d){return d.toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit',year:'numeric'})}
+
+function calcTotal(){
+  if(!state.tour) return 0;
+  const base = state.tour.price * state.adults;
+  const childPrice = state.tour.price * 0.7 * state.children;
+  const room = state.roomExtra;
+  const addons = state.addonTotal;
+  return base + childPrice + room + addons;
+}
+
+function updateSummary(){
+  const t = state.tour;
+  if(t){
+    document.getElementById('summaryName').textContent=t.name;
+    document.getElementById('summaryDest').textContent=t.dest+' · '+t.days+'N'+t.nights+'Đ';
+    document.getElementById('summaryImg').src=t.img;
+  }
+  document.getElementById('sumDate').textContent = state.startDate ? fmtDate(state.startDate) : '—';
+  document.getElementById('sumDate').className = 'sum-val'+(state.startDate?'':' sum-empty');
+  document.getElementById('sumNights').textContent = t ? t.nights+' đêm' : '—';
+  document.getElementById('sumNights').className = 'sum-val'+(t?'':' sum-empty');
+  document.getElementById('sumAdult').textContent = state.adults;
+  document.getElementById('sumChild').textContent = state.children;
+  document.getElementById('sumRoom').textContent = state.room==='deluxe'?'Deluxe (+350k/đêm)':'Tiêu chuẩn';
+  document.getElementById('sumRoom').className = 'sum-val';
+  const addonNames = Object.keys(state.addons).map(k=>({airport_transfer:'Xe sân bay',private_guide:'HDV riêng',photo:'Photographer',spa:'Spa',travel_insurance:'Bảo hiểm',dining:'Dinner'}[k])).join(', ');
+  document.getElementById('sumAddons').textContent = addonNames||'—';
+  document.getElementById('sumAddons').className = 'sum-val'+(addonNames?'':' sum-empty');
+
+  const total = calcTotal();
+  if(total>0){
+    const t2 = state.tour;
+    const base = t2.price*state.adults;
+    const childP = t2.price*0.7*state.children;
+    let rows='';
+    rows+=`<div class="price-row"><span class="price-label">Người lớn (×${state.adults})</span><span class="price-val">${fmt(base)}đ</span></div>`;
+    if(state.children>0) rows+=`<div class="price-row"><span class="price-label">Trẻ em (×${state.children})</span><span class="price-val">${fmt(childP)}đ</span></div>`;
+    if(state.roomExtra>0) rows+=`<div class="price-row"><span class="price-label">Nâng cấp phòng</span><span class="price-val">+${fmt(state.roomExtra)}đ</span></div>`;
+    if(state.addonTotal>0) rows+=`<div class="price-row"><span class="price-label">Dịch vụ thêm</span><span class="price-val">+${fmt(state.addonTotal)}đ</span></div>`;
+    document.getElementById('priceBreakdown').innerHTML=rows;
+    document.getElementById('totalPrice').textContent=fmt(total)+'đ';
+    document.getElementById('depositPrice').textContent=fmt(Math.round(total*0.3))+'đ';
+  } else {
+    document.getElementById('priceBreakdown').innerHTML='';
+    document.getElementById('totalPrice').textContent='—';
+    document.getElementById('depositPrice').textContent='—';
+  }
+}
+
+// ── STEP CONFIRM ─────────────────────────────────────
+function buildConfirm(){
+  const t=state.tour;
+  if(!t) return;
+  document.getElementById('confirmImg').src=t.img;
+  const addonList = Object.keys(state.addons).map(k=>({airport_transfer:'Xe đón sân bay',private_guide:'HDV cá nhân',photo:'Photographer',spa:'Spa & Massage',travel_insurance:'Bảo hiểm du lịch',dining:'Dinner đặc sản'}[k]));
+  document.getElementById('confirmBody').innerHTML=`
+    <div class="confirm-row"><span class="confirm-row-label">Tour</span><span class="confirm-row-val">${t.name}</span></div>
+    <div class="confirm-row"><span class="confirm-row-label">Điểm đến</span><span class="confirm-row-val">${t.dest}</span></div>
+    <div class="confirm-row"><span class="confirm-row-label">Ngày đi</span><span class="confirm-row-val">${state.startDate?fmtDate(state.startDate):'—'}</span></div>
+    <div class="confirm-row"><span class="confirm-row-label">Ngày về</span><span class="confirm-row-val">${state.endDate?fmtDate(state.endDate):'—'}</span></div>
+    <div class="confirm-row"><span class="confirm-row-label">Số khách</span><span class="confirm-row-val">${state.adults} người lớn${state.children>0?', '+state.children+' trẻ em':''}</span></div>
+    <div class="confirm-row"><span class="confirm-row-label">Phòng</span><span class="confirm-row-val">${state.room==='deluxe'?'Deluxe':'Tiêu chuẩn'}</span></div>
+    ${addonList.length>0?`<div class="confirm-row"><span class="confirm-row-label">Dịch vụ thêm</span><span class="confirm-row-val">${addonList.join(', ')}</span></div>`:''}
+    <div class="confirm-row" style="border-top:2px solid var(--border);margin-top:.5rem;padding-top:.75rem"><span class="confirm-row-label" style="font-weight:600;color:var(--ink)">Tổng cộng</span><span class="confirm-row-val" style="color:var(--red);font-size:1.1rem">${fmt(calcTotal())}đ</span></div>
+    <div class="confirm-row"><span class="confirm-row-label" style="color:var(--teal)">Đặt cọc ngay (30%)</span><span class="confirm-row-val" style="color:var(--teal)">${fmt(Math.round(calcTotal()*0.3))}đ</span></div>`;
+}
+
+function updateConfirmBtn(){
+  const ok = document.getElementById('termsCheck').checked &&
+    document.getElementById('cfName').value.trim() &&
+    document.getElementById('cfPhone').value.trim() &&
+    document.getElementById('cfEmail').value.trim();
+  document.getElementById('btnConfirm').disabled=!ok;
+}
+['cfName','cfPhone','cfEmail'].forEach(id=>document.getElementById(id).addEventListener('input',updateConfirmBtn));
+
+// ── NAVIGATION ───────────────────────────────────────
+const progressWidths = {1:'0%',2:'25%',3:'50%',4:'75%',5:'100%'};
+function nextStep(n){
+  if(n===2&&!state.tour){return;}
+  document.querySelectorAll('.step-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.pstep').forEach((p,i)=>{
+    p.classList.remove('active','done');
+    if(i+1<n) p.classList.add('done');
+    if(i+1===n) p.classList.add('active');
+  });
+  document.getElementById('progressFill').style.width=progressWidths[n]||'0%';
+  if(n<=5) document.getElementById('step-'+n).classList.add('active');
+  if(n===5) buildConfirm();
+  state.step=n;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ── SUBMIT ───────────────────────────────────────────
+function submitBooking(){
+  const ref='BT-'+Math.floor(1000+Math.random()*9000);
+  document.getElementById('successRef').textContent='Mã đặt tour: '+ref;
+  document.querySelectorAll('.step-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('engineGrid').style.gridTemplateColumns='1fr';
+  document.getElementById('engineGrid').querySelector('.side-col').style.display='none';
+  document.getElementById('step-success').classList.add('active');
+  document.getElementById('progressFill').style.width='100%';
+  document.querySelectorAll('.pstep').forEach(p=>p.classList.add('done'));
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function resetBooking(){
+  location.reload();
+}
+
+// ── INIT ─────────────────────────────────────────────
+renderTours();
+renderCal();
+updateSummary();
+</script>
+</body>
+</html>

@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Baggio Travel — Quản lý HDV</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+const SUPABASE_URL  = 'https://lfnlezfphwjtdunyungi.supabase.co'
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxmbmxlemZwaHdqdGR1bnl1bmdpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0NjkwNzcsImV4cCI6MjA5NjA0NTA3N30.fmjvqhyiPcjB6qT5GDtfzMfY-C-WXP4QUIk-YW7FhJg'
+</script>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0d1117;--s1:#161b22;--s2:#1c2230;--s3:#21283a;
+  --border:#253047;--border2:#2d3a55;
+  --text:#e6edf3;--text2:#8b949e;--text3:#3d4f6e;
+  --green:#3fb950;--gdim:rgba(63,185,80,.12);--gbrd:rgba(63,185,80,.3);
+  --blue:#58a6ff;--bdim:rgba(88,166,255,.1);--bbrd:rgba(88,166,255,.25);
+  --amber:#d29922;--adim:rgba(210,153,34,.1);--abrd:rgba(210,153,34,.25);
+  --red:#f85149;--rdim:rgba(248,81,73,.1);--rbrd:rgba(248,81,73,.25);
+  --purple:#bc8cff;--pdim:rgba(188,140,255,.1);--pbrd:rgba(188,140,255,.3);
+  --font:'Be Vietnam Pro',sans-serif;--mono:'Space Mono',monospace;
+}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:13px;display:grid;grid-template-columns:220px 1fr;grid-template-rows:52px 1fr}
+
+.topbar{grid-column:1/-1;background:var(--s1);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 1.25rem;gap:1rem}
+.tb-logo{font-family:var(--mono);font-size:.88rem;font-weight:700;color:var(--text)}
+.tb-logo span{color:var(--green)}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:.75rem}
+.tb-clock{font-family:var(--mono);font-size:.68rem;color:var(--text3)}
+
+.sidebar{background:var(--s1);border-right:1px solid var(--border);overflow-y:auto;padding:.75rem 0}
+.sb-section{font-family:var(--mono);font-size:.55rem;letter-spacing:.18em;text-transform:uppercase;color:var(--text3);padding:.65rem 1.1rem .25rem}
+.sb-item{display:flex;align-items:center;gap:.6rem;padding:.48rem 1.1rem;font-size:.8rem;color:var(--text2);cursor:pointer;border-left:2px solid transparent;transition:all .15s}
+.sb-item:hover{color:var(--text);background:rgba(255,255,255,.03)}
+.sb-item.active{color:var(--blue);border-left-color:var(--blue);background:var(--bdim)}
+
+.main{overflow-y:auto;padding:1.5rem}
+.page{display:none}.page.active{display:block}
+
+/* STAT */
+.stat-row{display:grid;grid-template-columns:repeat(5,1fr);gap:.75rem;margin-bottom:1.25rem}
+.stat{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:.9rem 1rem;position:relative}
+.stat::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:8px 8px 0 0}
+.stat.g::before{background:var(--green)}.stat.b::before{background:var(--blue)}
+.stat.a::before{background:var(--amber)}.stat.r::before{background:var(--red)}.stat.p::before{background:var(--purple)}
+.stat-label{font-family:var(--mono);font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-bottom:.4rem}
+.stat-val{font-family:var(--mono);font-size:1.4rem;font-weight:700;line-height:1;margin-bottom:.2rem}
+.stat-sub{font-size:.72rem;color:var(--text2)}
+
+/* CARD */
+.card{background:var(--s2);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:1rem}
+.card-header{background:var(--s3);border-bottom:1px solid var(--border);padding:.75rem 1.1rem;display:flex;align-items:center;justify-content:space-between;gap:.75rem}
+.card-title{font-weight:600;font-size:.85rem;color:var(--text)}
+.card-body{padding:1.1rem}
+.card-actions{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center}
+
+/* GUIDE GRID */
+.guide-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+.guide-card{background:var(--s3);border:1px solid var(--border);border-radius:8px;padding:1.25rem;cursor:pointer;transition:border-color .2s,transform .2s;position:relative}
+.guide-card:hover{border-color:var(--border2);transform:translateY(-2px)}
+.guide-card.selected{border-color:var(--blue);background:var(--bdim)}
+.gc-top{display:flex;align-items:flex-start;gap:.85rem;margin-bottom:1rem}
+.gc-avatar{width:48px;height:48px;border-radius:50%;background:var(--s2);border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:1rem;font-weight:700;color:var(--blue);flex-shrink:0}
+.gc-name{font-weight:600;font-size:.92rem;color:var(--text);margin-bottom:.2rem}
+.gc-license{font-family:var(--mono);font-size:.6rem;color:var(--text3)}
+.gc-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.5rem;margin-bottom:.85rem}
+.gcs{background:var(--s2);border:1px solid var(--border);border-radius:5px;padding:.5rem;text-align:center}
+.gcs-val{font-family:var(--mono);font-size:.9rem;font-weight:700;color:var(--text);line-height:1}
+.gcs-label{font-family:var(--mono);font-size:.52rem;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-top:.15rem}
+.gc-tags{display:flex;gap:.35rem;flex-wrap:wrap}
+.gc-tag{font-family:var(--mono);font-size:.55rem;letter-spacing:.06em;padding:.18rem .45rem;border-radius:3px;text-transform:uppercase}
+.gc-tag.lang{background:var(--bdim);border:1px solid var(--bbrd);color:var(--blue)}
+.gc-tag.region{background:var(--gdim);border:1px solid var(--gbrd);color:var(--green)}
+.gc-tag.spec{background:var(--pdim);border:1px solid var(--pbrd);color:var(--purple)}
+.gc-status{position:absolute;top:.75rem;right:.75rem}
+
+/* DETAIL PANEL */
+.detail-panel{background:var(--s2);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:1rem}
+.dp-header{background:var(--s3);border-bottom:1px solid var(--border);padding:1rem 1.25rem;display:flex;align-items:center;gap:1rem}
+.dp-avatar{width:56px;height:56px;border-radius:50%;background:var(--s2);border:2px solid var(--blue);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:1.2rem;font-weight:700;color:var(--blue);flex-shrink:0}
+.dp-name{font-family:var(--mono);font-size:1rem;font-weight:700;margin-bottom:.2rem}
+.dp-meta{font-size:.78rem;color:var(--text2)}
+.dp-tabs{display:flex;border-bottom:1px solid var(--border);background:var(--s3)}
+.dp-tab{font-family:var(--mono);font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;padding:.6rem 1rem;cursor:pointer;color:var(--text3);border-bottom:2px solid transparent;transition:all .15s;background:none;border-top:none;border-left:none;border-right:none}
+.dp-tab:hover{color:var(--text2)}
+.dp-tab.active{color:var(--blue);border-bottom-color:var(--blue)}
+.dp-body{padding:1.25rem}
+.dp-panel{display:none}.dp-panel.active{display:block}
+
+/* CALENDAR */
+.mini-cal{margin-bottom:1rem}
+.mc-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem}
+.mc-month{font-family:var(--mono);font-size:.75rem;font-weight:700;color:var(--text)}
+.mc-btn{background:none;border:1px solid var(--border);color:var(--text3);font-family:var(--mono);font-size:.65rem;padding:.25rem .55rem;border-radius:4px;cursor:pointer;transition:all .15s}
+.mc-btn:hover{border-color:var(--border2);color:var(--text2)}
+.mc-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.mc-day-name{font-family:var(--mono);font-size:.55rem;color:var(--text3);text-align:center;padding:.25rem 0}
+.mc-day{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:4px;font-family:var(--mono);font-size:.68rem;cursor:pointer;transition:all .15s;border:1px solid transparent;position:relative}
+.mc-day.empty{cursor:default}
+.mc-day.today{border-color:var(--blue);color:var(--blue)}
+.mc-day.busy{background:rgba(88,166,255,.15);border-color:var(--bbrd);color:var(--blue)}
+.mc-day.off{background:var(--rdim);border-color:var(--rbrd);color:var(--red)}
+.mc-day.free:hover{background:var(--gdim);border-color:var(--gbrd);color:var(--green)}
+.mc-day .mc-dot{width:4px;height:4px;border-radius:50%;position:absolute;bottom:2px}
+
+/* TABLE */
+table{width:100%;border-collapse:collapse}
+th{font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);padding:.6rem 1rem;text-align:left;font-weight:400;border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:.7rem 1rem;border-bottom:1px solid rgba(255,255,255,.04);font-size:.8rem;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.02)}
+
+/* BADGE */
+.badge{font-family:var(--mono);font-size:.58rem;letter-spacing:.06em;text-transform:uppercase;padding:.22rem .55rem;border-radius:4px;display:inline-flex;align-items:center;gap:.3rem;white-space:nowrap}
+.badge-active{background:var(--gdim);border:1px solid var(--gbrd);color:var(--green)}
+.badge-busy{background:var(--bdim);border:1px solid var(--bbrd);color:var(--blue)}
+.badge-leave{background:var(--rdim);border:1px solid var(--rbrd);color:var(--red)}
+.badge-inactive{background:var(--s3);border:1px solid var(--border);color:var(--text3)}
+
+/* KPI */
+.kpi-bar{background:var(--s3);border-radius:4px;height:8px;overflow:hidden;margin-top:.35rem}
+.kpi-fill{height:100%;border-radius:4px;transition:width .5s}
+.kpi-row{margin-bottom:.85rem}
+.kpi-label{display:flex;justify-content:space-between;font-size:.78rem;margin-bottom:.2rem}
+.kpi-key{color:var(--text2);font-weight:300}
+.kpi-val{font-family:var(--mono);font-size:.72rem;color:var(--text)}
+
+/* FORM */
+.form-group{display:flex;flex-direction:column;gap:.35rem;margin-bottom:.85rem}
+.form-label{font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text3)}
+.form-input,.form-select,.form-textarea{background:var(--s1);border:1px solid var(--border);color:var(--text);font-family:var(--font);font-size:.85rem;padding:.6rem .85rem;border-radius:5px;outline:none;transition:border-color .2s;width:100%}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--blue)}
+.form-select option{background:var(--s2)}
+.form-textarea{resize:vertical;min-height:80px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+
+/* MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:500;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.modal-bg.open{display:flex}
+.modal{background:var(--s2);border:1px solid var(--border);border-radius:10px;width:100%;max-width:580px;max-height:88vh;overflow-y:auto}
+.modal-header{background:var(--s3);border-bottom:1px solid var(--border);padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0}
+.modal-title{font-weight:600;font-size:.9rem}
+.modal-close{background:none;border:none;color:var(--text2);font-size:1.2rem;cursor:pointer}
+.modal-body{padding:1.25rem}
+.modal-footer{padding:.85rem 1.25rem;border-top:1px solid var(--border);display:flex;gap:.5rem;justify-content:flex-end}
+
+/* BTN */
+.btn{font-family:var(--mono);font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;padding:.4rem .9rem;border-radius:5px;cursor:pointer;transition:all .15s;border:1px solid}
+.btn-default{background:none;border-color:var(--border);color:var(--text2)}
+.btn-default:hover{border-color:var(--border2);color:var(--text)}
+.btn-primary{background:var(--blue);border-color:var(--blue);color:#0d1117}
+.btn-primary:hover{background:#79b8ff}
+.btn-green{background:var(--green);border-color:var(--green);color:#0d1117}
+.btn-danger{background:none;border-color:var(--rbrd);color:var(--red)}
+
+/* PAYROLL */
+.payroll-row{display:flex;justify-content:space-between;align-items:center;padding:.6rem 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:.82rem}
+.payroll-row:last-child{border-bottom:none}
+.pr-label{color:var(--text2);font-weight:300}
+.pr-val{font-family:var(--mono);font-weight:500}
+
+/* TOAST */
+.toast-wrap{position:fixed;bottom:1.5rem;right:1.5rem;z-index:999;display:flex;flex-direction:column;gap:.5rem}
+.toast{background:var(--s2);border:1px solid var(--border);color:var(--text);padding:.65rem 1rem;font-size:.8rem;border-radius:6px;display:flex;align-items:center;gap:.5rem;min-width:240px;animation:toastIn .2s ease;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+@keyframes toastIn{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:none}}
+.empty-state{text-align:center;padding:3rem 1rem;color:var(--text2)}
+.empty-icon{font-size:2.5rem;opacity:.3;margin-bottom:.75rem}
+::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+@media(max-width:900px){body{grid-template-columns:1fr}.sidebar{display:none}.stat-row{grid-template-columns:repeat(3,1fr)}.guide-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<!-- MODAL THÊM/SỬA HDV -->
+<div class="modal-bg" id="guideModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="guideModalTitle">Thêm Hướng dẫn viên</div>
+      <button class="modal-close" onclick="closeGuideModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Họ và tên *</label><input class="form-input" id="gf_name" placeholder="Nguyễn Văn A"></div>
+        <div class="form-group"><label class="form-label">SĐT *</label><input class="form-input" id="gf_phone" placeholder="0901234567"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="gf_email" type="email" placeholder="hdv@email.com"></div>
+        <div class="form-group"><label class="form-label">Số bằng HDV</label><input class="form-input" id="gf_license" placeholder="HDV-HN-001234"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Ngôn ngữ</label>
+          <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.25rem" id="gf_langs">
+            <label style="display:flex;align-items:center;gap:.35rem;font-size:.8rem;cursor:pointer"><input type="checkbox" value="vi" checked style="accent-color:var(--blue)"> 🇻🇳 Việt</label>
+            <label style="display:flex;align-items:center;gap:.35rem;font-size:.8rem;cursor:pointer"><input type="checkbox" value="en" style="accent-color:var(--blue)"> 🇬🇧 Anh</label>
+            <label style="display:flex;align-items:center;gap:.35rem;font-size:.8rem;cursor:pointer"><input type="checkbox" value="zh" style="accent-color:var(--blue)"> 🇨🇳 Trung</label>
+            <label style="display:flex;align-items:center;gap:.35rem;font-size:.8rem;cursor:pointer"><input type="checkbox" value="ko" style="accent-color:var(--blue)"> 🇰🇷 Hàn</label>
+            <label style="display:flex;align-items:center;gap:.35rem;font-size:.8rem;cursor:pointer"><input type="checkbox" value="ja" style="accent-color:var(--blue)"> 🇯🇵 Nhật</label>
+            <label style="display:flex;align-items:center;gap:.35rem;font-size:.8rem;cursor:pointer"><input type="checkbox" value="fr" style="accent-color:var(--blue)"> 🇫🇷 Pháp</label>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Vùng phụ trách</label>
+          <div style="display:flex;gap:.5rem;flex-direction:column;margin-top:.25rem">
+            <label style="display:flex;align-items:center;gap:.35rem;font-size:.8rem;cursor:pointer"><input type="checkbox" value="north" style="accent-color:var(--blue)"> Miền Bắc</label>
+            <label style="display:flex;align-items:center;gap:.35rem;font-size:.8rem;cursor:pointer"><input type="checkbox" value="central" style="accent-color:var(--blue)"> Miền Trung</label>
+            <label style="display:flex;align-items:center;gap:.35rem;font-size:.8rem;cursor:pointer"><input type="checkbox" value="south" style="accent-color:var(--blue)"> Miền Nam</label>
+          </div>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Phí ngày (đ)</label><input class="form-input" id="gf_rate" type="number" placeholder="500000"></div>
+        <div class="form-group">
+          <label class="form-label">Trạng thái</label>
+          <select class="form-select" id="gf_status">
+            <option value="ACTIVE">Đang hoạt động</option>
+            <option value="ON_TOUR">Đang dẫn tour</option>
+            <option value="ON_LEAVE">Nghỉ phép</option>
+            <option value="INACTIVE">Ngừng hoạt động</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group"><label class="form-label">Chuyên môn</label><input class="form-input" id="gf_specs" placeholder="culture, beach, trekking, food..."></div>
+      <div class="form-group"><label class="form-label">Giới thiệu bản thân</label><textarea class="form-textarea" id="gf_bio" placeholder="Kinh nghiệm, điểm mạnh..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="saveGuide()">💾 Lưu</button>
+      <button class="btn btn-default" onclick="closeGuideModal()">Hủy</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL THÊM LỊCH NGHỈ -->
+<div class="modal-bg" id="leaveModal">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-header">
+      <div class="modal-title">📅 Đăng ký nghỉ phép</div>
+      <button class="modal-close" onclick="document.getElementById('leaveModal').classList.remove('open')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">HDV</label><div id="leaveGuideName" style="font-weight:600;font-size:.9rem;padding:.5rem 0"></div></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Từ ngày</label><input class="form-input" id="leaveFrom" type="date"></div>
+        <div class="form-group"><label class="form-label">Đến ngày</label><input class="form-input" id="leaveTo" type="date"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Lý do</label><input class="form-input" id="leaveReason" placeholder="Nghỉ phép thường niên, việc gia đình..."></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="saveLeave()">💾 Lưu</button>
+      <button class="btn btn-default" onclick="document.getElementById('leaveModal').classList.remove('open')">Hủy</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="tb-logo">Baggio<span>.</span>HDV</div>
+  <div style="font-size:.75rem;color:var(--text3)">/ Quản lý Hướng dẫn viên</div>
+  <div class="tb-right">
+    <a href="baggio-admin.html" class="btn btn-default" style="text-decoration:none;font-size:.6rem">← Admin</a>
+    <a href="baggio-operations.html" class="btn btn-default" style="text-decoration:none;font-size:.6rem">⚙️ Ops</a>
+    <div class="tb-clock" id="clockEl"></div>
+  </div>
+</header>
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sb-section">Quản lý</div>
+  <div class="sb-item active" onclick="nav('overview',this)"><span>👥</span> Tổng quan HDV</div>
+  <div class="sb-item" onclick="nav('schedule',this)"><span>📅</span> Lịch & Phân công</div>
+  <div class="sb-item" onclick="nav('payroll',this)"><span>💰</span> Thù lao & Thanh toán</div>
+  <div class="sb-item" onclick="nav('kpi',this)"><span>📊</span> KPI & Đánh giá</div>
+  <div class="sb-section">Hành chính</div>
+  <div class="sb-item" onclick="nav('contracts',this)"><span>📄</span> Hợp đồng</div>
+  <div class="sb-item" onclick="nav('training',this)"><span>🎓</span> Đào tạo</div>
+</nav>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- ═══ OVERVIEW ═══ -->
+  <div class="page active" id="page-overview">
+    <div class="stat-row">
+      <div class="stat g"><div class="stat-label">Tổng HDV</div><div class="stat-val" id="statTotal">—</div><div class="stat-sub">Trong hệ thống</div></div>
+      <div class="stat b"><div class="stat-label">Đang hoạt động</div><div class="stat-val" id="statActive">—</div><div class="stat-sub">Sẵn sàng nhận tour</div></div>
+      <div class="stat a"><div class="stat-label">Đang dẫn tour</div><div class="stat-val" id="statOnTour">—</div></div>
+      <div class="stat r"><div class="stat-label">Nghỉ phép</div><div class="stat-val" id="statLeave">—</div></div>
+      <div class="stat p"><div class="stat-label">Rating TB</div><div class="stat-val" id="statRating">—</div><div class="stat-sub">★ / 5</div></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">👥 Danh sách Hướng dẫn viên</div>
+        <div class="card-actions">
+          <input style="background:var(--s1);border:1px solid var(--border);color:var(--text);font-family:var(--font);font-size:.78rem;padding:.4rem .75rem;border-radius:5px;outline:none;width:180px" placeholder="🔍 Tìm HDV..." oninput="filterGuides(this.value)" id="guideSearch">
+          <select style="background:var(--s1);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:.65rem;padding:.4rem .5rem;border-radius:5px;outline:none;cursor:pointer" id="statusFilter" onchange="loadGuides()">
+            <option value="">Tất cả</option>
+            <option value="ACTIVE">Đang hoạt động</option>
+            <option value="ON_TOUR">Đang dẫn tour</option>
+            <option value="ON_LEAVE">Nghỉ phép</option>
+          </select>
+          <button class="btn btn-primary" onclick="openGuideModal()">+ Thêm HDV</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="guide-grid" id="guideGrid">
+          <div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">⏳</div><div>Đang tải...</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ SCHEDULE ═══ -->
+  <div class="page" id="page-schedule">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">📅 Phân công & Lịch làm việc</div>
+        <div class="card-actions">
+          <button class="btn btn-default" onclick="prevMonth()">← Tháng trước</button>
+          <span id="schedMonthLabel" style="font-family:var(--mono);font-size:.72rem;color:var(--text2);padding:0 .5rem"></span>
+          <button class="btn btn-default" onclick="nextMonth()">Tháng sau →</button>
+          <button class="btn btn-primary" onclick="loadSchedulePage()">↺ Cập nhật</button>
+        </div>
+      </div>
+      <div class="card-body" id="scheduleBody">
+        <div class="empty-state"><div class="empty-icon">📅</div><div>Đang tải lịch...</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ PAYROLL ═══ -->
+  <div class="page" id="page-payroll">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">💰 Thù lao & Thanh toán HDV</div>
+        <div class="card-actions">
+          <select style="background:var(--s1);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:.65rem;padding:.4rem .5rem;border-radius:5px;outline:none;cursor:pointer" id="payrollMonth" onchange="loadPayroll()">
+          </select>
+          <button class="btn btn-primary" onclick="exportPayroll()">📥 Xuất bảng lương</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <table>
+          <thead><tr>
+            <th>HDV</th><th>SĐT</th><th>Số tour</th><th>Tổng ngày</th><th>Phí ngày</th><th>Thù lao</th><th>Đã thanh toán</th><th>Còn lại</th><th>Thao tác</th>
+          </tr></thead>
+          <tbody id="payrollTbl">
+            <tr><td colspan="9" style="text-align:center;padding:2rem;color:var(--text3);font-family:var(--mono)">⏳ Đang tải...</td></tr>
+          </tbody>
+        </table>
+        <div style="margin-top:1rem;padding:1rem;background:var(--s3);border-radius:6px;display:flex;gap:2rem">
+          <div><div style="font-family:var(--mono);font-size:.6rem;color:var(--text3);letter-spacing:.1em;text-transform:uppercase">Tổng thù lao tháng</div><div style="font-family:var(--mono);font-size:1.1rem;font-weight:700;color:var(--amber)" id="totalPayroll">—</div></div>
+          <div><div style="font-family:var(--mono);font-size:.6rem;color:var(--text3);letter-spacing:.1em;text-transform:uppercase">Đã thanh toán</div><div style="font-family:var(--mono);font-size:1.1rem;font-weight:700;color:var(--green)" id="paidPayroll">—</div></div>
+          <div><div style="font-family:var(--mono);font-size:.6rem;color:var(--text3);letter-spacing:.1em;text-transform:uppercase">Còn lại</div><div style="font-family:var(--mono);font-size:1.1rem;font-weight:700;color:var(--red)" id="remainPayroll">—</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ KPI ═══ -->
+  <div class="page" id="page-kpi">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+      <div class="card">
+        <div class="card-header"><div class="card-title">📊 KPI Tổng quan</div></div>
+        <div class="card-body"><div class="chart-wrap" style="height:250px"><canvas id="kpiChart"></canvas></div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">🏆 Bảng xếp hạng HDV</div></div>
+        <div class="card-body" id="kpiRanking"></div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:1rem">
+      <div class="card-header"><div class="card-title">📋 Chi tiết KPI từng HDV</div></div>
+      <div class="card-body" id="kpiDetail"></div>
+    </div>
+  </div>
+
+  <!-- ═══ CONTRACTS ═══ -->
+  <div class="page" id="page-contracts">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">📄 Hợp đồng HDV</div>
+        <button class="btn btn-primary" onclick="toast('Tính năng tạo hợp đồng PDF đang phát triển','warn')">+ Tạo hợp đồng</button>
+      </div>
+      <div class="card-body" id="contractsBody">
+        <div class="empty-state"><div class="empty-icon">📄</div><div style="font-weight:600;margin-bottom:.3rem">Quản lý hợp đồng HDV</div><div style="font-size:.82rem">Tính năng lưu và quản lý hợp đồng sẽ được phát triển ở phiên bản tiếp theo</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ TRAINING ═══ -->
+  <div class="page" id="page-training">
+    <div class="card">
+      <div class="card-header"><div class="card-title">🎓 Chương trình đào tạo HDV</div></div>
+      <div class="card-body">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.75rem">
+          ${[
+            {icon:'🗺️',title:'Kiến thức địa lý & Lịch sử',desc:'Địa điểm du lịch, văn hóa vùng miền, lịch sử Việt Nam'},
+            {icon:'🗣️',title:'Kỹ năng thuyết trình',desc:'Kể chuyện hấp dẫn, giao tiếp với khách quốc tế'},
+            {icon:'🚨',title:'Xử lý tình huống khẩn cấp',desc:'Sơ cứu, mất đồ, thời tiết xấu, khách cần hỗ trợ y tế'},
+            {icon:'📱',title:'Sử dụng hệ thống Baggio',desc:'App quản lý tour, checklist, báo cáo sau tour'},
+            {icon:'⭐',title:'Chất lượng dịch vụ',desc:'Tiêu chuẩn 5 sao, xử lý phản hồi khách hàng'},
+            {icon:'📸',title:'Chụp ảnh cho khách',desc:'Góc chụp đẹp, kỹ thuật cơ bản, chia sẻ ảnh'},
+          ].map(t=>`
+            <div style="background:var(--s3);border:1px solid var(--border);border-radius:6px;padding:1rem">
+              <div style="font-size:1.3rem;margin-bottom:.4rem">${t.icon}</div>
+              <div style="font-weight:600;font-size:.85rem;margin-bottom:.3rem">${t.title}</div>
+              <div style="font-size:.75rem;color:var(--text2);font-weight:300;line-height:1.5">${t.desc}</div>
+            </div>`).join('')}
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON)
+const fmt   = n => Number(n||0).toLocaleString('vi-VN')
+const fmtD  = d => d ? new Date(d).toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit',year:'numeric'}) : '—'
+const LANG_MAP = {vi:'🇻🇳 Việt',en:'🇬🇧 Anh',zh:'🇨🇳 Trung',ko:'🇰🇷 Hàn',ja:'🇯🇵 Nhật',fr:'🇫🇷 Pháp'}
+const REGION_MAP = {north:'Miền Bắc',central:'Miền Trung',south:'Miền Nam'}
+const STATUS_MAP = {ACTIVE:'badge-active ● Active',ON_TOUR:'badge-busy 🔄 Dẫn tour',ON_LEAVE:'badge-leave 🏖 Nghỉ phép',INACTIVE:'badge-inactive Ngừng HĐ'}
+let guidesCache = []
+let editGuideId = null
+let calMonth = new Date()
+const PAID_KEY = 'baggio_paid_guides'
+
+setInterval(()=>document.getElementById('clockEl').textContent=new Date().toLocaleTimeString('vi-VN'),1000)
+
+function toast(msg,type='ok'){
+  const w=document.getElementById('toastWrap'),t=document.createElement('div')
+  t.className='toast'
+  t.style.borderLeft=`3px solid ${type==='err'?'var(--red)':type==='warn'?'var(--amber)':'var(--green)'}`
+  t.textContent=msg;w.appendChild(t)
+  setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity .3s';setTimeout(()=>t.remove(),300)},3000)
+}
+
+function nav(page,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'))
+  document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'))
+  document.getElementById('page-'+page).classList.add('active')
+  if(el)el.classList.add('active')
+  const loaders={overview:loadGuides,schedule:loadSchedulePage,payroll:loadPayroll,kpi:loadKPI,contracts:()=>{},training:()=>{}}
+  if(loaders[page])loaders[page]()
+}
+
+// ── LOAD GUIDES ──────────────────────────────
+async function loadGuides(){
+  const statusF=document.getElementById('statusFilter')?.value||''
+  let q=sb.from('guides').select('*').order('rating_avg',{ascending:false})
+  if(statusF)q=q.eq('status',statusF)
+  const {data,error}=await q
+  if(error){toast('Lỗi tải HDV','err');return}
+  guidesCache=data||[]
+
+  // Stats
+  document.getElementById('statTotal').textContent=guidesCache.length
+  document.getElementById('statActive').textContent=guidesCache.filter(g=>g.status==='ACTIVE').length
+  document.getElementById('statOnTour').textContent=guidesCache.filter(g=>g.status==='ON_TOUR').length
+  document.getElementById('statLeave').textContent=guidesCache.filter(g=>g.status==='ON_LEAVE').length
+  const avgR=guidesCache.length?(guidesCache.reduce((s,g)=>s+Number(g.rating_avg||0),0)/guidesCache.length).toFixed(1):'—'
+  document.getElementById('statRating').textContent=avgR
+
+  renderGuideGrid(guidesCache)
+}
+
+function renderGuideGrid(guides){
+  const el=document.getElementById('guideGrid')
+  if(!guides.length){el.innerHTML='<div class="empty-state" style="grid-column:1/-1"><div class="empty-icon">👥</div><div>Không có HDV</div></div>';return}
+  el.innerHTML=guides.map(g=>{
+    const [cls,label]=(STATUS_MAP[g.status]||'badge-inactive Không rõ').split(' ')
+    const init=g.full_name.split(' ').slice(-2).map(w=>w[0]).join('').toUpperCase()
+    return`<div class="guide-card" onclick="selectGuide('${g.id}')">
+      <div class="gc-status"><span class="badge ${cls}">${label||g.status}</span></div>
+      <div class="gc-top">
+        <div class="gc-avatar">${init}</div>
+        <div>
+          <div class="gc-name">${g.full_name}</div>
+          <div class="gc-license">${g.license_number||'Chưa có bằng'}</div>
+          <div style="font-size:.72rem;color:var(--text2);margin-top:.2rem">📞 ${g.phone||'—'}</div>
+        </div>
+      </div>
+      <div class="gc-stats">
+        <div class="gcs"><div class="gcs-val">${g.total_tours||0}</div><div class="gcs-label">Tour</div></div>
+        <div class="gcs"><div class="gcs-val" style="color:var(--amber)">${Number(g.rating_avg||0).toFixed(1)}</div><div class="gcs-label">★ Rating</div></div>
+        <div class="gcs"><div class="gcs-val">${fmt(g.daily_rate)}</div><div class="gcs-label">đ/ngày</div></div>
+      </div>
+      <div class="gc-tags">
+        ${(g.languages||['vi']).map(l=>`<span class="gc-tag lang">${LANG_MAP[l]||l}</span>`).join('')}
+        ${(g.regions||[]).map(r=>`<span class="gc-tag region">${REGION_MAP[r]||r}</span>`).join('')}
+        ${(g.specialties||[]).slice(0,2).map(s=>`<span class="gc-tag spec">${s}</span>`).join('')}
+      </div>
+      <div style="display:flex;gap:.35rem;margin-top:.85rem">
+        <button class="btn btn-default" style="flex:1;font-size:.58rem" onclick="event.stopPropagation();openEditGuide('${g.id}')">✏️ Sửa</button>
+        <button class="btn btn-default" style="flex:1;font-size:.58rem" onclick="event.stopPropagation();openLeaveModal('${g.id}','${g.full_name}')">📅 Lịch nghỉ</button>
+      </div>
+    </div>`
+  }).join('')
+}
+
+function filterGuides(q){
+  const filtered=guidesCache.filter(g=>g.full_name.toLowerCase().includes(q.toLowerCase())||g.phone?.includes(q))
+  renderGuideGrid(filtered)
+}
+
+function selectGuide(id){
+  document.querySelectorAll('.guide-card').forEach(c=>c.classList.remove('selected'))
+  document.querySelector(`[onclick*="${id}"]`)?.classList.add('selected')
+}
+
+// ── GUIDE MODAL ───────────────────────────────
+function openGuideModal(){
+  editGuideId=null
+  document.getElementById('guideModalTitle').textContent='Thêm Hướng dẫn viên'
+  ;['gf_name','gf_phone','gf_email','gf_license','gf_rate','gf_specs','gf_bio'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''})
+  document.getElementById('gf_status').value='ACTIVE'
+  document.querySelectorAll('#gf_langs input').forEach(c=>{c.checked=c.value==='vi'})
+  document.getElementById('guideModal').classList.add('open')
+}
+
+function openEditGuide(id){
+  const g=guidesCache.find(x=>x.id===id); if(!g)return
+  editGuideId=id
+  document.getElementById('guideModalTitle').textContent='Sửa thông tin HDV'
+  document.getElementById('gf_name').value=g.full_name||''
+  document.getElementById('gf_phone').value=g.phone||''
+  document.getElementById('gf_email').value=g.email||''
+  document.getElementById('gf_license').value=g.license_number||''
+  document.getElementById('gf_rate').value=g.daily_rate||''
+  document.getElementById('gf_specs').value=(g.specialties||[]).join(', ')
+  document.getElementById('gf_bio').value=g.bio||''
+  document.getElementById('gf_status').value=g.status||'ACTIVE'
+  document.querySelectorAll('#gf_langs input').forEach(c=>{c.checked=(g.languages||[]).includes(c.value)})
+  document.getElementById('guideModal').classList.add('open')
+}
+
+function closeGuideModal(){ document.getElementById('guideModal').classList.remove('open'); editGuideId=null }
+
+async function saveGuide(){
+  const name=document.getElementById('gf_name').value.trim()
+  const phone=document.getElementById('gf_phone').value.trim()
+  if(!name||!phone){toast('Vui lòng điền tên và SĐT','warn');return}
+
+  const langs=[...document.querySelectorAll('#gf_langs input:checked')].map(c=>c.value)
+  const regions=[...document.querySelectorAll('.modal input[type=checkbox][value=north],:modal input[type=checkbox][value=central],:modal input[type=checkbox][value=south]')].filter(c=>c.checked).map(c=>c.value)
+  // Simple region check
+  const regionVals=[]
+  if(document.querySelector('.modal input[value=north]')?.checked)regionVals.push('north')
+  if(document.querySelector('.modal input[value=central]')?.checked)regionVals.push('central')
+  if(document.querySelector('.modal input[value=south]')?.checked)regionVals.push('south')
+
+  const data={
+    full_name:name, phone,
+    email:document.getElementById('gf_email').value.trim()||null,
+    license_number:document.getElementById('gf_license').value.trim()||null,
+    daily_rate:Number(document.getElementById('gf_rate').value)||500000,
+    specialties:document.getElementById('gf_specs').value.split(',').map(s=>s.trim()).filter(Boolean),
+    bio:document.getElementById('gf_bio').value.trim()||null,
+    status:document.getElementById('gf_status').value,
+    languages:langs.length?langs:['vi'],
+    regions:regionVals,
+  }
+
+  let error
+  if(editGuideId){ ({error}=await sb.from('guides').update(data).eq('id',editGuideId)) }
+  else { ({error}=await sb.from('guides').insert({...data,rating_avg:0,total_tours:0})) }
+
+  if(error){toast('Lỗi lưu HDV: '+error.message,'err');return}
+  toast(editGuideId?'✅ Đã cập nhật HDV':'✅ Đã thêm HDV mới')
+  closeGuideModal()
+  loadGuides()
+}
+
+// ── LEAVE MODAL ───────────────────────────────
+let leaveGuideId=null
+function openLeaveModal(id,name){
+  leaveGuideId=id
+  document.getElementById('leaveGuideName').textContent=name
+  document.getElementById('leaveFrom').value=''
+  document.getElementById('leaveTo').value=''
+  document.getElementById('leaveReason').value=''
+  document.getElementById('leaveModal').classList.add('open')
+}
+function saveLeave(){
+  const from=document.getElementById('leaveFrom').value
+  const to=document.getElementById('leaveTo').value
+  if(!from||!to){toast('Vui lòng chọn ngày','warn');return}
+  const key=`leave_${leaveGuideId}`
+  const leaves=JSON.parse(localStorage.getItem(key)||'[]')
+  leaves.push({from,to,reason:document.getElementById('leaveReason').value,id:Date.now()})
+  localStorage.setItem(key,JSON.stringify(leaves))
+  document.getElementById('leaveModal').classList.remove('open')
+  toast('✅ Đã lưu lịch nghỉ')
+  loadSchedulePage()
+}
+
+// ── SCHEDULE PAGE ─────────────────────────────
+let schedYear=new Date().getFullYear(), schedMonth=new Date().getMonth()
+function prevMonth(){schedMonth--;if(schedMonth<0){schedMonth=11;schedYear--};loadSchedulePage()}
+function nextMonth(){schedMonth++;if(schedMonth>11){schedMonth=0;schedYear++};loadSchedulePage()}
+
+async function loadSchedulePage(){
+  document.getElementById('schedMonthLabel').textContent=`Tháng ${schedMonth+1}/${schedYear}`
+  const {data:guides}=await sb.from('guides').select('id,full_name,status').neq('status','INACTIVE')
+  const {data:bookings}=await sb.from('bookings').select('id,guide_id,created_at,tours(name,duration_days)').in('status',['CONFIRMED','ONGOING'])
+
+  if(!guides?.length){document.getElementById('scheduleBody').innerHTML='<div class="empty-state"><div>Không có HDV</div></div>';return}
+
+  const daysInMonth=new Date(schedYear,schedMonth+1,0).getDate()
+  const days=Array.from({length:daysInMonth},(_,i)=>i+1)
+  const today=new Date()
+
+  let html=`<div style="overflow-x:auto"><table style="min-width:${120+daysInMonth*34}px;border-collapse:collapse">`
+  html+=`<thead><tr><th style="padding:.5rem .75rem;text-align:left;font-family:var(--mono);font-size:.65rem;color:var(--text3);white-space:nowrap;width:120px">HDV</th>`
+  days.forEach(d=>{
+    const date=new Date(schedYear,schedMonth,d)
+    const isToday=date.toDateString()===today.toDateString()
+    const isWeekend=date.getDay()===0||date.getDay()===6
+    html+=`<th style="padding:.3rem .15rem;font-family:var(--mono);font-size:.55rem;text-align:center;color:${isToday?'var(--blue)':isWeekend?'var(--amber)':'var(--text3)'};width:34px">${d}<br>${['CN','T2','T3','T4','T5','T6','T7'][date.getDay()]}</th>`
+  })
+  html+=`</tr></thead><tbody>`
+
+  guides.forEach(g=>{
+    const leaves=JSON.parse(localStorage.getItem(`leave_${g.id}`)||'[]')
+    html+=`<tr><td style="padding:.4rem .75rem;font-size:.8rem;font-weight:500;white-space:nowrap">${g.full_name}</td>`
+    days.forEach(d=>{
+      const date=new Date(schedYear,schedMonth,d)
+      const dateStr=date.toISOString().split('T')[0]
+      const isLeave=leaves.some(l=>dateStr>=l.from&&dateStr<=l.to)
+      const booking=bookings?.find(b=>b.guide_id===g.id)
+      const hasTour=booking&&new Date(booking.created_at).toDateString()===date.toDateString()
+      const isToday=date.toDateString()===today.toDateString()
+      let bg='var(--s3)',border='var(--border)',color='transparent',title=''
+      if(isLeave){bg='var(--rdim)';border='var(--rbrd)';color='var(--red)';title='Nghỉ phép'}
+      else if(hasTour){bg='rgba(88,166,255,.15)';border='var(--bbrd)';color='var(--blue)';title=booking.tours?.name||'Có tour'}
+      else if(isToday){bg='rgba(63,185,80,.08)';border='var(--gbrd)'}
+      html+=`<td style="padding:2px" title="${title}"><div style="background:${bg};border:1px solid ${border};border-radius:3px;height:28px;display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:.55rem;color:${color}">${isLeave?'OFF':hasTour?'●':''}</div></td>`
+    })
+    html+=`</tr>`
+  })
+  html+=`</tbody></table></div>`
+  html+=`<div style="display:flex;gap:1rem;margin-top:1rem;font-size:.75rem;color:var(--text2)">
+    <span style="display:flex;align-items:center;gap:.35rem"><span style="width:12px;height:12px;background:rgba(88,166,255,.15);border:1px solid var(--bbrd);border-radius:2px;display:inline-block"></span>Có tour</span>
+    <span style="display:flex;align-items:center;gap:.35rem"><span style="width:12px;height:12px;background:var(--rdim);border:1px solid var(--rbrd);border-radius:2px;display:inline-block"></span>Nghỉ phép</span>
+    <span style="display:flex;align-items:center;gap:.35rem"><span style="width:12px;height:12px;background:rgba(63,185,80,.08);border:1px solid var(--gbrd);border-radius:2px;display:inline-block"></span>Hôm nay</span>
+  </div>`
+  document.getElementById('scheduleBody').innerHTML=html
+}
+
+// ── PAYROLL ───────────────────────────────────
+async function loadPayroll(){
+  // Populate month select
+  const sel=document.getElementById('payrollMonth')
+  if(!sel.options.length){
+    for(let i=0;i<6;i++){
+      const d=new Date(); d.setMonth(d.getMonth()-i)
+      const val=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`
+      const opt=document.createElement('option'); opt.value=val; opt.textContent=`Tháng ${d.getMonth()+1}/${d.getFullYear()}`
+      sel.appendChild(opt)
+    }
+  }
+  const [yr,mn]=sel.value.split('-').map(Number)
+  const startDate=`${yr}-${String(mn).padStart(2,'0')}-01`
+  const endDate=`${yr}-${String(mn).padStart(2,'0')}-31`
+
+  const {data:bookings}=await sb.from('bookings')
+    .select('guide_id,tours(duration_days)')
+    .in('status',['CONFIRMED','ONGOING','COMPLETED'])
+    .gte('created_at',startDate).lte('created_at',endDate)
+  const {data:guides}=await sb.from('guides').select('id,full_name,phone,daily_rate').neq('status','INACTIVE')
+
+  const paid=JSON.parse(localStorage.getItem(PAID_KEY)||'{}')
+  let totalPay=0, totalPaid=0
+
+  const rows=(guides||[]).map(g=>{
+    const gBookings=(bookings||[]).filter(b=>b.guide_id===g.id)
+    const totalDays=gBookings.reduce((s,b)=>s+Number(b.tours?.duration_days||1),0)
+    const tours=gBookings.length
+    const thulao=totalDays*Number(g.daily_rate||500000)
+    const paidAmount=paid[`${g.id}_${yr}_${mn}`]||0
+    const remain=thulao-paidAmount
+    totalPay+=thulao; totalPaid+=paidAmount
+    return{g,tours,totalDays,thulao,paidAmount,remain}
+  }).filter(r=>r.tours>0||true)
+
+  document.getElementById('payrollTbl').innerHTML=rows.map(r=>`
+    <tr>
+      <td><div style="font-weight:600">${r.g.full_name}</div></td>
+      <td><span style="font-family:var(--mono);font-size:.72rem">${r.g.phone||'—'}</span></td>
+      <td><span style="font-family:var(--mono)">${r.tours}</span></td>
+      <td><span style="font-family:var(--mono)">${r.totalDays} ngày</span></td>
+      <td><span style="font-family:var(--mono)">${fmt(r.g.daily_rate)}đ</span></td>
+      <td><span style="font-family:var(--mono);color:var(--amber);font-weight:600">${fmt(r.thulao)}đ</span></td>
+      <td><span style="font-family:var(--mono);color:var(--green)">${fmt(r.paidAmount)}đ</span></td>
+      <td><span style="font-family:var(--mono);color:${r.remain>0?'var(--red)':'var(--text3)'}">${fmt(r.remain)}đ</span></td>
+      <td>
+        ${r.remain>0?`<button class="btn btn-green" style="font-size:.58rem" onclick="markPaid('${r.g.id}',${yr},${mn},${r.thulao})">✅ Đã TT</button>`:'<span style="color:var(--green);font-size:.75rem">✓ Xong</span>'}
+      </td>
+    </tr>`).join('')||'<tr><td colspan="9" style="text-align:center;padding:1.5rem;color:var(--text3)">Không có dữ liệu</td></tr>'
+
+  document.getElementById('totalPayroll').textContent=fmt(totalPay)+'đ'
+  document.getElementById('paidPayroll').textContent=fmt(totalPaid)+'đ'
+  document.getElementById('remainPayroll').textContent=fmt(totalPay-totalPaid)+'đ'
+}
+
+function markPaid(guideId,yr,mn,amount){
+  const paid=JSON.parse(localStorage.getItem(PAID_KEY)||'{}')
+  paid[`${guideId}_${yr}_${mn}`]=amount
+  localStorage.setItem(PAID_KEY,JSON.stringify(paid))
+  toast('✅ Đã đánh dấu thanh toán')
+  loadPayroll()
+}
+
+function exportPayroll(){
+  const rows=[['HDV','SĐT','Số tour','Tổng ngày','Phí ngày','Thù lao','Đã TT','Còn lại']]
+  document.querySelectorAll('#payrollTbl tr').forEach(tr=>{
+    rows.push([...tr.querySelectorAll('td')].slice(0,8).map(td=>td.innerText.replace(/đ|,/g,'').trim()))
+  })
+  const bom='\uFEFF'
+  const csv=bom+rows.map(r=>r.map(v=>`"${v}"`).join(',')).join('\n')
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}))
+  a.download='bang-luong-hdv.csv'; a.click()
+  toast('📥 Đã xuất bảng lương')
+}
+
+// ── KPI ───────────────────────────────────────
+async function loadKPI(){
+  const {data:guides}=await sb.from('guides').select('*').neq('status','INACTIVE').order('rating_avg',{ascending:false})
+  const {data:bookings}=await sb.from('bookings').select('guide_id,status').in('status',['COMPLETED','CONFIRMED','ONGOING'])
+  const {data:reviews}=await sb.from('reviews').select('guide_id,rating').eq('is_published',true)
+
+  const kpiData=(guides||[]).map(g=>{
+    const gBookings=(bookings||[]).filter(b=>b.guide_id===g.id)
+    const gReviews=(reviews||[]).filter(r=>r.guide_id===g.id)
+    const completedTours=gBookings.filter(b=>b.status==='COMPLETED').length
+    const avgRev=gReviews.length?gReviews.reduce((s,r)=>s+r.rating,0)/gReviews.length:g.rating_avg||0
+    return{
+      name:g.full_name, rating:Number(avgRev).toFixed(1),
+      tours:g.total_tours||0, reviews:gReviews.length,
+      completed:completedTours,
+      score:Math.round((Number(avgRev)/5*40)+(Math.min(g.total_tours||0,50)/50*40)+(Math.min(gReviews.length,20)/20*20))
+    }
+  })
+
+  // Radar chart
+  if(kpiData.length){
+    const ctx=document.getElementById('kpiChart').getContext('2d')
+    if(window._kpiChart)window._kpiChart.destroy()
+    window._kpiChart=new Chart(ctx,{
+      type:'radar',
+      data:{
+        labels:['Rating','Số tour','Số review','Hoàn thành','Điểm tổng'],
+        datasets:kpiData.slice(0,3).map((k,i)=>({
+          label:k.name.split(' ').pop(),
+          data:[k.rating*20,Math.min(k.tours*2,100),Math.min(k.reviews*5,100),Math.min(k.completed*4,100),k.score],
+          borderColor:['#3fb950','#58a6ff','#bc8cff'][i],
+          backgroundColor:['rgba(63,185,80,.1)','rgba(88,166,255,.1)','rgba(188,140,255,.1)'][i],
+          borderWidth:1.5,pointRadius:3
+        }))
+      },
+      options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:'#8b949e',font:{size:10}}}},
+        scales:{r:{grid:{color:'rgba(255,255,255,.06)'},ticks:{color:'#3d4f6e',font:{size:9},backdropColor:'transparent'},pointLabels:{color:'#8b949e',font:{size:10}}}}}
+    })
+  }
+
+  // Ranking
+  const sorted=[...kpiData].sort((a,b)=>b.score-a.score)
+  document.getElementById('kpiRanking').innerHTML=sorted.map((k,i)=>`
+    <div style="display:flex;align-items:center;gap:.75rem;padding:.6rem 0;border-bottom:1px solid rgba(255,255,255,.04)">
+      <div style="font-family:var(--mono);font-size:.9rem;font-weight:700;color:${i===0?'var(--amber)':i===1?'var(--text2)':i===2?'var(--amber)':'var(--text3)'};width:24px">${i+1}</div>
+      <div style="flex:1"><div style="font-size:.85rem;font-weight:600">${k.name}</div><div style="font-size:.72rem;color:var(--text2)">★ ${k.rating} · ${k.tours} tour</div></div>
+      <div style="font-family:var(--mono);font-size:.85rem;font-weight:700;color:var(--blue)">${k.score}đ</div>
+    </div>`).join('')
+
+  // Detail KPI
+  document.getElementById('kpiDetail').innerHTML=`
+    <div style="overflow-x:auto"><table style="width:100%">
+    <thead><tr><th>HDV</th><th>Rating TB</th><th>Tổng tour</th><th>Số review</th><th>Điểm KPI</th><th>Xếp loại</th></tr></thead>
+    <tbody>${sorted.map(k=>{
+      const grade=k.score>=80?['🏆 Xuất sắc','var(--green)']:k.score>=60?['✅ Tốt','var(--blue)']:k.score>=40?['⚡ Trung bình','var(--amber)']:['⚠️ Cần cải thiện','var(--red)']
+      return`<tr>
+        <td style="font-weight:600">${k.name}</td>
+        <td><span style="color:var(--amber);font-family:var(--mono)">★ ${k.rating}</span></td>
+        <td><span style="font-family:var(--mono)">${k.tours}</span></td>
+        <td><span style="font-family:var(--mono)">${k.reviews}</span></td>
+        <td><div style="display:flex;align-items:center;gap:.5rem"><div style="width:80px;background:var(--s3);border-radius:3px;height:6px;overflow:hidden"><div style="width:${k.score}%;background:${grade[1]};height:100%;border-radius:3px"></div></div><span style="font-family:var(--mono);font-size:.72rem">${k.score}/100</span></div></td>
+        <td><span style="color:${grade[1]};font-size:.82rem">${grade[0]}</span></td>
+      </tr>`}).join('')}
+    </tbody></table></div>`
+}
+
+// ── INIT ─────────────────────────────────────
+document.addEventListener('DOMContentLoaded',()=>{
+  loadGuides()
+  // Init payroll month
+  setTimeout(loadPayroll,500)
+})
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){closeGuideModal();document.getElementById('leaveModal').classList.remove('open')}
+})
+</script>
+</body>
+</html>

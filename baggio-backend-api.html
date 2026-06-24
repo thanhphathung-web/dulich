@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Baggio Travel — Backend API</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#080b10;--s1:#0d1118;--s2:#121922;--s3:#182030;--border:#1a2540;--border2:#223060;
+  --text:#c8d8f0;--text2:#4868a0;--text3:#223060;
+  --green:#22c97a;--gdim:rgba(34,201,122,.1);--gbrd:rgba(34,201,122,.25);
+  --blue:#4d9eff;--bdim:rgba(77,158,255,.1);--bbrd:rgba(77,158,255,.25);
+  --amber:#f0a830;--adim:rgba(240,168,48,.1);--abrd:rgba(240,168,48,.25);
+  --red:#f05252;--rdim:rgba(240,82,82,.1);--rbrd:rgba(240,82,82,.25);
+  --font:'Be Vietnam Pro',sans-serif;--mono:'Space Mono',monospace;
+}
+html,body{height:100%}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:13px;line-height:1.6;display:grid;grid-template-columns:210px 1fr;overflow:hidden}
+.sb{background:var(--s1);border-right:1px solid var(--border);height:100vh;display:flex;flex-direction:column;overflow-y:auto}
+.sb-top{padding:1rem;border-bottom:1px solid var(--border)}
+.sb-logo{font-family:var(--mono);font-size:.82rem;font-weight:700;color:var(--text)}
+.sb-logo span{color:var(--blue)}
+.sb-sub{font-size:.58rem;color:var(--text3);font-family:var(--mono);letter-spacing:.1em;margin-top:.2rem;text-transform:uppercase}
+.sb-nav{flex:1;padding:.5rem 0}
+.sb-g{font-family:var(--mono);font-size:.55rem;letter-spacing:.18em;text-transform:uppercase;color:var(--text3);padding:.6rem 1rem .2rem}
+.sb-a{display:flex;align-items:center;gap:.5rem;padding:.42rem 1rem;font-size:.76rem;color:var(--text2);cursor:pointer;border-left:2px solid transparent;transition:all .15s}
+.sb-a:hover{color:var(--text);background:rgba(255,255,255,.03)}
+.sb-a.on{color:var(--blue);border-left-color:var(--blue);background:var(--bdim)}
+.sb-badge{font-family:var(--mono);font-size:.55rem;letter-spacing:.05em;padding:.12rem .4rem;border-radius:3px;text-transform:uppercase;margin-left:auto}
+.badge-get{background:rgba(34,201,122,.15);color:var(--green);border:1px solid var(--gbrd)}
+.badge-post{background:rgba(77,158,255,.15);color:var(--blue);border:1px solid var(--bbrd)}
+.badge-put{background:rgba(240,168,48,.15);color:var(--amber);border:1px solid var(--abrd)}
+.badge-del{background:rgba(240,82,82,.15);color:var(--red);border:1px solid var(--rbrd)}
+.main{display:flex;flex-direction:column;height:100vh;overflow:hidden}
+.topbar{background:var(--s1);border-bottom:1px solid var(--border);padding:.75rem 1.5rem;display:flex;align-items:center;gap:.75rem;flex-shrink:0}
+.tb-title{font-size:.9rem;font-weight:600;color:var(--text)}
+.tb-sub{font-size:.7rem;color:var(--text3);font-family:var(--mono)}
+.panels{flex:1;overflow-y:auto;padding:1.5rem}
+.pnl{display:none}
+.pnl.on{display:block}
+/* endpoint card */
+.ep-card{background:var(--s2);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:1.25rem}
+.ep-header{padding:.7rem 1.1rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:.75rem;background:var(--s3)}
+.ep-method{font-family:var(--mono);font-size:.65rem;font-weight:700;padding:.22rem .55rem;border-radius:3px;letter-spacing:.06em;flex-shrink:0}
+.m-get{background:rgba(34,201,122,.15);color:var(--green);border:1px solid var(--gbrd)}
+.m-post{background:rgba(77,158,255,.15);color:var(--blue);border:1px solid var(--bbrd)}
+.m-put{background:rgba(240,168,48,.15);color:var(--amber);border:1px solid var(--abrd)}
+.m-del{background:rgba(240,82,82,.15);color:var(--red);border:1px solid var(--rbrd)}
+.ep-path{font-family:var(--mono);font-size:.78rem;color:var(--text)}
+.ep-desc{font-size:.75rem;color:var(--text2);margin-left:auto}
+.ep-body{padding:1rem 1.1rem}
+.ep-note{font-size:.78rem;color:var(--text2);font-weight:300;line-height:1.6;margin-bottom:.75rem}
+/* code */
+.cw{border-radius:7px;border:1px solid var(--border);overflow:hidden;margin:.65rem 0}
+.ct{background:var(--s3);border-bottom:1px solid var(--border);padding:.5rem 1rem;display:flex;align-items:center;justify-content:space-between}
+.cf{font-family:var(--mono);font-size:.63rem;color:var(--text2)}
+.cpb{font-family:var(--mono);font-size:.57rem;color:var(--text3);background:none;border:1px solid var(--border);padding:.2rem .5rem;cursor:pointer;border-radius:3px;transition:all .15s;text-transform:uppercase;letter-spacing:.05em}
+.cpb:hover{border-color:var(--border2);color:var(--text2)}
+.cpb.ok{color:var(--green);border-color:var(--green)}
+pre{background:var(--s1);padding:1rem;overflow-x:auto;font-family:var(--mono);font-size:.73rem;line-height:1.8;color:var(--text2);margin:0}
+pre::-webkit-scrollbar{height:3px}pre::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.kw{color:#c084fc}.str{color:#34d399}.cmt{color:var(--text3);font-style:italic}.fn{color:#60a5fa}.type{color:#fb923c}.num{color:#fbbf24}
+/* alert */
+.al{border-radius:7px;padding:.8rem 1rem;margin:.65rem 0;display:flex;gap:.7rem;font-size:.81rem;line-height:1.65}
+.al.blue{background:var(--bdim);border:1px solid var(--bbrd)}
+.al.green{background:var(--gdim);border:1px solid var(--gbrd)}
+.al.amber{background:var(--adim);border:1px solid var(--abrd)}
+.at{font-weight:600;margin-bottom:.15rem}
+.at.green{color:var(--green)}.at.blue{color:var(--blue)}.at.amber{color:var(--amber)}
+/* arch */
+.arch-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin:.75rem 0}
+.arch-box{background:var(--s3);border:1px solid var(--border);border-radius:7px;padding:1rem}
+.arch-icon{font-size:1.4rem;margin-bottom:.5rem}
+.arch-name{font-weight:600;font-size:.88rem;color:var(--text);margin-bottom:.3rem}
+.arch-desc{font-size:.75rem;color:var(--text2);font-weight:300;line-height:1.6}
+@media(max-width:768px){body{grid-template-columns:1fr}.sb{display:none}.arch-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<aside class="sb">
+  <div class="sb-top">
+    <div class="sb-logo">Baggio<span>.</span>API</div>
+    <div class="sb-sub">Node.js · Express · REST</div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-g">Kiến trúc</div>
+    <div class="sb-a on" onclick="sw('arch',this)">🏗️ Architecture</div>
+    <div class="sb-a" onclick="sw('auth',this)">🔐 Auth & JWT</div>
+    <div class="sb-a" onclick="sw('middleware',this)">⚙️ Middleware</div>
+    <div class="sb-g">Endpoints</div>
+    <div class="sb-a" onclick="sw('tours-api',this)">🗺️ /tours <span class="sb-badge badge-get">GET</span></div>
+    <div class="sb-a" onclick="sw('bookings-api',this)">📋 /bookings <span class="sb-badge badge-post">POST</span></div>
+    <div class="sb-a" onclick="sw('payments-api',this)">💳 /payments <span class="sb-badge badge-post">POST</span></div>
+    <div class="sb-a" onclick="sw('users-api',this)">👤 /users <span class="sb-badge badge-get">GET</span></div>
+    <div class="sb-a" onclick="sw('guides-api',this)">🧑‍💼 /guides <span class="sb-badge badge-get">GET</span></div>
+    <div class="sb-g">Bảo mật</div>
+    <div class="sb-a" onclick="sw('security',this)">🛡️ Security & Rate limit</div>
+    <div class="sb-a" onclick="sw('errors',this)">❌ Error handling</div>
+  </nav>
+</aside>
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div class="tb-title">Backend API — Baggio Travel</div>
+      <div class="tb-sub">Node.js · Express · Prisma · JWT · REST</div>
+    </div>
+  </div>
+  <div class="panels">
+
+    <!-- ARCHITECTURE -->
+    <div class="pnl on" id="pnl-arch">
+      <div class="arch-grid">
+        <div class="arch-box"><div class="arch-icon">📁</div><div class="arch-name">Cấu trúc thư mục</div><div class="arch-desc">src/api/ → routes<br>src/lib/ → db, email, utils<br>src/middleware/ → auth, rate limit<br>prisma/ → schema, migrations</div></div>
+        <div class="arch-box"><div class="arch-icon">🔄</div><div class="arch-name">Request lifecycle</div><div class="arch-desc">Request → CORS → Rate limit → Auth → Validate → Handler → Response</div></div>
+        <div class="arch-box"><div class="arch-icon">🗄️</div><div class="arch-name">Tech stack</div><div class="arch-desc">Node.js 20 + Express 5<br>Prisma ORM + PostgreSQL<br>Resend (email) · Vercel (deploy)<br>Zod (validation)</div></div>
+      </div>
+
+      <div class="cw">
+        <div class="ct"><span class="cf">src/app.ts — Express app setup</span><button class="cpb" onclick="cp(this)">Copy</button></div>
+        <pre><span class="kw">import</span> express <span class="kw">from</span> <span class="str">'express'</span>;
+<span class="kw">import</span> cors <span class="kw">from</span> <span class="str">'cors'</span>;
+<span class="kw">import</span> helmet <span class="kw">from</span> <span class="str">'helmet'</span>;
+<span class="kw">import</span> { rateLimit } <span class="kw">from</span> <span class="str">'express-rate-limit'</span>;
+<span class="kw">import</span> { errorHandler } <span class="kw">from</span> <span class="str">'./middleware/errors'</span>;
+<span class="kw">import</span> toursRouter     <span class="kw">from</span> <span class="str">'./routes/tours'</span>;
+<span class="kw">import</span> bookingsRouter  <span class="kw">from</span> <span class="str">'./routes/bookings'</span>;
+<span class="kw">import</span> paymentsRouter  <span class="kw">from</span> <span class="str">'./routes/payments'</span>;
+<span class="kw">import</span> authRouter      <span class="kw">from</span> <span class="str">'./routes/auth'</span>;
+<span class="kw">import</span> usersRouter     <span class="kw">from</span> <span class="str">'./routes/users'</span>;
+<span class="kw">import</span> guidesRouter    <span class="kw">from</span> <span class="str">'./routes/guides'</span>;
+
+<span class="kw">const</span> app = <span class="fn">express</span>();
+
+<span class="cmt">// ── Security headers</span>
+app.<span class="fn">use</span>(<span class="fn">helmet</span>());
+app.<span class="fn">use</span>(<span class="fn">cors</span>({
+  origin: [<span class="str">'https://baggiotravel.com'</span>, <span class="str">'http://localhost:3000'</span>],
+  credentials: <span class="kw">true</span>,
+}));
+
+<span class="cmt">// ── Body parsing</span>
+app.<span class="fn">use</span>(<span class="str">'/api/payment/webhook'</span>, express.<span class="fn">raw</span>({ type: <span class="str">'*/*'</span> })); <span class="cmt">// raw for webhook sig verify</span>
+app.<span class="fn">use</span>(express.<span class="fn">json</span>({ limit: <span class="str">'10mb'</span> }));
+
+<span class="cmt">// ── Global rate limit</span>
+app.<span class="fn">use</span>(<span class="str">'/api'</span>, <span class="fn">rateLimit</span>({
+  windowMs: <span class="num">15</span> * <span class="num">60</span> * <span class="num">1000</span>, <span class="cmt">// 15 phút</span>
+  max: <span class="num">100</span>,
+  standardHeaders: <span class="kw">true</span>,
+  message: { error: <span class="str">'Quá nhiều request. Thử lại sau.'</span> },
+}));
+
+<span class="cmt">// ── Routes</span>
+app.<span class="fn">use</span>(<span class="str">'/api/auth'</span>,     authRouter);
+app.<span class="fn">use</span>(<span class="str">'/api/tours'</span>,    toursRouter);
+app.<span class="fn">use</span>(<span class="str">'/api/bookings'</span>, bookingsRouter);
+app.<span class="fn">use</span>(<span class="str">'/api/payment'</span>,  paymentsRouter);
+app.<span class="fn">use</span>(<span class="str">'/api/users'</span>,    usersRouter);
+app.<span class="fn">use</span>(<span class="str">'/api/guides'</span>,   guidesRouter);
+
+<span class="cmt">// ── Health check</span>
+app.<span class="fn">get</span>(<span class="str">'/api/health'</span>, (_, res) => res.<span class="fn">json</span>({
+  status: <span class="str">'ok'</span>, version: process.env.<span class="type">npm_package_version</span>, ts: <span class="kw">new</span> <span class="fn">Date</span>()
+}));
+
+<span class="cmt">// ── Error handler (PHẢI đặt cuối cùng)</span>
+app.<span class="fn">use</span>(errorHandler);
+
+<span class="kw">export default</span> app;</pre>
+      </div>
+    </div>
+
+    <!-- AUTH -->
+    <div class="pnl" id="pnl-auth">
+      <div class="cw">
+        <div class="ct"><span class="cf">src/routes/auth.ts — Register, Login, Refresh token</span><button class="cpb" onclick="cp(this)">Copy</button></div>
+        <pre><span class="kw">import</span> { Router } <span class="kw">from</span> <span class="str">'express'</span>;
+<span class="kw">import</span> bcrypt <span class="kw">from</span> <span class="str">'bcrypt'</span>;
+<span class="kw">import</span> jwt <span class="kw">from</span> <span class="str">'jsonwebtoken'</span>;
+<span class="kw">import</span> { z } <span class="kw">from</span> <span class="str">'zod'</span>;
+<span class="kw">import</span> { db } <span class="kw">from</span> <span class="str">'../lib/prisma'</span>;
+<span class="kw">import</span> { validate } <span class="kw">from</span> <span class="str">'../middleware/validate'</span>;
+
+<span class="kw">const</span> router = <span class="fn">Router</span>();
+
+<span class="kw">const</span> JWT_SECRET  = process.env.<span class="type">JWT_SECRET</span>!;
+<span class="kw">const</span> JWT_REFRESH = process.env.<span class="type">JWT_REFRESH_SECRET</span>!;
+
+<span class="kw">const</span> signTokens = (userId: <span class="type">string</span>, role: <span class="type">string</span>) => ({
+  accessToken:  jwt.<span class="fn">sign</span>({ sub: userId, role }, JWT_SECRET,  { expiresIn: <span class="str">'15m'</span> }),
+  refreshToken: jwt.<span class="fn">sign</span>({ sub: userId },       JWT_REFRESH, { expiresIn: <span class="str">'30d'</span> }),
+});
+
+<span class="cmt">// POST /api/auth/register</span>
+<span class="kw">const</span> RegisterSchema = z.<span class="fn">object</span>({
+  email:    z.<span class="fn">string</span>().<span class="fn">email</span>(),
+  password: z.<span class="fn">string</span>().<span class="fn">min</span>(<span class="num">8</span>),
+  fullName: z.<span class="fn">string</span>().<span class="fn">min</span>(<span class="num">2</span>),
+  phone:    z.<span class="fn">string</span>().<span class="fn">regex</span>(<span class="str">/^0[0-9]{9}$/</span>).<span class="fn">optional</span>(),
+});
+
+router.<span class="fn">post</span>(<span class="str">'/register'</span>, <span class="fn">validate</span>(RegisterSchema), <span class="kw">async</span> (req, res, next) => {
+  <span class="kw">try</span> {
+    <span class="kw">const</span> { email, password, fullName, phone } = req.body;
+    <span class="kw">const</span> exists = <span class="kw">await</span> db.user.<span class="fn">findUnique</span>({ where: { email } });
+    <span class="kw">if</span> (exists) <span class="kw">return</span> res.<span class="fn">status</span>(<span class="num">409</span>).<span class="fn">json</span>({ error: <span class="str">'Email đã tồn tại'</span> });
+
+    <span class="kw">const</span> passwordHash = <span class="kw">await</span> bcrypt.<span class="fn">hash</span>(password, <span class="num">12</span>);
+    <span class="kw">const</span> user = <span class="kw">await</span> db.user.<span class="fn">create</span>({
+      data: { email, password_hash: passwordHash, full_name: fullName, phone },
+      select: { id: <span class="kw">true</span>, email: <span class="kw">true</span>, full_name: <span class="kw">true</span>, role: <span class="kw">true</span> },
+    });
+    res.<span class="fn">status</span>(<span class="num">201</span>).<span class="fn">json</span>({ user, ...<span class="fn">signTokens</span>(user.id, user.role) });
+  } <span class="kw">catch</span> (e) { <span class="fn">next</span>(e); }
+});
+
+<span class="cmt">// POST /api/auth/login</span>
+<span class="kw">const</span> LoginSchema = z.<span class="fn">object</span>({ email: z.<span class="fn">string</span>().<span class="fn">email</span>(), password: z.<span class="fn">string</span>() });
+router.<span class="fn">post</span>(<span class="str">'/login'</span>, <span class="fn">validate</span>(LoginSchema), <span class="kw">async</span> (req, res, next) => {
+  <span class="kw">try</span> {
+    <span class="kw">const</span> { email, password } = req.body;
+    <span class="kw">const</span> user = <span class="kw">await</span> db.user.<span class="fn">findUnique</span>({ where: { email } });
+    <span class="kw">if</span> (!user || !<span class="kw">await</span> bcrypt.<span class="fn">compare</span>(password, user.password_hash))
+      <span class="kw">return</span> res.<span class="fn">status</span>(<span class="num">401</span>).<span class="fn">json</span>({ error: <span class="str">'Email hoặc mật khẩu không đúng'</span> });
+
+    <span class="kw">await</span> db.user.<span class="fn">update</span>({ where: { id: user.id }, data: { last_login_at: <span class="kw">new</span> <span class="fn">Date</span>() } });
+    <span class="kw">const</span> { password_hash: _, ...safeUser } = user;
+    res.<span class="fn">json</span>({ user: safeUser, ...<span class="fn">signTokens</span>(user.id, user.role) });
+  } <span class="kw">catch</span> (e) { <span class="fn">next</span>(e); }
+});
+
+<span class="cmt">// POST /api/auth/refresh</span>
+router.<span class="fn">post</span>(<span class="str">'/refresh'</span>, <span class="kw">async</span> (req, res) => {
+  <span class="kw">try</span> {
+    <span class="kw">const</span> { refreshToken } = req.body;
+    <span class="kw">const</span> payload = jwt.<span class="fn">verify</span>(refreshToken, JWT_REFRESH) <span class="kw">as</span> { sub: <span class="type">string</span> };
+    <span class="kw">const</span> user = <span class="kw">await</span> db.user.<span class="fn">findUnique</span>({ where: { id: payload.sub } });
+    <span class="kw">if</span> (!user) <span class="kw">return</span> res.<span class="fn">status</span>(<span class="num">401</span>).<span class="fn">json</span>({ error: <span class="str">'Invalid token'</span> });
+    res.<span class="fn">json</span>(<span class="fn">signTokens</span>(user.id, user.role));
+  } <span class="kw">catch</span> {
+    res.<span class="fn">status</span>(<span class="num">401</span>).<span class="fn">json</span>({ error: <span class="str">'Token hết hạn'</span> });
+  }
+});
+
+<span class="kw">export default</span> router;</pre>
+      </div>
+    </div>
+
+    <!-- MIDDLEWARE -->
+    <div class="pnl" id="pnl-middleware">
+      <div class="cw">
+        <div class="ct"><span class="cf">src/middleware/auth.ts — JWT verify middleware</span><button class="cpb" onclick="cp(this)">Copy</button></div>
+        <pre><span class="kw">import</span> jwt <span class="kw">from</span> <span class="str">'jsonwebtoken'</span>;
+<span class="kw">import</span> { RequestHandler } <span class="kw">from</span> <span class="str">'express'</span>;
+
+<span class="kw">export const</span> authenticate: <span class="type">RequestHandler</span> = (req, res, next) => {
+  <span class="kw">const</span> auth = req.headers.authorization;
+  <span class="kw">if</span> (!auth?.startsWith(<span class="str">'Bearer '</span>))
+    <span class="kw">return</span> res.<span class="fn">status</span>(<span class="num">401</span>).<span class="fn">json</span>({ error: <span class="str">'Chưa đăng nhập'</span> });
+
+  <span class="kw">try</span> {
+    <span class="kw">const</span> payload = jwt.<span class="fn">verify</span>(auth.<span class="fn">slice</span>(<span class="num">7</span>), process.env.<span class="type">JWT_SECRET</span>!);
+    req.user = payload <span class="kw">as</span> { sub: <span class="type">string</span>; role: <span class="type">string</span> };
+    <span class="fn">next</span>();
+  } <span class="kw">catch</span> {
+    res.<span class="fn">status</span>(<span class="num">401</span>).<span class="fn">json</span>({ error: <span class="str">'Token hết hạn hoặc không hợp lệ'</span> });
+  }
+};
+
+<span class="cmt">// Role guard</span>
+<span class="kw">export const</span> requireRole = (...roles: <span class="type">string</span>[]): <span class="type">RequestHandler</span> =>
+  (req, res, next) => {
+    <span class="kw">if</span> (!roles.<span class="fn">includes</span>(req.user?.role ?? <span class="str">''</span>))
+      <span class="kw">return</span> res.<span class="fn">status</span>(<span class="num">403</span>).<span class="fn">json</span>({ error: <span class="str">'Không có quyền truy cập'</span> });
+    <span class="fn">next</span>();
+  };
+
+<span class="cmt">// Validate body với Zod schema</span>
+<span class="kw">export const</span> validate = (schema: <span class="type">ZodSchema</span>): <span class="type">RequestHandler</span> =>
+  (req, res, next) => {
+    <span class="kw">const</span> result = schema.<span class="fn">safeParse</span>(req.body);
+    <span class="kw">if</span> (!result.success)
+      <span class="kw">return</span> res.<span class="fn">status</span>(<span class="num">400</span>).<span class="fn">json</span>({ error: <span class="str">'Dữ liệu không hợp lệ'</span>, details: result.error.flatten() });
+    req.body = result.data;
+    <span class="fn">next</span>();
+  };</pre>
+      </div>
+    </div>
+
+    <!-- TOURS API -->
+    <div class="pnl" id="pnl-tours-api">
+      <div class="ep-card">
+        <div class="ep-header"><span class="ep-method m-get">GET</span><span class="ep-path">/api/tours</span><span class="ep-desc">Danh sách tour có filter & phân trang</span></div>
+        <div class="ep-body">
+          <div class="ep-note">Query params: <code>destination</code>, <code>region</code>, <code>maxPrice</code>, <code>minDays</code>, <code>maxDays</code>, <code>page</code>, <code>limit</code>, <code>q</code> (full-text search)</div>
+          <div class="cw"><div class="ct"><span class="cf">src/routes/tours.ts</span><button class="cpb" onclick="cp(this)">Copy</button></div>
+          <pre><span class="kw">import</span> { Router } <span class="kw">from</span> <span class="str">'express'</span>;
+<span class="kw">import</span> { db } <span class="kw">from</span> <span class="str">'../lib/prisma'</span>;
+<span class="kw">import</span> { authenticate, requireRole } <span class="kw">from</span> <span class="str">'../middleware/auth'</span>;
+<span class="kw">import</span> { validate } <span class="kw">from</span> <span class="str">'../middleware/validate'</span>;
+<span class="kw">import</span> { z } <span class="kw">from</span> <span class="str">'zod'</span>;
+
+<span class="kw">const</span> router = <span class="fn">Router</span>();
+
+<span class="cmt">// GET /api/tours — public</span>
+router.<span class="fn">get</span>(<span class="str">'/'</span>, <span class="kw">async</span> (req, res, next) => {
+  <span class="kw">try</span> {
+    <span class="kw">const</span> { destination, region, maxPrice, minDays, maxDays, q, page = <span class="num">1</span>, limit = <span class="num">12</span> } = req.query;
+    <span class="kw">const</span> skip = (+page - <span class="num">1</span>) * +limit;
+
+    <span class="kw">const</span> where: <span class="type">Prisma.TourWhereInput</span> = {
+      status: <span class="str">'ACTIVE'</span>,
+      ...(destination && { destination: { contains: destination <span class="kw">as</span> <span class="type">string</span>, mode: <span class="str">'insensitive'</span> } }),
+      ...(region      && { region }),
+      ...(maxPrice    && { base_price: { lte: +maxPrice } }),
+      ...(minDays     && { duration_days: { gte: +minDays } }),
+      ...(maxDays     && { duration_days: { lte: +maxDays } }),
+      ...(q           && { OR: [
+        { name: { contains: q <span class="kw">as</span> <span class="type">string</span>, mode: <span class="str">'insensitive'</span> } },
+        { destination: { contains: q <span class="kw">as</span> <span class="type">string</span>, mode: <span class="str">'insensitive'</span> } },
+      ]}),
+    };
+
+    <span class="kw">const</span> [tours, total] = <span class="kw">await</span> Promise.<span class="fn">all</span>([
+      db.tour.<span class="fn">findMany</span>({
+        where, skip, take: +limit,
+        orderBy: { base_price: <span class="str">'asc'</span> },
+        include: {
+          schedules: { where: { status: <span class="str">'OPEN'</span>, depart_date: { gte: <span class="kw">new</span> <span class="fn">Date</span>() } }, take: <span class="num">5</span> },
+          reviews:   { where: { is_published: <span class="kw">true</span> }, select: { rating: <span class="kw">true</span> } },
+        },
+      }),
+      db.tour.<span class="fn">count</span>({ where }),
+    ]);
+
+    <span class="cmt">// Tính rating trung bình</span>
+    <span class="kw">const</span> enriched = tours.<span class="fn">map</span>(t => ({
+      ...t,
+      rating_avg: t.reviews.<span class="fn">length</span>
+        ? t.reviews.<span class="fn">reduce</span>((s, r) => s + r.rating, <span class="num">0</span>) / t.reviews.<span class="fn">length</span>
+        : <span class="kw">null</span>,
+      review_count: t.reviews.<span class="fn">length</span>,
+    }));
+
+    res.<span class="fn">json</span>({
+      data:  enriched,
+      meta:  { total, page: +page, limit: +limit, pages: Math.<span class="fn">ceil</span>(total / +limit) },
+    });
+  } <span class="kw">catch</span> (e) { <span class="fn">next</span>(e); }
+});
+
+<span class="cmt">// GET /api/tours/:slug — public</span>
+router.<span class="fn">get</span>(<span class="str">'/:slug'</span>, <span class="kw">async</span> (req, res, next) => {
+  <span class="kw">try</span> {
+    <span class="kw">const</span> tour = <span class="kw">await</span> db.tour.<span class="fn">findUnique</span>({
+      where:   { slug: req.params.slug, status: <span class="str">'ACTIVE'</span> },
+      include: {
+        schedules: { where: { status: <span class="str">'OPEN'</span>, depart_date: { gte: <span class="kw">new</span> <span class="fn">Date</span>() } }, orderBy: { depart_date: <span class="str">'asc'</span> } },
+        addons:    { where: { is_active: <span class="kw">true</span> } },
+        reviews:   { where: { is_published: <span class="kw">true</span> }, include: { user: { select: { full_name: <span class="kw">true</span>, avatar_url: <span class="kw">true</span> } } }, take: <span class="num">10</span>, orderBy: { created_at: <span class="str">'desc'</span> } },
+      },
+    });
+    <span class="kw">if</span> (!tour) <span class="kw">return</span> res.<span class="fn">status</span>(<span class="num">404</span>).<span class="fn">json</span>({ error: <span class="str">'Tour không tồn tại'</span> });
+    res.<span class="fn">json</span>(tour);
+  } <span class="kw">catch</span> (e) { <span class="fn">next</span>(e); }
+});
+
+<span class="cmt">// POST /api/tours — admin only</span>
+router.<span class="fn">post</span>(<span class="str">'/'</span>, authenticate, <span class="fn">requireRole</span>(<span class="str">'ADMIN'</span>, <span class="str">'STAFF'</span>), <span class="kw">async</span> (req, res, next) => {
+  <span class="kw">try</span> {
+    <span class="kw">const</span> tour = <span class="kw">await</span> db.tour.<span class="fn">create</span>({ data: req.body });
+    res.<span class="fn">status</span>(<span class="num">201</span>).<span class="fn">json</span>(tour);
+  } <span class="kw">catch</span> (e) { <span class="fn">next</span>(e); }
+});
+
+<span class="kw">export default</span> router;</pre></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BOOKINGS API -->
+    <div class="pnl" id="pnl-bookings-api">
+      <div class="cw">
+        <div class="ct"><span class="cf">src/routes/bookings.ts — Tạo, xem, huỷ booking</span><button class="cpb" onclick="cp(this)">Copy</button></div>
+        <pre><span class="kw">const</span> CreateBookingSchema = z.<span class="fn">object</span>({
+  tourId:     z.<span class="fn">string</span>().<span class="fn">uuid</span>(),
+  scheduleId: z.<span class="fn">string</span>().<span class="fn">uuid</span>(),
+  adultCount: z.<span class="fn">number</span>().<span class="fn">int</span>().<span class="fn">min</span>(<span class="num">1</span>).<span class="fn">max</span>(<span class="num">20</span>),
+  childCount: z.<span class="fn">number</span>().<span class="fn">int</span>().<span class="fn">min</span>(<span class="num">0</span>).<span class="fn">default</span>(<span class="num">0</span>),
+  roomType:   z.<span class="fn">enum</span>([<span class="str">'STANDARD'</span>, <span class="str">'DELUXE'</span>, <span class="str">'SUITE'</span>]).<span class="fn">default</span>(<span class="str">'STANDARD'</span>),
+  addonIds:   z.<span class="fn">array</span>(z.<span class="fn">string</span>().<span class="fn">uuid</span>()).<span class="fn">optional</span>(),
+  specialRequests: z.<span class="fn">string</span>().<span class="fn">max</span>(<span class="num">500</span>).<span class="fn">optional</span>(),
+});
+
+<span class="cmt">// POST /api/bookings — authenticated</span>
+router.<span class="fn">post</span>(<span class="str">'/'</span>, authenticate, <span class="fn">validate</span>(CreateBookingSchema), <span class="kw">async</span> (req, res, next) => {
+  <span class="kw">try</span> {
+    <span class="kw">const</span> userId = req.user!.sub;
+    <span class="kw">const</span> { tourId, scheduleId, adultCount, childCount, roomType, addonIds } = req.body;
+
+    <span class="kw">const</span> [tour, schedule] = <span class="kw">await</span> Promise.<span class="fn">all</span>([
+      db.tour.<span class="fn">findUnique</span>({ where: { id: tourId } }),
+      db.tourSchedule.<span class="fn">findUnique</span>({ where: { id: scheduleId } }),
+    ]);
+
+    <span class="kw">if</span> (!tour || !schedule)       <span class="kw">return</span> res.<span class="fn">status</span>(<span class="num">404</span>).<span class="fn">json</span>({ error: <span class="str">'Tour hoặc lịch không tồn tại'</span> });
+    <span class="kw">if</span> (schedule.available_slots < adultCount + childCount)
+      <span class="kw">return</span> res.<span class="fn">status</span>(<span class="num">409</span>).<span class="fn">json</span>({ error: <span class="str">'Lịch này đã hết chỗ'</span> });
+
+    <span class="cmt">// Tính giá</span>
+    <span class="kw">const</span> price = Number(schedule.price_override ?? tour.base_price);
+    <span class="kw">const</span> childPrice = price * Number(tour.child_price_ratio);
+    <span class="kw">const</span> roomExtra  = roomType === <span class="str">'DELUXE'</span> ? <span class="num">350000</span> * schedule.duration_nights :
+                       roomType === <span class="str">'SUITE'</span>  ? <span class="num">800000</span> * schedule.duration_nights : <span class="num">0</span>;
+
+    <span class="kw">let</span> addonTotal = <span class="num">0</span>;
+    <span class="kw">if</span> (addonIds?.length) {
+      <span class="kw">const</span> addons = <span class="kw">await</span> db.tourAddon.<span class="fn">findMany</span>({ where: { id: { in: addonIds } } });
+      addonTotal = addons.<span class="fn">reduce</span>((s, a) => s + Number(a.price), <span class="num">0</span>);
+    }
+
+    <span class="kw">const</span> totalPrice   = price * adultCount + childPrice * childCount + roomExtra + addonTotal;
+    <span class="kw">const</span> depositAmount = Math.<span class="fn">round</span>(totalPrice * <span class="num">0.3</span>);
+    <span class="kw">const</span> bookingRef   = <span class="str">`BT-${Date.now().toString(36).toUpperCase()}`</span>;
+
+    <span class="kw">const</span> booking = <span class="kw">await</span> db.<span class="fn">$transaction</span>(<span class="kw">async</span> tx => {
+      <span class="kw">const</span> b = <span class="kw">await</span> tx.booking.<span class="fn">create</span>({
+        data: { booking_ref: bookingRef, user_id: userId, tour_id: tourId, schedule_id: scheduleId,
+                adult_count: adultCount, child_count: childCount, room_type: roomType,
+                total_price: totalPrice, deposit_amount: depositAmount,
+                special_requests: req.body.specialRequests },
+      });
+      <span class="kw">await</span> tx.tourSchedule.<span class="fn">update</span>({
+        where: { id: scheduleId },
+        data:  { available_slots: { decrement: adultCount + childCount } },
+      });
+      <span class="kw">return</span> b;
+    });
+
+    <span class="fn">sendBookingConfirm</span>({ ...booking, guestName: req.user!.name }).<span class="fn">catch</span>(console.error);
+
+    res.<span class="fn">status</span>(<span class="num">201</span>).<span class="fn">json</span>(booking);
+  } <span class="kw">catch</span> (e) { <span class="fn">next</span>(e); }
+});
+
+<span class="cmt">// GET /api/bookings — danh sách của user hiện tại</span>
+router.<span class="fn">get</span>(<span class="str">'/'</span>, authenticate, <span class="kw">async</span> (req, res, next) => {
+  <span class="kw">try</span> {
+    <span class="kw">const</span> bookings = <span class="kw">await</span> db.booking.<span class="fn">findMany</span>({
+      where: { user_id: req.user!.sub },
+      include: { tour: { select: { name: <span class="kw">true</span>, cover_image: <span class="kw">true</span>, destination: <span class="kw">true</span> } } },
+      orderBy: { created_at: <span class="str">'desc'</span> },
+    });
+    res.<span class="fn">json</span>(bookings);
+  } <span class="kw">catch</span> (e) { <span class="fn">next</span>(e); }
+});
+
+<span class="cmt">// DELETE /api/bookings/:id — huỷ tour</span>
+router.<span class="fn">delete</span>(<span class="str">'/:id'</span>, authenticate, <span class="kw">async</span> (req, res, next) => {
+  <span class="kw">try</span> {
+    <span class="kw">const</span> booking = <span class="kw">await</span> db.booking.<span class="fn">findUnique</span>({ where: { id: req.params.id } });
+    <span class="kw">if</span> (!booking || booking.user_id !== req.user!.sub) <span class="kw">return</span> res.<span class="fn">status</span>(<span class="num">404</span>).<span class="fn">end</span>();
+    <span class="kw">if</span> (![<span class="str">'PENDING'</span>, <span class="str">'CONFIRMED'</span>].<span class="fn">includes</span>(booking.status))
+      <span class="kw">return</span> res.<span class="fn">status</span>(<span class="num">400</span>).<span class="fn">json</span>({ error: <span class="str">'Không thể huỷ đơn đang trong hành trình'</span> });
+
+    <span class="kw">await</span> db.booking.<span class="fn">update</span>({
+      where: { id: booking.id },
+      data:  { status: <span class="str">'CANCELLED'</span>, cancel_reason: req.body.reason, cancelled_at: <span class="kw">new</span> <span class="fn">Date</span>() },
+    });
+    res.<span class="fn">json</span>({ success: <span class="kw">true</span> });
+  } <span class="kw">catch</span> (e) { <span class="fn">next</span>(e); }
+});</pre>
+      </div>
+    </div>
+
+    <!-- ERRORS -->
+    <div class="pnl" id="pnl-errors">
+      <div class="cw">
+        <div class="ct"><span class="cf">src/middleware/errors.ts — Global error handler</span><button class="cpb" onclick="cp(this)">Copy</button></div>
+        <pre><span class="kw">import</span> { ErrorRequestHandler } <span class="kw">from</span> <span class="str">'express'</span>;
+<span class="kw">import</span> { Prisma } <span class="kw">from</span> <span class="str">'@prisma/client'</span>;
+<span class="kw">import</span> { ZodError } <span class="kw">from</span> <span class="str">'zod'</span>;
+
+<span class="kw">export const</span> errorHandler: <span class="type">ErrorRequestHandler</span> = (err, req, res, next) => {
+  console.<span class="fn">error</span>(<span class="str">`[${req.method}] ${req.path}`</span>, err);
+
+  <span class="cmt">// Zod validation error</span>
+  <span class="kw">if</span> (err <span class="kw">instanceof</span> <span class="type">ZodError</span>)
+    <span class="kw">return</span> res.<span class="fn">status</span>(<span class="num">400</span>).<span class="fn">json</span>({ error: <span class="str">'Dữ liệu không hợp lệ'</span>, details: err.<span class="fn">flatten</span>() });
+
+  <span class="cmt">// Prisma unique constraint</span>
+  <span class="kw">if</span> (err <span class="kw">instanceof</span> <span class="type">Prisma.PrismaClientKnownRequestError</span>) {
+    <span class="kw">if</span> (err.code === <span class="str">'P2002'</span>)
+      <span class="kw">return</span> res.<span class="fn">status</span>(<span class="num">409</span>).<span class="fn">json</span>({ error: <span class="str">'Dữ liệu đã tồn tại'</span> });
+    <span class="kw">if</span> (err.code === <span class="str">'P2025'</span>)
+      <span class="kw">return</span> res.<span class="fn">status</span>(<span class="num">404</span>).<span class="fn">json</span>({ error: <span class="str">'Không tìm thấy'</span> });
+  }
+
+  <span class="cmt">// JWT error</span>
+  <span class="kw">if</span> (err.name === <span class="str">'JsonWebTokenError'</span> || err.name === <span class="str">'TokenExpiredError'</span>)
+    <span class="kw">return</span> res.<span class="fn">status</span>(<span class="num">401</span>).<span class="fn">json</span>({ error: <span class="str">'Phiên đăng nhập hết hạn'</span> });
+
+  <span class="cmt">// Unknown — không expose error detail ra ngoài</span>
+  res.<span class="fn">status</span>(err.statusCode ?? <span class="num">500</span>).<span class="fn">json</span>({
+    error: process.env.<span class="type">NODE_ENV</span> === <span class="str">'production'</span>
+      ? <span class="str">'Lỗi hệ thống. Vui lòng thử lại sau.'</span>
+      : err.message,
+  });
+};</pre>
+      </div>
+    </div>
+
+    <!-- SECURITY -->
+    <div class="pnl" id="pnl-security">
+      <div class="cw">
+        <div class="ct"><span class="cf">Rate limiting nâng cao + Security headers</span><button class="cpb" onclick="cp(this)">Copy</button></div>
+        <pre><span class="kw">import</span> { rateLimit } <span class="kw">from</span> <span class="str">'express-rate-limit'</span>;
+
+<span class="cmt">// Auth endpoints — chặt hơn để chống brute force</span>
+<span class="kw">export const</span> authLimiter = <span class="fn">rateLimit</span>({
+  windowMs: <span class="num">15</span> * <span class="num">60</span> * <span class="num">1000</span>,
+  max: <span class="num">10</span>,
+  skipSuccessfulRequests: <span class="kw">true</span>, <span class="cmt">// chỉ đếm failed requests</span>
+  message: { error: <span class="str">'Quá nhiều lần đăng nhập thất bại. Thử lại sau 15 phút.'</span> },
+});
+
+<span class="cmt">// Payment endpoints — nghiêm ngặt nhất</span>
+<span class="kw">export const</span> paymentLimiter = <span class="fn">rateLimit</span>({
+  windowMs: <span class="num">60</span> * <span class="num">1000</span>, <span class="cmt">// 1 phút</span>
+  max: <span class="num">5</span>,
+  message: { error: <span class="str">'Quá nhiều yêu cầu thanh toán. Vui lòng chờ.'</span> },
+});
+
+<span class="cmt">// Dùng trong routes:</span>
+router.<span class="fn">post</span>(<span class="str">'/auth/login'</span>, authLimiter, ...);
+router.<span class="fn">post</span>(<span class="str">'/payment/create'</span>, authenticate, paymentLimiter, ...);</pre>
+      </div>
+    </div>
+
+    <!-- Placeholder panels -->
+    <div class="pnl" id="pnl-payments-api">
+      <div class="al blue"><div>💳</div><div><div class="at blue">Payment routes</div>Chi tiết MoMo + VNPay đã có trong file baggio-momo-integration.html và baggio-vnpay.html. Payment routes trong Express chỉ là wrapper gọi sang các service đó.</div></div>
+      <div class="cw"><div class="ct"><span class="cf">src/routes/payments.ts — Skeleton</span></div>
+      <pre><span class="cmt">// POST /api/payment/momo/create    → tạo link thanh toán MoMo</span>
+<span class="cmt">// POST /api/payment/momo/webhook   → nhận IPN từ MoMo</span>
+<span class="cmt">// POST /api/payment/vnpay/create   → tạo link thanh toán VNPay</span>
+<span class="cmt">// POST /api/payment/vnpay/webhook  → nhận IPN từ VNPay</span>
+<span class="cmt">// GET  /api/payment/:bookingId     → trạng thái thanh toán</span>
+<span class="cmt">// POST /api/payment/:id/refund     → hoàn tiền (admin only)</span></pre></div>
+    </div>
+    <div class="pnl" id="pnl-users-api">
+      <div class="cw"><div class="ct"><span class="cf">src/routes/users.ts — User profile endpoints</span></div>
+      <pre><span class="cmt">// GET  /api/users/me          → profile người dùng hiện tại</span>
+<span class="cmt">// PUT  /api/users/me          → cập nhật profile, avatar</span>
+<span class="cmt">// GET  /api/users/me/bookings → lịch sử đặt tour</span>
+<span class="cmt">// GET  /api/users/me/reviews  → reviews đã viết</span>
+<span class="cmt">// POST /api/users/me/change-password</span>
+<span class="cmt">// GET  /api/users             → admin: danh sách users</span>
+<span class="cmt">// GET  /api/users/:id         → admin: chi tiết user</span></pre></div>
+    </div>
+    <div class="pnl" id="pnl-guides-api">
+      <div class="cw"><div class="ct"><span class="cf">src/routes/guides.ts — Guide endpoints</span></div>
+      <pre><span class="cmt">// GET  /api/guides                → danh sách HDV available</span>
+<span class="cmt">// GET  /api/guides/:id            → profile HDV công khai</span>
+<span class="cmt">// GET  /api/guides/:id/schedule   → lịch phân công HDV</span>
+<span class="cmt">// POST /api/guides/assign         → admin: phân công HDV vào booking</span>
+<span class="cmt">// PUT  /api/guides/:id/status     → cập nhật trạng thái HDV</span></pre></div>
+    </div>
+
+  </div>
+</div>
+<script>
+function sw(id,el){
+  document.querySelectorAll('.pnl').forEach(p=>p.classList.remove('on'));
+  document.getElementById('pnl-'+id).classList.add('on');
+  document.querySelectorAll('.sb-a').forEach(a=>a.classList.remove('on'));
+  if(el)el.classList.add('on');
+}
+function cp(btn){
+  const pre=btn.closest('.cw').querySelector('pre');
+  navigator.clipboard.writeText(pre.innerText).then(()=>{
+    btn.textContent='Copied!';btn.classList.add('ok');
+    setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('ok')},2000);
+  });
+}
+</script>
+</body>
+</html>

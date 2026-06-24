@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Baggio Travel — Đặt Tour</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Playfair+Display:wght@700;900&family=Space+Mono&display=swap" rel="stylesheet">
+
+<!-- ═══════════════════════════════════════════
+     SUPABASE CONFIG — ĐỔI 2 DÒNG NÀY
+     (copy từ baggio-travel-live.html)
+     ═══════════════════════════════════════════ -->
+<script>
+  const SUPABASE_URL  = 'https://lfnlezfphwjtdunyungi.supabase.co'
+  const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxmbmxlemZwaHdqdGR1bnl1bmdpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0NjkwNzcsImV4cCI6MjA5NjA0NTA3N30.fmjvqhyiPcjB6qT5GDtfzMfY-C-WXP4QUIk-YW7FhJg'
+</script>
+<!-- ═══════════════════════════════════════════ -->
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --ink:#111118;--cream:#faf8f3;--paper:#f3efe6;--card:#fff;
+  --red:#c5372b;--gold:#b8860b;--teal:#1a6b5e;--muted:#7a7268;
+  --border:#e5dfd3;--border2:#d0c8bc;
+  --font:'Be Vietnam Pro',sans-serif;--serif:'Playfair Display',Georgia,serif;--mono:'Space Mono',monospace;
+}
+html{scroll-behavior:smooth}
+body{background:var(--cream);color:var(--ink);font-family:var(--font);font-size:14px;line-height:1.65}
+
+/* NAV */
+.top-nav{background:var(--card);border-bottom:1px solid var(--border);padding:.9rem 2rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 1px 8px rgba(17,17,24,.06)}
+.nav-brand{font-family:var(--serif);font-size:1.3rem;font-weight:700;color:var(--ink);text-decoration:none}
+.nav-brand span{color:var(--red)}
+.nav-back{font-size:.8rem;color:var(--muted);text-decoration:none;display:flex;align-items:center;gap:.35rem;transition:color .2s}
+.nav-back:hover{color:var(--red)}
+.nav-secure{font-family:var(--mono);font-size:.6rem;color:var(--teal);display:flex;align-items:center;gap:.35rem;letter-spacing:.06em}
+.nav-secure::before{content:'🔒'}
+
+/* PROGRESS */
+.progress-wrap{background:var(--card);border-bottom:1px solid var(--border);padding:1.1rem 2rem}
+.progress-inner{max-width:860px;margin:0 auto}
+.progress-steps{display:flex;align-items:center;position:relative}
+.pline{position:absolute;top:17px;left:17px;right:17px;height:2px;background:var(--border);z-index:0}
+.pline-fill{position:absolute;top:17px;left:17px;height:2px;background:var(--red);z-index:1;transition:width .5s cubic-bezier(.23,1,.32,1)}
+.pstep{display:flex;flex-direction:column;align-items:center;gap:.4rem;flex:1;position:relative;z-index:2;cursor:pointer}
+.pdot{width:34px;height:34px;border-radius:50%;border:2px solid var(--border);background:var(--card);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:.68rem;color:var(--muted);transition:all .3s;font-weight:700}
+.pstep.done .pdot{background:var(--red);border-color:var(--red);color:#fff}
+.pstep.active .pdot{border-color:var(--red);color:var(--red);box-shadow:0 0 0 4px rgba(197,55,43,.1)}
+.plabel{font-size:.68rem;font-weight:500;color:var(--muted);text-align:center;white-space:nowrap;transition:color .3s}
+.pstep.active .plabel{color:var(--red);font-weight:600}
+.pstep.done .plabel{color:var(--ink)}
+
+/* LAYOUT */
+.engine{max-width:860px;margin:0 auto;padding:2rem}
+.engine-grid{display:grid;grid-template-columns:1fr 320px;gap:1.75rem;align-items:start}
+
+/* STEP PANELS */
+.step-panel{display:none;animation:stepIn .3s ease}
+.step-panel.active{display:block}
+@keyframes stepIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.step-title{font-family:var(--serif);font-size:1.6rem;font-weight:700;margin-bottom:.3rem;letter-spacing:-.02em}
+.step-sub{font-size:.85rem;color:var(--muted);margin-bottom:1.75rem;font-weight:300}
+
+/* STEP 1 — TOUR LIST */
+.tour-list{display:flex;flex-direction:column;gap:.75rem}
+.tour-pick{background:var(--card);border:2px solid var(--border);padding:1rem 1.25rem;cursor:pointer;display:grid;grid-template-columns:80px 1fr auto;gap:1rem;align-items:center;transition:border-color .2s,box-shadow .2s;position:relative}
+.tour-pick:hover{border-color:var(--border2);box-shadow:0 2px 12px rgba(17,17,24,.07)}
+.tour-pick.selected{border-color:var(--red);box-shadow:0 0 0 3px rgba(197,55,43,.1)}
+.tp-img{width:80px;height:60px;object-fit:cover;display:block}
+.tp-dest{font-family:var(--mono);font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;color:var(--teal);margin-bottom:.2rem}
+.tp-name{font-weight:600;font-size:.92rem;color:var(--ink);margin-bottom:.2rem;line-height:1.3}
+.tp-meta{font-size:.75rem;color:var(--muted)}
+.tp-price{text-align:right}
+.tp-from{font-size:.65rem;color:var(--muted);display:block}
+.tp-val{font-family:var(--serif);font-size:1.25rem;font-weight:700;color:var(--ink);line-height:1}
+.tp-per{font-size:.65rem;color:var(--muted);font-family:var(--font)}
+.tp-check{position:absolute;top:.6rem;right:.7rem;width:20px;height:20px;border-radius:50%;background:var(--red);display:none;align-items:center;justify-content:center;color:#fff;font-size:.65rem}
+.tour-pick.selected .tp-check{display:flex}
+.tp-badge{position:absolute;top:.6rem;left:1.25rem;background:var(--gold);color:#fff;font-family:var(--mono);font-size:.52rem;letter-spacing:.08em;text-transform:uppercase;padding:.18rem .45rem}
+.loading-tours{text-align:center;padding:2rem;color:var(--muted);font-size:.88rem}
+
+/* STEP 2 — CALENDAR */
+.cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+.cal-month{font-family:var(--serif);font-size:1.05rem;font-weight:700}
+.cal-btn{background:none;border:1px solid var(--border);padding:.3rem .7rem;cursor:pointer;font-size:.82rem;color:var(--muted);transition:all .2s;border-radius:4px}
+.cal-btn:hover{border-color:var(--red);color:var(--red)}
+.cal-header{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:5px}
+.cal-day-name{font-family:var(--mono);font-size:.58rem;color:var(--muted);text-align:center;padding:.3rem 0;letter-spacing:.06em}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.cal-day{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:5px;cursor:pointer;font-size:.8rem;font-weight:500;border:1px solid transparent;transition:all .15s;position:relative;gap:1px}
+.cal-day:hover:not(.disabled):not(.selected){background:var(--paper);border-color:var(--border)}
+.cal-day.selected{background:var(--red);color:#fff;border-color:var(--red)}
+.cal-day.disabled{color:var(--border2);cursor:not-allowed}
+.cal-day.empty{cursor:default}
+.cal-day.has-slot{border-color:var(--teal)}
+.cal-day-num{font-size:.8rem;font-weight:600;line-height:1}
+.cal-day-slots{font-size:.5rem;color:var(--teal);font-family:var(--mono);line-height:1}
+.cal-day.selected .cal-day-slots{color:rgba(255,255,255,.75)}
+.date-row{display:grid;grid-template-columns:1fr 1fr;gap:.9rem;margin-top:1.1rem}
+.date-field{}
+.date-label{font-family:var(--mono);font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:.35rem}
+.date-val{background:var(--paper);border:1px solid var(--border);padding:.65rem 1rem;font-size:.88rem;color:var(--ink);font-weight:500;min-height:38px;display:flex;align-items:center}
+.date-val.empty{color:var(--muted);font-weight:300}
+
+/* STEP 3 — GUESTS */
+.guest-box{background:var(--card);border:1px solid var(--border);overflow:hidden;margin-bottom:1.1rem}
+.guest-row{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.4rem;border-bottom:1px solid var(--border)}
+.guest-row:last-child{border-bottom:none}
+.guest-type{font-weight:600;font-size:.88rem}
+.guest-age{font-size:.75rem;color:var(--muted);margin-top:.1rem;font-weight:300}
+.counter{display:flex;align-items:center;gap:.85rem}
+.cbtn{width:30px;height:30px;border-radius:50%;border:1.5px solid var(--border);background:none;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;color:var(--muted);transition:all .2s;font-weight:600}
+.cbtn:hover:not(:disabled){border-color:var(--red);color:var(--red)}
+.cbtn:disabled{opacity:.3;cursor:not-allowed}
+.cnum{font-family:var(--serif);font-size:1.4rem;font-weight:700;color:var(--ink);min-width:24px;text-align:center;line-height:1}
+.room-opts{display:grid;grid-template-columns:1fr 1fr;gap:.7rem;margin-top:1rem}
+.ropt{border:2px solid var(--border);padding:.9rem;cursor:pointer;transition:all .2s;position:relative}
+.ropt:hover{border-color:var(--border2)}
+.ropt.selected{border-color:var(--red);background:rgba(197,55,43,.04)}
+.ropt-icon{font-size:1.3rem;margin-bottom:.4rem}
+.ropt-name{font-weight:600;font-size:.85rem;color:var(--ink);margin-bottom:.15rem}
+.ropt-desc{font-size:.72rem;color:var(--muted);font-weight:300;line-height:1.5}
+.ropt-price{font-size:.78rem;color:var(--red);font-weight:600;margin-top:.4rem}
+.ropt-check{position:absolute;top:.55rem;right:.55rem;width:18px;height:18px;border-radius:50%;background:var(--red);display:none;align-items:center;justify-content:center;color:#fff;font-size:.6rem}
+.ropt.selected .ropt-check{display:flex}
+
+/* STEP 4 — CONTACT */
+.cf{display:flex;flex-direction:column;gap:1rem}
+.cfg{display:flex;flex-direction:column;gap:.35rem}
+.cfg-row{display:grid;grid-template-columns:1fr 1fr;gap:.9rem}
+.cfl{font-family:var(--mono);font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.cfi{border:1px solid var(--border);background:var(--cream);padding:.65rem 1rem;font-family:var(--font);font-size:.9rem;color:var(--ink);outline:none;transition:border-color .2s;width:100%}
+.cfi:focus{border-color:var(--red)}
+.cfi::placeholder{color:#c8c0b4}
+.terms{display:flex;align-items:flex-start;gap:.65rem;font-size:.78rem;color:var(--muted);margin-top:.75rem;cursor:pointer;line-height:1.6}
+.terms input{margin-top:3px;accent-color:var(--red);cursor:pointer;flex-shrink:0}
+.terms a{color:var(--red);text-decoration:none}
+
+/* STEP 5 — PAYMENT */
+.pay-methods{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;margin-bottom:1.1rem}
+.popt{border:2px solid var(--border);padding:.85rem .6rem;cursor:pointer;text-align:center;transition:all .2s;background:var(--card)}
+.popt:hover{border-color:var(--border2)}
+.popt.selected{border-color:var(--red);background:rgba(197,55,43,.04)}
+.popt-icon{font-size:1.3rem;margin-bottom:.25rem;display:block}
+.popt-name{font-family:var(--mono);font-size:.58rem;letter-spacing:.06em;color:var(--muted)}
+.popt.selected .popt-name{color:var(--red);font-weight:700}
+.deposit-note{background:rgba(184,134,11,.07);border:1px solid rgba(184,134,11,.2);padding:.9rem 1rem;font-size:.8rem;color:var(--ink);line-height:1.65;display:flex;gap:.65rem}
+.confirm-box{background:var(--paper);border:1px solid var(--border);padding:1.1rem;margin-bottom:1rem}
+.confirm-row{display:flex;justify-content:space-between;font-size:.82rem;padding:.35rem 0;border-bottom:1px solid rgba(0,0,0,.05)}
+.confirm-row:last-child{border-bottom:none}
+.confirm-label{color:var(--muted);font-weight:300}
+.confirm-val{font-weight:500;color:var(--ink);text-align:right}
+
+/* SUMMARY SIDEBAR */
+.summary{background:var(--card);border:1px solid var(--border);overflow:hidden;position:sticky;top:90px}
+.sum-img{width:100%;height:120px;object-fit:cover;display:block;filter:brightness(.85)}
+.sum-body{padding:1.1rem}
+.sum-name{font-family:var(--serif);font-size:1.05rem;font-weight:700;color:var(--ink);margin-bottom:.2rem;line-height:1.2}
+.sum-dest{font-family:var(--mono);font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:var(--teal);margin-bottom:.85rem}
+.sum-rows{display:flex;flex-direction:column;gap:.05rem;margin-bottom:.85rem}
+.sum-row{display:flex;justify-content:space-between;padding:.38rem 0;border-bottom:1px solid rgba(0,0,0,.05);font-size:.8rem}
+.sum-row:last-child{border-bottom:none}
+.sum-lbl{color:var(--muted);font-weight:300}
+.sum-val{font-weight:500;color:var(--ink);text-align:right}
+.sum-empty{color:var(--border2);font-style:italic;font-weight:300}
+.sum-divider{height:1px;background:var(--border);margin:.65rem 0}
+.price-rows{display:flex;flex-direction:column;gap:.28rem;margin-bottom:.85rem}
+.price-row{display:flex;justify-content:space-between;font-size:.8rem}
+.price-lbl{color:var(--muted);font-weight:300}
+.price-val{font-weight:500;color:var(--ink)}
+.price-total{display:flex;justify-content:space-between;padding:.8rem 1rem;background:var(--ink);margin-bottom:.6rem}
+.pt-lbl{font-family:var(--mono);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:rgba(255,255,255,.5)}
+.pt-val{font-family:var(--serif);font-size:1.25rem;font-weight:700;color:#fff;line-height:1}
+.deposit-row{display:flex;justify-content:space-between;font-size:.78rem}
+.dep-lbl{color:var(--muted);font-weight:300}
+.dep-val{font-weight:600;color:var(--red)}
+
+/* BUTTONS */
+.btn-row{display:flex;gap:.75rem;margin-top:1.75rem;align-items:center}
+.btn-next{background:var(--red);color:#fff;border:none;padding:.95rem 2.2rem;font-family:var(--font);font-weight:700;font-size:.9rem;cursor:pointer;transition:background .2s,transform .2s,box-shadow .2s;display:flex;align-items:center;gap:.5rem}
+.btn-next:hover{background:#a82d22;transform:translateY(-2px);box-shadow:0 6px 20px rgba(197,55,43,.22)}
+.btn-next:disabled{background:var(--border);cursor:not-allowed;transform:none;box-shadow:none}
+.btn-back{background:none;border:1.5px solid var(--border);color:var(--muted);padding:.95rem 1.6rem;font-family:var(--font);font-weight:500;font-size:.88rem;cursor:pointer;transition:all .2s}
+.btn-back:hover{border-color:var(--border2);color:var(--ink)}
+
+/* SUCCESS */
+#step-success{display:none}
+#step-success.active{display:block}
+.success-wrap{text-align:center;padding:3rem 1rem}
+.success-icon{width:68px;height:68px;background:rgba(26,107,94,.1);border-radius:50%;margin:0 auto 1.5rem;display:flex;align-items:center;justify-content:center;font-size:1.8rem;animation:popIn .4s cubic-bezier(.23,1,.32,1)}
+.success-title{font-family:var(--serif);font-size:2rem;font-weight:700;color:var(--ink);margin-bottom:.5rem}
+.success-sub{font-size:.92rem;color:var(--muted);font-weight:300;line-height:1.75;max-width:420px;margin:0 auto 1.5rem}
+.success-ref{font-family:var(--mono);font-size:.82rem;background:var(--paper);border:1px solid var(--border);padding:.65rem 1.5rem;display:inline-block;color:var(--ink);margin-bottom:1.5rem;letter-spacing:.08em}
+.success-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:.85rem;max-width:520px;margin:0 auto 2rem}
+.ss{background:var(--card);border:1px solid var(--border);padding:.9rem;text-align:left}
+.ss-icon{font-size:1.2rem;margin-bottom:.4rem}
+.ss-title{font-weight:600;font-size:.82rem;color:var(--ink);margin-bottom:.15rem}
+.ss-desc{font-size:.72rem;color:var(--muted);font-weight:300;line-height:1.5}
+.btn-home{background:var(--ink);color:#fff;border:none;padding:.95rem 2.2rem;font-family:var(--font);font-weight:700;font-size:.9rem;cursor:pointer;transition:background .2s}
+.btn-home:hover{background:#2a2a35}
+@keyframes popIn{from{transform:scale(.5);opacity:0}to{transform:scale(1);opacity:1}}
+
+/* TOAST */
+.toast-wrap{position:fixed;bottom:1.5rem;right:1.5rem;z-index:999;display:flex;flex-direction:column;gap:.5rem}
+.toast{background:var(--ink);color:#fff;padding:.7rem 1rem;font-size:.8rem;display:flex;align-items:center;gap:.5rem;min-width:240px;animation:toastIn .25s ease;box-shadow:0 8px 24px rgba(17,17,24,.25)}
+@keyframes toastIn{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:none}}
+
+@media(max-width:768px){
+  .engine-grid{grid-template-columns:1fr}
+  .side-col{order:-1}
+  .summary{position:static}
+  .cfg-row{grid-template-columns:1fr}
+  .pay-methods{grid-template-columns:repeat(2,1fr)}
+  .success-steps{grid-template-columns:1fr}
+  .engine{padding:1rem}
+}
+</style>
+</head>
+<body>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<!-- NAV -->
+<div class="top-nav">
+  <a href="index.html" class="nav-back">← Quay lại</a>
+  <a href="index.html" class="nav-brand">Baggio<span>.</span>Travel</a>
+  <div class="nav-secure">Thanh toán bảo mật</div>
+</div>
+
+<!-- PROGRESS -->
+<div class="progress-wrap">
+  <div class="progress-inner">
+    <div class="progress-steps">
+      <div class="pline"></div>
+      <div class="pline-fill" id="pFill" style="width:0%"></div>
+      <div class="pstep active" id="ps1"><div class="pdot">1</div><div class="plabel">Chọn tour</div></div>
+      <div class="pstep" id="ps2"><div class="pdot">2</div><div class="plabel">Chọn ngày</div></div>
+      <div class="pstep" id="ps3"><div class="pdot">3</div><div class="plabel">Số khách</div></div>
+      <div class="pstep" id="ps4"><div class="pdot">4</div><div class="plabel">Liên hệ</div></div>
+      <div class="pstep" id="ps5"><div class="pdot">5</div><div class="plabel">Thanh toán</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ENGINE -->
+<div class="engine">
+  <div class="engine-grid" id="engineGrid">
+    <div class="main-col">
+
+      <!-- STEP 1 -->
+      <div class="step-panel active" id="step-1">
+        <div class="step-title">Chọn tour</div>
+        <div class="step-sub">Tất cả gói đã bao gồm vé bay, khách sạn và hướng dẫn viên</div>
+        <div class="tour-list" id="tourList">
+          <div class="loading-tours">⏳ Đang tải danh sách tour...</div>
+        </div>
+        <div class="btn-row">
+          <button class="btn-next" id="btn1" onclick="goStep(2)" disabled>Tiếp theo: Chọn ngày →</button>
+        </div>
+      </div>
+
+      <!-- STEP 2 -->
+      <div class="step-panel" id="step-2">
+        <div class="step-title">Chọn ngày</div>
+        <div class="step-sub">Ngày xanh = còn chỗ trong lịch khởi hành</div>
+        <div class="cal-nav">
+          <button class="cal-btn" onclick="changeMonth(-1)">‹ Trước</button>
+          <div class="cal-month" id="calMonth"></div>
+          <button class="cal-btn" onclick="changeMonth(1)">Sau ›</button>
+        </div>
+        <div class="cal-header" id="calHeader"></div>
+        <div class="cal-grid" id="calGrid"></div>
+        <div class="date-row">
+          <div class="date-field">
+            <span class="date-label">Ngày khởi hành</span>
+            <div class="date-val empty" id="dateStart">Chưa chọn</div>
+          </div>
+          <div class="date-field">
+            <span class="date-label">Ngày về</span>
+            <div class="date-val empty" id="dateEnd">Tự động tính</div>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn-back" onclick="goStep(1)">← Quay lại</button>
+          <button class="btn-next" id="btn2" onclick="goStep(3)" disabled>Tiếp theo: Số khách →</button>
+        </div>
+      </div>
+
+      <!-- STEP 3 -->
+      <div class="step-panel" id="step-3">
+        <div class="step-title">Số khách & Phòng</div>
+        <div class="step-sub">Giá tự cập nhật theo số khách</div>
+        <div class="guest-box">
+          <div class="guest-row">
+            <div><div class="guest-type">Người lớn</div><div class="guest-age">Từ 12 tuổi</div></div>
+            <div class="counter">
+              <button class="cbtn" id="adultMinus" onclick="changeGuest('adult',-1)" disabled>−</button>
+              <div class="cnum" id="adultCount">2</div>
+              <button class="cbtn" onclick="changeGuest('adult',1)">+</button>
+            </div>
+          </div>
+          <div class="guest-row">
+            <div><div class="guest-type">Trẻ em</div><div class="guest-age">5–11 tuổi · giảm 30%</div></div>
+            <div class="counter">
+              <button class="cbtn" id="childMinus" onclick="changeGuest('child',-1)" disabled>−</button>
+              <div class="cnum" id="childCount">0</div>
+              <button class="cbtn" onclick="changeGuest('child',1)">+</button>
+            </div>
+          </div>
+          <div class="guest-row">
+            <div><div class="guest-type">Em bé</div><div class="guest-age">Dưới 5 tuổi · miễn phí</div></div>
+            <div class="counter">
+              <button class="cbtn" id="infantMinus" onclick="changeGuest('infant',-1)" disabled>−</button>
+              <div class="cnum" id="infantCount">0</div>
+              <button class="cbtn" onclick="changeGuest('infant',1)">+</button>
+            </div>
+          </div>
+        </div>
+        <div style="font-weight:600;font-size:.85rem;margin-bottom:.65rem;color:var(--ink)">Loại phòng</div>
+        <div class="room-opts">
+          <div class="ropt selected" onclick="selectRoom(this,'STANDARD')">
+            <div class="ropt-check">✓</div>
+            <div class="ropt-icon">🛏️</div>
+            <div class="ropt-name">Tiêu chuẩn</div>
+            <div class="ropt-desc">1 giường đôi, tiện nghi đầy đủ</div>
+            <div class="ropt-price">Đã bao gồm</div>
+          </div>
+          <div class="ropt" onclick="selectRoom(this,'DELUXE')">
+            <div class="ropt-check">✓</div>
+            <div class="ropt-icon">🏨</div>
+            <div class="ropt-name">Deluxe</div>
+            <div class="ropt-desc">View đẹp, nội thất cao cấp</div>
+            <div class="ropt-price">+ 350.000đ / đêm</div>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn-back" onclick="goStep(2)">← Quay lại</button>
+          <button class="btn-next" onclick="goStep(4)">Tiếp theo: Thông tin →</button>
+        </div>
+      </div>
+
+      <!-- STEP 4 -->
+      <div class="step-panel" id="step-4">
+        <div class="step-title">Thông tin liên hệ</div>
+        <div class="step-sub">Điền thông tin để nhận xác nhận đặt tour</div>
+        <div class="cf">
+          <div class="cfg-row">
+            <div class="cfg"><label class="cfl">Họ và tên *</label><input class="cfi" id="cfName" placeholder="Nguyễn Văn A" required></div>
+            <div class="cfg"><label class="cfl">Số điện thoại *</label><input class="cfi" id="cfPhone" type="tel" placeholder="0900 000 000" required></div>
+          </div>
+          <div class="cfg-row">
+            <div class="cfg"><label class="cfl">Email *</label><input class="cfi" id="cfEmail" type="email" placeholder="ban@email.com" required></div>
+            <div class="cfg"><label class="cfl">CCCD / Passport</label><input class="cfi" id="cfId" placeholder="012 345 678 910"></div>
+          </div>
+          <div class="cfg"><label class="cfl">Yêu cầu đặc biệt</label><input class="cfi" id="cfNote" placeholder="Ăn chay, dị ứng thực phẩm, xe lăn..."></div>
+          <label class="terms">
+            <input type="checkbox" id="termsChk" onchange="updateConfirmBtn()">
+            <span>Tôi đồng ý với <a href="#">Điều khoản dịch vụ</a> và <a href="#">Chính sách hoàn tiền</a> của Baggio Travel</span>
+          </label>
+        </div>
+        <div class="btn-row">
+          <button class="btn-back" onclick="goStep(3)">← Quay lại</button>
+          <button class="btn-next" id="btn4" onclick="goStep(5)" disabled>Tiếp theo: Thanh toán →</button>
+        </div>
+      </div>
+
+      <!-- STEP 5 -->
+      <div class="step-panel" id="step-5">
+        <div class="step-title">Xác nhận & Đặt cọc</div>
+        <div class="step-sub">Kiểm tra thông tin và chọn phương thức thanh toán</div>
+        <div class="confirm-box" id="confirmBox"></div>
+        <div style="font-weight:600;font-size:.85rem;margin-bottom:.75rem">Phương thức thanh toán</div>
+        <div class="pay-methods">
+          <div class="popt selected" onclick="selectPay(this,'MOMO')"><span class="popt-icon">📱</span><div class="popt-name">MoMo</div></div>
+          <div class="popt" onclick="selectPay(this,'VNPAY')"><span class="popt-icon">💳</span><div class="popt-name">VNPay QR</div></div>
+          <div class="popt" onclick="selectPay(this,'BANK_TRANSFER')"><span class="popt-icon">🏦</span><div class="popt-name">Chuyển khoản</div></div>
+          <div class="popt" onclick="selectPay(this,'CASH')"><span class="popt-icon">💵</span><div class="popt-name">Tiền mặt</div></div>
+        </div>
+        <div class="deposit-note">
+          <span>💡</span>
+          <span>Chỉ cần đặt cọc <strong>30%</strong> để giữ chỗ. Thanh toán phần còn lại trước <strong>7 ngày</strong> khởi hành. Hoàn 100% nếu huỷ trước 7 ngày.</span>
+        </div>
+
+        <!-- BANK TRANSFER INFO -->
+        <div id="bankInfo" style="display:none;margin-top:.9rem;background:var(--card);border:2px solid var(--teal);border-radius:8px;overflow:hidden">
+          <div style="background:var(--teal);padding:.6rem 1rem;font-family:var(--mono);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:#fff;text-align:center">💳 Thông tin chuyển khoản</div>
+          <div style="padding:1rem;display:grid;grid-template-columns:1fr 150px;gap:1rem;align-items:start">
+            <div style="display:flex;flex-direction:column;gap:.5rem">
+              <div style="display:flex;justify-content:space-between;font-size:.82rem;padding:.35rem 0;border-bottom:1px solid var(--border)">
+                <span style="color:var(--muted)">Ngân hàng</span><strong>Techcombank</strong>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:.82rem;padding:.35rem 0;border-bottom:1px solid var(--border)">
+                <span style="color:var(--muted)">Số tài khoản</span><strong style="font-family:var(--mono);letter-spacing:.06em">4042828666</strong>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:.82rem;padding:.35rem 0;border-bottom:1px solid var(--border)">
+                <span style="color:var(--muted)">Chủ tài khoản</span><strong>TRAN HUNG VI</strong>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:.82rem;padding:.35rem 0;border-bottom:1px solid var(--border)">
+                <span style="color:var(--muted)">Số tiền cọc</span><strong style="color:var(--red);font-size:.95rem" id="bankAmount">—</strong>
+              </div>
+              <div style="display:flex;justify-content:space-between;font-size:.82rem;padding:.35rem 0">
+                <span style="color:var(--muted)">Nội dung CK</span><strong style="color:var(--teal);font-family:var(--mono)" id="bankContent">—</strong>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:.4rem">
+              <canvas id="bankQR" style="border-radius:6px;display:block"></canvas>
+              <div style="font-family:var(--mono);font-size:.58rem;color:var(--muted);text-align:center">Quét QR chuyển khoản</div>
+            </div>
+          </div>
+          <div style="background:rgba(26,107,94,.07);padding:.65rem 1rem;font-size:.78rem;color:var(--teal);display:flex;gap:.5rem">
+            <span>💡</span>
+            <span>Sau khi chuyển, nhắn mã <strong id="bankRef">BT-XXXX</strong> qua Zalo <strong>090 123 4567</strong> để xác nhận.</span>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn-back" onclick="goStep(4)">← Quay lại</button>
+          <button class="btn-next" id="btnConfirm" onclick="submitBooking()">🎒 Xác nhận & Đặt cọc ngay</button>
+        </div>
+      </div>
+
+      <!-- SUCCESS -->
+      <div id="step-success">
+        <div class="success-wrap">
+          <div class="success-icon">✅</div>
+          <div class="success-title">Đặt tour thành công!</div>
+          <div class="success-sub">Chúng tôi đã nhận yêu cầu và sẽ liên hệ trong <strong>2 tiếng</strong> để xác nhận lịch trình.</div>
+          <div class="success-ref" id="successRef">Mã đặt tour: BT-XXXX</div>
+          <div class="success-steps">
+            <div class="ss"><div class="ss-icon">📧</div><div class="ss-title">Email xác nhận</div><div class="ss-desc">Kiểm tra hộp thư trong 2 tiếng</div></div>
+            <div class="ss"><div class="ss-icon">📞</div><div class="ss-title">Tư vấn viên gọi</div><div class="ss-desc">Xác nhận HDV và chi tiết tour</div></div>
+            <div class="ss"><div class="ss-icon">📱</div><div class="ss-title">Nhận e-voucher</div><div class="ss-desc">48 tiếng trước ngày khởi hành</div></div>
+          </div>
+          <button class="btn-home" onclick="location.href='index.html'">← Về trang chủ</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- SIDEBAR -->
+    <div class="side-col">
+      <div class="summary">
+        <img class="sum-img" id="sumImg" src="https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=400&q=70" alt="">
+        <div class="sum-body">
+          <div class="sum-name" id="sumName">Chưa chọn tour</div>
+          <div class="sum-dest" id="sumDest">Chọn tour để bắt đầu</div>
+          <div class="sum-rows">
+            <div class="sum-row"><span class="sum-lbl">Ngày đi</span><span class="sum-val sum-empty" id="sumDate">—</span></div>
+            <div class="sum-row"><span class="sum-lbl">Ngày về</span><span class="sum-val sum-empty" id="sumReturn">—</span></div>
+            <div class="sum-row"><span class="sum-lbl">Người lớn</span><span class="sum-val" id="sumAdult">2</span></div>
+            <div class="sum-row"><span class="sum-lbl">Trẻ em</span><span class="sum-val" id="sumChild">0</span></div>
+            <div class="sum-row"><span class="sum-lbl">Phòng</span><span class="sum-val sum-empty" id="sumRoom">Tiêu chuẩn</span></div>
+          </div>
+          <div class="sum-divider"></div>
+          <div class="price-rows" id="priceRows"></div>
+          <div class="price-total">
+            <span class="pt-lbl">Tổng cộng</span>
+            <span class="pt-val" id="totalPrice">—</span>
+          </div>
+          <div class="deposit-row">
+            <span class="dep-lbl">Đặt cọc ngay (30%)</span>
+            <span class="dep-val" id="depositPrice">—</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON)
+
+// ── STATE ──────────────────────────────────────────
+const S = {
+  step: 1, tour: null, schedule: null,
+  startDate: null, endDate: null,
+  adults: 2, children: 0, infants: 0,
+  room: 'STANDARD', roomExtra: 0,
+  payMethod: 'MOMO',
+  allTours: [], schedules: []
+}
+
+const fmt      = n  => Number(n).toLocaleString('vi-VN')
+const fmtDate  = d  => new Date(d).toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit',year:'numeric'})
+const now      = ()  => new Date().toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'})
+const regionLbl= r  => ({north:'Miền Bắc',central:'Miền Trung',south:'Miền Nam'}[r]||r)
+
+function toast(msg,type='ok'){
+  const w=document.getElementById('toastWrap'),t=document.createElement('div')
+  t.className='toast';t.style.borderLeft=`3px solid ${type==='err'?'#c5372b':'#1a6b5e'}`
+  t.textContent=msg;w.appendChild(t)
+  setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity .3s';setTimeout(()=>t.remove(),300)},3000)
+}
+
+// ── LOAD TOURS ─────────────────────────────────────
+async function loadTours(){
+  try{
+    const slug=new URLSearchParams(location.search).get('tour')
+    if(slug){
+      // Chỉ load đúng 1 tour theo slug
+      const {data,error}=await sb.from('tours')
+        .select('id,name_vi,slug,destination,region,duration_days,duration_nights,base_price,child_price_pct,max_pax,cover_image,includes_vi')
+        .eq('slug',slug).eq('status','ACTIVE').limit(1)
+      if(error)throw error
+      if(data&&data.length>0){
+        S.allTours=data
+        renderTourList()
+        selectTour(data[0].id)
+      }
+    } else {
+      // Không có slug → load 20 tour để chọn
+      const {data,error}=await sb.from('tours')
+        .select('id,name_vi,slug,destination,region,duration_days,duration_nights,base_price,child_price_pct,max_pax,cover_image,includes_vi')
+        .eq('status','ACTIVE').order('base_price',{ascending:true}).limit(20)
+      if(error)throw error
+      S.allTours=data||[]
+      renderTourList()
+    }
+  }catch(e){
+    document.getElementById('tourList').innerHTML='<div style="color:#c5372b;font-size:.85rem;padding:1rem">Không tải được danh sách tour. Kiểm tra kết nối Supabase.</div>'
+    toast('Lỗi tải danh sách tour','err')
+  }
+}
+
+function renderTourList(){
+  document.getElementById('tourList').innerHTML=S.allTours.map(t=>`
+    <div class="tour-pick" id="tp-${t.id}" onclick="selectTour('${t.id}')">
+      <div class="tp-check">✓</div>
+      <img class="tp-img" src="${t.cover_image||'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=200&q=60'}" alt="${t.name_vi}" onerror="this.src='https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=200&q=60'">
+      <div>
+        <div class="tp-dest">${t.destination} · ${regionLbl(t.region)}</div>
+        <div class="tp-name">${t.name_vi}</div>
+        <div class="tp-meta">📅 ${t.duration_days}N${t.duration_nights}Đ · Tối đa ${t.max_pax} khách</div>
+      </div>
+      <div class="tp-price">
+        <span class="tp-from">Từ</span>
+        <div class="tp-val">${fmt(t.base_price)}</div>
+        <span class="tp-per">đ/người</span>
+      </div>
+    </div>`).join('')
+}
+
+async function selectTour(id){
+  S.tour=S.allTours.find(t=>t.id===id)
+  document.querySelectorAll('.tour-pick').forEach(el=>el.classList.remove('selected'))
+  document.getElementById('tp-'+id)?.classList.add('selected')
+  document.getElementById('btn1').disabled=false
+
+  // Load schedules từ DB
+  const {data}=await sb.from('tour_schedules')
+    .select('id,depart_date,return_date,available_slots,status')
+    .eq('tour_id',id).eq('status','OPEN').gte('depart_date',new Date().toISOString().split('T')[0])
+    .order('depart_date')
+  S.schedules=data||[]
+  updateSummary()
+  renderCal()
+}
+
+// ── CALENDAR ───────────────────────────────────────
+const MONTHS=['Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6','Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12']
+const DAYS=['CN','T2','T3','T4','T5','T6','T7']
+let calY=new Date().getFullYear(), calM=new Date().getMonth()
+
+function renderCal(){
+  document.getElementById('calMonth').textContent=`${MONTHS[calM]} ${calY}`
+  document.getElementById('calHeader').innerHTML=DAYS.map(d=>`<div class="cal-day-name">${d}</div>`).join('')
+  const first=new Date(calY,calM,1).getDay()
+  const days=new Date(calY,calM+1,0).getDate()
+  const today=new Date(); today.setHours(0,0,0,0)
+
+  // Map ngày có lịch
+  const schedMap={}
+  S.schedules.forEach(s=>{
+    const d=new Date(s.depart_date)
+    if(d.getFullYear()===calY&&d.getMonth()===calM){
+      schedMap[d.getDate()]={slots:s.available_slots,id:s.id,returnDate:s.return_date}
+    }
+  })
+
+  let html=''
+  for(let i=0;i<first;i++) html+=`<div class="cal-day empty"></div>`
+  for(let d=1;d<=days;d++){
+    const date=new Date(calY,calM,d)
+    const isPast=date<today
+    const sched=schedMap[d]
+    const isSelected=S.startDate&&S.startDate.getDate()===d&&S.startDate.getMonth()===calM&&S.startDate.getFullYear()===calY
+    let cls='cal-day'
+    if(isPast||!sched)cls+=' disabled'
+    if(sched&&!isPast)cls+=' has-slot'
+    if(isSelected)cls+=' selected'
+    const slotsHtml=sched&&!isPast?`<span class="cal-day-slots">${sched.slots} chỗ</span>`:''
+    html+=`<div class="${cls}" onclick="pickDate(${d},${calM},${calY},'${sched?.id||''}','${sched?.returnDate||''}')">
+      <span class="cal-day-num">${d}</span>${slotsHtml}
+    </div>`
+  }
+  document.getElementById('calGrid').innerHTML=html
+}
+
+function changeMonth(dir){
+  calM+=dir;if(calM>11){calM=0;calY++}if(calM<0){calM=11;calY--}
+  renderCal()
+}
+
+function pickDate(d,m,y,schedId,returnDate){
+  if(!schedId)return
+  if(!S.tour){toast('Vui lòng chọn tour trước','err');return}
+  S.startDate=new Date(y,m,d)
+  S.endDate=returnDate?new Date(returnDate):null
+  S.schedule={id:schedId}
+
+  const startEl=document.getElementById('dateStart')
+  const endEl=document.getElementById('dateEnd')
+  startEl.className='date-val';startEl.textContent='📅 '+fmtDate(S.startDate)
+  endEl.className='date-val';endEl.textContent=S.endDate?'📅 '+fmtDate(S.endDate):'—'
+  document.getElementById('btn2').disabled=false
+  updateSummary();renderCal()
+}
+
+// ── GUESTS ─────────────────────────────────────────
+function changeGuest(type,delta){
+  if(type==='adult'){S.adults=Math.max(1,S.adults+delta);document.getElementById('adultCount').textContent=S.adults;document.getElementById('adultMinus').disabled=S.adults<=1}
+  else if(type==='child'){S.children=Math.max(0,S.children+delta);document.getElementById('childCount').textContent=S.children;document.getElementById('childMinus').disabled=S.children<=0}
+  else{S.infants=Math.max(0,S.infants+delta);document.getElementById('infantCount').textContent=S.infants;document.getElementById('infantMinus').disabled=S.infants<=0}
+  updateSummary()
+}
+
+function selectRoom(el,type){
+  document.querySelectorAll('.ropt').forEach(r=>r.classList.remove('selected'))
+  el.classList.add('selected');S.room=type
+  S.roomExtra=type==='DELUXE'?350000*(S.tour?.duration_nights||1):0
+  updateSummary()
+}
+
+function selectPay(el,method){
+  document.querySelectorAll('.popt').forEach(p=>p.classList.remove('selected'))
+  el.classList.add('selected');S.payMethod=method
+  const bankInfo=document.getElementById('bankInfo')
+  if(method==='BANK_TRANSFER'){
+    const deposit=Math.round(calcTotal()*.3)
+    const name=(document.getElementById('cfName')?.value?.trim()||'KHACH').toUpperCase().split(' ').pop()
+    const content='DAT COC '+name
+    document.getElementById('bankAmount').textContent=deposit.toLocaleString('vi-VN')+'đ'
+    document.getElementById('bankContent').textContent=content
+    bankInfo.style.display='block'
+    // Vẽ QR bằng canvas thuần — không cần thư viện ngoài
+    drawQR(deposit, content)
+  } else {
+    bankInfo.style.display='none'
+  }
+}
+
+function drawQR(amount, content){
+  // Dùng VietQR standard string cho chuyển khoản nội địa
+  const qrString = `https://qr.sepay.vn/img?bank=TCB&acc=4042828666&template=compact2&amount=${amount}&des=${encodeURIComponent(content)}`
+  const canvas = document.getElementById('bankQR')
+  const ctx = canvas.getContext('2d')
+  canvas.width = 140
+  canvas.height = 140
+
+  // Load ảnh QR từ SePay (hỗ trợ CORS tốt hơn VietQR)
+  const img = new Image()
+  img.crossOrigin = 'anonymous'
+  img.onload = () => { ctx.drawImage(img, 0, 0, 140, 140) }
+  img.onerror = () => {
+    // Fallback: vẽ text nếu ảnh không load được
+    ctx.fillStyle = '#fff'
+    ctx.fillRect(0, 0, 140, 140)
+    ctx.fillStyle = '#1a6b5e'
+    ctx.font = '11px monospace'
+    ctx.textAlign = 'center'
+    ctx.fillText('TCB: 4042828666', 70, 60)
+    ctx.fillText('TRAN HUNG VI', 70, 80)
+    ctx.fillText(amount.toLocaleString('vi-VN')+'đ', 70, 100)
+  }
+  img.src = qrString
+}
+
+// ── SUMMARY ────────────────────────────────────────
+function calcTotal(){
+  if(!S.tour)return 0
+  const pct=S.tour.child_price_pct||70
+  return S.tour.base_price*S.adults + Math.round(S.tour.base_price*pct/100)*S.children + S.roomExtra
+}
+
+function updateSummary(){
+  const t=S.tour
+  if(t){
+    document.getElementById('sumImg').src=t.cover_image||'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=400&q=70'
+    document.getElementById('sumName').textContent=t.name_vi
+    document.getElementById('sumDest').textContent=t.destination+' · '+regionLbl(t.region)
+  }
+  const f=(id,val,empty)=>{const el=document.getElementById(id);el.textContent=val||'—';el.className='sum-val'+((!val||empty)?(' sum-empty'):'')}
+  f('sumDate',   S.startDate?fmtDate(S.startDate):null,  !S.startDate)
+  f('sumReturn', S.endDate  ?fmtDate(S.endDate)  :null,  !S.endDate)
+  document.getElementById('sumAdult').textContent=S.adults
+  document.getElementById('sumChild').textContent=S.children
+  document.getElementById('sumRoom').textContent=S.room==='DELUXE'?'Deluxe (+350k/đêm)':'Tiêu chuẩn'
+
+  const total=calcTotal()
+  if(total>0&&S.tour){
+    const t=S.tour,pct=t.child_price_pct||70
+    let rows=`<div class="price-row"><span class="price-lbl">Người lớn (×${S.adults})</span><span class="price-val">${fmt(t.base_price*S.adults)}đ</span></div>`
+    if(S.children>0)rows+=`<div class="price-row"><span class="price-lbl">Trẻ em (×${S.children})</span><span class="price-val">${fmt(Math.round(t.base_price*pct/100)*S.children)}đ</span></div>`
+    if(S.roomExtra>0)rows+=`<div class="price-row"><span class="price-lbl">Nâng cấp phòng</span><span class="price-val">+${fmt(S.roomExtra)}đ</span></div>`
+    document.getElementById('priceRows').innerHTML=rows
+    document.getElementById('totalPrice').textContent=fmt(total)+'đ'
+    document.getElementById('depositPrice').textContent=fmt(Math.round(total*0.3))+'đ'
+  }else{
+    document.getElementById('priceRows').innerHTML=''
+    document.getElementById('totalPrice').textContent='—'
+    document.getElementById('depositPrice').textContent='—'
+  }
+}
+
+// ── FORM VALIDATION ────────────────────────────────
+function updateConfirmBtn(){
+  const ok=document.getElementById('termsChk').checked&&
+    document.getElementById('cfName').value.trim()&&
+    document.getElementById('cfPhone').value.trim()&&
+    document.getElementById('cfEmail').value.trim()
+  document.getElementById('btn4').disabled=!ok
+}
+['cfName','cfPhone','cfEmail'].forEach(id=>document.getElementById(id).addEventListener('input',updateConfirmBtn))
+
+// ── NAVIGATION ─────────────────────────────────────
+const pws={1:'0%',2:'25%',3:'50%',4:'75%',5:'100%'}
+function goStep(n){
+  if(n===2&&!S.tour){toast('Vui lòng chọn tour trước','err');return}
+  document.querySelectorAll('.step-panel').forEach(p=>p.classList.remove('active'))
+  document.getElementById(`step-${n}`)?.classList.add('active')
+  document.querySelectorAll('.pstep').forEach((p,i)=>{
+    p.classList.remove('active','done')
+    if(i+1<n)p.classList.add('done')
+    if(i+1===n)p.classList.add('active')
+  })
+  document.getElementById('pFill').style.width=pws[n]||'0%'
+  if(n===5)buildConfirm()
+  S.step=n
+  window.scrollTo({top:0,behavior:'smooth'})
+}
+
+// ── CONFIRM SUMMARY ────────────────────────────────
+function buildConfirm(){
+  const t=S.tour;if(!t)return
+  const total=calcTotal()
+  document.getElementById('confirmBox').innerHTML=`
+    <div class="confirm-row"><span class="confirm-label">Tour</span><span class="confirm-val">${t.name_vi}</span></div>
+    <div class="confirm-row"><span class="confirm-label">Ngày đi</span><span class="confirm-val">${S.startDate?fmtDate(S.startDate):'—'}</span></div>
+    <div class="confirm-row"><span class="confirm-label">Ngày về</span><span class="confirm-val">${S.endDate?fmtDate(S.endDate):'—'}</span></div>
+    <div class="confirm-row"><span class="confirm-label">Số khách</span><span class="confirm-val">${S.adults} người lớn${S.children>0?', '+S.children+' trẻ em':''}</span></div>
+    <div class="confirm-row"><span class="confirm-label">Phòng</span><span class="confirm-val">${S.room==='DELUXE'?'Deluxe':'Tiêu chuẩn'}</span></div>
+    <div class="confirm-row"><span class="confirm-label">Liên hệ</span><span class="confirm-val">${document.getElementById('cfName').value} · ${document.getElementById('cfPhone').value}</span></div>
+    <div class="confirm-row" style="border-top:2px solid var(--border);margin-top:.35rem;padding-top:.6rem">
+      <span class="confirm-label" style="font-weight:600;color:var(--ink)">Tổng cộng</span>
+      <span class="confirm-val" style="color:var(--red);font-size:1.05rem">${fmt(total)}đ</span>
+    </div>
+    <div class="confirm-row">
+      <span class="confirm-label" style="color:var(--teal)">Đặt cọc ngay (30%)</span>
+      <span class="confirm-val" style="color:var(--teal)">${fmt(Math.round(total*0.3))}đ</span>
+    </div>`
+}
+
+// ── SUBMIT BOOKING → LƯU VÀO SUPABASE ─────────────
+async function submitBooking(){
+  const btn=document.getElementById('btnConfirm')
+  btn.disabled=true;btn.textContent='⏳ Đang xử lý...'
+  try{
+    const total=calcTotal()
+    const ref='BT-'+Date.now().toString(36).toUpperCase().slice(-6)
+
+    const booking={
+      booking_ref:      ref,
+      tour_id:          S.tour.id,
+      schedule_id:      S.schedule?.id||null,
+      guest_name:       document.getElementById('cfName').value.trim(),
+      guest_email:      document.getElementById('cfEmail').value.trim(),
+      guest_phone:      document.getElementById('cfPhone').value.trim(),
+      adult_count:      S.adults,
+      child_count:      S.children,
+      infant_count:     S.infants,
+      room_type:        S.room,
+      total_price:      total,
+      deposit_amount:   Math.round(total*0.3),
+      special_requests: document.getElementById('cfNote').value.trim()||null,
+      status:           'PENDING',
+      payment_status:   'PENDING',
+    }
+
+    const {data,error}=await sb.from('bookings').insert(booking).select().single()
+    if(error)throw error
+
+    // Giảm available_slots nếu có schedule
+    if(S.schedule?.id){
+      await sb.from('tour_schedules')
+        .update({available_slots:S.schedules.find(s=>s.id===S.schedule.id)?.available_slots-(S.adults+S.children)})
+        .eq('id',S.schedule.id)
+    }
+
+    // Hiện màn hình thành công
+    document.getElementById('successRef').textContent=`Mã đặt tour: ${ref}`
+    document.querySelectorAll('.step-panel').forEach(p=>p.classList.remove('active'))
+    document.getElementById('engineGrid').style.gridTemplateColumns='1fr'
+    document.querySelector('.side-col').style.display='none'
+    document.getElementById('step-success').classList.add('active')
+    document.getElementById('pFill').style.width='100%'
+    document.querySelectorAll('.pstep').forEach(p=>p.classList.add('done'))
+    toast('✅ Đặt tour thành công! Mã: '+ref)
+    window.scrollTo({top:0,behavior:'smooth'})
+
+  }catch(e){
+    console.error('submitBooking:',e)
+    btn.disabled=false;btn.textContent='🎒 Xác nhận & Đặt cọc ngay'
+    toast('Lỗi: '+e.message,'err')
+  }
+}
+
+// ── INIT ───────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', async ()=>{
+  // Bật RLS policy cho bookings — cần INSERT từ frontend
+  loadTours()
+  renderCal()
+  updateSummary()
+})
+</script>
+</body>
+</html>

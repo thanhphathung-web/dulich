@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Baggio Travel — Tour Du Lịch Việt Nam</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Space+Mono&display=swap" rel="stylesheet">
+
+<!-- ═══════════════════════════════════════════════════════════
+     SUPABASE CONFIG — ĐỔI 2 DÒNG NÀY
+     ═══════════════════════════════════════════════════════════ -->
+<script>
+  const SUPABASE_URL  = 'https://lfnlezfphwjtdunyungi.supabase.co'          // ← đổi thành URL của bạn
+  const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxmbmxlemZwaHdqdGR1bnl1bmdpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0NjkwNzcsImV4cCI6MjA5NjA0NTA3N30.fmjvqhyiPcjB6qT5GDtfzMfY-C-WXP4QUIk-YW7FhJg' // ← đổi thành anon key
+</script>
+<!-- ══════════════════════════════════════════════════════════ -->
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --ink:#111118;--cream:#faf8f3;--paper:#f3efe6;--card:#ffffff;
+  --red:#c5372b;--gold:#b8860b;--teal:#1a6b5e;--muted:#7a7268;
+  --border:#e5dfd3;--shadow:0 2px 12px rgba(17,17,24,.07);
+  --font:'Be Vietnam Pro',sans-serif;--serif:'Playfair Display',Georgia,serif;--mono:'Space Mono',monospace;
+}
+html{scroll-behavior:smooth}
+body{background:var(--cream);color:var(--ink);font-family:var(--font);font-size:15px;line-height:1.65;overflow-x:hidden}
+
+/* ── NAV ── */
+nav{background:var(--card);border-bottom:1px solid var(--border);padding:.9rem 2rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:var(--shadow)}
+.nav-logo{font-family:var(--serif);font-size:1.4rem;font-weight:700;color:var(--ink);text-decoration:none;letter-spacing:-.01em}
+.nav-logo span{color:var(--red)}
+.nav-links{display:flex;gap:1.75rem;list-style:none}
+.nav-links a{font-size:.82rem;font-weight:500;color:var(--muted);text-decoration:none;transition:color .2s}
+.nav-links a:hover{color:var(--red)}
+.nav-cta{background:var(--red);color:#fff;font-size:.82rem;font-weight:600;padding:.5rem 1.2rem;border:none;cursor:pointer;text-decoration:none;transition:background .2s;display:inline-block}
+.nav-cta:hover{background:#a82d22}
+
+/* ── HERO ── */
+#hero{min-height:90vh;display:grid;grid-template-columns:1fr 1fr;align-items:center;padding:6rem 2rem;background:linear-gradient(135deg,var(--cream) 60%,var(--paper))}
+.hero-eyebrow{font-family:var(--mono);font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;color:var(--red);margin-bottom:1.25rem;display:flex;align-items:center;gap:.6rem}
+.hero-eyebrow::before{content:'';width:28px;height:1px;background:var(--red)}
+.hero-title{font-family:var(--serif);font-size:clamp(2.8rem,5vw,4.8rem);font-weight:900;line-height:1.05;letter-spacing:-.03em;color:var(--ink);margin-bottom:1.5rem}
+.hero-title em{font-style:italic;color:var(--red)}
+.hero-sub{font-size:1rem;font-weight:300;line-height:1.8;color:var(--muted);max-width:440px;margin-bottom:2.5rem}
+.hero-sub strong{color:var(--ink);font-weight:600}
+.hero-stats{display:flex;gap:2.5rem;margin-bottom:2.5rem}
+.stat-num{font-family:var(--serif);font-size:2rem;font-weight:700;color:var(--ink);line-height:1}
+.stat-num span{color:var(--red)}
+.stat-label{font-size:.75rem;color:var(--muted);margin-top:.2rem}
+.hero-btns{display:flex;gap:.85rem;align-items:center}
+.btn-red{background:var(--red);color:#fff;font-weight:600;font-size:.9rem;padding:.95rem 2.2rem;border:none;cursor:pointer;text-decoration:none;transition:transform .2s,box-shadow .2s;display:inline-block}
+.btn-red:hover{transform:translate(-3px,-3px);box-shadow:5px 5px 0 var(--gold)}
+.btn-outline{font-size:.82rem;font-weight:500;color:var(--muted);text-decoration:none;border-bottom:1px solid currentColor;padding-bottom:1px;transition:color .2s}
+.btn-outline:hover{color:var(--ink)}
+.hero-right{position:relative;display:flex;justify-content:center;align-items:center}
+.hero-img-wrap{position:relative;width:100%;max-width:480px}
+.hero-img{width:100%;height:400px;object-fit:cover;display:block}
+.hero-badge{position:absolute;bottom:-1rem;left:-1rem;background:var(--ink);color:#fff;padding:1.25rem 1.5rem}
+.hb-num{font-family:var(--serif);font-size:1.8rem;font-weight:700;line-height:1;color:#fff}
+.hb-label{font-size:.72rem;color:rgba(255,255,255,.5);font-family:var(--mono);letter-spacing:.08em;margin-top:.25rem}
+
+/* ── MARQUEE ── */
+.marquee{background:var(--ink);overflow:hidden;padding:.85rem 0;white-space:nowrap}
+.marquee-track{display:inline-flex;animation:marquee 22s linear infinite}
+.marquee-item{font-family:var(--serif);font-size:.95rem;font-style:italic;color:rgba(250,248,243,.65);padding:0 2rem}
+.marquee-item b{color:var(--gold);font-style:normal}
+@keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* ── SEARCH BAR ── */
+#search-section{background:var(--card);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:1.5rem 2rem}
+.search-wrap{max-width:900px;margin:0 auto;display:flex;gap:.75rem;align-items:flex-end}
+.sf-group{display:flex;flex-direction:column;gap:.35rem;flex:1}
+.sf-label{font-family:var(--mono);font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.sf-input,.sf-select{border:1px solid var(--border);background:var(--cream);padding:.65rem 1rem;font-family:var(--font);font-size:.9rem;color:var(--ink);outline:none;transition:border-color .2s;width:100%;-webkit-appearance:none}
+.sf-input:focus,.sf-select:focus{border-color:var(--red)}
+.sf-input::placeholder{color:#c8c0b4}
+.sf-select option{background:#fff}
+.btn-search{background:var(--red);color:#fff;border:none;padding:.7rem 1.75rem;font-family:var(--font);font-weight:600;font-size:.9rem;cursor:pointer;transition:background .2s;white-space:nowrap;align-self:flex-end;height:42px}
+.btn-search:hover{background:#a82d22}
+
+/* ── TOURS SECTION ── */
+#tours{padding:5rem 2rem}
+.sec-header{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:3rem}
+.sec-eyebrow{font-family:var(--mono);font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:var(--red);margin-bottom:.75rem;display:flex;align-items:center;gap:.5rem}
+.sec-eyebrow::before{content:'';width:18px;height:1px;background:var(--red)}
+.sec-title{font-family:var(--serif);font-size:clamp(2rem,3.5vw,3rem);font-weight:900;line-height:1.05;letter-spacing:-.03em}
+.sec-count{font-family:var(--mono);font-size:.65rem;color:var(--muted);letter-spacing:.08em}
+
+/* ── FILTER CHIPS ── */
+.filter-bar{display:flex;gap:.5rem;margin-bottom:2.25rem;flex-wrap:wrap}
+.fchip{font-family:var(--mono);font-size:.65rem;letter-spacing:.08em;text-transform:uppercase;padding:.4rem .9rem;border:1px solid var(--border);background:none;color:var(--muted);cursor:pointer;transition:all .2s}
+.fchip:hover{border-color:var(--red);color:var(--red)}
+.fchip.active{background:var(--red);border-color:var(--red);color:#fff}
+
+/* ── TOUR CARDS ── */
+.tours-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem}
+.tour-card{background:var(--card);border:1px solid var(--border);overflow:hidden;transition:transform .35s cubic-bezier(.23,1,.32,1),box-shadow .35s;cursor:pointer}
+.tour-card:hover{transform:translateY(-8px);box-shadow:0 24px 56px rgba(17,17,24,.1)}
+.tc-img-wrap{position:relative;overflow:hidden}
+.tc-img{width:100%;height:210px;object-fit:cover;display:block;transition:transform .6s cubic-bezier(.23,1,.32,1);filter:brightness(.88)}
+.tour-card:hover .tc-img{transform:scale(1.06)}
+.tc-badge{position:absolute;top:.85rem;left:.85rem;font-family:var(--mono);font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;padding:.3rem .65rem;background:var(--red);color:#fff}
+.tc-body{padding:1.5rem}
+.tc-dest{font-family:var(--mono);font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:var(--teal);margin-bottom:.4rem}
+.tc-name{font-family:var(--serif);font-size:1.15rem;font-weight:700;color:var(--ink);margin-bottom:.65rem;line-height:1.25}
+.tc-meta{display:flex;gap:.85rem;font-size:.76rem;color:var(--muted);margin-bottom:1.1rem;flex-wrap:wrap}
+.tc-includes{list-style:none;display:flex;flex-direction:column;gap:.28rem;margin-bottom:1.25rem}
+.tc-includes li{font-size:.78rem;color:var(--muted);display:flex;align-items:center;gap:.4rem;font-weight:300}
+.tc-includes li::before{content:'✓';color:var(--teal);font-weight:700;font-size:.68rem;flex-shrink:0}
+.tc-footer{display:flex;align-items:center;justify-content:space-between;padding-top:1rem;border-top:1px solid var(--border)}
+.tc-price-from{font-size:.68rem;color:var(--muted);display:block}
+.tc-price{font-family:var(--serif);font-size:1.4rem;font-weight:700;color:var(--ink)}
+.tc-price sub{font-size:.72rem;font-weight:400;color:var(--muted);font-family:var(--font)}
+.btn-book{background:var(--ink);color:#fff;font-size:.75rem;font-weight:600;padding:.6rem 1.2rem;border:none;cursor:pointer;transition:background .2s;letter-spacing:.02em}
+.btn-book:hover{background:var(--red)}
+
+/* ── SKELETON LOADER ── */
+.skeleton{background:linear-gradient(90deg,#f0ebe2 25%,#e8e3d8 50%,#f0ebe2 75%);background-size:200% 100%;animation:shimmer 1.5s infinite}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.skel-card{background:var(--card);border:1px solid var(--border);overflow:hidden}
+.skel-img{height:210px}
+.skel-body{padding:1.5rem;display:flex;flex-direction:column;gap:.75rem}
+.skel-line{height:14px;border-radius:2px}
+.skel-line.short{width:40%}
+.skel-line.med{width:70%}
+.skel-line.long{width:100%}
+.skel-line.title{height:20px;width:80%}
+
+/* ── EMPTY / ERROR STATE ── */
+.state-box{text-align:center;padding:4rem 1rem;grid-column:1/-1}
+.state-icon{font-size:3rem;margin-bottom:1rem;opacity:.4}
+.state-title{font-family:var(--serif);font-size:1.4rem;font-weight:700;color:var(--ink);margin-bottom:.5rem}
+.state-sub{font-size:.88rem;color:var(--muted);font-weight:300;line-height:1.7;max-width:380px;margin:0 auto}
+.state-retry{margin-top:1.5rem;background:var(--red);color:#fff;border:none;padding:.75rem 1.75rem;font-family:var(--font);font-weight:600;font-size:.88rem;cursor:pointer}
+
+/* ── TOAST ── */
+.toast-wrap{position:fixed;bottom:1.5rem;right:1.5rem;z-index:999;display:flex;flex-direction:column;gap:.5rem}
+.toast{background:var(--ink);color:#fff;padding:.75rem 1.1rem;font-size:.82rem;display:flex;align-items:center;gap:.6rem;min-width:250px;animation:toastIn .25s ease;box-shadow:0 8px 24px rgba(17,17,24,.25)}
+@keyframes toastIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}
+
+/* ── GUIDES SECTION ── */
+#guides{padding:5rem 2rem;background:var(--paper)}
+.guides-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.25rem;margin-top:2.5rem}
+.guide-card{background:var(--card);border:1px solid var(--border);padding:1.5rem;text-align:center;transition:transform .3s,box-shadow .3s}
+.guide-card:hover{transform:translateY(-5px);box-shadow:var(--shadow)}
+.guide-avatar{width:64px;height:64px;border-radius:50%;background:var(--paper);border:2px solid var(--border);margin:0 auto 1rem;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:1.4rem;font-weight:700;color:var(--red);overflow:hidden}
+.guide-avatar img{width:100%;height:100%;object-fit:cover;display:block}
+.guide-name{font-family:var(--serif);font-size:1rem;font-weight:700;margin-bottom:.25rem;color:var(--ink)}
+.guide-langs{font-family:var(--mono);font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;color:var(--teal);margin-bottom:.65rem}
+.guide-stats{display:flex;gap:.5rem;justify-content:center;margin-bottom:.85rem}
+.gs{background:var(--paper);padding:.3rem .6rem;font-size:.72rem;text-align:center}
+.gs-val{font-weight:700;font-size:.85rem;color:var(--ink)}
+.gs-lbl{font-family:var(--mono);font-size:.52rem;color:var(--muted);letter-spacing:.06em;text-transform:uppercase}
+.guide-rating{font-family:var(--mono);font-size:.72rem;color:var(--gold)}
+
+/* ── REVIEWS ── */
+#reviews{padding:5rem 2rem}
+.reviews-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.25rem;margin-top:2.5rem}
+.rev-card{background:var(--card);border:1px solid var(--border);padding:1.75rem}
+.rev-stars{color:var(--gold);font-size:.9rem;letter-spacing:.05em;margin-bottom:.85rem}
+.rev-text{font-size:.88rem;line-height:1.75;color:var(--muted);font-style:italic;margin-bottom:1.25rem;font-weight:300}
+.rev-author{display:flex;align-items:center;gap:.65rem}
+.rev-av{width:36px;height:36px;border-radius:50%;background:var(--paper);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.78rem;color:var(--red);font-family:var(--serif)}
+.rev-name{font-size:.85rem;font-weight:600;color:var(--ink)}
+.rev-tour-name{font-size:.72rem;color:var(--muted);font-weight:300;margin-top:.1rem}
+
+/* ── FOOTER ── */
+footer{background:var(--ink);color:rgba(250,248,243,.55);padding:3rem 2rem 1.5rem;display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:3rem}
+.ft-brand{font-family:var(--serif);font-size:1.3rem;font-weight:700;color:#fff;margin-bottom:.65rem}
+.ft-brand span{color:var(--red)}
+.ft-desc{font-size:.82rem;line-height:1.75;font-weight:300;max-width:240px}
+.ft-title{font-family:var(--mono);font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;color:rgba(250,248,243,.3);margin-bottom:.85rem}
+.ft-links{list-style:none;display:flex;flex-direction:column;gap:.5rem}
+.ft-links a{font-size:.82rem;color:rgba(250,248,243,.4);text-decoration:none;transition:color .2s;font-weight:300}
+.ft-links a:hover{color:rgba(250,248,243,.8)}
+
+/* ── MODAL CHI TIẾT TOUR ── */
+.modal-bg{position:fixed;inset:0;background:rgba(17,17,24,.65);z-index:500;display:none;align-items:center;justify-content:center;padding:1.5rem;backdrop-filter:blur(4px)}
+.modal-bg.open{display:flex}
+.modal{background:var(--card);width:100%;max-width:680px;max-height:90vh;overflow-y:auto;position:relative}
+.modal-close{position:absolute;top:1rem;right:1rem;background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--muted);z-index:10;transition:color .2s;line-height:1}
+.modal-close:hover{color:var(--ink)}
+.modal-img{width:100%;height:260px;object-fit:cover;display:block;filter:brightness(.85)}
+.modal-body{padding:2rem}
+.modal-dest{font-family:var(--mono);font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;color:var(--teal);margin-bottom:.4rem}
+.modal-name{font-family:var(--serif);font-size:1.6rem;font-weight:700;color:var(--ink);margin-bottom:1rem;line-height:1.2}
+.modal-metas{display:flex;gap:1.25rem;margin-bottom:1.5rem;flex-wrap:wrap}
+.modal-meta{font-size:.82rem;color:var(--muted);display:flex;align-items:center;gap:.35rem}
+.modal-section-title{font-weight:600;font-size:.88rem;color:var(--ink);margin-bottom:.65rem;display:flex;align-items:center;gap:.5rem}
+.modal-section{margin-bottom:1.5rem}
+.itinerary-day{border-left:2px solid var(--border);padding-left:1rem;margin-bottom:1rem;position:relative}
+.itinerary-day::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--red);position:absolute;left:-5px;top:4px}
+.itinerary-day-title{font-weight:600;font-size:.85rem;color:var(--ink);margin-bottom:.3rem}
+.itinerary-day-acts{list-style:none;display:flex;flex-direction:column;gap:.2rem}
+.itinerary-day-acts li{font-size:.8rem;color:var(--muted);font-weight:300;padding-left:.75rem;position:relative}
+.itinerary-day-acts li::before{content:'·';position:absolute;left:0;color:var(--red)}
+.modal-footer{display:flex;align-items:center;justify-content:space-between;padding:1.25rem 2rem;border-top:1px solid var(--border);background:var(--paper)}
+.modal-price{font-family:var(--serif);font-size:1.5rem;font-weight:700;color:var(--ink)}
+.modal-price sub{font-size:.75rem;font-weight:400;color:var(--muted);font-family:var(--font)}
+.btn-book-modal{background:var(--red);color:#fff;border:none;padding:1rem 2rem;font-family:var(--font);font-weight:700;font-size:.9rem;cursor:pointer;transition:background .2s}
+.btn-book-modal:hover{background:#a82d22}
+
+/* ── RESPONSIVE ── */
+@media(max-width:1024px){
+  #hero{grid-template-columns:1fr;padding:4rem 1.5rem}
+  .hero-right{display:none}
+  .tours-grid{grid-template-columns:1fr 1fr}
+  .guides-grid{grid-template-columns:1fr 1fr}
+  .reviews-grid{grid-template-columns:1fr}
+  footer{grid-template-columns:1fr 1fr;gap:2rem}
+}
+@media(max-width:640px){
+  nav{padding:.85rem 1rem}
+  .nav-links{display:none}
+  .tours-grid{grid-template-columns:1fr}
+  .guides-grid{grid-template-columns:1fr 1fr}
+  .search-wrap{flex-direction:column}
+  #tours,#guides,#reviews{padding:3rem 1rem}
+  .sec-header{flex-direction:column;gap:.75rem;align-items:flex-start}
+}
+</style>
+</head>
+<body>
+
+<!-- TOAST -->
+<div class="toast-wrap" id="toastWrap"></div>
+
+<!-- MODAL -->
+<div class="modal-bg" id="modalBg" onclick="closeModal(event)">
+  <div class="modal" id="modal">
+    <button class="modal-close" onclick="document.getElementById('modalBg').classList.remove('open')">✕</button>
+    <img class="modal-img" id="modalImg" src="" alt="">
+    <div class="modal-body">
+      <div class="modal-dest" id="modalDest"></div>
+      <div class="modal-name" id="modalName"></div>
+      <div class="modal-metas" id="modalMetas"></div>
+      <div class="modal-section">
+        <div class="modal-section-title">✈️ Bao gồm trong tour</div>
+        <div id="modalIncludes"></div>
+      </div>
+      <div class="modal-section">
+        <div class="modal-section-title">📅 Lịch trình chi tiết</div>
+        <div id="modalItinerary"></div>
+      </div>
+      <div class="modal-section" id="modalHighSection" style="display:none">
+        <div class="modal-section-title">⭐ Điểm nổi bật</div>
+        <ul class="tc-includes" id="modalHighlights"></ul>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <div>
+        <div style="font-size:.68rem;color:var(--muted)">Giá từ</div>
+        <div class="modal-price" id="modalPrice"></div>
+      </div>
+      <button class="btn-book-modal" id="modalBookBtn">🎒 Đặt tour này</button>
+    </div>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">Baggio<span>.</span>Travel</a>
+  <ul class="nav-links">
+    <li><a href="#tours">Tour</a></li>
+    <li><a href="#guides">HDV</a></li>
+    <li><a href="#reviews">Đánh giá</a></li>
+    <li><a href="admin.html">Admin</a></li>
+  </ul>
+  <a href="booking.html" class="nav-cta">Đặt tour ngay</a>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div>
+    <div class="hero-eyebrow">Tour trọn gói Việt Nam</div>
+    <h1 class="hero-title">Khám phá<br><em>Việt Nam</em><br>theo cách của bạn</h1>
+    <p class="hero-sub">Từ <strong>vé máy bay, khách sạn, hướng dẫn viên địa phương</strong> đến xe đón sân bay — chúng tôi lo tất cả.</p>
+    <div class="hero-stats">
+      <div><div class="stat-num" id="heroTourCount">—<span>+</span></div><div class="stat-label">Gói tour</div></div>
+      <div><div class="stat-num" id="heroGuideCount">—<span>+</span></div><div class="stat-label">HDV chuyên nghiệp</div></div>
+      <div><div class="stat-num">4.9<span>★</span></div><div class="stat-label">Đánh giá trung bình</div></div>
+    </div>
+    <div class="hero-btns">
+      <a href="#tours" class="btn-red">Xem tất cả tour →</a>
+      <a href="#guides" class="btn-outline">Gặp hướng dẫn viên</a>
+    </div>
+  </div>
+  <div class="hero-right">
+    <div class="hero-img-wrap">
+      <img class="hero-img" src="https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=800&q=80" alt="Hội An đêm">
+      <div class="hero-badge">
+        <div class="hb-num">63<span style="font-size:1rem">+</span></div>
+        <div class="hb-label">Tỉnh thành VN</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee" aria-hidden="true">
+  <div class="marquee-track" id="marqueeTrack">
+    <span class="marquee-item"><b>Hội An</b> · Phố Cổ & Ẩm Thực · </span>
+    <span class="marquee-item"><b>Hạ Long</b> · Du Thuyền · </span>
+    <span class="marquee-item"><b>Phú Quốc</b> · Resort 5★ · </span>
+    <span class="marquee-item"><b>Sa Pa</b> · Trekking & Bản Làng · </span>
+    <span class="marquee-item"><b>Đà Lạt</b> · Thành Phố Sương Mù · </span>
+    <span class="marquee-item"><b>Nha Trang</b> · Biển & Đảo · </span>
+    <span class="marquee-item"><b>Hội An</b> · Phố Cổ & Ẩm Thực · </span>
+    <span class="marquee-item"><b>Hạ Long</b> · Du Thuyền · </span>
+    <span class="marquee-item"><b>Phú Quốc</b> · Resort 5★ · </span>
+    <span class="marquee-item"><b>Sa Pa</b> · Trekking & Bản Làng · </span>
+    <span class="marquee-item"><b>Đà Lạt</b> · Thành Phố Sương Mù · </span>
+    <span class="marquee-item"><b>Nha Trang</b> · Biển & Đảo · </span>
+  </div>
+</div>
+
+<!-- SEARCH -->
+<div id="search-section">
+  <div class="search-wrap">
+    <div class="sf-group">
+      <label class="sf-label">Điểm đến</label>
+      <select class="sf-select" id="filterDest" onchange="filterTours()">
+        <option value="">Tất cả điểm đến</option>
+      </select>
+    </div>
+    <div class="sf-group">
+      <label class="sf-label">Vùng miền</label>
+      <select class="sf-select" id="filterRegion" onchange="filterTours()">
+        <option value="">Tất cả vùng</option>
+        <option value="north">Miền Bắc</option>
+        <option value="central">Miền Trung</option>
+        <option value="south">Miền Nam</option>
+      </select>
+    </div>
+    <div class="sf-group">
+      <label class="sf-label">Giá tối đa</label>
+      <select class="sf-select" id="filterPrice" onchange="filterTours()">
+        <option value="">Tất cả mức giá</option>
+        <option value="2000000">Dưới 2 triệu</option>
+        <option value="5000000">Dưới 5 triệu</option>
+        <option value="10000000">Dưới 10 triệu</option>
+        <option value="20000000">Dưới 20 triệu</option>
+      </select>
+    </div>
+    <div class="sf-group">
+      <label class="sf-label">Số ngày</label>
+      <select class="sf-select" id="filterDays" onchange="filterTours()">
+        <option value="">Bất kỳ</option>
+        <option value="2">2–3 ngày</option>
+        <option value="4">4–5 ngày</option>
+        <option value="6">6+ ngày</option>
+      </select>
+    </div>
+    <button class="btn-search" onclick="resetFilters()">↺ Đặt lại</button>
+  </div>
+</div>
+
+<!-- TOURS -->
+<section id="tours">
+  <div class="sec-header">
+    <div>
+      <div class="sec-eyebrow">Gói tour</div>
+      <h2 class="sec-title">Chọn tour<br>phù hợp</h2>
+    </div>
+    <div class="sec-count" id="tourCountLabel">Đang tải...</div>
+  </div>
+  <div class="filter-bar" id="filterBar">
+    <button class="fchip active" onclick="setRegionFilter('',this)">Tất cả</button>
+    <button class="fchip" onclick="setRegionFilter('north',this)">🏔 Miền Bắc</button>
+    <button class="fchip" onclick="setRegionFilter('central',this)">🏖 Miền Trung</button>
+    <button class="fchip" onclick="setRegionFilter('south',this)">🌊 Miền Nam</button>
+  </div>
+  <div class="tours-grid" id="toursGrid">
+    <!-- Skeleton loading -->
+    <div class="skel-card"><div class="skel-img skeleton"></div><div class="skel-body"><div class="skel-line short skeleton"></div><div class="skel-line title skeleton"></div><div class="skel-line med skeleton"></div><div class="skel-line long skeleton"></div><div class="skel-line long skeleton"></div></div></div>
+    <div class="skel-card"><div class="skel-img skeleton"></div><div class="skel-body"><div class="skel-line short skeleton"></div><div class="skel-line title skeleton"></div><div class="skel-line med skeleton"></div><div class="skel-line long skeleton"></div><div class="skel-line long skeleton"></div></div></div>
+    <div class="skel-card"><div class="skel-img skeleton"></div><div class="skel-body"><div class="skel-line short skeleton"></div><div class="skel-line title skeleton"></div><div class="skel-line med skeleton"></div><div class="skel-line long skeleton"></div><div class="skel-line long skeleton"></div></div></div>
+  </div>
+</section>
+
+<!-- GUIDES -->
+<section id="guides">
+  <div class="sec-header">
+    <div>
+      <div class="sec-eyebrow">Hướng dẫn viên</div>
+      <h2 class="sec-title">Đội ngũ HDV<br>địa phương</h2>
+    </div>
+  </div>
+  <div class="guides-grid" id="guidesGrid">
+    <!-- skeleton -->
+    <div class="skel-card" style="padding:1.5rem;text-align:center"><div style="width:64px;height:64px;border-radius:50%;margin:0 auto 1rem" class="skeleton"></div><div class="skel-line med skeleton" style="margin:0 auto .5rem"></div><div class="skel-line short skeleton" style="margin:0 auto"></div></div>
+    <div class="skel-card" style="padding:1.5rem;text-align:center"><div style="width:64px;height:64px;border-radius:50%;margin:0 auto 1rem" class="skeleton"></div><div class="skel-line med skeleton" style="margin:0 auto .5rem"></div><div class="skel-line short skeleton" style="margin:0 auto"></div></div>
+    <div class="skel-card" style="padding:1.5rem;text-align:center"><div style="width:64px;height:64px;border-radius:50%;margin:0 auto 1rem" class="skeleton"></div><div class="skel-line med skeleton" style="margin:0 auto .5rem"></div><div class="skel-line short skeleton" style="margin:0 auto"></div></div>
+    <div class="skel-card" style="padding:1.5rem;text-align:center"><div style="width:64px;height:64px;border-radius:50%;margin:0 auto 1rem" class="skeleton"></div><div class="skel-line med skeleton" style="margin:0 auto .5rem"></div><div class="skel-line short skeleton" style="margin:0 auto"></div></div>
+  </div>
+</section>
+
+<!-- REVIEWS -->
+<section id="reviews">
+  <div class="sec-header">
+    <div>
+      <div class="sec-eyebrow">Đánh giá</div>
+      <h2 class="sec-title">Khách hàng nói gì</h2>
+    </div>
+    <div style="font-family:var(--mono);font-size:.65rem;color:var(--muted)">★★★★★ 4.9 / 5</div>
+  </div>
+  <div class="reviews-grid" id="reviewsGrid">
+    <div class="rev-card"><div class="skel-line long skeleton" style="margin-bottom:1rem;height:80px"></div><div style="display:flex;gap:.65rem;align-items:center"><div style="width:36px;height:36px;border-radius:50%" class="skeleton"></div><div style="flex:1"><div class="skel-line med skeleton" style="margin-bottom:.3rem"></div><div class="skel-line short skeleton"></div></div></div></div>
+    <div class="rev-card"><div class="skel-line long skeleton" style="margin-bottom:1rem;height:80px"></div><div style="display:flex;gap:.65rem;align-items:center"><div style="width:36px;height:36px;border-radius:50%" class="skeleton"></div><div style="flex:1"><div class="skel-line med skeleton" style="margin-bottom:.3rem"></div><div class="skel-line short skeleton"></div></div></div></div>
+    <div class="rev-card"><div class="skel-line long skeleton" style="margin-bottom:1rem;height:80px"></div><div style="display:flex;gap:.65rem;align-items:center"><div style="width:36px;height:36px;border-radius:50%" class="skeleton"></div><div style="flex:1"><div class="skel-line med skeleton" style="margin-bottom:.3rem"></div><div class="skel-line short skeleton"></div></div></div></div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div>
+    <div class="ft-brand">Baggio<span>.</span>Travel</div>
+    <p class="ft-desc">Nền tảng đặt tour du lịch Việt Nam trọn gói — từ vé máy bay, khách sạn đến hướng dẫn viên địa phương.</p>
+  </div>
+  <div><div class="ft-title">Điểm đến</div><ul class="ft-links" id="ftDestLinks"><li><a href="#">Hội An</a></li><li><a href="#">Hạ Long</a></li><li><a href="#">Phú Quốc</a></li><li><a href="#">Sa Pa</a></li><li><a href="#">Đà Lạt</a></li></ul></div>
+  <div><div class="ft-title">Dịch vụ</div><ul class="ft-links"><li><a href="booking.html">Đặt tour</a></li><li><a href="chatbot.html">Tư vấn AI</a></li><li><a href="admin.html">Quản lý</a></li></ul></div>
+  <div><div class="ft-title">Hỗ trợ</div><ul class="ft-links"><li><a href="#">Hotline: 1900 xxxx</a></li><li><a href="#">Chính sách huỷ</a></li><li><a href="#">FAQ</a></li></ul></div>
+</footer>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// SUPABASE CLIENT
+// ══════════════════════════════════════════════════════════════
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON)
+
+// ══════════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════════
+let allTours  = []
+let allGuides = []
+let currentTour = null
+
+// ══════════════════════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════════════════════
+const fmt   = n  => Number(n).toLocaleString('vi-VN')
+const stars = n  => '★'.repeat(n) + '☆'.repeat(5 - n)
+const initials = name => name.split(' ').slice(-2).map(w => w[0]).join('').toUpperCase()
+const regionLabel = r => ({north:'Miền Bắc',central:'Miền Trung',south:'Miền Nam'}[r] || r)
+
+function toast(msg, type = 'ok') {
+  const w = document.getElementById('toastWrap')
+  const t = document.createElement('div')
+  t.className = 'toast'
+  t.style.borderLeft = `3px solid ${type === 'err' ? '#c5372b' : '#1a6b5e'}`
+  t.textContent = msg
+  w.appendChild(t)
+  setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity .3s'; setTimeout(() => t.remove(), 300) }, 3000)
+}
+
+// ══════════════════════════════════════════════════════════════
+// LOAD TOURS
+// ══════════════════════════════════════════════════════════════
+async function loadTours() {
+  try {
+    const { data, error } = await sb
+      .from('tours')
+      .select(`
+        id, name, slug, destination, region,
+        duration_days, duration_nights,
+        base_price, max_pax, cover_image,
+        includes, itinerary, highlights,
+        status,
+        tour_schedules ( available_slots, depart_date, status )
+      `)
+      .eq('status', 'ACTIVE')
+      .order('base_price', { ascending: true })
+
+    if (error) throw error
+
+    allTours = data || []
+    document.getElementById('heroTourCount').innerHTML = allTours.length + '<span>+</span>'
+    renderTours(allTours)
+    populateDestFilter()
+  } catch (err) {
+    console.error('loadTours:', err)
+    document.getElementById('toursGrid').innerHTML = `
+      <div class="state-box">
+        <div class="state-icon">⚠️</div>
+        <div class="state-title">Không tải được danh sách tour</div>
+        <div class="state-sub">Kiểm tra lại kết nối Supabase hoặc thử lại sau.</div>
+        <button class="state-retry" onclick="loadTours()">Thử lại</button>
+      </div>`
+    toast('Lỗi tải dữ liệu tour', 'err')
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// RENDER TOURS
+// ══════════════════════════════════════════════════════════════
+function renderTours(tours) {
+  const grid = document.getElementById('toursGrid')
+  document.getElementById('tourCountLabel').textContent = `${tours.length} tour`
+
+  if (!tours.length) {
+    grid.innerHTML = `<div class="state-box">
+      <div class="state-icon">🗺️</div>
+      <div class="state-title">Không tìm thấy tour</div>
+      <div class="state-sub">Thử thay đổi bộ lọc hoặc xem tất cả tour.</div>
+      <button class="state-retry" onclick="resetFilters()">Xem tất cả</button>
+    </div>`
+    return
+  }
+
+  grid.innerHTML = tours.map(t => {
+    const inc   = t.includes || {}
+    const schedOpen = (t.tour_schedules || []).filter(s => s.status === 'OPEN' && s.available_slots > 0)
+    const hasSoon   = schedOpen.length > 0
+    const incList   = buildIncludesList(inc)
+    const badgeHtml = hasSoon ? `<div class="tc-badge">Còn ${schedOpen[0].available_slots} chỗ</div>` : ''
+
+    return `
+    <article class="tour-card" onclick="openModal('${t.id}')">
+      <div class="tc-img-wrap">
+        <img class="tc-img"
+          src="${t.cover_image || 'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=600&q=70'}"
+          alt="${t.name}" loading="lazy"
+          onerror="this.src='https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=600&q=70'">
+        ${badgeHtml}
+      </div>
+      <div class="tc-body">
+        <div class="tc-dest">${t.destination} · ${regionLabel(t.region)}</div>
+        <div class="tc-name">${t.name}</div>
+        <div class="tc-meta">
+          <span>📅 ${t.duration_days}N${t.duration_nights}Đ</span>
+          <span>👥 Tối đa ${t.max_pax} khách</span>
+        </div>
+        <ul class="tc-includes">${incList}</ul>
+        <div class="tc-footer">
+          <div>
+            <span class="tc-price-from">Từ</span>
+            <div class="tc-price">${fmt(t.base_price)} <sub>đ/người</sub></div>
+          </div>
+          <button class="btn-book" onclick="event.stopPropagation();openModal('${t.id}')">Xem tour</button>
+        </div>
+      </div>
+    </article>`
+  }).join('')
+}
+
+function buildIncludesList(inc) {
+  const items = []
+  if (inc.flights)  items.push('Vé máy bay khứ hồi')
+  if (inc.hotel)    items.push(`Khách sạn ${inc.hotel === '5-star-beachfront' ? '5★ beachfront' : inc.hotel === '4-star-cruise' ? 'du thuyền 4★' : inc.hotel}`)
+  if (inc.guide)    items.push('Hướng dẫn viên địa phương')
+  if (inc.transfer) items.push('Xe đưa đón sân bay')
+  if (inc.meals)    items.push(Array.isArray(inc.meals) ? inc.meals.join(', ') : inc.meals)
+  return items.slice(0, 4).map(i => `<li>${i}</li>`).join('')
+}
+
+// ══════════════════════════════════════════════════════════════
+// FILTERS
+// ══════════════════════════════════════════════════════════════
+let activeRegion = ''
+
+function populateDestFilter() {
+  const dests = [...new Set(allTours.map(t => t.destination))].sort()
+  const sel   = document.getElementById('filterDest')
+  dests.forEach(d => { const o = document.createElement('option'); o.value = d; o.textContent = d; sel.appendChild(o) })
+}
+
+function setRegionFilter(region, btn) {
+  activeRegion = region
+  document.querySelectorAll('.fchip').forEach(b => b.classList.remove('active'))
+  btn.classList.add('active')
+  document.getElementById('filterRegion').value = region
+  filterTours()
+}
+
+function filterTours() {
+  const dest  = document.getElementById('filterDest').value
+  const region= document.getElementById('filterRegion').value || activeRegion
+  const price = document.getElementById('filterPrice').value
+  const days  = document.getElementById('filterDays').value
+
+  let filtered = allTours.filter(t => {
+    if (dest   && t.destination !== dest) return false
+    if (region && t.region !== region)    return false
+    if (price  && t.base_price > +price)  return false
+    if (days) {
+      if (days === '2' && !(t.duration_days >= 2 && t.duration_days <= 3)) return false
+      if (days === '4' && !(t.duration_days >= 4 && t.duration_days <= 5)) return false
+      if (days === '6' && t.duration_days < 6)                              return false
+    }
+    return true
+  })
+  renderTours(filtered)
+}
+
+function resetFilters() {
+  activeRegion = ''
+  document.getElementById('filterDest').value   = ''
+  document.getElementById('filterRegion').value = ''
+  document.getElementById('filterPrice').value  = ''
+  document.getElementById('filterDays').value   = ''
+  document.querySelectorAll('.fchip').forEach((b, i) => b.classList.toggle('active', i === 0))
+  renderTours(allTours)
+}
+
+// ══════════════════════════════════════════════════════════════
+// MODAL CHI TIẾT
+// ══════════════════════════════════════════════════════════════
+async function openModal(tourId) {
+  currentTour = allTours.find(t => t.id === tourId)
+  if (!currentTour) return
+  const t = currentTour
+  const inc = t.includes || {}
+
+  document.getElementById('modalImg').src     = t.cover_image || ''
+  document.getElementById('modalImg').alt     = t.name
+  document.getElementById('modalDest').textContent  = `${t.destination} · ${regionLabel(t.region)}`
+  document.getElementById('modalName').textContent  = t.name
+  document.getElementById('modalPrice').innerHTML   = `${fmt(t.base_price)} <sub>đ/người</sub>`
+
+  document.getElementById('modalMetas').innerHTML = `
+    <span class="modal-meta">📅 ${t.duration_days} ngày ${t.duration_nights} đêm</span>
+    <span class="modal-meta">👥 Tối đa ${t.max_pax} khách</span>
+    <span class="modal-meta">📍 ${t.destination}</span>`
+
+  // Includes
+  const incItems = buildIncludesList(inc).split('</li><li>').map(s => s.replace(/<\/?li>/g, '')).filter(Boolean)
+  document.getElementById('modalIncludes').innerHTML =
+    `<ul class="tc-includes">${incItems.map(i => `<li>${i}</li>`).join('')}</ul>`
+
+  // Itinerary
+  const itin = Array.isArray(t.itinerary) ? t.itinerary : []
+  document.getElementById('modalItinerary').innerHTML = itin.map(day => `
+    <div class="itinerary-day">
+      <div class="itinerary-day-title">Ngày ${day.day}: ${day.title}</div>
+      <ul class="itinerary-day-acts">${(day.activities || []).map(a => `<li>${a}</li>`).join('')}</ul>
+    </div>`).join('')
+
+  // Highlights
+  const hl = t.highlights || []
+  if (hl.length) {
+    document.getElementById('modalHighSection').style.display = 'block'
+    document.getElementById('modalHighlights').innerHTML = hl.map(h => `<li>${h}</li>`).join('')
+  } else {
+    document.getElementById('modalHighSection').style.display = 'none'
+  }
+
+  document.getElementById('modalBookBtn').onclick = () => {
+    window.location.href = `booking.html?tour=${t.slug}`
+  }
+
+  document.getElementById('modalBg').classList.add('open')
+  document.body.style.overflow = 'hidden'
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('modalBg')) {
+    document.getElementById('modalBg').classList.remove('open')
+    document.body.style.overflow = ''
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// LOAD GUIDES
+// ══════════════════════════════════════════════════════════════
+async function loadGuides() {
+  try {
+    const { data, error } = await sb
+      .from('guides')
+      .select('id,full_name,phone,languages,specialties,regions,bio,rating_avg,total_tours,avatar_url,status')
+      .eq('status', 'ACTIVE')
+      .order('rating_avg', { ascending: false })
+      .limit(8)
+
+    if (error) throw error
+    allGuides = data || []
+    document.getElementById('heroGuideCount').innerHTML = allGuides.length + '<span>+</span>'
+    renderGuides(allGuides)
+  } catch (err) {
+    console.error('loadGuides:', err)
+    document.getElementById('guidesGrid').innerHTML = '<div class="state-box"><div class="state-title">Không tải được danh sách HDV</div></div>'
+  }
+}
+
+function renderGuides(guides) {
+  const langMap = {vi:'🇻🇳 Việt',en:'🇬🇧 Anh',zh:'🇨🇳 Trung',ko:'🇰🇷 Hàn',ja:'🇯🇵 Nhật',fr:'🇫🇷 Pháp'}
+  document.getElementById('guidesGrid').innerHTML = guides.map(g => {
+    const langs = (g.languages || ['vi']).map(l => langMap[l] || l).join(' · ')
+    const avatarContent = g.avatar_url
+      ? `<img src="${g.avatar_url}" alt="${g.full_name}" onerror="this.parentElement.textContent='${initials(g.full_name)}'">` 
+      : initials(g.full_name)
+    return `
+    <div class="guide-card">
+      <div class="guide-avatar">${avatarContent}</div>
+      <div class="guide-name">${g.full_name}</div>
+      <div class="guide-langs">${langs}</div>
+      <div class="guide-stats">
+        <div class="gs"><div class="gs-val">${g.total_tours}</div><div class="gs-lbl">Tour</div></div>
+        <div class="gs"><div class="gs-val">${Number(g.rating_avg).toFixed(1)}</div><div class="gs-lbl">Sao</div></div>
+      </div>
+      <div class="guide-rating">${'★'.repeat(Math.round(g.rating_avg))}${'☆'.repeat(5 - Math.round(g.rating_avg))}</div>
+    </div>`
+  }).join('')
+}
+
+// ══════════════════════════════════════════════════════════════
+// LOAD REVIEWS
+// ══════════════════════════════════════════════════════════════
+async function loadReviews() {
+  try {
+    const { data, error } = await sb
+      .from('reviews')
+      .select('id,reviewer_name,rating,comment,tour_id,tours(name)')
+      .eq('is_published', true)
+      .order('created_at', { ascending: false })
+      .limit(6)
+
+    if (error) throw error
+    renderReviews(data || [])
+  } catch (err) {
+    console.error('loadReviews:', err)
+  }
+}
+
+function renderReviews(reviews) {
+  if (!reviews.length) { document.getElementById('reviewsGrid').innerHTML = ''; return }
+  document.getElementById('reviewsGrid').innerHTML = reviews.map(r => `
+    <div class="rev-card">
+      <div class="rev-stars">${'★'.repeat(r.rating)}${'☆'.repeat(5-r.rating)}</div>
+      <p class="rev-text">"${r.comment || 'Trải nghiệm tuyệt vời!'}"</p>
+      <div class="rev-author">
+        <div class="rev-av">${initials(r.reviewer_name)}</div>
+        <div>
+          <div class="rev-name">${r.reviewer_name}</div>
+          <div class="rev-tour-name">${r.tours?.name || 'Tour Baggio Travel'}</div>
+        </div>
+      </div>
+    </div>`).join('')
+}
+
+// ══════════════════════════════════════════════════════════════
+// FOOTER DYNAMIC DESTINATIONS
+// ══════════════════════════════════════════════════════════════
+function updateFooterDests() {
+  const dests = [...new Set(allTours.map(t => t.destination))].slice(0, 6)
+  if (dests.length) {
+    document.getElementById('ftDestLinks').innerHTML =
+      dests.map(d => `<li><a href="#tours" onclick="document.getElementById('filterDest').value='${d}';filterTours()">${d}</a></li>`).join('')
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// INIT — chạy tất cả khi trang load
+// ══════════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', async () => {
+  await Promise.all([loadTours(), loadGuides(), loadReviews()])
+  updateFooterDests()
+  toast('✅ Dữ liệu đã tải từ Supabase')
+})
+
+// Đóng modal bằng Escape
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    document.getElementById('modalBg').classList.remove('open')
+    document.body.style.overflow = ''
+  }
+})
+</script>
+</body>
+</html>

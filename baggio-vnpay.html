@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Baggio Travel — VNPay Integration</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#07090c;--s1:#0c1018;--s2:#111620;--s3:#161e2c;--border:#1a2438;--border2:#223060;
+  --text:#ccd8f0;--text2:#486090;--text3:#1e3060;
+  --vnpay:#005baa;--vnpay2:#0070d4;--vdim:rgba(0,91,170,.12);--vbrd:rgba(0,91,170,.35);
+  --green:#22c97a;--gdim:rgba(34,201,122,.1);--gbrd:rgba(34,201,122,.25);
+  --blue:#4d9eff;--bdim:rgba(77,158,255,.1);--bbrd:rgba(77,158,255,.25);
+  --amber:#f0a830;--adim:rgba(240,168,48,.1);--abrd:rgba(240,168,48,.25);
+  --red:#f05252;--rdim:rgba(240,82,82,.1);--rbrd:rgba(240,82,82,.25);
+  --font:'Be Vietnam Pro',sans-serif;--mono:'Space Mono',monospace;
+}
+html,body{height:100%}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:13px;line-height:1.6;display:grid;grid-template-columns:210px 1fr;overflow:hidden}
+.sb{background:var(--s1);border-right:1px solid var(--border);height:100vh;display:flex;flex-direction:column;overflow-y:auto}
+.sb-top{padding:1rem;border-bottom:1px solid var(--border)}
+.sb-logo{font-family:var(--mono);font-size:.82rem;font-weight:700;color:var(--text)}
+.sb-logo span{color:var(--vnpay2)}
+.sb-sub{font-size:.58rem;color:var(--text3);font-family:var(--mono);letter-spacing:.1em;margin-top:.2rem;text-transform:uppercase}
+.sb-nav{flex:1;padding:.5rem 0}
+.sb-g{font-family:var(--mono);font-size:.55rem;letter-spacing:.18em;text-transform:uppercase;color:var(--text3);padding:.6rem 1rem .2rem}
+.sb-a{display:flex;align-items:center;gap:.6rem;padding:.42rem 1rem;font-size:.76rem;color:var(--text2);cursor:pointer;border-left:2px solid transparent;transition:all .15s}
+.sb-a:hover{color:var(--text);background:rgba(255,255,255,.03)}
+.sb-a.on{color:var(--vnpay2);border-left-color:var(--vnpay2);background:var(--vdim)}
+.main{display:flex;flex-direction:column;height:100vh;overflow:hidden}
+.topbar{background:var(--s1);border-bottom:1px solid var(--border);padding:.75rem 1.5rem;display:flex;align-items:center;gap:.75rem;flex-shrink:0}
+.tb-title{font-size:.9rem;font-weight:600;color:var(--text)}
+.tb-sub{font-size:.7rem;color:var(--text3);font-family:var(--mono)}
+.tb-right{margin-left:auto;display:flex;gap:.4rem}
+.tb-pill{font-family:var(--mono);font-size:.58rem;letter-spacing:.08em;text-transform:uppercase;padding:.25rem .65rem;border-radius:20px;border:1px solid var(--border);background:none;color:var(--text3);cursor:pointer}
+.tb-pill.on{background:var(--vdim);border-color:var(--vbrd);color:var(--vnpay2)}
+.panels{flex:1;overflow-y:auto;padding:1.5rem}
+.pnl{display:none}.pnl.on{display:block}
+.cw{border-radius:7px;border:1px solid var(--border);overflow:hidden;margin:.75rem 0}
+.ct{background:var(--s3);border-bottom:1px solid var(--border);padding:.5rem 1rem;display:flex;align-items:center;justify-content:space-between}
+.cf{font-family:var(--mono);font-size:.63rem;color:var(--text2)}
+.cpb{font-family:var(--mono);font-size:.57rem;color:var(--text3);background:none;border:1px solid var(--border);padding:.2rem .5rem;cursor:pointer;border-radius:3px;transition:all .15s;text-transform:uppercase;letter-spacing:.05em}
+.cpb:hover{border-color:var(--border2);color:var(--text2)}
+.cpb.ok{color:var(--green);border-color:var(--green)}
+pre{background:var(--s1);padding:1rem;overflow-x:auto;font-family:var(--mono);font-size:.73rem;line-height:1.8;color:var(--text2);margin:0}
+pre::-webkit-scrollbar{height:3px}pre::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.kw{color:#c084fc}.str{color:#34d399}.cmt{color:var(--text3);font-style:italic}.fn{color:#60a5fa}.type{color:#fb923c}.num{color:#fbbf24}.key{color:#2dd4bf}
+.al{border-radius:7px;padding:.85rem 1rem;margin:.75rem 0;display:flex;gap:.7rem;font-size:.81rem;line-height:1.65}
+.al.blue{background:var(--bdim);border:1px solid var(--bbrd)}
+.al.green{background:var(--gdim);border:1px solid var(--gbrd)}
+.al.amber{background:var(--adim);border:1px solid var(--abrd)}
+.al.red{background:var(--rdim);border:1px solid var(--rbrd)}
+.al.vnpay{background:var(--vdim);border:1px solid var(--vbrd)}
+.at{font-weight:600;margin-bottom:.15rem}
+.at.green{color:var(--green)}.at.blue{color:var(--blue)}.at.amber{color:var(--amber)}.at.vnpay{color:var(--vnpay2)}.at.red{color:var(--red)}
+/* flow */
+.flow{display:flex;align-items:center;overflow-x:auto;margin:.75rem 0;gap:0;padding:.5rem 0}
+.fstep{display:flex;flex-direction:column;align-items:center;gap:.4rem;min-width:88px}
+.ficon{width:40px;height:40px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+.flabel{font-size:.66rem;font-weight:500;color:var(--text2);text-align:center;line-height:1.3;font-family:var(--mono)}
+.farrow{color:var(--text3);font-size:.95rem;margin:0 .15rem;padding-bottom:.9rem;flex-shrink:0}
+/* env table */
+.etbl{width:100%;border-collapse:collapse;margin:.75rem 0}
+.etbl th{font-family:var(--mono);font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);padding:.5rem .85rem;text-align:left;border-bottom:1px solid var(--border);background:var(--s2);font-weight:400}
+.etbl td{padding:.55rem .85rem;border-bottom:1px solid rgba(255,255,255,.04);font-size:.78rem;vertical-align:top}
+.etbl tr:last-child td{border-bottom:none}
+.etbl tr:hover td{background:rgba(255,255,255,.02)}
+.ek{font-family:var(--mono);font-size:.7rem;color:var(--key)}
+.ev{font-family:var(--mono);font-size:.68rem;color:var(--text3)}
+.ed{font-size:.76rem;color:var(--text2);font-weight:300}
+/* compare */
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:.75rem 0}
+.cmp-card{background:var(--s2);border:1px solid var(--border);border-radius:7px;padding:1rem}
+.cmp-title{font-weight:600;font-size:.88rem;margin-bottom:.75rem;display:flex;align-items:center;gap:.5rem}
+.cmp-row{display:flex;justify-content:space-between;padding:.4rem 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:.78rem}
+.cmp-row:last-child{border-bottom:none}
+.cmp-label{color:var(--text2);font-weight:300}
+.cmp-val{font-weight:500;color:var(--text);text-align:right}
+/* checklist */
+.chklist{display:flex;flex-direction:column;gap:.35rem}
+.chi{display:flex;align-items:flex-start;gap:.7rem;padding:.4rem 0;border-bottom:1px solid rgba(255,255,255,.04);cursor:pointer;font-size:.81rem}
+.chi:last-child{border-bottom:none}
+.chb{width:17px;height:17px;border-radius:3px;border:1.5px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.62rem;margin-top:.1rem;transition:all .2s}
+.chb.done{background:var(--green);border-color:var(--green);color:#07090c}
+.cht{flex:1;color:var(--text2);line-height:1.5}
+.prog{margin-top:.75rem;font-family:var(--mono);font-size:.62rem;color:var(--text3);padding:.45rem .75rem;background:var(--s2);border-radius:5px;display:flex;justify-content:space-between}
+/* demo */
+.demo-wrap{background:var(--s2);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin:.75rem 0}
+.demo-header{background:var(--s3);border-bottom:1px solid var(--border);padding:.65rem 1rem;display:flex;align-items:center;gap:.6rem}
+.demo-dot{width:9px;height:9px;border-radius:50%}
+.demo-title{font-family:var(--mono);font-size:.68rem;color:var(--text2);margin-left:.4rem}
+.demo-body{padding:1.25rem;display:grid;grid-template-columns:1fr 1fr;gap:1.25rem}
+.demo-form{}
+.demo-result{background:var(--s3);border:1px solid var(--border);border-radius:6px;padding:.9rem}
+.dlabel{font-family:var(--mono);font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);display:block;margin-bottom:.35rem}
+.dinput,.dselect{width:100%;background:var(--s3);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:.76rem;padding:.52rem .75rem;outline:none;border-radius:5px;transition:border-color .2s;-webkit-appearance:none;margin-bottom:.85rem}
+.dinput:focus,.dselect:focus{border-color:var(--vnpay2)}
+.dselect option{background:var(--s2)}
+.dbtn{width:100%;background:var(--vnpay);color:#fff;border:none;padding:.7rem;font-family:var(--font);font-weight:700;font-size:.85rem;cursor:pointer;border-radius:5px;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:.45rem}
+.dbtn:hover{background:var(--vnpay2);transform:translateY(-1px)}
+.dbtn:disabled{background:var(--border);cursor:not-allowed;transform:none}
+.dresult-title{font-family:var(--mono);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:.65rem}
+.djson{font-family:var(--mono);font-size:.68rem;line-height:1.7;color:var(--text2);white-space:pre-wrap;word-break:break-all}
+.dstatus{display:flex;align-items:center;gap:.45rem;padding:.45rem .7rem;border-radius:5px;font-family:var(--mono);font-size:.68rem;margin-bottom:.65rem}
+.ds-loading{background:var(--adim);border:1px solid var(--abrd);color:var(--amber)}
+.ds-ok{background:var(--gdim);border:1px solid var(--gbrd);color:var(--green)}
+.ds-err{background:var(--rdim);border:1px solid var(--rbrd);color:var(--red)}
+/* rc */
+.rc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem;margin:.75rem 0}
+.rc{background:var(--s2);border:1px solid var(--border);border-radius:5px;padding:.7rem}
+.rc-code{font-family:var(--mono);font-size:.8rem;font-weight:700;margin-bottom:.2rem}
+.rc-msg{font-size:.7rem;color:var(--text2);font-weight:300;line-height:1.5}
+.rc-ok{color:var(--green)}.rc-warn{color:var(--amber)}.rc-err{color:var(--red)}
+@media(max-width:768px){body{grid-template-columns:1fr}.sb{display:none}.compare,.demo-body,.rc-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<aside class="sb">
+  <div class="sb-top">
+    <div class="sb-logo">Baggio<span>.</span>VNPay</div>
+    <div class="sb-sub">VNPay API · Node.js</div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-g">Tổng quan</div>
+    <div class="sb-a on" onclick="sw('overview',this)">📋 Giới thiệu & So sánh</div>
+    <div class="sb-a" onclick="sw('flow',this)">🔄 Luồng thanh toán</div>
+    <div class="sb-a" onclick="sw('env',this)">🔑 Credentials & Env</div>
+    <div class="sb-g">Tích hợp</div>
+    <div class="sb-a" onclick="sw('signature',this)">🔐 Tạo Signature</div>
+    <div class="sb-a" onclick="sw('create',this)">💳 Tạo đơn thanh toán</div>
+    <div class="sb-a" onclick="sw('webhook',this)">🔔 Webhook IPN</div>
+    <div class="sb-a" onclick="sw('refund',this)">↩️ Hoàn tiền</div>
+    <div class="sb-g">Tool</div>
+    <div class="sb-a" onclick="sw('demo',this)">🧪 Demo Simulator</div>
+    <div class="sb-a" onclick="sw('codes',this)">📊 Mã kết quả</div>
+    <div class="sb-a" onclick="sw('checklist',this)">☑️ Checklist</div>
+  </nav>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div class="tb-title">VNPay Payment API Integration</div>
+      <div class="tb-sub">VNPay v2 · HMAC-SHA512 · Node.js · Sandbox → Production</div>
+    </div>
+    <div class="tb-right">
+      <span class="tb-pill on">VNPay v2</span>
+      <span class="tb-pill">HMAC-SHA512</span>
+    </div>
+  </div>
+
+  <div class="panels">
+
+    <!-- OVERVIEW -->
+    <div class="pnl on" id="pnl-overview">
+      <div class="al vnpay">
+        <div>💳</div>
+        <div><div class="at vnpay">Tại sao cần thêm VNPay bên cạnh MoMo?</div>
+        VNPay hỗ trợ thanh toán qua <strong>ATM nội địa, thẻ Visa/Master/JCB và QR Pay</strong> — phủ rộng hơn MoMo với khách hàng doanh nghiệp và người dùng không có ví điện tử. Hai cổng bổ sung cho nhau hoàn hảo.</div>
+      </div>
+      <div class="compare">
+        <div class="cmp-card" style="border-color:rgba(0,91,170,.3)">
+          <div class="cmp-title">💳 VNPay</div>
+          <div class="cmp-row"><span class="cmp-label">Phương thức</span><span class="cmp-val">ATM · Visa · Master · JCB · QR</span></div>
+          <div class="cmp-row"><span class="cmp-label">Phí giao dịch</span><span class="cmp-val">0.5–1.1% tuỳ loại thẻ</span></div>
+          <div class="cmp-row"><span class="cmp-label">Hạn mức</span><span class="cmp-val">Đến 200M/giao dịch</span></div>
+          <div class="cmp-row"><span class="cmp-label">Signature</span><span class="cmp-val">HMAC-SHA512</span></div>
+          <div class="cmp-row"><span class="cmp-label">Redirect</span><span class="cmp-val">Bắt buộc (không deeplink)</span></div>
+          <div class="cmp-row"><span class="cmp-label">Đối tượng</span><span class="cmp-val">Doanh nghiệp · Thẻ ngân hàng</span></div>
+        </div>
+        <div class="cmp-card" style="border-color:rgba(255,126,0,.3)">
+          <div class="cmp-title">📱 MoMo (đã tích hợp)</div>
+          <div class="cmp-row"><span class="cmp-label">Phương thức</span><span class="cmp-val">Ví MoMo · ATM · Visa · QR</span></div>
+          <div class="cmp-row"><span class="cmp-label">Phí giao dịch</span><span class="cmp-val">0.6–1.5% tuỳ gói</span></div>
+          <div class="cmp-row"><span class="cmp-label">Hạn mức</span><span class="cmp-val">Đến 50M/giao dịch</span></div>
+          <div class="cmp-row"><span class="cmp-label">Signature</span><span class="cmp-val">HMAC-SHA256</span></div>
+          <div class="cmp-row"><span class="cmp-label">Redirect</span><span class="cmp-val">payUrl + deeplink app</span></div>
+          <div class="cmp-row"><span class="cmp-label">Đối tượng</span><span class="cmp-val">Cá nhân · Ví điện tử phổ biến</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FLOW -->
+    <div class="pnl" id="pnl-flow">
+      <div class="al blue"><div>ℹ️</div><div><div class="at blue">Điểm khác biệt lớn nhất so với MoMo</div>VNPay <strong>không có webhook IPN bắt buộc</strong> — kết quả thanh toán được trả về qua URL redirect. Tuy nhiên, bạn <strong>phải dùng cả hai</strong>: redirect URL để hiển thị kết quả cho user, và query API để verify phía server trước khi cập nhật DB.</div></div>
+      <div class="flow">
+        <div class="fstep"><div class="ficon" style="background:var(--gdim);border:1px solid var(--gbrd)">👤</div><div class="flabel">User nhấn<br>Thanh toán</div></div>
+        <div class="farrow">→</div>
+        <div class="fstep"><div class="ficon" style="background:var(--bdim);border:1px solid var(--bbrd)">⚙️</div><div class="flabel">Server tạo<br>payUrl</div></div>
+        <div class="farrow">→</div>
+        <div class="fstep"><div class="ficon" style="background:var(--vdim);border:1px solid var(--vbrd)">💳</div><div class="flabel">Redirect sang<br>VNPay.vn</div></div>
+        <div class="farrow">→</div>
+        <div class="fstep"><div class="ficon" style="background:var(--vdim);border:1px solid var(--vbrd)">🏦</div><div class="flabel">User chọn<br>ATM / Thẻ</div></div>
+        <div class="farrow">→</div>
+        <div class="fstep"><div class="ficon" style="background:var(--adim);border:1px solid var(--abrd)">↩️</div><div class="flabel">Redirect về<br>returnUrl</div></div>
+        <div class="farrow">→</div>
+        <div class="fstep"><div class="ficon" style="background:var(--bdim);border:1px solid var(--bbrd)">🔍</div><div class="flabel">Server verify<br>signature</div></div>
+        <div class="farrow">→</div>
+        <div class="fstep"><div class="ficon" style="background:var(--gdim);border:1px solid var(--gbrd)">✅</div><div class="flabel">Cập nhật DB<br>& Gửi email</div></div>
+      </div>
+      <div class="al amber"><div>⚠️</div><div><div class="at amber">Quan trọng: Luôn verify signature trước khi tin vào returnUrl params</div>
+      Kẻ tấn công có thể giả mạo returnUrl params để fake trạng thái "thanh toán thành công". Mọi xử lý phải verify HMAC-SHA512 phía server trước.</div></div>
+    </div>
+
+    <!-- ENV -->
+    <div class="pnl" id="pnl-env">
+      <div class="al green"><div>🔑</div><div><div class="at green">Đăng ký VNPay for Business</div>Vào <strong>vnpayment.vn/developer</strong> → Đăng ký tài khoản merchant → Tạo website → Nhận Sandbox credentials. Sau khi test xong, submit hồ sơ doanh nghiệp để nhận Production credentials.</div></div>
+      <table class="etbl">
+        <thead><tr><th>Biến môi trường</th><th>Sandbox</th><th>Mô tả</th></tr></thead>
+        <tbody>
+          <tr><td><span class="ek">VNPAY_TMN_CODE</span></td><td><span class="ev">BGVNPAY01</span></td><td><span class="ed">Terminal mã thương nhân (Terminal ID)</span></td></tr>
+          <tr><td><span class="ek">VNPAY_HASH_SECRET</span></td><td><span class="ev">SECRETKEYXXXXXXXXXXXXXX</span></td><td><span class="ed">Hash secret key để tạo/verify signature — GIỮ BÍ MẬT</span></td></tr>
+          <tr><td><span class="ek">VNPAY_URL</span></td><td><span class="ev">https://sandbox.vnpayment.vn/paymentv2/vpcpay.html</span></td><td><span class="ed">Sandbox payment URL</span></td></tr>
+          <tr><td><span class="ek">VNPAY_RETURN_URL</span></td><td><span class="ev">https://baggiotravel.com/payment/vnpay/return</span></td><td><span class="ed">URL redirect sau khi thanh toán xong</span></td></tr>
+          <tr><td><span class="ek">VNPAY_API_URL</span></td><td><span class="ev">https://sandbox.vnpayment.vn/merchant_webapi/api/transaction</span></td><td><span class="ed">API query trạng thái giao dịch</span></td></tr>
+        </tbody>
+      </table>
+      <div class="cw"><div class="ct"><span class="cf">.env.example — thêm vào</span><button class="cpb" onclick="cp(this)">Copy</button></div>
+      <pre><span class="cmt"># ── VNPay ──────────────────────────────────────────</span>
+<span class="key">VNPAY_TMN_CODE</span>=<span class="str">BGVNPAY01</span>
+<span class="key">VNPAY_HASH_SECRET</span>=your_hash_secret_here
+<span class="key">VNPAY_URL</span>=<span class="str">https://sandbox.vnpayment.vn/paymentv2/vpcpay.html</span>
+<span class="key">VNPAY_RETURN_URL</span>=<span class="str">https://baggiotravel.com/payment/vnpay/return</span>
+<span class="key">VNPAY_API_URL</span>=<span class="str">https://sandbox.vnpayment.vn/merchant_webapi/api/transaction</span>
+<span class="cmt"># Production: đổi sang payment.vnpayment.vn (bỏ sandbox.)</span></pre></div>
+    </div>
+
+    <!-- SIGNATURE -->
+    <div class="pnl" id="pnl-signature">
+      <div class="al blue"><div>🔐</div><div><div class="at blue">VNPay dùng HMAC-SHA512 (khác MoMo dùng SHA256)</div>Tất cả params phải được sort theo alphabet, nối bằng &, hash bằng HMAC-SHA512 với hash secret. Không được có space hay ký tự đặc biệt chưa encode.</div></div>
+      <div class="cw"><div class="ct"><span class="cf">utils/vnpay-signature.ts</span><button class="cpb" onclick="cp(this)">Copy</button></div>
+      <pre><span class="kw">import</span> crypto <span class="kw">from</span> <span class="str">'crypto'</span>;
+<span class="kw">import</span> qs <span class="kw">from</span> <span class="str">'qs'</span>;
+
+<span class="cmt">/**
+ * Tạo VNPay signature — HMAC-SHA512
+ * Params phải được sort theo key alphabet A→Z
+ * Loại bỏ vnp_SecureHash và vnp_SecureHashType trước khi hash
+ */</span>
+<span class="kw">export function</span> <span class="fn">createVNPaySignature</span>(params: <span class="type">Record</span>&lt;<span class="type">string</span>, <span class="type">string</span>&gt;, secretKey: <span class="type">string</span>): <span class="type">string</span> {
+  <span class="kw">const</span> sortedKeys = <span class="fn">Object</span>.<span class="fn">keys</span>(params)
+    .<span class="fn">filter</span>(k => k !== <span class="str">'vnp_SecureHash'</span> && k !== <span class="str">'vnp_SecureHashType'</span>)
+    .<span class="fn">sort</span>();
+
+  <span class="kw">const</span> rawData = sortedKeys
+    .<span class="fn">map</span>(k => <span class="str">`${k}=${params[k]}`</span>)
+    .<span class="fn">join</span>(<span class="str">'&'</span>);
+
+  <span class="kw">return</span> crypto
+    .<span class="fn">createHmac</span>(<span class="str">'sha512'</span>, secretKey)
+    .<span class="fn">update</span>(Buffer.<span class="fn">from</span>(rawData, <span class="str">'utf-8'</span>))
+    .<span class="fn">digest</span>(<span class="str">'hex'</span>);
+}
+
+<span class="cmt">/**
+ * Verify signature từ VNPay returnUrl params
+ * Dùng để xác thực sau khi user redirect về
+ */</span>
+<span class="kw">export function</span> <span class="fn">verifyVNPaySignature</span>(
+  params: <span class="type">Record</span>&lt;<span class="type">string</span>, <span class="type">string</span>&gt;,
+  secretKey: <span class="type">string</span>
+): <span class="type">boolean</span> {
+  <span class="kw">const</span> receivedHash = params[<span class="str">'vnp_SecureHash'</span>];
+  <span class="kw">if</span> (!receivedHash) <span class="kw">return false</span>;
+
+  <span class="kw">const</span> paramsWithoutHash = { ...params };
+  <span class="kw">delete</span> paramsWithoutHash[<span class="str">'vnp_SecureHash'</span>];
+  <span class="kw">delete</span> paramsWithoutHash[<span class="str">'vnp_SecureHashType'</span>];
+
+  <span class="kw">const</span> expectedHash = <span class="fn">createVNPaySignature</span>(paramsWithoutHash, secretKey);
+  <span class="kw">return</span> receivedHash === expectedHash;
+}
+
+<span class="cmt">/** Format date → YYYYMMDDHHmmss theo VNPay spec */</span>
+<span class="kw">export function</span> <span class="fn">vnpayDateFormat</span>(date: <span class="type">Date</span>): <span class="type">string</span> {
+  <span class="kw">return</span> date.<span class="fn">toISOString</span>()
+    .<span class="fn">replace</span>(<span class="str">/[-T:Z.]/g</span>, <span class="str">''</span>)
+    .<span class="fn">slice</span>(<span class="num">0</span>, <span class="num">14</span>);
+}</pre></div>
+    </div>
+
+    <!-- CREATE PAYMENT -->
+    <div class="pnl" id="pnl-create">
+      <div class="cw"><div class="ct"><span class="cf">routes/payment/vnpay.ts — Tạo link thanh toán VNPay</span><button class="cpb" onclick="cp(this)">Copy</button></div>
+      <pre><span class="kw">import</span> { Router } <span class="kw">from</span> <span class="str">'express'</span>;
+<span class="kw">import</span> qs <span class="kw">from</span> <span class="str">'qs'</span>;
+<span class="kw">import</span> axios <span class="kw">from</span> <span class="str">'axios'</span>;
+<span class="kw">import</span> { createVNPaySignature, verifyVNPaySignature, vnpayDateFormat } <span class="kw">from</span> <span class="str">'../../utils/vnpay-signature'</span>;
+<span class="kw">import</span> { authenticate } <span class="kw">from</span> <span class="str">'../../middleware/auth'</span>;
+
+<span class="kw">const</span> router = <span class="fn">Router</span>();
+<span class="kw">const</span> CFG = {
+  tmnCode:   process.env.<span class="type">VNPAY_TMN_CODE</span>!,
+  hashSecret: process.env.<span class="type">VNPAY_HASH_SECRET</span>!,
+  url:       process.env.<span class="type">VNPAY_URL</span>!,
+  returnUrl: process.env.<span class="type">VNPAY_RETURN_URL</span>!,
+  apiUrl:    process.env.<span class="type">VNPAY_API_URL</span>!,
+};
+
+<span class="cmt">// POST /api/payment/vnpay/create</span>
+router.<span class="fn">post</span>(<span class="str">'/create'</span>, authenticate, <span class="kw">async</span> (req, res, next) => {
+  <span class="kw">try</span> {
+    <span class="kw">const</span> { bookingId, amount, tourName, bankCode } = req.body;
+
+    <span class="kw">if</span> (!bookingId || !amount || amount < <span class="num">10000</span>)
+      <span class="kw">return</span> res.<span class="fn">status</span>(<span class="num">400</span>).<span class="fn">json</span>({ error: <span class="str">'Dữ liệu không hợp lệ'</span> });
+
+    <span class="kw">const</span> txnRef = <span class="str">`BT${Date.now()}`</span>; <span class="cmt">// mã giao dịch unique</span>
+    <span class="kw">const</span> now    = vnpayDateFormat(<span class="kw">new</span> <span class="fn">Date</span>());
+    <span class="kw">const</span> expire = vnpayDateFormat(<span class="kw">new</span> <span class="fn">Date</span>(Date.<span class="fn">now</span>() + <span class="num">15</span> * <span class="num">60</span> * <span class="num">1000</span>)); <span class="cmt">// 15 phút</span>
+    <span class="kw">const</span> ip     = (req.headers[<span class="str">'x-forwarded-for'</span>] || req.socket.remoteAddress || <span class="str">'127.0.0.1'</span>) <span class="kw">as</span> <span class="type">string</span>;
+
+    <span class="kw">const</span> params: <span class="type">Record</span>&lt;<span class="type">string</span>, <span class="type">string</span>&gt; = {
+      <span class="key">vnp_Version</span>:    <span class="str">'2.1.0'</span>,
+      <span class="key">vnp_Command</span>:    <span class="str">'pay'</span>,
+      <span class="key">vnp_TmnCode</span>:    CFG.tmnCode,
+      <span class="key">vnp_Amount</span>:     <span class="type">String</span>(amount * <span class="num">100</span>), <span class="cmt">// VNPay nhân 100 (đơn vị xu)</span>
+      <span class="key">vnp_CurrCode</span>:   <span class="str">'VND'</span>,
+      <span class="key">vnp_TxnRef</span>:     txnRef,
+      <span class="key">vnp_OrderInfo</span>:  <span class="fn">encodeURIComponent</span>(<span class="str">`Dat coc tour ${tourName} - ${bookingId}`</span>),
+      <span class="key">vnp_OrderType</span>:  <span class="str">'other'</span>, <span class="cmt">// du lịch dùng 'other'</span>
+      <span class="key">vnp_Locale</span>:     <span class="str">'vn'</span>,
+      <span class="key">vnp_ReturnUrl</span>:  CFG.returnUrl,
+      <span class="key">vnp_IpAddr</span>:     ip.<span class="fn">split</span>(<span class="str">','</span>)[<span class="num">0</span>].<span class="fn">trim</span>(),
+      <span class="key">vnp_CreateDate</span>: now,
+      <span class="key">vnp_ExpireDate</span>: expire,
+      ...(bankCode && { <span class="key">vnp_BankCode</span>: bankCode }), <span class="cmt">// pre-chọn ngân hàng</span>
+    };
+
+    params.<span class="key">vnp_SecureHash</span> = <span class="fn">createVNPaySignature</span>(params, CFG.hashSecret);
+
+    <span class="cmt">// Lưu txnRef → bookingId vào DB để lookup sau khi redirect về</span>
+    <span class="kw">await</span> db.payment.<span class="fn">create</span>({
+      data: {
+        booking_id:          bookingId,
+        provider:            <span class="str">'VNPAY'</span>,
+        payment_type:        <span class="str">'DEPOSIT'</span>,
+        provider_request_id: txnRef,
+        amount:              amount,
+        status:              <span class="str">'PENDING'</span>,
+        expires_at:          <span class="kw">new</span> <span class="fn">Date</span>(Date.<span class="fn">now</span>() + <span class="num">15</span> * <span class="num">60</span> * <span class="num">1000</span>),
+      },
+    });
+
+    <span class="kw">const</span> payUrl = <span class="str">`${CFG.url}?${qs.stringify(params, { encode: false })}`</span>;
+    res.<span class="fn">json</span>({ payUrl, txnRef });
+
+  } <span class="kw">catch</span> (e) { <span class="fn">next</span>(e); }
+});
+
+<span class="kw">export default</span> router;</pre></div>
+    </div>
+
+    <!-- WEBHOOK / RETURN -->
+    <div class="pnl" id="pnl-webhook">
+      <div class="al amber"><div>⚠️</div><div><div class="at amber">VNPay trả kết quả qua redirect, không phải POST webhook như MoMo</div>
+      Xử lý ở GET /payment/vnpay/return — đọc query params, verify signature, query lại API để double-check, rồi cập nhật DB.</div></div>
+      <div class="cw"><div class="ct"><span class="cf">routes/payment/vnpay.ts — Return URL handler</span><button class="cpb" onclick="cp(this)">Copy</button></div>
+      <pre><span class="cmt">// GET /api/payment/vnpay/return  ← vnp_ReturnUrl</span>
+router.<span class="fn">get</span>(<span class="str">'/return'</span>, <span class="kw">async</span> (req, res, next) => {
+  <span class="kw">try</span> {
+    <span class="kw">const</span> params = req.query <span class="kw">as</span> <span class="type">Record</span>&lt;<span class="type">string</span>, <span class="type">string</span>&gt;;
+
+    <span class="cmt">// 1. Verify signature — QUAN TRỌNG NHẤT</span>
+    <span class="kw">const</span> isValid = <span class="fn">verifyVNPaySignature</span>(params, CFG.hashSecret);
+    <span class="kw">if</span> (!isValid) {
+      <span class="kw">return</span> res.<span class="fn">redirect</span>(<span class="str">`${process.env.APP_URL}/payment/failed?reason=invalid_signature`</span>);
+    }
+
+    <span class="kw">const</span> { vnp_TxnRef, vnp_ResponseCode, vnp_Amount, vnp_TransactionNo, vnp_BankCode } = params;
+
+    <span class="cmt">// 2. Idempotency — tránh xử lý 2 lần nếu user refresh</span>
+    <span class="kw">const</span> payment = <span class="kw">await</span> db.payment.<span class="fn">findUnique</span>({
+      where: { provider_request_id: vnp_TxnRef },
+    });
+    <span class="kw">if</span> (!payment) <span class="kw">return</span> res.<span class="fn">redirect</span>(<span class="str">`${process.env.APP_URL}/payment/failed?reason=not_found`</span>);
+    <span class="kw">if</span> (payment.status === <span class="str">'SUCCESS'</span>) <span class="kw">return</span> res.<span class="fn">redirect</span>(<span class="str">`${process.env.APP_URL}/booking/${payment.booking_id}/success`</span>);
+
+    <span class="kw">if</span> (vnp_ResponseCode === <span class="str">'00'</span>) {
+      <span class="cmt">// 3. Double-check với VNPay query API</span>
+      <span class="kw">const</span> queryResult = <span class="kw">await</span> <span class="fn">queryVNPayTransaction</span>(vnp_TxnRef);
+      <span class="kw">if</span> (queryResult.vnp_TransactionStatus !== <span class="str">'00'</span>) {
+        <span class="kw">return</span> res.<span class="fn">redirect</span>(<span class="str">`${process.env.APP_URL}/payment/failed?ref=${vnp_TxnRef}`</span>);
+      }
+
+      <span class="cmt">// 4. Cập nhật DB trong transaction</span>
+      <span class="kw">await</span> db.<span class="fn">$transaction</span>(<span class="kw">async</span> tx => {
+        <span class="kw">await</span> tx.payment.<span class="fn">update</span>({
+          where: { provider_request_id: vnp_TxnRef },
+          data: {
+            status:              <span class="str">'SUCCESS'</span>,
+            provider_trans_id:   vnp_TransactionNo,
+            webhook_payload:     params <span class="kw">as</span> <span class="type">any</span>,
+            paid_at:             <span class="kw">new</span> <span class="fn">Date</span>(),
+          },
+        });
+        <span class="kw">await</span> tx.booking.<span class="fn">update</span>({
+          where: { id: payment.booking_id },
+          data:  { payment_status: <span class="str">'DEPOSIT_PAID'</span>, status: <span class="str">'CONFIRMED'</span>, confirmed_at: <span class="kw">new</span> <span class="fn">Date</span>() },
+        });
+      });
+
+      <span class="cmt">// 5. Gửi email xác nhận</span>
+      <span class="kw">const</span> booking = <span class="kw">await</span> db.booking.<span class="fn">findUnique</span>({
+        where: { id: payment.booking_id },
+        include: { user: <span class="kw">true</span>, tour: <span class="kw">true</span> },
+      });
+      <span class="fn">sendPaymentSuccess</span>(booking!, { amount: +vnp_Amount / <span class="num">100</span>, transId: vnp_TransactionNo })
+        .<span class="fn">catch</span>(console.error);
+
+      <span class="kw">return</span> res.<span class="fn">redirect</span>(<span class="str">`${process.env.APP_URL}/booking/${payment.booking_id}/success`</span>);
+    } <span class="kw">else</span> {
+      <span class="kw">await</span> db.payment.<span class="fn">update</span>({
+        where: { provider_request_id: vnp_TxnRef },
+        data: { status: <span class="str">'FAILED'</span>, failure_reason: <span class="str">`VNPay code: ${vnp_ResponseCode}`</span> },
+      });
+      <span class="kw">return</span> res.<span class="fn">redirect</span>(<span class="str">`${process.env.APP_URL}/payment/failed?code=${vnp_ResponseCode}`</span>);
+    }
+  } <span class="kw">catch</span> (e) { <span class="fn">next</span>(e); }
+});
+
+<span class="cmt">// Query VNPay API để verify giao dịch</span>
+<span class="kw">async function</span> <span class="fn">queryVNPayTransaction</span>(txnRef: <span class="type">string</span>) {
+  <span class="kw">const</span> now    = vnpayDateFormat(<span class="kw">new</span> <span class="fn">Date</span>());
+  <span class="kw">const</span> params = {
+    <span class="key">vnp_Version</span>:   <span class="str">'2.1.0'</span>,
+    <span class="key">vnp_Command</span>:   <span class="str">'querydr'</span>,
+    <span class="key">vnp_TmnCode</span>:   CFG.tmnCode,
+    <span class="key">vnp_TxnRef</span>:    txnRef,
+    <span class="key">vnp_OrderInfo</span>: <span class="str">`Query transaction ${txnRef}`</span>,
+    <span class="key">vnp_TransDate</span>: now,
+    <span class="key">vnp_CreateDate</span>: now,
+    <span class="key">vnp_IpAddr</span>:   <span class="str">'127.0.0.1'</span>,
+  };
+  params[<span class="str">'vnp_SecureHash'</span>] = <span class="fn">createVNPaySignature</span>(params, CFG.hashSecret);
+  <span class="kw">const</span> { data } = <span class="kw">await</span> axios.<span class="fn">post</span>(CFG.apiUrl, params);
+  <span class="kw">return</span> data;
+}</pre></div>
+    </div>
+
+    <!-- REFUND -->
+    <div class="pnl" id="pnl-refund">
+      <div class="cw"><div class="ct"><span class="cf">Hoàn tiền VNPay — POST /api/payment/vnpay/refund</span><button class="cpb" onclick="cp(this)">Copy</button></div>
+      <pre><span class="cmt">// POST /api/payment/vnpay/refund — admin only</span>
+router.<span class="fn">post</span>(<span class="str">'/refund'</span>, authenticate, <span class="fn">requireRole</span>(<span class="str">'ADMIN'</span>), <span class="kw">async</span> (req, res, next) => {
+  <span class="kw">try</span> {
+    <span class="kw">const</span> { txnRef, amount, transDate, reason } = req.body;
+    <span class="kw">const</span> now = vnpayDateFormat(<span class="kw">new</span> <span class="fn">Date</span>());
+    <span class="kw">const</span> refundRef = <span class="str">`RF${Date.now()}`</span>;
+
+    <span class="kw">const</span> params = {
+      <span class="key">vnp_Version</span>:       <span class="str">'2.1.0'</span>,
+      <span class="key">vnp_Command</span>:       <span class="str">'refund'</span>,
+      <span class="key">vnp_TmnCode</span>:       CFG.tmnCode,
+      <span class="key">vnp_TransactionType</span>: <span class="str">'02'</span>, <span class="cmt">// 02 = hoàn toàn bộ, 03 = hoàn một phần</span>
+      <span class="key">vnp_TxnRef</span>:        refundRef,
+      <span class="key">vnp_Amount</span>:        <span class="type">String</span>(amount * <span class="num">100</span>),
+      <span class="key">vnp_OrderInfo</span>:     <span class="fn">encodeURIComponent</span>(reason),
+      <span class="key">vnp_TransDate</span>:     transDate,  <span class="cmt">// ngày giao dịch gốc</span>
+      <span class="key">vnp_CreateBy</span>:      <span class="str">'admin'</span>,
+      <span class="key">vnp_CreateDate</span>:    now,
+      <span class="key">vnp_IpAddr</span>:        <span class="str">'127.0.0.1'</span>,
+    };
+    params[<span class="str">'vnp_SecureHash'</span>] = <span class="fn">createVNPaySignature</span>(params, CFG.hashSecret);
+
+    <span class="kw">const</span> { data } = <span class="kw">await</span> axios.<span class="fn">post</span>(CFG.apiUrl, params);
+    <span class="kw">if</span> (data.vnp_ResponseCode !== <span class="str">'00'</span>)
+      <span class="kw">throw new</span> <span class="fn">Error</span>(<span class="str">`VNPay refund failed: ${data.vnp_ResponseCode} — ${data.vnp_Message}`</span>);
+
+    res.<span class="fn">json</span>({ success: <span class="kw">true</span>, refundRef, data });
+  } <span class="kw">catch</span> (e) { <span class="fn">next</span>(e); }
+});</pre></div>
+    </div>
+
+    <!-- DEMO -->
+    <div class="pnl" id="pnl-demo">
+      <div class="demo-wrap">
+        <div class="demo-header">
+          <div class="demo-dot" style="background:#ef4444"></div>
+          <div class="demo-dot" style="background:#f59e0b"></div>
+          <div class="demo-dot" style="background:#22c55e"></div>
+          <div class="demo-title">VNPay Payment Simulator — Sandbox</div>
+        </div>
+        <div class="demo-body">
+          <div class="demo-form">
+            <label class="dlabel">Tour</label>
+            <select class="dselect" id="dtour">
+              <option value="Ha Long 5N4D|5900000">Hạ Long 5N4Đ — 5.900.000đ</option>
+              <option value="Hoi An 3N2D|2800000">Hội An 3N2Đ — 2.800.000đ</option>
+              <option value="Phu Quoc Premium|15500000">Phú Quốc Premium — 15.500.000đ</option>
+            </select>
+            <label class="dlabel">Ngân hàng</label>
+            <select class="dselect" id="dbank">
+              <option value="">-- Chọn tại VNPay --</option>
+              <option value="NCB">NCB</option>
+              <option value="VIETCOMBANK">Vietcombank</option>
+              <option value="TECHCOMBANK">Techcombank</option>
+              <option value="MBBANK">MB Bank</option>
+              <option value="VISA">Visa / Master</option>
+            </select>
+            <label class="dlabel">Đặt cọc (30%)</label>
+            <input class="dinput" id="damount" value="1,770,000 đ" readonly>
+            <button class="dbtn" id="ddemo-btn" onclick="runVNPayDemo()">
+              <span>💳</span> Tạo link VNPay
+            </button>
+          </div>
+          <div class="demo-result">
+            <div class="dresult-title">Response</div>
+            <div id="dstatus"></div>
+            <div id="doutput" class="djson" style="color:var(--text3);font-style:italic">Nhấn "Tạo link" để xem...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CODES -->
+    <div class="pnl" id="pnl-codes">
+      <div class="rc-grid">
+        <div class="rc"><div class="rc-code rc-ok">00</div><div class="rc-msg">Giao dịch thành công</div></div>
+        <div class="rc"><div class="rc-code rc-err">07</div><div class="rc-msg">Trừ tiền thành công nhưng giao dịch bị nghi ngờ</div></div>
+        <div class="rc"><div class="rc-code rc-err">09</div><div class="rc-msg">Thẻ/tài khoản chưa đăng ký InternetBanking</div></div>
+        <div class="rc"><div class="rc-code rc-err">10</div><div class="rc-msg">Xác thực sai quá 3 lần</div></div>
+        <div class="rc"><div class="rc-code rc-warn">11</div><div class="rc-msg">Đã hết hạn chờ thanh toán</div></div>
+        <div class="rc"><div class="rc-code rc-err">12</div><div class="rc-msg">Thẻ/tài khoản bị khoá</div></div>
+        <div class="rc"><div class="rc-code rc-warn">13</div><div class="rc-msg">Sai OTP / mật khẩu</div></div>
+        <div class="rc"><div class="rc-code rc-warn">24</div><div class="rc-msg">Khách hàng huỷ giao dịch</div></div>
+        <div class="rc"><div class="rc-code rc-err">51</div><div class="rc-msg">Tài khoản không đủ số dư</div></div>
+        <div class="rc"><div class="rc-code rc-err">65</div><div class="rc-msg">Vượt hạn mức giao dịch trong ngày</div></div>
+        <div class="rc"><div class="rc-code rc-err">75</div><div class="rc-msg">Ngân hàng bảo trì</div></div>
+        <div class="rc"><div class="rc-code rc-err">99</div><div class="rc-msg">Lỗi không xác định</div></div>
+      </div>
+    </div>
+
+    <!-- CHECKLIST -->
+    <div class="pnl" id="pnl-checklist">
+      <div style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:1.1rem">
+        <div class="chklist">
+          <div class="chi" onclick="tk(this)"><div class="chb"></div><span class="cht">Đăng ký tài khoản merchant tại vnpayment.vn/developer</span></div>
+          <div class="chi" onclick="tk(this)"><div class="chb"></div><span class="cht">Nhận Sandbox TMN Code và Hash Secret key</span></div>
+          <div class="chi" onclick="tk(this)"><div class="chb"></div><span class="cht">Thêm VNPAY_TMN_CODE và VNPAY_HASH_SECRET vào Vercel env vars</span></div>
+          <div class="chi" onclick="tk(this)"><div class="chb"></div><span class="cht">Cài thư viện: <code>npm install qs axios</code></span></div>
+          <div class="chi" onclick="tk(this)"><div class="chb"></div><span class="cht">Implement createVNPaySignature dùng HMAC-SHA512</span></div>
+          <div class="chi" onclick="tk(this)"><div class="chb"></div><span class="cht">Implement verifyVNPaySignature trên returnUrl handler</span></div>
+          <div class="chi" onclick="tk(this)"><div class="chb"></div><span class="cht">vnp_Amount × 100 (đơn vị xu, không phải đồng)</span></div>
+          <div class="chi" onclick="tk(this)"><div class="chb"></div><span class="cht">vnp_OrderInfo encode URL trước khi nhúng vào params</span></div>
+          <div class="chi" onclick="tk(this)"><div class="chb"></div><span class="cht">Lưu txnRef → bookingId vào DB trước khi redirect</span></div>
+          <div class="chi" onclick="tk(this)"><div class="chb"></div><span class="cht">Idempotency check trong return handler — tránh xử lý 2 lần</span></div>
+          <div class="chi" onclick="tk(this)"><div class="chb"></div><span class="cht">Double-verify bằng queryVNPayTransaction API sau khi nhận returnUrl</span></div>
+          <div class="chi" onclick="tk(this)"><div class="chb"></div><span class="cht">Test với thẻ sandbox NCB: 9704198526191432198 · 07/15 · OTP: 123456</span></div>
+          <div class="chi" onclick="tk(this)"><div class="chb"></div><span class="cht">Test hoàn tiền thành công trên Sandbox</span></div>
+          <div class="chi" onclick="tk(this)"><div class="chb"></div><span class="cht">Submit hồ sơ doanh nghiệp cho VNPay để nhận Production credentials</span></div>
+        </div>
+        <div class="prog"><span id="ptxt">0 / 14 hoàn thành</span><span id="pstatus">Chưa bắt đầu</span></div>
+      </div>
+      <div class="al blue" style="margin-top:.9rem"><div>💳</div><div><div class="at blue">Thẻ test sandbox VNPay</div>
+      <strong>NCB:</strong> 9704198526191432198 · 07/15 · Tên: NGUYEN VAN A · OTP: 123456<br>
+      <strong>Vietcombank:</strong> 9704195798459170488 · 07/15 · Tên: NGUYEN VAN A · OTP: 123456</div></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function sw(id,el){
+  document.querySelectorAll('.pnl').forEach(p=>p.classList.remove('on'));
+  document.getElementById('pnl-'+id).classList.add('on');
+  document.querySelectorAll('.sb-a').forEach(a=>a.classList.remove('on'));
+  if(el)el.classList.add('on');
+}
+function cp(btn){
+  const pre=btn.closest('.cw').querySelector('pre');
+  navigator.clipboard.writeText(pre.innerText).then(()=>{
+    btn.textContent='Copied!';btn.classList.add('ok');
+    setTimeout(()=>{btn.textContent='Copy';btn.classList.remove('ok')},2000);
+  });
+}
+function tk(row){
+  const b=row.querySelector('.chb');
+  b.classList.toggle('done');b.textContent=b.classList.contains('done')?'✓':'';
+  const tot=document.querySelectorAll('.chb').length,done=document.querySelectorAll('.chb.done').length;
+  document.getElementById('ptxt').textContent=done+' / '+tot+' hoàn thành';
+  document.getElementById('pstatus').textContent=done===tot?'✅ Xong!':done>0?'Đang làm...':'Chưa bắt đầu';
+}
+document.getElementById('dtour').addEventListener('change',updateAmt);
+function updateAmt(){
+  const [,p]=document.getElementById('dtour').value.split('|');
+  document.getElementById('damount').value=Math.round(+p*.3).toLocaleString('vi-VN')+' đ';
+}
+updateAmt();
+function runVNPayDemo(){
+  const btn=document.getElementById('ddemo-btn');
+  btn.disabled=true;btn.innerHTML='<span>⏳</span> Đang tạo...';
+  document.getElementById('dstatus').innerHTML='<div class="dstatus ds-loading">⏳ Đang gọi VNPay Sandbox API...</div>';
+  setTimeout(()=>{
+    const [tour,price]=document.getElementById('dtour').value.split('|');
+    const bank=document.getElementById('dbank').value;
+    const deposit=Math.round(+price*.3);
+    const txnRef='BT'+Date.now();
+    const expire=new Date(Date.now()+15*60*1000).toISOString().replace(/[-T:Z.]/g,'').slice(0,14);
+    document.getElementById('dstatus').innerHTML='<div class="dstatus ds-ok">✅ Tạo link thành công</div>';
+    document.getElementById('doutput').innerHTML=JSON.stringify({
+      payUrl:`https://sandbox.vnpayment.vn/paymentv2/vpcpay.html?vnp_Version=2.1.0&vnp_TmnCode=BGVNPAY01&vnp_Amount=${deposit*100}&vnp_TxnRef=${txnRef}&vnp_ExpireDate=${expire}${bank?'&vnp_BankCode='+bank:''}...`,
+      txnRef,
+      amount:deposit,
+      expiresIn:'15 phút',
+      note:'Redirect user đến payUrl để thanh toán',
+    },null,2)
+    .replace(/"([^"]+)":/g,'<span style="color:var(--key)">"$1"</span>:')
+    .replace(/: "([^"]+)"/g,': <span style="color:var(--str)">"$1"</span>')
+    .replace(/: (\d+)/g,': <span style="color:var(--amber)">$1</span>');
+    btn.disabled=false;btn.innerHTML='<span>💳</span> Tạo link VNPay';
+  },1200);
+}
+</script>
+</body>
+</html>

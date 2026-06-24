@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Baggio Travel — Nhà cung cấp</title>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0d1117;--s1:#161b22;--s2:#1c2230;--s3:#21283a;
+  --border:#253047;--border2:#2d3a55;
+  --text:#e6edf3;--text2:#8b949e;--text3:#3d4f6e;
+  --green:#3fb950;--gdim:rgba(63,185,80,.12);--gbrd:rgba(63,185,80,.3);
+  --blue:#58a6ff;--bdim:rgba(88,166,255,.1);--bbrd:rgba(88,166,255,.25);
+  --amber:#d29922;--adim:rgba(210,153,34,.1);--abrd:rgba(210,153,34,.25);
+  --red:#f85149;--rdim:rgba(248,81,73,.1);--rbrd:rgba(248,81,73,.25);
+  --purple:#bc8cff;--pdim:rgba(188,140,255,.1);--pbrd:rgba(188,140,255,.3);
+  --teal:#39d353;
+  --font:'Be Vietnam Pro',sans-serif;--mono:'Space Mono',monospace;
+}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:13px;display:grid;grid-template-columns:220px 1fr;grid-template-rows:52px 1fr}
+
+.topbar{grid-column:1/-1;background:var(--s1);border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 1.25rem;gap:1rem}
+.tb-logo{font-family:var(--mono);font-size:.88rem;font-weight:700;color:var(--text)}
+.tb-logo span{color:var(--green)}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:.75rem}
+.tb-clock{font-family:var(--mono);font-size:.68rem;color:var(--text3)}
+
+.sidebar{background:var(--s1);border-right:1px solid var(--border);overflow-y:auto;padding:.75rem 0}
+.sb-section{font-family:var(--mono);font-size:.55rem;letter-spacing:.18em;text-transform:uppercase;color:var(--text3);padding:.65rem 1.1rem .25rem}
+.sb-item{display:flex;align-items:center;gap:.6rem;padding:.48rem 1.1rem;font-size:.8rem;color:var(--text2);cursor:pointer;border-left:2px solid transparent;transition:all .15s}
+.sb-item:hover{color:var(--text);background:rgba(255,255,255,.03)}
+.sb-item.active{color:var(--blue);border-left-color:var(--blue);background:var(--bdim)}
+.sb-count{margin-left:auto;font-family:var(--mono);font-size:.58rem;background:var(--s3);border:1px solid var(--border);padding:.15rem .4rem;border-radius:4px;color:var(--text3)}
+
+.main{overflow-y:auto;padding:1.5rem}
+.page{display:none}.page.active{display:block}
+
+.stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:.75rem;margin-bottom:1.25rem}
+.stat{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:.9rem 1rem;position:relative}
+.stat::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:8px 8px 0 0}
+.stat.g::before{background:var(--green)}.stat.b::before{background:var(--blue)}
+.stat.a::before{background:var(--amber)}.stat.p::before{background:var(--purple)}
+.stat-label{font-family:var(--mono);font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-bottom:.4rem}
+.stat-val{font-family:var(--mono);font-size:1.4rem;font-weight:700;line-height:1;margin-bottom:.2rem}
+.stat-sub{font-size:.72rem;color:var(--text2)}
+
+.card{background:var(--s2);border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:1rem}
+.card-header{background:var(--s3);border-bottom:1px solid var(--border);padding:.75rem 1.1rem;display:flex;align-items:center;justify-content:space-between;gap:.75rem;flex-wrap:wrap}
+.card-title{font-weight:600;font-size:.85rem;color:var(--text)}
+.card-body{padding:1.1rem}
+.card-actions{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center}
+
+/* SUPPLIER CARD */
+.sup-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.85rem}
+.sup-card{background:var(--s3);border:1px solid var(--border);border-radius:8px;padding:1.1rem;transition:border-color .2s,transform .2s;position:relative}
+.sup-card:hover{border-color:var(--border2);transform:translateY(-2px)}
+.sc-cat-badge{position:absolute;top:.75rem;right:.75rem;font-family:var(--mono);font-size:.55rem;letter-spacing:.06em;text-transform:uppercase;padding:.2rem .5rem;border-radius:3px}
+.sc-name{font-weight:700;font-size:.95rem;color:var(--text);margin-bottom:.2rem;padding-right:70px}
+.sc-type{font-size:.75rem;color:var(--text2);margin-bottom:.75rem;font-weight:300}
+.sc-info{display:flex;flex-direction:column;gap:.3rem;margin-bottom:.85rem}
+.sc-info-row{display:flex;align-items:center;gap:.5rem;font-size:.78rem;color:var(--text2)}
+.sc-info-row .icon{font-size:.85rem;flex-shrink:0;width:16px}
+.sc-price-section{background:var(--s2);border:1px solid var(--border);border-radius:5px;padding:.65rem .85rem;margin-bottom:.75rem}
+.sc-price-label{font-family:var(--mono);font-size:.55rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);margin-bottom:.3rem}
+.sc-price-row{display:flex;justify-content:space-between;font-size:.78rem;padding:.2rem 0}
+.sc-price-contract{color:var(--red);font-family:var(--mono);font-weight:600}
+.sc-price-market{color:var(--text2);font-family:var(--mono)}
+.sc-margin{color:var(--green);font-family:var(--mono);font-weight:700}
+.sc-rating{display:flex;align-items:center;gap:.4rem;margin-bottom:.65rem}
+.sc-stars{color:var(--amber);font-size:.82rem}
+.sc-rating-num{font-family:var(--mono);font-size:.75rem;color:var(--text2)}
+.sc-tags{display:flex;gap:.3rem;flex-wrap:wrap;margin-bottom:.75rem}
+.sc-tag{font-family:var(--mono);font-size:.55rem;padding:.15rem .4rem;border-radius:3px;background:var(--s2);border:1px solid var(--border);color:var(--text3)}
+.sc-actions{display:flex;gap:.4rem}
+
+/* CAT COLORS */
+.cat-hotel{background:var(--pdim);border:1px solid var(--pbrd);color:var(--purple)}
+.cat-flight{background:var(--bdim);border:1px solid var(--bbrd);color:var(--blue)}
+.cat-transport{background:var(--adim);border:1px solid var(--abrd);color:var(--amber)}
+.cat-food{background:var(--gdim);border:1px solid var(--gbrd);color:var(--green)}
+.cat-activity{background:var(--rdim);border:1px solid var(--rbrd);color:var(--red)}
+.cat-other{background:var(--s3);border:1px solid var(--border);color:var(--text3)}
+
+/* FORM */
+.form-group{display:flex;flex-direction:column;gap:.35rem;margin-bottom:.75rem}
+.form-label{font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text3)}
+.form-input,.form-select,.form-textarea{background:var(--s1);border:1px solid var(--border);color:var(--text);font-family:var(--font);font-size:.85rem;padding:.6rem .85rem;border-radius:5px;outline:none;transition:border-color .2s;width:100%}
+.form-input:focus,.form-select:focus,.form-textarea:focus{border-color:var(--blue)}
+.form-select option{background:var(--s2)}
+.form-textarea{resize:vertical;min-height:72px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+.form-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.75rem}
+
+/* MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:500;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px);padding:1rem}
+.modal-bg.open{display:flex}
+.modal{background:var(--s2);border:1px solid var(--border);border-radius:10px;width:100%;max-width:640px;max-height:90vh;overflow-y:auto}
+.modal-header{background:var(--s3);border-bottom:1px solid var(--border);padding:1rem 1.25rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.modal-title{font-weight:600;font-size:.9rem}
+.modal-close{background:none;border:none;color:var(--text2);font-size:1.2rem;cursor:pointer;transition:color .2s}
+.modal-close:hover{color:var(--text)}
+.modal-body{padding:1.25rem}
+.modal-footer{padding:.85rem 1.25rem;border-top:1px solid var(--border);display:flex;gap:.5rem;justify-content:flex-end;position:sticky;bottom:0;background:var(--s2)}
+
+/* MODAL TX */
+.modal-sm{max-width:440px}
+
+/* TABLE */
+table{width:100%;border-collapse:collapse}
+th{font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text3);padding:.6rem 1rem;text-align:left;font-weight:400;border-bottom:1px solid var(--border);white-space:nowrap}
+td{padding:.7rem 1rem;border-bottom:1px solid rgba(255,255,255,.04);font-size:.8rem;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(255,255,255,.02)}
+
+/* RATING STARS */
+.rate-stars{display:flex;gap:.2rem;cursor:pointer}
+.rate-star{font-size:1.2rem;color:var(--border2);transition:color .15s}
+.rate-star.on,.rate-star:hover{color:var(--amber)}
+
+/* BTN */
+.btn{font-family:var(--mono);font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;padding:.4rem .9rem;border-radius:5px;cursor:pointer;transition:all .15s;border:1px solid}
+.btn-default{background:none;border-color:var(--border);color:var(--text2)}
+.btn-default:hover{border-color:var(--border2);color:var(--text)}
+.btn-primary{background:var(--blue);border-color:var(--blue);color:#0d1117}
+.btn-primary:hover{background:#79b8ff}
+.btn-danger{background:none;border-color:var(--rbrd);color:var(--red)}
+.btn-danger:hover{background:var(--rdim)}
+.btn-green{background:var(--green);border-color:var(--green);color:#0d1117}
+
+/* BADGE */
+.badge{font-family:var(--mono);font-size:.58rem;letter-spacing:.06em;text-transform:uppercase;padding:.22rem .55rem;border-radius:4px;display:inline-flex;align-items:center;gap:.3rem;white-space:nowrap}
+.badge-active{background:var(--gdim);border:1px solid var(--gbrd);color:var(--green)}
+.badge-inactive{background:var(--s3);border:1px solid var(--border);color:var(--text3)}
+.badge-preferred{background:var(--adim);border:1px solid var(--abrd);color:var(--amber)}
+
+/* TOAST */
+.toast-wrap{position:fixed;bottom:1.5rem;right:1.5rem;z-index:999;display:flex;flex-direction:column;gap:.5rem}
+.toast{background:var(--s2);border:1px solid var(--border);color:var(--text);padding:.65rem 1rem;font-size:.8rem;border-radius:6px;display:flex;align-items:center;gap:.5rem;min-width:240px;animation:toastIn .2s ease;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+@keyframes toastIn{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:none}}
+
+.empty-state{text-align:center;padding:3rem 1rem}
+.empty-icon{font-size:2.5rem;opacity:.3;margin-bottom:.75rem}
+::-webkit-scrollbar{width:4px;height:4px}::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+@media(max-width:900px){body{grid-template-columns:1fr}.sidebar{display:none}.stat-row{grid-template-columns:1fr 1fr}.sup-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<!-- MODAL THÊM/SỬA NCC -->
+<div class="modal-bg" id="supModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="supModalTitle">Thêm nhà cung cấp</div>
+      <button class="modal-close" onclick="closeSupModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Tên công ty / NCC *</label><input class="form-input" id="sf_name" placeholder="Khách sạn Mường Thanh Hội An"></div>
+        <div class="form-group">
+          <label class="form-label">Danh mục *</label>
+          <select class="form-select" id="sf_cat" onchange="toggleHotelFields()">
+            <option value="hotel">🏨 Khách sạn / Resort</option>
+            <option value="flight">✈️ Hãng bay / Vé máy bay</option>
+            <option value="transport">🚌 Xe / Vận chuyển</option>
+            <option value="food">🍽️ Nhà hàng / Ăn uống</option>
+            <option value="activity">🏄 Hoạt động / Vui chơi</option>
+            <option value="other">📦 Khác</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Người liên hệ</label><input class="form-input" id="sf_contact" placeholder="Nguyễn Văn A"></div>
+        <div class="form-group"><label class="form-label">SĐT *</label><input class="form-input" id="sf_phone" placeholder="0901234567"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="sf_email" type="email" placeholder="contact@hotel.com"></div>
+        <div class="form-group"><label class="form-label">Website</label><input class="form-input" id="sf_web" placeholder="www.hotel.com"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Địa chỉ</label><input class="form-input" id="sf_address" placeholder="123 Trần Phú, Hội An, Quảng Nam"></div>
+      <div class="form-group"><label class="form-label">Điểm đến / Khu vực phục vụ</label><input class="form-input" id="sf_area" placeholder="Hội An, Đà Nẵng, Miền Trung..."></div>
+
+      <div id="hotelFields" style="background:var(--s3);border:1px solid rgba(77,158,255,.3);border-radius:6px;padding:.85rem;margin-bottom:.75rem">
+        <div style="font-family:var(--mono);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--blue);margin-bottom:.65rem">🏨 Thông tin khách sạn</div>
+        <div class="form-row">
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label">Hạng sao *</label>
+            <select class="form-select" id="sf_star">
+              <option value="">-- Chọn hạng sao --</option>
+              <option value="1">⭐ 1 sao</option>
+              <option value="2">⭐⭐ 2 sao</option>
+              <option value="3">⭐⭐⭐ 3 sao</option>
+              <option value="4">⭐⭐⭐⭐ 4 sao</option>
+              <option value="5">⭐⭐⭐⭐⭐ 5 sao</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label class="form-label">Số phòng</label>
+            <input class="form-input" id="sf_room_count" type="number" min="1" placeholder="VD: 120">
+          </div>
+        </div>
+      </div>
+
+      <div style="background:var(--s3);border:1px solid var(--border);border-radius:6px;padding:.85rem;margin-bottom:.75rem">
+        <div style="font-family:var(--mono);font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-bottom:.65rem">💰 Giá hợp đồng & Giá thị trường</div>
+        <div class="form-row-3">
+          <div class="form-group" style="margin-bottom:0"><label class="form-label">Đơn vị giá</label>
+            <select class="form-select" id="sf_unit">
+              <option value="per_night">/ đêm</option>
+              <option value="per_person">/ người</option>
+              <option value="per_trip">/ chuyến</option>
+              <option value="per_day">/ ngày</option>
+              <option value="per_group">/ đoàn</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom:0"><label class="form-label">Giá hợp đồng (đ)</label><input class="form-input" id="sf_contract_price" type="number" placeholder="0"></div>
+          <div class="form-group" style="margin-bottom:0"><label class="form-label">Giá thị trường (đ)</label><input class="form-input" id="sf_market_price" type="number" placeholder="0"></div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Đánh giá chất lượng</label>
+          <div class="rate-stars" id="ratingStars">
+            <span class="rate-star" data-r="1" onclick="setRating(1)">★</span>
+            <span class="rate-star" data-r="2" onclick="setRating(2)">★</span>
+            <span class="rate-star" data-r="3" onclick="setRating(3)">★</span>
+            <span class="rate-star" data-r="4" onclick="setRating(4)">★</span>
+            <span class="rate-star" data-r="5" onclick="setRating(5)">★</span>
+          </div>
+          <input type="hidden" id="sf_rating" value="0">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Trạng thái</label>
+          <select class="form-select" id="sf_status">
+            <option value="active">Đang hợp tác</option>
+            <option value="preferred">Ưu tiên</option>
+            <option value="inactive">Ngừng hợp tác</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group"><label class="form-label">Điều khoản hợp đồng & Ghi chú</label><textarea class="form-textarea" id="sf_notes" placeholder="Điều kiện thanh toán, thời hạn đặt, chính sách hủy, khuyến mãi đặc biệt..."></textarea></div>
+      <div class="form-group"><label class="form-label">Tags (phân cách bởi dấu phẩy)</label><input class="form-input" id="sf_tags" placeholder="VD: 4 sao, buffet sáng, hồ bơi, wifi"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="saveSupplier()">💾 Lưu NCC</button>
+      <button class="btn btn-default" onclick="closeSupModal()">Hủy</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL GHI NHẬN GIAO DỊCH -->
+<div class="modal-bg" id="txModal">
+  <div class="modal modal-sm">
+    <div class="modal-header">
+      <div class="modal-title">📝 Ghi nhận giao dịch</div>
+      <button class="modal-close" onclick="closeTxModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group"><label class="form-label">NCC</label><div id="txSupName" style="font-weight:600;font-size:.9rem;padding:.4rem 0"></div></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Ngày giao dịch</label><input class="form-input" id="tx_date" type="date"></div>
+        <div class="form-group"><label class="form-label">Số tiền (đ)</label><input class="form-input" id="tx_amount" type="number" placeholder="0"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Mô tả</label><input class="form-input" id="tx_desc" placeholder="VD: Đặt phòng 2 đêm 10-12/06 cho tour HAN-001"></div>
+      <div class="form-group">
+        <label class="form-label">Loại</label>
+        <select class="form-select" id="tx_type">
+          <option value="booking">Đặt dịch vụ</option>
+          <option value="payment">Thanh toán</option>
+          <option value="refund">Hoàn tiền</option>
+          <option value="penalty">Phí phạt</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="saveTx()">💾 Lưu</button>
+      <button class="btn btn-default" onclick="closeTxModal()">Hủy</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="tb-logo">Baggio<span>.</span>NCC</div>
+  <div style="font-size:.75rem;color:var(--text3)">/ Quản lý Nhà cung cấp</div>
+  <div class="tb-right">
+    <a href="baggio-admin.html" class="btn btn-default" style="text-decoration:none;font-size:.6rem">← Admin</a>
+    <a href="baggio-operations.html" class="btn btn-default" style="text-decoration:none;font-size:.6rem">⚙️ Ops</a>
+    <div class="tb-clock" id="clockEl"></div>
+  </div>
+</header>
+
+<!-- SIDEBAR -->
+<nav class="sidebar">
+  <div class="sb-section">Nhà cung cấp</div>
+  <div class="sb-item active" onclick="nav('all',this)"><span>🏪</span> Tất cả NCC<span class="sb-count" id="sbAll">0</span></div>
+  <div class="sb-item" onclick="nav('hotel',this)"><span>🏨</span> Khách sạn<span class="sb-count" id="sbHotel">0</span></div>
+  <div class="sb-item" onclick="nav('flight',this)"><span>✈️</span> Vé máy bay<span class="sb-count" id="sbFlight">0</span></div>
+  <div class="sb-item" onclick="nav('transport',this)"><span>🚌</span> Vận chuyển<span class="sb-count" id="sbTransport">0</span></div>
+  <div class="sb-item" onclick="nav('food',this)"><span>🍽️</span> Ăn uống<span class="sb-count" id="sbFood">0</span></div>
+  <div class="sb-item" onclick="nav('activity',this)"><span>🏄</span> Hoạt động<span class="sb-count" id="sbActivity">0</span></div>
+  <div class="sb-section">Phân tích</div>
+  <div class="sb-item" onclick="nav('analytics',this)"><span>📊</span> Phân tích chi phí</div>
+  <div class="sb-item" onclick="nav('transactions',this)"><span>💳</span> Lịch sử giao dịch</div>
+</nav>
+
+<!-- MAIN -->
+<main class="main">
+
+  <!-- ═══ SUPPLIER LIST (reused for all/hotel/flight/etc) ═══ -->
+  <div class="page active" id="page-all">
+    <div class="stat-row">
+      <div class="stat g"><div class="stat-label">Tổng NCC</div><div class="stat-val" id="statTotal">0</div><div class="stat-sub">Đang hợp tác</div></div>
+      <div class="stat b"><div class="stat-label">NCC ưu tiên</div><div class="stat-val" id="statPreferred">0</div><div class="stat-sub">Chất lượng cao</div></div>
+      <div class="stat a"><div class="stat-label">Tổng chi phí</div><div class="stat-val" id="statTotalCost">0đ</div><div class="stat-sub">Tất cả giao dịch</div></div>
+      <div class="stat p"><div class="stat-label">Tiết kiệm</div><div class="stat-val" id="statSaved">0đ</div><div class="stat-sub">So giá thị trường</div></div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title" id="listTitle">🏪 Tất cả nhà cung cấp</div>
+        <div class="card-actions">
+          <input style="background:var(--s1);border:1px solid var(--border);color:var(--text);font-family:var(--font);font-size:.78rem;padding:.4rem .75rem;border-radius:5px;outline:none;width:180px" placeholder="🔍 Tìm NCC..." id="searchInput" oninput="filterSuppliers(this.value)">
+          <select style="background:var(--s1);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:.65rem;padding:.4rem .5rem;border-radius:5px;outline:none;cursor:pointer" id="statusFilter" onchange="renderPage()">
+            <option value="">Tất cả trạng thái</option>
+            <option value="active">Đang hợp tác</option>
+            <option value="preferred">Ưu tiên</option>
+            <option value="inactive">Ngừng HT</option>
+          </select>
+          <button class="btn btn-primary" onclick="openSupModal()">+ Thêm NCC</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="sup-grid" id="supGrid">
+          <div class="empty-state" style="grid-column:1/-1">
+            <div class="empty-icon">🏪</div>
+            <div style="font-weight:600;margin-bottom:.3rem">Chưa có nhà cung cấp</div>
+            <div style="font-size:.82rem;color:var(--text2)">Thêm khách sạn, hãng xe, nhà hàng để quản lý chi phí tour chính xác</div>
+            <button class="btn btn-primary" style="margin-top:1rem" onclick="openSupModal()">+ Thêm NCC đầu tiên</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pages cho từng category — dùng chung supGrid -->
+  <div class="page" id="page-hotel"><div style="padding:1rem;color:var(--text2)">Đang tải...</div></div>
+  <div class="page" id="page-flight"><div style="padding:1rem;color:var(--text2)">Đang tải...</div></div>
+  <div class="page" id="page-transport"><div style="padding:1rem;color:var(--text2)">Đang tải...</div></div>
+  <div class="page" id="page-food"><div style="padding:1rem;color:var(--text2)">Đang tải...</div></div>
+  <div class="page" id="page-activity"><div style="padding:1rem;color:var(--text2)">Đang tải...</div></div>
+
+  <!-- ═══ ANALYTICS ═══ -->
+  <div class="page" id="page-analytics">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+      <div class="card">
+        <div class="card-header"><div class="card-title">Chi phí theo danh mục</div></div>
+        <div class="card-body"><div style="height:220px"><canvas id="costByCatChart"></canvas></div></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">Tiết kiệm vs Giá thị trường</div></div>
+        <div class="card-body"><div style="height:220px"><canvas id="savingsChart"></canvas></div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">📊 Phân tích margin theo NCC</div></div>
+      <div class="card-body">
+        <table>
+          <thead><tr><th>Nhà cung cấp</th><th>Danh mục</th><th>Hạng sao</th><th>Số phòng</th><th>Giá HĐ</th><th>Giá TT</th><th>Tiết kiệm</th><th>Margin</th><th>Rating</th></tr></thead>
+          <tbody id="marginTbl"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══ TRANSACTIONS ═══ -->
+  <div class="page" id="page-transactions">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">💳 Lịch sử giao dịch với NCC</div>
+        <div class="card-actions">
+          <button class="btn btn-primary" onclick="exportTx()">📥 Xuất CSV</button>
+          <button class="btn btn-default" onclick="renderTransactions()">↺ Tải lại</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <table>
+          <thead><tr><th>Ngày</th><th>NCC</th><th>Danh mục</th><th>Mô tả</th><th>Loại</th><th>Số tiền</th></tr></thead>
+          <tbody id="txTbl"></tbody>
+        </table>
+        <div style="margin-top:1rem;padding:.85rem;background:var(--s3);border-radius:6px;display:flex;gap:2rem">
+          <div><div style="font-family:var(--mono);font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:.1em">Tổng chi</div><div style="font-family:var(--mono);font-size:1.1rem;font-weight:700;color:var(--red)" id="txTotal">0đ</div></div>
+          <div><div style="font-family:var(--mono);font-size:.6rem;color:var(--text3);text-transform:uppercase;letter-spacing:.1em">Số giao dịch</div><div style="font-family:var(--mono);font-size:1.1rem;font-weight:700;color:var(--blue)" id="txCount">0</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+// ══════════════════════════════════════════
+// STATE — lưu localStorage
+// ══════════════════════════════════════════
+const S_KEY = 'baggio_suppliers_v2'
+const TX_KEY = 'baggio_transactions'
+const fmt = n => Number(n||0).toLocaleString('vi-VN')
+const fmtD = d => d ? new Date(d).toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit',year:'numeric'}) : '—'
+
+let suppliers = []
+let transactions = []
+let currentCat = 'all'
+let editSupId = null
+let txSupId = null
+
+function getSuppliers(){ try{return JSON.parse(localStorage.getItem(S_KEY)||'[]')}catch{return[]}}
+function saveSuppliers(){ localStorage.setItem(S_KEY,JSON.stringify(suppliers)) }
+function getTx(){ try{return JSON.parse(localStorage.getItem(TX_KEY)||'[]')}catch{return[]}}
+function saveTx_local(){ localStorage.setItem(TX_KEY,JSON.stringify(transactions)) }
+
+setInterval(()=>document.getElementById('clockEl').textContent=new Date().toLocaleTimeString('vi-VN'),1000)
+
+function toast(msg,type='ok'){
+  const w=document.getElementById('toastWrap'),t=document.createElement('div')
+  t.className='toast'
+  t.style.borderLeft=`3px solid ${type==='err'?'var(--red)':type==='warn'?'var(--amber)':'var(--green)'}`
+  t.textContent=msg;w.appendChild(t)
+  setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity .3s';setTimeout(()=>t.remove(),300)},3000)
+}
+
+// ══════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════
+const CAT_LABELS = {all:'🏪 Tất cả nhà cung cấp',hotel:'🏨 Khách sạn & Resort',flight:'✈️ Vé máy bay',transport:'🚌 Vận chuyển & Xe',food:'🍽️ Nhà hàng & Ăn uống',activity:'🏄 Hoạt động & Vui chơi'}
+
+function nav(page,el){
+  document.querySelectorAll('.sb-item').forEach(i=>i.classList.remove('active'))
+  if(el)el.classList.add('active')
+  currentCat=page
+
+  if(['all','hotel','flight','transport','food','activity'].includes(page)){
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'))
+    document.getElementById('page-all').classList.add('active')
+    document.getElementById('listTitle').textContent=CAT_LABELS[page]||'Nhà cung cấp'
+    renderPage()
+  } else {
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'))
+    document.getElementById('page-'+page).classList.add('active')
+    if(page==='analytics')renderAnalytics()
+    if(page==='transactions')renderTransactions()
+  }
+}
+
+// ══════════════════════════════════════════
+// RENDER SUPPLIERS
+// ══════════════════════════════════════════
+const CAT_MAP = {hotel:'🏨 Khách sạn',flight:'✈️ Hãng bay',transport:'🚌 Vận chuyển',food:'🍽️ Ăn uống',activity:'🏄 Hoạt động',other:'📦 Khác'}
+const UNIT_MAP = {per_night:'/đêm',per_person:'/người',per_trip:'/chuyến',per_day:'/ngày',per_group:'/đoàn'}
+const STATUS_MAP = {active:['badge-active','Đang HT'],preferred:['badge-preferred','⭐ Ưu tiên'],inactive:['badge-inactive','Ngừng HT']}
+
+function renderPage(){
+  suppliers=getSuppliers()
+  transactions=getTx()
+  const statusF=document.getElementById('statusFilter')?.value||''
+  const searchQ=document.getElementById('searchInput')?.value?.toLowerCase()||''
+
+  let filtered=suppliers.filter(s=>{
+    if(currentCat!=='all'&&s.cat!==currentCat)return false
+    if(statusF&&s.status!==statusF)return false
+    if(searchQ&&!s.name.toLowerCase().includes(searchQ)&&!(s.area||'').toLowerCase().includes(searchQ))return false
+    return true
+  })
+
+  updateSidebarCounts()
+  updateStats()
+  renderSupGrid(filtered)
+}
+
+function updateSidebarCounts(){
+  const cats=['all','hotel','flight','transport','food','activity']
+  cats.forEach(c=>{
+    const el=document.getElementById('sb'+c.charAt(0).toUpperCase()+c.slice(1))
+    if(el)el.textContent=c==='all'?suppliers.length:suppliers.filter(s=>s.cat===c).length
+  })
+}
+
+function updateStats(){
+  const txList=getTx()
+  const totalCost=txList.reduce((s,t)=>t.type!=='refund'?s+Number(t.amount||0):s,0)
+  const saved=suppliers.reduce((s,sup)=>{
+    const contract=Number(sup.contract_price||0)
+    const market=Number(sup.market_price||0)
+    return market>contract?s+(market-contract):s
+  },0)
+  document.getElementById('statTotal').textContent=suppliers.filter(s=>s.status!=='inactive').length
+  document.getElementById('statPreferred').textContent=suppliers.filter(s=>s.status==='preferred').length
+  document.getElementById('statTotalCost').textContent=fmt(totalCost)+'đ'
+  document.getElementById('statSaved').textContent=fmt(saved)+'đ'
+}
+
+function renderSupGrid(list){
+  const el=document.getElementById('supGrid')
+  if(!list.length){
+    el.innerHTML=`<div class="empty-state" style="grid-column:1/-1">
+      <div class="empty-icon">🔍</div>
+      <div style="font-weight:600;margin-bottom:.3rem">Không tìm thấy NCC</div>
+      <div style="font-size:.82rem;color:var(--text2)">Thử thay đổi bộ lọc hoặc thêm NCC mới</div>
+    </div>`
+    return
+  }
+  const txList=getTx()
+  el.innerHTML=list.map(s=>{
+    const [bCls,bLabel]=STATUS_MAP[s.status]||['badge-inactive','Không rõ']
+    const contract=Number(s.contract_price||0)
+    const market=Number(s.market_price||0)
+    const margin=market>0?Math.round((market-contract)/market*100):0
+    const supTx=txList.filter(t=>t.supId===s.id&&t.type!=='refund')
+    const totalSpent=supTx.reduce((a,t)=>a+Number(t.amount||0),0)
+    const stars='★'.repeat(s.rating||0)+'☆'.repeat(5-(s.rating||0))
+    return`<div class="sup-card">
+      <span class="sc-cat-badge cat-${s.cat}">${CAT_MAP[s.cat]||s.cat}</span>
+      <div class="sc-name">${s.name}</div>
+      <div class="sc-type">${s.area||'—'}${s.cat==='hotel'&&s.star?` · ${'⭐'.repeat(s.star)} ${s.star} sao`:''}${s.cat==='hotel'&&s.room_count?` · ${s.room_count} phòng`:''}</div>
+      <div class="sc-info">
+        ${s.contact?`<div class="sc-info-row"><span class="icon">👤</span>${s.contact}</div>`:''}
+        <div class="sc-info-row"><span class="icon">📞</span>${s.phone||'—'}</div>
+        ${s.email?`<div class="sc-info-row"><span class="icon">📧</span>${s.email}</div>`:''}
+        ${s.address?`<div class="sc-info-row"><span class="icon">📍</span>${s.address.slice(0,40)}${s.address.length>40?'...':''}</div>`:''}
+      </div>
+      ${contract>0||market>0?`<div class="sc-price-section">
+        <div class="sc-price-label">Giá dịch vụ ${UNIT_MAP[s.unit]||''}</div>
+        ${contract>0?`<div class="sc-price-row"><span style="color:var(--text2)">Giá HĐ</span><span class="sc-price-contract">${fmt(contract)}đ</span></div>`:''}
+        ${market>0?`<div class="sc-price-row"><span style="color:var(--text2)">Giá TT</span><span class="sc-price-market">${fmt(market)}đ</span></div>`:''}
+        ${margin>0?`<div class="sc-price-row"><span style="color:var(--text2)">Tiết kiệm</span><span class="sc-margin">↓ ${margin}%</span></div>`:''}
+      </div>`:''}
+      ${s.rating>0?`<div class="sc-rating"><span class="sc-stars">${stars}</span><span class="sc-rating-num">${s.rating}/5</span></div>`:''}
+      ${totalSpent>0?`<div style="font-size:.75rem;color:var(--text2);margin-bottom:.5rem">💰 Đã chi: <span style="color:var(--amber);font-family:var(--mono)">${fmt(totalSpent)}đ</span></div>`:''}
+      ${(s.tags||[]).length?`<div class="sc-tags">${s.tags.slice(0,4).map(t=>`<span class="sc-tag">${t}</span>`).join('')}</div>`:''}
+      ${s.notes?`<div style="font-size:.72rem;color:var(--text3);font-style:italic;margin-bottom:.65rem;line-height:1.5">${s.notes.slice(0,80)}${s.notes.length>80?'...':''}</div>`:''}
+      <div class="sc-actions">
+        <span class="badge ${bCls}">${bLabel}</span>
+        <div style="margin-left:auto;display:flex;gap:.35rem">
+          <button class="btn btn-default" style="font-size:.58rem" onclick="openTxModal('${s.id}','${s.name.replace(/'/g,"\\'")}')">💳 GD</button>
+          <button class="btn btn-default" style="font-size:.58rem" onclick="editSupplier('${s.id}')">✏️</button>
+          <button class="btn btn-danger" style="font-size:.58rem" onclick="deleteSup('${s.id}')">🗑</button>
+        </div>
+      </div>
+    </div>`
+  }).join('')
+}
+
+function filterSuppliers(q){ renderPage() }
+
+// ══════════════════════════════════════════
+// SUPPLIER MODAL
+// ══════════════════════════════════════════
+function toggleHotelFields(){
+  const isHotel=document.getElementById('sf_cat').value==='hotel'
+  const block=document.getElementById('hotelFields')
+  block.style.display=isHotel?'block':'none'
+  if(!isHotel){
+    document.getElementById('sf_star').value=''
+    document.getElementById('sf_room_count').value=''
+  }
+}
+
+function openSupModal(){
+  editSupId=null
+  document.getElementById('supModalTitle').textContent='Thêm nhà cung cấp'
+  ;['sf_name','sf_contact','sf_phone','sf_email','sf_web','sf_address','sf_area','sf_contract_price','sf_market_price','sf_notes','sf_tags'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''})
+  document.getElementById('sf_cat').value='hotel'
+  document.getElementById('sf_star').value=''
+  document.getElementById('sf_room_count').value=''
+  document.getElementById('sf_status').value='active'
+  document.getElementById('sf_unit').value='per_night'
+  setRating(0)
+  toggleHotelFields()
+  document.getElementById('supModal').classList.add('open')
+}
+
+function editSupplier(id){
+  const s=suppliers.find(x=>x.id===id); if(!s)return
+  editSupId=id
+  document.getElementById('supModalTitle').textContent='Sửa thông tin NCC'
+  document.getElementById('sf_name').value=s.name||''
+  document.getElementById('sf_cat').value=s.cat||'hotel'
+  document.getElementById('sf_contact').value=s.contact||''
+  document.getElementById('sf_phone').value=s.phone||''
+  document.getElementById('sf_email').value=s.email||''
+  document.getElementById('sf_web').value=s.web||''
+  document.getElementById('sf_address').value=s.address||''
+  document.getElementById('sf_area').value=s.area||''
+  document.getElementById('sf_contract_price').value=s.contract_price||''
+  document.getElementById('sf_market_price').value=s.market_price||''
+  document.getElementById('sf_unit').value=s.unit||'per_night'
+  document.getElementById('sf_status').value=s.status||'active'
+  document.getElementById('sf_notes').value=s.notes||''
+  document.getElementById('sf_tags').value=(s.tags||[]).join(', ')
+  setRating(s.rating||0)
+  document.getElementById('sf_star').value=s.star||''
+  document.getElementById('sf_room_count').value=s.room_count||''
+  toggleHotelFields()
+  document.getElementById('supModal').classList.add('open')
+}
+
+function closeSupModal(){ document.getElementById('supModal').classList.remove('open'); editSupId=null }
+
+function saveSupplier(){
+  const name=document.getElementById('sf_name').value.trim()
+  if(!name){toast('Vui lòng nhập tên NCC','warn');return}
+  const cat=document.getElementById('sf_cat').value
+  const star=document.getElementById('sf_star').value
+  if(cat==='hotel'&&!star){
+    document.getElementById('sf_star').style.borderColor='var(--red)'
+    toast('Vui lòng chọn hạng sao cho khách sạn','warn')
+    return
+  }
+  document.getElementById('sf_star').style.borderColor=''
+  const data={
+    id:editSupId||`sup_${Date.now()}`,
+    name, cat,
+    star:cat==='hotel'?Number(star)||null:null,
+    room_count:cat==='hotel'?Number(document.getElementById('sf_room_count').value)||null:null,
+    contact:document.getElementById('sf_contact').value.trim(),
+    phone:document.getElementById('sf_phone').value.trim(),
+    email:document.getElementById('sf_email').value.trim(),
+    web:document.getElementById('sf_web').value.trim(),
+    address:document.getElementById('sf_address').value.trim(),
+    area:document.getElementById('sf_area').value.trim(),
+    contract_price:Number(document.getElementById('sf_contract_price').value)||0,
+    market_price:Number(document.getElementById('sf_market_price').value)||0,
+    unit:document.getElementById('sf_unit').value,
+    status:document.getElementById('sf_status').value,
+    rating:Number(document.getElementById('sf_rating').value)||0,
+    notes:document.getElementById('sf_notes').value.trim(),
+    tags:document.getElementById('sf_tags').value.split(',').map(t=>t.trim()).filter(Boolean),
+    createdAt:editSupId?suppliers.find(s=>s.id===editSupId)?.createdAt:new Date().toISOString(),
+    updatedAt:new Date().toISOString(),
+  }
+  if(editSupId){ const i=suppliers.findIndex(s=>s.id===editSupId); if(i>=0)suppliers[i]=data }
+  else suppliers.unshift(data)
+  saveSuppliers()
+  closeSupModal()
+  renderPage()
+  toast(editSupId?'✅ Đã cập nhật NCC':'✅ Đã thêm NCC mới')
+}
+
+function deleteSup(id){
+  if(!confirm('Xóa nhà cung cấp này?'))return
+  suppliers=suppliers.filter(s=>s.id!==id)
+  saveSuppliers(); renderPage()
+  toast('🗑 Đã xóa NCC','warn')
+}
+
+function setRating(r){
+  document.getElementById('sf_rating').value=r
+  document.querySelectorAll('.rate-star').forEach(s=>{
+    s.classList.toggle('on',Number(s.dataset.r)<=r)
+  })
+}
+
+// ══════════════════════════════════════════
+// TRANSACTIONS
+// ══════════════════════════════════════════
+function openTxModal(supId,supName){
+  txSupId=supId
+  document.getElementById('txSupName').textContent=supName
+  document.getElementById('tx_date').value=new Date().toISOString().split('T')[0]
+  document.getElementById('tx_amount').value=''
+  document.getElementById('tx_desc').value=''
+  document.getElementById('tx_type').value='booking'
+  document.getElementById('txModal').classList.add('open')
+}
+function closeTxModal(){ document.getElementById('txModal').classList.remove('open') }
+
+function saveTx(){
+  const amount=Number(document.getElementById('tx_amount').value)
+  if(!amount){toast('Vui lòng nhập số tiền','warn');return}
+  transactions=getTx()
+  transactions.unshift({
+    id:`tx_${Date.now()}`, supId:txSupId,
+    supName:document.getElementById('txSupName').textContent,
+    date:document.getElementById('tx_date').value,
+    amount, desc:document.getElementById('tx_desc').value.trim(),
+    type:document.getElementById('tx_type').value,
+    createdAt:new Date().toISOString()
+  })
+  saveTx_local()
+  closeTxModal(); renderPage()
+  toast('✅ Đã ghi nhận giao dịch')
+}
+
+function renderTransactions(){
+  transactions=getTx()
+  const sup=suppliers
+  const TYPES={booking:'Đặt dịch vụ',payment:'Thanh toán',refund:'Hoàn tiền',penalty:'Phí phạt'}
+  const el=document.getElementById('txTbl')
+  if(!transactions.length){el.innerHTML='<tr><td colspan="6" style="text-align:center;padding:2rem;color:var(--text3)">Chưa có giao dịch nào</td></tr>';return}
+  const total=transactions.filter(t=>t.type!=='refund').reduce((s,t)=>s+Number(t.amount||0),0)
+  document.getElementById('txTotal').textContent=fmt(total)+'đ'
+  document.getElementById('txCount').textContent=transactions.length
+  const s2=suppliers.find(s=>true)
+  el.innerHTML=transactions.map(t=>{
+    const sup=suppliers.find(s=>s.id===t.supId)
+    return`<tr>
+      <td><span style="font-family:var(--mono);font-size:.72rem">${fmtD(t.date)}</span></td>
+      <td><div style="font-weight:500">${t.supName||'—'}</div></td>
+      <td><span style="font-family:var(--mono);font-size:.68rem;color:var(--text2)">${CAT_MAP[sup?.cat]||'—'}</span></td>
+      <td><div style="color:var(--text2);font-size:.78rem;max-width:200px">${t.desc||'—'}</div></td>
+      <td><span style="font-size:.75rem;color:${t.type==='refund'?'var(--green)':t.type==='penalty'?'var(--red)':'var(--text2)'}">${TYPES[t.type]||t.type}</span></td>
+      <td><span style="font-family:var(--mono);font-weight:600;color:${t.type==='refund'?'var(--green)':'var(--amber)'}">${t.type==='refund'?'+':'-'}${fmt(t.amount)}đ</span></td>
+    </tr>`
+  }).join('')
+}
+
+function exportTx(){
+  const rows=[['Ngày','NCC','Mô tả','Loại','Số tiền']]
+  getTx().forEach(t=>rows.push([fmtD(t.date),t.supName||'',t.desc||'',t.type,t.amount]))
+  const bom='\uFEFF'
+  const csv=bom+rows.map(r=>r.map(v=>`"${v}"`).join(',')).join('\n')
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}))
+  a.download='giao-dich-ncc.csv'; a.click()
+  toast('📥 Đã xuất lịch sử giao dịch')
+}
+
+// ══════════════════════════════════════════
+// ANALYTICS
+// ══════════════════════════════════════════
+function renderAnalytics(){
+  suppliers=getSuppliers()
+  transactions=getTx()
+  const cats=['hotel','flight','transport','food','activity','other']
+  const catLabels=['Khách sạn','Hãng bay','Vận chuyển','Ăn uống','HĐ','Khác']
+  const catColors=['rgba(188,140,255,.7)','rgba(88,166,255,.7)','rgba(210,153,34,.7)','rgba(63,185,80,.7)','rgba(248,81,73,.7)','rgba(139,148,158,.7)']
+
+  // Cost by cat
+  const costByCat=cats.map(cat=>{
+    const supIds=suppliers.filter(s=>s.cat===cat).map(s=>s.id)
+    return transactions.filter(t=>supIds.includes(t.supId)&&t.type!=='refund').reduce((s,t)=>s+Number(t.amount||0),0)
+  })
+
+  const ctx1=document.getElementById('costByCatChart').getContext('2d')
+  if(window._c1)window._c1.destroy()
+  window._c1=new Chart(ctx1,{type:'doughnut',
+    data:{labels:catLabels,datasets:[{data:costByCat,backgroundColor:catColors,borderWidth:1}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'right',labels:{color:'#8b949e',font:{size:10},boxWidth:12,padding:8}},tooltip:{callbacks:{label:c=>`${fmt(c.raw)}đ`}}}}
+  })
+
+  // Savings chart
+  const savingsByCat=cats.map(cat=>{
+    return suppliers.filter(s=>s.cat===cat).reduce((sum,s)=>{
+      const m=Number(s.market_price||0), c=Number(s.contract_price||0)
+      return sum+(m>c?m-c:0)
+    },0)
+  })
+  const ctx2=document.getElementById('savingsChart').getContext('2d')
+  if(window._c2)window._c2.destroy()
+  window._c2=new Chart(ctx2,{type:'bar',
+    data:{labels:catLabels,datasets:[
+      {label:'Tiết kiệm',data:savingsByCat,backgroundColor:'rgba(63,185,80,.6)',borderColor:'#3fb950',borderWidth:1,borderRadius:4},
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${fmt(c.raw)}đ`}}},
+      scales:{x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8b949e',font:{size:10}}},y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#8b949e',font:{size:10},callback:v=>`${(v/1e3).toFixed(0)}K`}}}}
+  })
+
+  // Margin table
+  document.getElementById('marginTbl').innerHTML=suppliers.map(s=>{
+    const contract=Number(s.contract_price||0), market=Number(s.market_price||0)
+    const margin=market>0?Math.round((market-contract)/market*100):0
+    const stars='★'.repeat(s.rating||0)+'☆'.repeat(5-(s.rating||0))
+    return`<tr>
+      <td style="font-weight:500">${s.name}</td>
+      <td><span style="font-size:.72rem;color:var(--text2)">${CAT_MAP[s.cat]||s.cat}</span></td>
+      <td><span style="font-size:.8rem">${s.cat==='hotel'&&s.star?'⭐'.repeat(s.star):'—'}</span></td>
+      <td><span style="font-family:var(--mono);font-size:.78rem;color:var(--text2)">${s.cat==='hotel'&&s.room_count?s.room_count:'—'}</span></td>
+      <td><span style="font-family:var(--mono);color:var(--red)">${contract>0?fmt(contract)+'đ':'—'}</span></td>
+      <td><span style="font-family:var(--mono);color:var(--text2)">${market>0?fmt(market)+'đ':'—'}</span></td>
+      <td><span style="font-family:var(--mono);color:var(--green)">${margin>0?'↓ '+margin+'%':'—'}</span></td>
+      <td><div style="display:flex;align-items:center;gap:.5rem"><div style="width:60px;height:5px;background:var(--s3);border-radius:2px;overflow:hidden"><div style="width:${margin}%;max-width:100%;height:100%;background:var(--green);border-radius:2px"></div></div><span style="font-family:var(--mono);font-size:.7rem">${margin}%</span></div></td>
+      <td style="color:var(--amber)">${stars}</td>
+    </tr>`
+  }).join('')||'<tr><td colspan="9" style="text-align:center;padding:1.5rem;color:var(--text3)">Chưa có dữ liệu</td></tr>'
+}
+
+// ══════════════════════════════════════════
+// INIT — SEED DATA MẪU
+// ══════════════════════════════════════════
+function seedIfEmpty(){
+  if(getSuppliers().length>0) return
+  const seeds=[
+    {id:'sup_1',name:'Mường Thanh Hội An',cat:'hotel',contact:'Nguyễn Thị Mai',phone:'0235 3861 999',email:'sale@muongthanh-hoian.com',address:'Đường Võ Thị Sáu, Hội An',area:'Hội An, Quảng Nam',contract_price:450000,market_price:650000,unit:'per_night',status:'preferred',rating:5,notes:'Giá net, bao breakfast. Cần đặt trước 7 ngày.',tags:['4 sao','breakfast','hồ bơi','trung tâm'],createdAt:new Date().toISOString()},
+    {id:'sup_2',name:'Vinpearl Phú Quốc',cat:'hotel',contact:'Sales Team',phone:'0297 3598 888',email:'phuquoc@vinpearl.com',address:'Bãi Dài, Phú Quốc',area:'Phú Quốc, Kiên Giang',contract_price:2800000,market_price:4200000,unit:'per_night',status:'preferred',rating:5,notes:'Resort 5 sao. All-inclusive package.',tags:['5 sao','all-inclusive','resort','biển'],createdAt:new Date().toISOString()},
+    {id:'sup_3',name:'Vietnam Airlines',cat:'flight',contact:'Sales Corp',phone:'1900 1100',email:'corporate@vietnamairlines.com',address:'Hà Nội',area:'Toàn quốc',contract_price:0,market_price:0,unit:'per_person',status:'active',rating:4,notes:'Tài khoản doanh nghiệp. Ưu đãi 10% vé nhóm >10 người.',tags:['bay thẳng','hành lý 23kg','bữa ăn'],createdAt:new Date().toISOString()},
+    {id:'sup_4',name:'Xe Du lịch Hoàng Long',cat:'transport',contact:'Anh Hoàng',phone:'0905 123 456',email:'hoanglong.xe@gmail.com',address:'45 Nguyễn Huệ, Đà Nẵng',area:'Miền Trung',contract_price:2500000,market_price:3500000,unit:'per_trip',status:'active',rating:4,notes:'Xe 16 chỗ và 45 chỗ. Tài xế kinh nghiệm.',tags:['16 chỗ','45 chỗ','có AC','wifi'],createdAt:new Date().toISOString()},
+    {id:'sup_5',name:'Nhà hàng Phố Hội',cat:'food',contact:'Chị Lan',phone:'0235 3861 234',email:'nhahangphohoi@gmail.com',address:'22 Phan Bội Châu, Hội An',area:'Hội An',contract_price:150000,market_price:220000,unit:'per_person',status:'active',rating:5,notes:'Set menu: khai vị, món chính, tráng miệng. Giá net cho nhóm >10.',tags:['set menu','đặc sản Hội An','view sông'],createdAt:new Date().toISOString()},
+  ]
+  localStorage.setItem(S_KEY,JSON.stringify(seeds))
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  seedIfEmpty()
+  renderPage()
+})
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){closeSupModal();closeTxModal()}
+})
+</script>
+</body>
+</html>
