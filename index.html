@@ -442,7 +442,7 @@ footer{background:var(--ink);color:rgba(250,248,243,.55);padding:3rem 2rem 1.5re
         </div>
         <div class="tp-group">
           <label class="tp-label">Vùng miền</label>
-          <select class="tp-select" id="tp_region">
+          <select class="tp-select" id="tp_region" onchange="populateTpDest(this.value);document.getElementById('tp_dest').value=''">
             <option value="">Tất cả</option>
             <option value="north">🏔 Miền Bắc</option>
             <option value="central">🏖 Miền Trung</option>
@@ -710,6 +710,28 @@ const PROVINCES = {
 }
 const ALL_PROVINCES = [...PROVINCES.north, ...PROVINCES.central, ...PROVINCES.south].sort()
 
+// Danh sách điểm đến hấp dẫn (dùng cho Trip Planner)
+const ATTRACTIVE_DESTS = {
+  north: [
+    'Hà Nội','Hạ Long','Sa Pa','Ninh Bình','Hà Giang','Cao Bằng','Điện Biên',
+    'Mộc Châu','Mai Châu','Hải Phòng','Cát Bà','Bắc Hà','Tam Đảo','Vân Đồn',
+    'Đồng Văn','Mù Cang Chải','Lạng Sơn','Bắc Ninh','Phú Thọ','Tuyên Quang',
+    'Na Hang','Sơn La','Lai Châu','Yên Bái','Hòa Bình'
+  ],
+  central: [
+    'Đà Nẵng','Hội An','Huế','Nha Trang','Đà Lạt','Phan Thiết','Mũi Né',
+    'Quy Nhơn','Phú Yên','Quảng Bình','Phong Nha','Quảng Nam','Quảng Ngãi',
+    'Lý Sơn','Buôn Ma Thuột','Kon Tum','Gia Lai','Đắk Lắk','Bảo Lộc',
+    'Ninh Thuận','Phan Rang','Cù Lao Chàm','Nghệ An','Hà Tĩnh','Quảng Trị'
+  ],
+  south: [
+    'Hồ Chí Minh','Phú Quốc','Vũng Tàu','Cần Thơ','Mỹ Tho','Bến Tre',
+    'Châu Đốc','Cà Mau','Côn Đảo','An Giang','Tiền Giang','Đồng Tháp',
+    'Tây Ninh','Long An','Trà Vinh','Sóc Trăng','Bạc Liêu','Kiên Giang'
+  ]
+}
+const ALL_ATTRACTIVE_DESTS = [...ATTRACTIVE_DESTS.north, ...ATTRACTIVE_DESTS.central, ...ATTRACTIVE_DESTS.south].sort()
+
 function getFilters() {
   return {
     search:   document.getElementById('searchInput')?.value.trim() || '',
@@ -802,7 +824,6 @@ function renderPagination() {
 // ══════════════════════════════════════════════════════════════
 function renderTours(tours) {
   const grid = document.getElementById('toursGrid')
-  document.getElementById('tourCountLabel').textContent = `${tours.length} tour`
 
   if (!tours.length) {
     grid.innerHTML = `<div class="state-box">
@@ -857,7 +878,6 @@ function buildIncludesList(inc) {
   if (inc.guide)    items.push('Hướng dẫn viên địa phương')
   if (inc.transfer) items.push('Xe đưa đón sân bay')
   if (inc.meals)    items.push(Array.isArray(inc.meals) ? inc.meals.join(', ') : inc.meals)
-  if (inc.transfer === true) items.push('Xe đưa đón sân bay')
   return items.slice(0, 4).map(i => `<li>${i}</li>`).join('')
 }
 
@@ -886,11 +906,24 @@ function clearSearch() {
   applyFilters()
 }
 
+function populateTpDest(region) {
+  const sel  = document.getElementById('tp_dest')
+  const prev = sel.value
+  sel.innerHTML = '<option value="">🗺 Tất cả</option>'
+  const list = region ? (ATTRACTIVE_DESTS[region] || []) : ALL_ATTRACTIVE_DESTS
+  list.forEach(d => {
+    const o = document.createElement('option')
+    o.value = d; o.textContent = d
+    if (d === prev) o.selected = true
+    sel.appendChild(o)
+  })
+}
+
 function populateDestFilter(region) {
   const sel  = document.getElementById('filterDest')
   const prev = sel.value
   sel.innerHTML = '<option value="">Tất cả điểm đến</option>'
-  const list = region ? (PROVINCES[region] || []) : ALL_PROVINCES
+  const list = region ? (ATTRACTIVE_DESTS[region] || []) : ALL_ATTRACTIVE_DESTS
   list.forEach(d => {
     const o = document.createElement('option')
     o.value = d; o.textContent = d
@@ -1068,7 +1101,7 @@ function renderReviews(reviews) {
         <div class="rev-av">${initials(r.reviewer_name)}</div>
         <div>
           <div class="rev-name">${r.reviewer_name}</div>
-          <div class="rev-tour-name">${r.tours?.name || 'Tour Baggio Travel'}</div>
+          <div class="rev-tour-name">${r.tours?.name_vi || 'Tour Baggio Travel'}</div>
         </div>
       </div>
     </div>`).join('')
@@ -1373,10 +1406,8 @@ async function initNavAuth() {
 
 document.addEventListener('DOMContentLoaded', async () => {
   initNavAuth()
-  // Populate trip planner dest dropdown (top destinations)
-  const topDests = ['Hội An','Hạ Long','Phú Quốc','Sa Pa','Đà Lạt','Nha Trang','Đà Nẵng','Huế','Hà Nội','Mũi Né','Cần Thơ','Ninh Bình']
-  const tpDestSel = document.getElementById('tp_dest')
-  topDests.forEach(d => { const o = document.createElement('option'); o.value=d; o.textContent=d; tpDestSel.appendChild(o) })
+  // Populate trip planner dest dropdown (all attractive destinations)
+  populateTpDest('')
 
   populateDestFilter('') // load đủ 63 tỉnh ngay khi mở trang
   await Promise.all([loadTours(), loadGuides(), loadReviews()])
