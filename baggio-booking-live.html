@@ -36,6 +36,11 @@ body{background:var(--cream);color:var(--ink);font-family:var(--font);font-size:
 .nav-back:hover{color:var(--red)}
 .nav-secure{font-family:var(--mono);font-size:.6rem;color:var(--teal);display:flex;align-items:center;gap:.35rem;letter-spacing:.06em}
 .nav-secure::before{content:'🔒'}
+.nav-user-btn{display:flex;align-items:center;gap:.5rem;cursor:pointer;padding:.3rem .75rem;border:1px solid var(--border);background:none;transition:border-color .2s;text-decoration:none}
+.nav-user-btn:hover{border-color:var(--red)}
+.nav-user-avatar{width:26px;height:26px;border-radius:50%;object-fit:cover;flex-shrink:0}
+.nav-user-avatar-ph{width:26px;height:26px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;color:#fff;flex-shrink:0}
+.nav-user-name{font-size:.78rem;font-weight:600;color:var(--ink);max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
 /* PROGRESS */
 .progress-wrap{background:var(--card);border-bottom:1px solid var(--border);padding:1.1rem 2rem}
@@ -223,9 +228,12 @@ body{background:var(--cream);color:var(--ink);font-family:var(--font);font-size:
 
 <!-- NAV -->
 <div class="top-nav">
-  <a href="index.html" class="nav-back">← Quay lại</a>
-  <a href="index.html" class="nav-brand">Baggio<span>.</span>Travel</a>
-  <div class="nav-secure">Thanh toán bảo mật</div>
+  <a href="/" class="nav-back">← Quay lại</a>
+  <a href="/" class="nav-brand">Baggio<span>.</span>Travel</a>
+  <div style="display:flex;align-items:center;gap:.75rem">
+    <div class="nav-secure">Thanh toán bảo mật</div>
+    <div id="nav-auth-area"></div>
+  </div>
 </div>
 
 <!-- PROGRESS -->
@@ -847,9 +855,25 @@ async function submitBooking(){
   }
 }
 
+// ── NAV AUTH ──────────────────────────────────────────
+async function initNavAuth() {
+  const { data: { session } } = await sb.auth.getSession()
+  if (!session?.user) return
+  const user = session.user
+  const meta = user.user_metadata || {}
+  const name = meta.full_name || meta.name || user.email.split('@')[0]
+  const shortName = name.split(' ').pop()
+  const avatar = meta.avatar_url || meta.picture || null
+  const avatarHtml = avatar
+    ? `<img src="${avatar}" class="nav-user-avatar" alt="${shortName}" onerror="this.replaceWith(document.createElement('div'))">`
+    : `<div class="nav-user-avatar-ph">${shortName[0].toUpperCase()}</div>`
+  document.getElementById('nav-auth-area').innerHTML =
+    `<a href="/account" class="nav-user-btn">${avatarHtml}<span class="nav-user-name">${shortName}</span></a>`
+}
+
 // ── INIT ───────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async ()=>{
-  // Bật RLS policy cho bookings — cần INSERT từ frontend
+  initNavAuth()
   loadTours()
   renderCal()
   updateSummary()

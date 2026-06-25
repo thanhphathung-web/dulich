@@ -30,6 +30,13 @@ nav{background:var(--card);border-bottom:1px solid var(--border);padding:.9rem 2
 .nav-links a:hover{color:var(--red)}
 .nav-cta{background:var(--red);color:#fff;font-size:.82rem;font-weight:600;padding:.5rem 1.2rem;text-decoration:none;transition:background .2s}
 .nav-cta:hover{background:#a82d22}
+.nav-zalo{display:flex;align-items:center;opacity:.8;transition:opacity .2s}
+.nav-zalo:hover{opacity:1}
+.nav-user-btn{display:flex;align-items:center;gap:.5rem;cursor:pointer;padding:.3rem .75rem;border:1px solid var(--border);background:none;transition:border-color .2s;text-decoration:none}
+.nav-user-btn:hover{border-color:var(--red)}
+.nav-user-avatar{width:26px;height:26px;border-radius:50%;object-fit:cover;flex-shrink:0}
+.nav-user-avatar-ph{width:26px;height:26px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;color:#fff;flex-shrink:0}
+.nav-user-name{font-size:.78rem;font-weight:600;color:var(--ink);max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
 /* HERO */
 .hero{position:relative;height:480px;overflow:hidden}
@@ -175,13 +182,20 @@ nav{background:var(--card);border-bottom:1px solid var(--border);padding:.9rem 2
 
 <!-- NAV -->
 <nav>
-  <a href="index.html" class="nav-logo">Baggio<span>.</span>Travel</a>
+  <a href="/" class="nav-logo">Baggio<span>.</span>Travel</a>
   <ul class="nav-links">
-    <li><a href="index.html#tours">Tour</a></li>
-    <li><a href="index.html#guides">HDV</a></li>
-    <li><a href="index.html#reviews">Đánh giá</a></li>
+    <li><a href="/#tours">Tour</a></li>
+    <li><a href="/#guides">HDV</a></li>
+    <li><a href="/#reviews">Đánh giá</a></li>
   </ul>
-  <a href="#" class="nav-cta" id="navBookBtn">Đặt tour ngay</a>
+  <div style="display:flex;align-items:center;gap:.65rem">
+    <a href="https://zalo.me/0906306286" target="_blank" class="nav-zalo" title="Chat Zalo">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="6" fill="#0068FF"/><text x="12" y="17" text-anchor="middle" font-size="11" font-weight="700" fill="#fff" font-family="Arial">Z</text></svg>
+    </a>
+    <div id="nav-auth-area">
+      <a href="/booking" class="nav-cta" id="navBookBtn">Đặt tour ngay</a>
+    </div>
+  </div>
 </nav>
 
 <!-- HERO -->
@@ -190,7 +204,7 @@ nav{background:var(--card);border-bottom:1px solid var(--border);padding:.9rem 2
   <div class="hero-overlay"></div>
   <div class="hero-content">
     <div class="hero-breadcrumb">
-      <a href="index.html">Trang chủ</a> › <a href="index.html#tours">Tour</a> › <span id="heroDest">...</span>
+      <a href="/">Trang chủ</a> › <a href="/#tours">Tour</a> › <span id="heroDest">...</span>
     </div>
     <h1 class="hero-title" id="heroTitle">Đang tải...</h1>
     <div class="hero-meta">
@@ -342,13 +356,14 @@ function switchTab(tab, btn) {
 // ── LOAD TOUR ──────────────────────────────────────────
 async function loadTour() {
   const slug = new URLSearchParams(location.search).get('slug')
-  if(!slug) { window.location.href='index.html'; return }
+  if(!slug) { window.location.href='/'; return }
 
-  const {data,error} = await sb.from('tours')
+  const isUuid = /^[0-9a-f-]{36}$/i.test(slug)
+  const query = sb.from('tours')
     .select('*,tour_schedules(id,depart_date,return_date,available_slots,status,price_override),reviews(id,reviewer_name,rating,comment,created_at,is_published)')
-    .eq('slug', slug).single()
+  const {data,error} = await (isUuid ? query.eq('id', slug) : query.eq('slug', slug)).single()
 
-  if(error||!data) { window.location.href='index.html'; return }
+  if(error||!data) { window.location.href='/'; return }
   tour = data
   renderTour(data)
 }
@@ -364,7 +379,7 @@ function renderTour(t) {
   document.getElementById('heroDays').textContent = `${t.duration_days} ngày ${t.duration_nights} đêm`
   document.getElementById('heroMaxPax').textContent = t.max_pax
   document.getElementById('bcPrice').innerHTML = `${fmt(t.base_price)}<span class="bc-price-per"> đ/người</span>`
-  document.getElementById('navBookBtn').onclick = bookNow
+  document.getElementById('navBookBtn') && (document.getElementById('navBookBtn').onclick = bookNow)
 
   // Reviews rating
   const pubReviews = (t.reviews||[]).filter(r=>r.is_published)
@@ -461,8 +476,8 @@ function selectSchedule(el, id, depart, ret, slots) {
 function bookNow() {
   if(!tour) return
   const url = selectedSchedule
-    ? `baggio-booking-live.html?tour=${tour.slug}&schedule=${selectedSchedule.id}`
-    : `baggio-booking-live.html?tour=${tour.slug}`
+    ? `/booking?tour=${tour.slug}&schedule=${selectedSchedule.id}`
+    : `/booking?tour=${tour.slug}`
   window.location.href = url
 }
 
@@ -481,7 +496,7 @@ async function loadRelated(destination, excludeId, region) {
     .limit(3)
 
   document.getElementById('relatedGrid').innerHTML = (data||[]).map(t=>`
-    <a class="rel-card" href="baggio-tour-detail.html?slug=${t.slug}">
+    <a class="rel-card" href="/tour?slug=${t.slug}">
       <img class="rel-img" src="${t.cover_image||'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=400&q=70'}" alt="${t.name_vi}" onerror="this.src='https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=400&q=70'">
       <div class="rel-body">
         <div class="rel-dest">${t.destination} · ${t.duration_days}N</div>
@@ -502,8 +517,27 @@ function copyLink() {
   navigator.clipboard.writeText(location.href).then(()=>toast('✅ Đã copy link tour!'))
 }
 
+// ── NAV AUTH ──────────────────────────────────────────
+async function initNavAuth() {
+  const { data: { session } } = await sb.auth.getSession()
+  if (!session?.user) return
+  const user = session.user
+  const meta = user.user_metadata || {}
+  const name = meta.full_name || meta.name || user.email.split('@')[0]
+  const shortName = name.split(' ').pop()
+  const avatar = meta.avatar_url || meta.picture || null
+  const avatarHtml = avatar
+    ? `<img src="${avatar}" class="nav-user-avatar" alt="${shortName}" onerror="this.replaceWith(document.createElement('div'))">`
+    : `<div class="nav-user-avatar-ph">${shortName[0].toUpperCase()}</div>`
+  document.getElementById('nav-auth-area').innerHTML =
+    `<a href="/account" class="nav-user-btn">${avatarHtml}<span class="nav-user-name">${shortName}</span></a>`
+}
+
 // ── INIT ──────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', loadTour)
+document.addEventListener('DOMContentLoaded', () => {
+  initNavAuth()
+  loadTour()
+})
 </script>
 </body>
 </html>

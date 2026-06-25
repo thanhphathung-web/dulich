@@ -843,7 +843,7 @@ function renderTours(tours) {
     const badgeHtml = hasSoon ? `<div class="tc-badge">Còn ${schedOpen[0].available_slots} chỗ</div>` : ''
 
     return `
-    <article class="tour-card" onclick="openModal('${t.id}')">
+    <article class="tour-card" onclick="window.location.href='/tour?slug=${t.slug||t.id}'">
       <div class="tc-img-wrap">
         <img class="tc-img"
           src="${t.cover_image || 'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=600&q=70'}"
@@ -864,7 +864,7 @@ function renderTours(tours) {
             <span class="tc-price-from">Từ</span>
             <div class="tc-price">${fmt(t.base_price)} <sub>đ/người</sub></div>
           </div>
-          <button class="btn-book" onclick="event.stopPropagation();openModal('${t.id}')">Xem tour</button>
+          <a class="btn-book" href="/tour?slug=${t.slug||t.id}" onclick="event.stopPropagation()">Xem tour</a>
         </div>
       </div>
     </article>`
@@ -1368,7 +1368,7 @@ async function runTripPlanner() {
   }
 
   grid.innerHTML = filtered.map(t => `
-    <div class="tp-card" onclick="openModal('${t.id}')">
+    <div class="tp-card" onclick="window.location.href='/tour?slug=${t.slug||t.id}'">
       <img class="tp-card-img"
         src="${t.cover_image || 'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=400&q=70'}"
         alt="${t.name_vi}" loading="lazy"
@@ -1379,7 +1379,7 @@ async function runTripPlanner() {
         <div class="tp-card-meta">📅 ${t.duration_days}N${t.duration_nights||0}Đ</div>
         <div class="tp-card-footer">
           <div class="tp-card-price">${fmt(t.base_price)}<span style="font-size:.68rem;font-weight:400;color:rgba(255,255,255,.4)">đ</span></div>
-          <button class="tp-card-btn" onclick="event.stopPropagation();window.location.href='baggio-booking-live.html?tour=${t.slug||''}&id=${t.id}'">Đặt ngay</button>
+          <button class="tp-card-btn" onclick="event.stopPropagation();window.location.href='/tour?slug=${t.slug||t.id}'">Xem chi tiết</button>
         </div>
       </div>
     </div>`).join('')

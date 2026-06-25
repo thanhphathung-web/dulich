@@ -29,6 +29,11 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:13
 .tb-logo{font-family:var(--mono);font-size:.88rem;font-weight:700;color:var(--text)}
 .tb-logo span{color:var(--green)}
 .tb-right{margin-left:auto;display:flex;align-items:center;gap:.75rem}
+.nav-user-btn{display:flex;align-items:center;gap:.45rem;padding:.28rem .65rem;border:1px solid var(--border2);background:none;text-decoration:none;transition:border-color .2s;cursor:pointer}
+.nav-user-btn:hover{border-color:var(--blue)}
+.nav-user-avatar{width:22px;height:22px;border-radius:50%;object-fit:cover;flex-shrink:0}
+.nav-user-avatar-ph{width:22px;height:22px;border-radius:50%;background:var(--blue);display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:700;color:#fff;flex-shrink:0}
+.nav-user-name{font-size:.72rem;font-weight:600;color:var(--text);max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .btn{font-family:var(--mono);font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;padding:.4rem .9rem;border-radius:5px;cursor:pointer;transition:all .15s;border:1px solid;text-decoration:none;display:inline-flex;align-items:center;gap:.35rem}
 .btn-default{background:none;border-color:var(--border);color:var(--text2)}
 .btn-default:hover{border-color:var(--border2);color:var(--text)}
@@ -108,7 +113,8 @@ tr:hover td{background:rgba(255,255,255,.02)}
   <div class="tb-logo">Baggio<span>.</span>Report</div>
   <div style="font-size:.75rem;color:var(--text3)">/ Báo cáo tổng hợp</div>
   <div class="tb-right">
-    <a href="baggio-admin.html" class="btn btn-default">← Admin</a>
+    <a href="/admin" class="btn btn-default">← Admin</a>
+    <div id="nav-auth-area"></div>
   </div>
 </header>
 
@@ -509,7 +515,24 @@ function exportCSV(){
 }
 
 // ── INIT ─────────────────────────────────────
+// ── NAV AUTH ──────────────────────────────────────────
+async function initNavAuth() {
+  const { data: { session } } = await sb.auth.getSession()
+  if (!session?.user) return
+  const user = session.user
+  const meta = user.user_metadata || {}
+  const name = meta.full_name || meta.name || user.email.split('@')[0]
+  const shortName = name.split(' ').pop()
+  const avatar = meta.avatar_url || meta.picture || null
+  const avatarHtml = avatar
+    ? `<img src="${avatar}" class="nav-user-avatar" alt="${shortName}" onerror="this.replaceWith(document.createElement('div'))">`
+    : `<div class="nav-user-avatar-ph">${shortName[0].toUpperCase()}</div>`
+  document.getElementById('nav-auth-area').innerHTML =
+    `<a href="/account" class="nav-user-btn">${avatarHtml}<span class="nav-user-name">${shortName}</span></a>`
+}
+
 document.addEventListener('DOMContentLoaded',()=>{
+  initNavAuth()
   initControls()
   document.getElementById('reportGenTime').textContent=new Date().toLocaleString('vi-VN')
   loadReport()
