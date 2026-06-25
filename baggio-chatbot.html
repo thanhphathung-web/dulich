@@ -35,7 +35,12 @@ body{background:var(--bg);font-family:var(--font);font-size:14px;color:var(--ink
 .header-name{font-family:var(--serif);font-size:1rem;font-weight:700;color:var(--ink);letter-spacing:-.01em}
 .header-status{font-size:.72rem;color:var(--teal);font-weight:500;display:flex;align-items:center;gap:.3rem}
 .header-status::before{content:'';width:6px;height:6px;background:var(--teal);border-radius:50%}
-.header-actions{display:flex;gap:.5rem}
+.header-actions{display:flex;align-items:center;gap:.5rem}
+.nav-user-btn{display:flex;align-items:center;gap:.45rem;padding:.3rem .75rem;border:1px solid var(--border);background:none;text-decoration:none;transition:border-color .2s;cursor:pointer;border-radius:20px}
+.nav-user-btn:hover{border-color:var(--red)}
+.nav-user-avatar{width:24px;height:24px;border-radius:50%;object-fit:cover;flex-shrink:0}
+.nav-user-avatar-ph{width:24px;height:24px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-size:.6rem;font-weight:700;color:#fff;flex-shrink:0}
+.nav-user-name{font-size:.72rem;font-weight:600;color:var(--ink);max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .hdr-btn{background:none;border:1px solid var(--border);padding:.4rem .9rem;font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);cursor:pointer;border-radius:20px;transition:all .2s}
 .hdr-btn:hover{border-color:var(--red);color:var(--red)}
 .hdr-btn.primary{background:var(--red);border-color:var(--red);color:#fff}
@@ -159,6 +164,11 @@ body{background:var(--bg);font-family:var(--font);font-size:14px;color:var(--ink
   .topics-bar{padding:.55rem 1rem}
 }
 </style>
+<script>
+const SUPABASE_URL  = 'https://lfnlezfphwjtdunyungi.supabase.co'
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxmbmxlemZwaHdqdGR1bnl1bmdpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0NjkwNzcsImV4cCI6MjA5NjA0NTA3N30.fmjvqhyiPcjB6qT5GDtfzMfY-C-WXP4QUIk-YW7FhJg'
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
 <body>
 
@@ -194,8 +204,9 @@ body{background:var(--bg);font-family:var(--font);font-size:14px;color:var(--ink
         <div class="header-status">Trực tuyến · phản hồi tức thì</div>
       </div>
       <div class="header-actions">
+        <div id="nav-auth-area"></div>
         <button class="hdr-btn" onclick="clearChat()">Xoá chat</button>
-        <button class="hdr-btn primary" onclick="window.open('#','_blank')">Đặt tour ngay</button>
+        <a class="hdr-btn primary" href="/booking">Đặt tour ngay</a>
       </div>
     </div>
 
@@ -511,6 +522,25 @@ function clearChat() {
   document.getElementById('messages').innerHTML = '';
   addWelcome();
 }
+
+// ── NAV AUTH ──────────────────────────────────────────
+async function initNavAuth() {
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON)
+  const { data: { session } } = await sb.auth.getSession()
+  if (!session?.user) return
+  const user = session.user
+  const meta = user.user_metadata || {}
+  const name = meta.full_name || meta.name || user.email.split('@')[0]
+  const shortName = name.split(' ').pop()
+  const avatar = meta.avatar_url || meta.picture || null
+  const avatarHtml = avatar
+    ? `<img src="${avatar}" class="nav-user-avatar" alt="${shortName}" onerror="this.replaceWith(document.createElement('div'))">`
+    : `<div class="nav-user-avatar-ph">${shortName[0].toUpperCase()}</div>`
+  document.getElementById('nav-auth-area').innerHTML =
+    `<a href="/account" class="nav-user-btn">${avatarHtml}<span class="nav-user-name">${shortName}</span></a>`
+}
+
+document.addEventListener('DOMContentLoaded', initNavAuth)
 </script>
 </body>
 </html>
