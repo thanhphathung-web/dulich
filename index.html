@@ -44,6 +44,11 @@ nav{background:var(--card);border-bottom:1px solid var(--border);padding:.9rem 2
 .lang-btn.active{background:var(--red);color:#fff}
 .nav-zalo{display:flex;align-items:center;opacity:.8;transition:opacity .2s}
 .nav-zalo:hover{opacity:1}
+.nav-user-btn{display:flex;align-items:center;gap:.5rem;cursor:pointer;padding:.3rem .75rem;border:1px solid var(--border);background:none;transition:border-color .2s;text-decoration:none}
+.nav-user-btn:hover{border-color:var(--red)}
+.nav-user-avatar{width:26px;height:26px;border-radius:50%;object-fit:cover;flex-shrink:0}
+.nav-user-avatar-ph{width:26px;height:26px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-size:.65rem;font-weight:700;color:#fff;flex-shrink:0}
+.nav-user-name{font-size:.78rem;font-weight:600;color:var(--ink);max-width:90px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
 /* ── HERO ── */
 #hero{min-height:90vh;display:grid;grid-template-columns:1fr 1fr;align-items:center;padding:6rem 2rem;background:linear-gradient(135deg,var(--cream) 60%,var(--paper))}
@@ -336,7 +341,9 @@ footer{background:var(--ink);color:rgba(250,248,243,.55);padding:3rem 2rem 1.5re
     <a href="https://zalo.me/0906306286" target="_blank" class="nav-zalo" title="Chat Zalo">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="6" fill="#0068FF"/><text x="12" y="17" text-anchor="middle" font-size="11" font-weight="700" fill="#fff" font-family="Arial">Z</text></svg>
     </a>
-    <a href="booking.html" class="nav-cta" data-i18n="nav_book">Đặt tour ngay</a>
+    <div id="nav-auth-area">
+      <a href="baggio-account.html" class="nav-cta" data-i18n="nav_book">Đặt tour ngay</a>
+    </div>
   </div>
 </nav>
 
@@ -1348,7 +1355,24 @@ async function runTripPlanner() {
 // ══════════════════════════════════════════════════════════════
 // INIT — chạy tất cả khi trang load
 // ══════════════════════════════════════════════════════════════
+// ── NAV AUTH ──────────────────────────────────────────────────
+async function initNavAuth() {
+  const { data: { session } } = await sb.auth.getSession()
+  if (!session?.user) return
+  const user = session.user
+  const meta = user.user_metadata || {}
+  const name = meta.full_name || meta.name || user.email.split('@')[0]
+  const shortName = name.split(' ').pop()
+  const avatar = meta.avatar_url || meta.picture || null
+  const avatarHtml = avatar
+    ? `<img src="${avatar}" class="nav-user-avatar" alt="${shortName}" onerror="this.replaceWith(document.createElement('div'))">`
+    : `<div class="nav-user-avatar-ph">${shortName[0].toUpperCase()}</div>`
+  document.getElementById('nav-auth-area').innerHTML =
+    `<a href="/account" class="nav-user-btn">${avatarHtml}<span class="nav-user-name">${shortName}</span></a>`
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
+  initNavAuth()
   // Populate trip planner dest dropdown (top destinations)
   const topDests = ['Hội An','Hạ Long','Phú Quốc','Sa Pa','Đà Lạt','Nha Trang','Đà Nẵng','Huế','Hà Nội','Mũi Né','Cần Thơ','Ninh Bình']
   const tpDestSel = document.getElementById('tp_dest')

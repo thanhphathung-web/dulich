@@ -471,6 +471,22 @@ body{background:var(--cream);color:var(--ink);font-family:var(--font);font-size:
 <script>
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON)
 
+// ── AUTH — auto-fill contact form khi đã đăng nhập ─
+let _authUserId = null
+sb.auth.getSession().then(({ data: { session } }) => {
+  if (!session?.user) return
+  _authUserId = session.user.id
+  const meta = session.user.user_metadata || {}
+  const name  = meta.full_name || meta.name || ''
+  const email = session.user.email || ''
+  const phone = meta.phone || ''
+  // điền vào bước 4 nếu trống
+  const fill = (id, val) => { const el = document.getElementById(id); if (el && !el.value && val) el.value = val }
+  fill('cfName',  name)
+  fill('cfEmail', email)
+  fill('cfPhone', phone)
+})
+
 // ── STATE ──────────────────────────────────────────
 const S = {
   step: 1, tour: null, schedule: null,
@@ -771,6 +787,7 @@ async function submitBooking(){
 
     const booking={
       booking_ref:      ref,
+      user_id:          _authUserId||null,
       tour_id:          S.tour.id,
       schedule_id:      S.schedule?.id||null,
       guest_name:       document.getElementById('cfName').value.trim(),
