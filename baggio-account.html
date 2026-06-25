@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Baggio Travel — Tài khoản của tôi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Space+Mono&display=swap" rel="stylesheet">
+
+<script>
+  const SUPABASE_URL  = 'https://lfnlezfphwjtdunyungi.supabase.co'
+  const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxmbmxlemZwaHdqdGR1bnl1bmdpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0NjkwNzcsImV4cCI6MjA5NjA0NTA3N30.fmjvqhyiPcjB6qT5GDtfzMfY-C-WXP4QUIk-YW7FhJg'
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --ink:#111118;--cream:#faf8f3;--paper:#f3efe6;--card:#ffffff;
+  --red:#c5372b;--gold:#b8860b;--teal:#1a6b5e;--muted:#7a7268;
+  --border:#e5dfd3;--shadow:0 2px 12px rgba(17,17,24,.07);
+  --font:'Be Vietnam Pro',sans-serif;--serif:'Playfair Display',Georgia,serif;--mono:'Space Mono',monospace;
+}
+html{scroll-behavior:smooth}
+body{background:var(--cream);color:var(--ink);font-family:var(--font);font-size:15px;line-height:1.65;overflow-x:hidden}
+
+/* ── NAV ── */
+nav{background:var(--card);border-bottom:1px solid var(--border);padding:.9rem 2rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:var(--shadow)}
+.nav-logo{font-family:var(--serif);font-size:1.4rem;font-weight:700;color:var(--ink);text-decoration:none;letter-spacing:-.01em}
+.nav-logo span{color:var(--red)}
+.nav-links{display:flex;gap:1.75rem;list-style:none;align-items:center}
+.nav-links a{font-size:.82rem;font-weight:500;color:var(--muted);text-decoration:none;transition:color .2s}
+.nav-links a:hover{color:var(--red)}
+.lang-switcher{display:flex;gap:2px;background:var(--paper);border:1px solid var(--border);border-radius:4px;padding:2px}
+.lang-btn{background:none;border:none;font-family:var(--mono);font-size:.65rem;font-weight:600;padding:.25rem .5rem;cursor:pointer;color:var(--muted);border-radius:3px;transition:all .15s;letter-spacing:.04em}
+.lang-btn.active{background:var(--red);color:#fff}
+.nav-user{display:flex;align-items:center;gap:.6rem;cursor:pointer}
+.nav-avatar{width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid var(--border)}
+.nav-avatar-placeholder{width:32px;height:32px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;color:#fff;flex-shrink:0}
+.nav-username{font-size:.82rem;font-weight:600;color:var(--ink)}
+
+/* ── LOGIN SCREEN ── */
+#login-screen{min-height:calc(100vh - 64px);display:flex;align-items:center;justify-content:center;padding:2rem}
+.login-card{background:var(--card);border:1px solid var(--border);padding:3rem 2.5rem;max-width:420px;width:100%;text-align:center;box-shadow:var(--shadow)}
+.login-eyebrow{font-family:var(--mono);font-size:.62rem;letter-spacing:.18em;text-transform:uppercase;color:var(--red);margin-bottom:1rem;display:flex;align-items:center;justify-content:center;gap:.5rem}
+.login-eyebrow::before,.login-eyebrow::after{content:'';width:16px;height:1px;background:var(--red)}
+.login-title{font-family:var(--serif);font-size:2rem;font-weight:900;line-height:1.1;margin-bottom:.75rem}
+.login-sub{font-size:.88rem;color:var(--muted);margin-bottom:2rem;line-height:1.7}
+.btn-google{display:flex;align-items:center;justify-content:center;gap:.75rem;width:100%;padding:.85rem 1.5rem;border:1.5px solid var(--border);background:var(--card);cursor:pointer;font-family:var(--font);font-size:.9rem;font-weight:600;color:var(--ink);transition:all .2s;margin-bottom:.85rem}
+.btn-google:hover{border-color:var(--red);background:rgba(197,55,43,.03);transform:translateY(-1px);box-shadow:0 4px 16px rgba(17,17,24,.08)}
+.btn-google svg{flex-shrink:0}
+.login-divider{display:flex;align-items:center;gap:.75rem;margin:.5rem 0 1.25rem;color:var(--muted);font-size:.78rem}
+.login-divider::before,.login-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.login-note{font-size:.75rem;color:var(--muted);line-height:1.6}
+.login-note a{color:var(--red);text-decoration:none}
+.login-benefits{display:flex;flex-direction:column;gap:.5rem;margin:1.5rem 0;text-align:left}
+.login-benefit{display:flex;align-items:center;gap:.6rem;font-size:.82rem;color:var(--muted)}
+.login-benefit::before{content:'✓';color:var(--teal);font-weight:700;font-size:.7rem;flex-shrink:0}
+
+/* ── ACCOUNT LAYOUT ── */
+#account-screen{display:none;min-height:calc(100vh - 64px)}
+.acc-hero{background:linear-gradient(135deg,var(--ink) 0%,#1a2035 100%);padding:2.5rem 2rem;position:relative;overflow:hidden}
+.acc-hero::after{content:'';position:absolute;top:-40px;right:-40px;width:200px;height:200px;border-radius:50%;background:rgba(197,55,43,.07);pointer-events:none}
+.acc-hero-inner{max-width:900px;margin:0 auto;display:flex;align-items:center;gap:1.5rem;position:relative;z-index:1}
+.acc-avatar-wrap{position:relative;flex-shrink:0}
+.acc-avatar{width:72px;height:72px;border-radius:50%;object-fit:cover;border:3px solid rgba(255,255,255,.2)}
+.acc-avatar-placeholder{width:72px;height:72px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:1.6rem;font-weight:700;color:#fff;border:3px solid rgba(255,255,255,.2)}
+.acc-info{flex:1}
+.acc-greeting{font-family:var(--mono);font-size:.6rem;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:.3rem}
+.acc-name{font-family:var(--serif);font-size:1.6rem;font-weight:700;color:#fff;line-height:1.1;margin-bottom:.4rem}
+.acc-email{font-size:.8rem;color:rgba(255,255,255,.4)}
+.acc-badges{display:flex;gap:.6rem;margin-top:.75rem;flex-wrap:wrap}
+.acc-badge{font-family:var(--mono);font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;padding:.25rem .7rem;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.55);border-radius:20px}
+.acc-badge.gold{border-color:rgba(184,134,11,.5);color:var(--gold);background:rgba(184,134,11,.08)}
+.acc-stats{display:flex;gap:2rem;margin-left:auto;flex-shrink:0}
+.acc-stat{text-align:center}
+.acc-stat-num{font-family:var(--serif);font-size:1.6rem;font-weight:700;color:#fff;line-height:1}
+.acc-stat-num span{color:var(--gold)}
+.acc-stat-label{font-size:.65rem;color:rgba(255,255,255,.35);margin-top:.2rem;font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase}
+
+/* ── TABS ── */
+.acc-tabs-bar{background:var(--card);border-bottom:1px solid var(--border);padding:0 2rem;position:sticky;top:64px;z-index:90}
+.acc-tabs{max-width:900px;margin:0 auto;display:flex;gap:0}
+.tab-btn{font-family:var(--font);font-size:.82rem;font-weight:500;color:var(--muted);padding:1rem 1.5rem;border:none;border-bottom:2px solid transparent;background:none;cursor:pointer;transition:all .2s;white-space:nowrap;margin-bottom:-1px}
+.tab-btn:hover{color:var(--ink)}
+.tab-btn.active{color:var(--red);border-bottom-color:var(--red);font-weight:600}
+
+/* ── TAB CONTENT ── */
+.acc-body{max-width:900px;margin:0 auto;padding:2rem}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
+/* ── SECTION HEADER ── */
+.sec-label{font-family:var(--mono);font-size:.6rem;letter-spacing:.18em;text-transform:uppercase;color:var(--red);margin-bottom:1.5rem;display:flex;align-items:center;gap:.5rem}
+.sec-label::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* ── PROFILE TAB ── */
+.profile-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem}
+.form-group{display:flex;flex-direction:column;gap:.35rem}
+.form-group.full{grid-column:1/-1}
+.form-label{font-family:var(--mono);font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.form-input{border:1px solid var(--border);background:var(--cream);padding:.7rem 1rem;font-family:var(--font);font-size:.9rem;color:var(--ink);outline:none;transition:border-color .2s;width:100%}
+.form-input:focus{border-color:var(--red)}
+.form-input:disabled{background:var(--paper);color:var(--muted);cursor:not-allowed}
+.form-input::placeholder{color:#c8c0b4}
+.form-hint{font-size:.72rem;color:var(--muted)}
+.btn-save{background:var(--red);color:#fff;font-family:var(--font);font-size:.88rem;font-weight:600;padding:.75rem 2rem;border:none;cursor:pointer;transition:background .2s;margin-top:.5rem}
+.btn-save:hover{background:#a82d22}
+.btn-save:disabled{background:var(--muted);cursor:not-allowed}
+.save-msg{font-size:.8rem;padding:.5rem .85rem;margin-top:.5rem;display:none}
+.save-msg.ok{background:#edfaed;color:var(--teal);display:block}
+.save-msg.err{background:#fdecea;color:var(--red);display:block}
+
+/* ── LOYALTY ── */
+.loyalty-card{background:linear-gradient(135deg,var(--ink) 0%,#1a2035 100%);padding:1.75rem 2rem;margin-bottom:2rem;position:relative;overflow:hidden}
+.loyalty-card::after{content:'';position:absolute;bottom:-30px;right:-30px;width:120px;height:120px;border-radius:50%;background:rgba(184,134,11,.1)}
+.loyalty-card-inner{position:relative;z-index:1}
+.loyalty-label{font-family:var(--mono);font-size:.55rem;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:.4rem}
+.loyalty-points{font-family:var(--serif);font-size:2.5rem;font-weight:700;color:var(--gold);line-height:1}
+.loyalty-sub{font-size:.78rem;color:rgba(255,255,255,.4);margin-top:.3rem}
+.loyalty-tier{position:absolute;top:1.25rem;right:1.5rem;font-family:var(--mono);font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;padding:.35rem .9rem;border:1px solid rgba(184,134,11,.4);color:var(--gold);border-radius:20px}
+
+/* ── BOOKINGS TAB ── */
+.bookings-filter{display:flex;gap:.4rem;margin-bottom:1.5rem;flex-wrap:wrap}
+.bfilter{font-family:var(--mono);font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;padding:.35rem .85rem;border:1px solid var(--border);background:none;color:var(--muted);cursor:pointer;transition:all .2s}
+.bfilter:hover{border-color:var(--red);color:var(--red)}
+.bfilter.active{background:var(--red);border-color:var(--red);color:#fff}
+.booking-card{background:var(--card);border:1px solid var(--border);margin-bottom:1rem;overflow:hidden;transition:box-shadow .2s}
+.booking-card:hover{box-shadow:var(--shadow)}
+.bc-header{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;border-bottom:1px solid var(--border);background:var(--paper)}
+.bc-ref{font-family:var(--mono);font-size:.65rem;letter-spacing:.1em;color:var(--muted)}
+.bc-date{font-size:.75rem;color:var(--muted)}
+.bc-body{display:grid;grid-template-columns:80px 1fr auto;gap:1rem;padding:1rem 1.25rem;align-items:center}
+.bc-img{width:80px;height:60px;object-fit:cover;display:block;flex-shrink:0}
+.bc-img-placeholder{width:80px;height:60px;background:var(--paper);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:1.5rem;flex-shrink:0}
+.bc-info{}
+.bc-dest{font-family:var(--mono);font-size:.58rem;letter-spacing:.12em;text-transform:uppercase;color:var(--teal);margin-bottom:.2rem}
+.bc-tour-name{font-family:var(--serif);font-size:1rem;font-weight:700;color:var(--ink);margin-bottom:.3rem;line-height:1.2}
+.bc-meta{font-size:.75rem;color:var(--muted)}
+.bc-right{text-align:right;flex-shrink:0}
+.bc-price{font-family:var(--serif);font-size:1.2rem;font-weight:700;color:var(--ink)}
+.bc-price-label{font-size:.68rem;color:var(--muted);margin-bottom:.3rem}
+.status-badge{display:inline-block;font-family:var(--mono);font-size:.58rem;letter-spacing:.08em;text-transform:uppercase;padding:.2rem .65rem;border-radius:3px;margin-top:.4rem}
+.status-badge.PENDING{background:#fff8e7;color:#b8860b;border:1px solid #f0d98a}
+.status-badge.CONFIRMED{background:#edfaed;color:#1a6b5e;border:1px solid #b2e0b2}
+.status-badge.ONGOING{background:#e8f0ff;color:#2255cc;border:1px solid #aec4f5}
+.status-badge.COMPLETED{background:#f3efe6;color:#7a7268;border:1px solid #d0c8bc}
+.status-badge.CANCELLED{background:#fdecea;color:#c5372b;border:1px solid #f5b5b0}
+.pay-badge{display:inline-block;font-family:var(--mono);font-size:.55rem;letter-spacing:.06em;text-transform:uppercase;padding:.15rem .5rem;margin-top:.25rem}
+.pay-badge.SUCCESS{background:rgba(26,107,94,.08);color:var(--teal)}
+.pay-badge.PENDING{background:rgba(184,134,11,.08);color:var(--gold)}
+.pay-badge.FAILED,.pay-badge.CANCELLED{background:rgba(197,55,43,.08);color:var(--red)}
+.pay-badge.REFUNDED{background:rgba(122,114,104,.08);color:var(--muted)}
+.bookings-empty{text-align:center;padding:4rem 2rem;color:var(--muted)}
+.bookings-empty-icon{font-size:2.5rem;margin-bottom:1rem}
+.bookings-empty-title{font-family:var(--serif);font-size:1.25rem;font-weight:700;color:var(--ink);margin-bottom:.5rem}
+.bookings-empty-sub{font-size:.85rem}
+.btn-explore{display:inline-block;margin-top:1.25rem;background:var(--red);color:#fff;font-size:.82rem;font-weight:600;padding:.65rem 1.75rem;text-decoration:none;transition:background .2s}
+.btn-explore:hover{background:#a82d22}
+.bookings-loading{text-align:center;padding:3rem;color:var(--muted);font-size:.88rem}
+
+/* ── SETTINGS TAB ── */
+.settings-section{background:var(--card);border:1px solid var(--border);padding:1.5rem;margin-bottom:1rem}
+.settings-section-title{font-size:.88rem;font-weight:600;color:var(--ink);margin-bottom:1rem;padding-bottom:.75rem;border-bottom:1px solid var(--border)}
+.settings-row{display:flex;align-items:center;justify-content:space-between;padding:.75rem 0;border-bottom:1px solid var(--border)}
+.settings-row:last-child{border-bottom:none}
+.settings-row-info{}
+.settings-row-label{font-size:.85rem;font-weight:500;color:var(--ink)}
+.settings-row-desc{font-size:.75rem;color:var(--muted);margin-top:.15rem}
+.toggle{position:relative;width:40px;height:22px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;inset:0;background:var(--border);cursor:pointer;transition:.3s;border-radius:22px}
+.toggle-slider::before{content:'';position:absolute;height:16px;width:16px;left:3px;bottom:3px;background:#fff;transition:.3s;border-radius:50%}
+.toggle input:checked+.toggle-slider{background:var(--red)}
+.toggle input:checked+.toggle-slider::before{transform:translateX(18px)}
+.btn-danger{background:none;border:1.5px solid #e5352a;color:#e5352a;font-family:var(--font);font-size:.82rem;font-weight:600;padding:.55rem 1.25rem;cursor:pointer;transition:all .2s}
+.btn-danger:hover{background:#fdecea}
+.btn-logout{display:flex;align-items:center;gap:.5rem;background:var(--paper);border:1px solid var(--border);color:var(--ink);font-family:var(--font);font-size:.85rem;font-weight:600;padding:.7rem 1.5rem;cursor:pointer;transition:all .2s;width:100%;justify-content:center;margin-top:.5rem}
+.btn-logout:hover{background:var(--border)}
+
+/* ── SKELETON ── */
+.skeleton{background:linear-gradient(90deg,#f0ebe2 25%,#e8e3d8 50%,#f0ebe2 75%);background-size:200% 100%;animation:shimmer 1.5s infinite}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+.skel-line{height:14px;border-radius:4px;margin-bottom:.5rem}
+.skel-card{height:100px;border-radius:4px;margin-bottom:1rem}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:1.5rem;right:1.5rem;background:var(--ink);color:#fff;padding:.75rem 1.25rem;font-size:.82rem;font-weight:500;z-index:9999;transform:translateY(100px);opacity:0;transition:all .3s;max-width:280px;line-height:1.4}
+#toast.show{transform:translateY(0);opacity:1}
+
+/* ── RESPONSIVE ── */
+@media(max-width:700px){
+  .acc-hero-inner{flex-direction:column;text-align:center}
+  .acc-stats{margin-left:0;justify-content:center}
+  .profile-grid{grid-template-columns:1fr}
+  .profile-grid .form-group.full{grid-column:1}
+  .bc-body{grid-template-columns:1fr auto}
+  .bc-img,.bc-img-placeholder{display:none}
+  .nav-links{display:none}
+  .acc-tabs{overflow-x:auto}
+  .tab-btn{padding:.85rem 1rem;font-size:.75rem}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════
+     NAV
+     ══════════════════════════════════════════════════════ -->
+<nav>
+  <a href="/" class="nav-logo">Baggio<span>.</span></a>
+  <ul class="nav-links">
+    <li><a href="/" data-vi="Trang chủ" data-en="Home">Trang chủ</a></li>
+    <li><a href="/?section=tours" data-vi="Tour" data-en="Tours">Tour</a></li>
+    <li><a href="/booking" data-vi="Đặt tour" data-en="Book">Đặt tour</a></li>
+  </ul>
+  <div style="display:flex;align-items:center;gap:1rem">
+    <div class="lang-switcher">
+      <button class="lang-btn active" onclick="setLang('vi')">VI</button>
+      <button class="lang-btn" onclick="setLang('en')">EN</button>
+    </div>
+    <div id="nav-user-info" style="display:none" class="nav-user">
+      <div id="nav-avatar-wrap"></div>
+      <span id="nav-username" class="nav-username"></span>
+    </div>
+  </div>
+</nav>
+
+<!-- ══════════════════════════════════════════════════════
+     LOGIN SCREEN
+     ══════════════════════════════════════════════════════ -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-eyebrow" data-vi="Tài khoản" data-en="Account">Tài khoản</div>
+    <h1 class="login-title" data-vi="Đăng nhập<br>để tiếp tục" data-en="Sign in<br>to continue">Đăng nhập<br>để tiếp tục</h1>
+    <p class="login-sub" data-vi="Quản lý chuyến đi, theo dõi đặt tour và nhận ưu đãi dành riêng cho thành viên." data-en="Manage your trips, track bookings and get exclusive member offers.">
+      Quản lý chuyến đi, theo dõi đặt tour và nhận ưu đãi dành riêng cho thành viên.
+    </p>
+    <div class="login-benefits">
+      <div class="login-benefit" data-vi="Xem lịch sử và trạng thái đặt tour" data-en="View booking history and status">Xem lịch sử và trạng thái đặt tour</div>
+      <div class="login-benefit" data-vi="Tích điểm thưởng mỗi chuyến đi" data-en="Earn loyalty points on every trip">Tích điểm thưởng mỗi chuyến đi</div>
+      <div class="login-benefit" data-vi="Nhận ưu đãi và thông báo sớm" data-en="Get early access to deals and offers">Nhận ưu đãi và thông báo sớm</div>
+    </div>
+    <button class="btn-google" onclick="signInWithGoogle()" id="google-btn">
+      <svg width="20" height="20" viewBox="0 0 48 48">
+        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+        <path fill="none" d="M0 0h48v48H0z"/>
+      </svg>
+      <span data-vi="Tiếp tục với Google" data-en="Continue with Google">Tiếp tục với Google</span>
+    </button>
+    <p class="login-note" data-vi='Bằng cách đăng nhập, bạn đồng ý với <a href="#">Điều khoản dịch vụ</a> và <a href="#">Chính sách bảo mật</a> của Baggio Travel.' data-en='By signing in, you agree to Baggio Travel\'s <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>.'>
+      Bằng cách đăng nhập, bạn đồng ý với <a href="#">Điều khoản dịch vụ</a> và <a href="#">Chính sách bảo mật</a> của Baggio Travel.
+    </p>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     ACCOUNT SCREEN
+     ══════════════════════════════════════════════════════ -->
+<div id="account-screen">
+
+  <!-- Hero -->
+  <div class="acc-hero">
+    <div class="acc-hero-inner">
+      <div class="acc-avatar-wrap">
+        <div id="acc-avatar-wrap"></div>
+      </div>
+      <div class="acc-info">
+        <div class="acc-greeting" data-vi="Xin chào," data-en="Welcome back,">Xin chào,</div>
+        <div class="acc-name" id="acc-name">—</div>
+        <div class="acc-email" id="acc-email">—</div>
+        <div class="acc-badges">
+          <span class="acc-badge" id="acc-member-since"></span>
+          <span class="acc-badge gold" id="acc-tier"></span>
+        </div>
+      </div>
+      <div class="acc-stats">
+        <div class="acc-stat">
+          <div class="acc-stat-num" id="stat-bookings">—</div>
+          <div class="acc-stat-label" data-vi="Đặt tour" data-en="Bookings">Đặt tour</div>
+        </div>
+        <div class="acc-stat">
+          <div class="acc-stat-num"><span id="stat-points">—</span></div>
+          <div class="acc-stat-label" data-vi="Điểm thưởng" data-en="Points">Điểm thưởng</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs bar -->
+  <div class="acc-tabs-bar">
+    <div class="acc-tabs">
+      <button class="tab-btn active" onclick="switchTab('profile')" data-tab="profile" data-vi="Hồ sơ" data-en="Profile">Hồ sơ</button>
+      <button class="tab-btn" onclick="switchTab('bookings')" data-tab="bookings" data-vi="Đặt tour của tôi" data-en="My Bookings">Đặt tour của tôi</button>
+      <button class="tab-btn" onclick="switchTab('settings')" data-tab="settings" data-vi="Cài đặt" data-en="Settings">Cài đặt</button>
+    </div>
+  </div>
+
+  <!-- Tab content -->
+  <div class="acc-body">
+
+    <!-- ── PROFILE TAB ── -->
+    <div class="tab-panel active" id="tab-profile">
+      <div class="loyalty-card" style="margin-bottom:2rem">
+        <div class="loyalty-card-inner">
+          <div class="loyalty-label" data-vi="Điểm thưởng tích lũy" data-en="Loyalty Points">Điểm thưởng tích lũy</div>
+          <div class="loyalty-points" id="lp-points">0</div>
+          <div class="loyalty-sub" id="lp-sub" data-vi="điểm — có thể dùng giảm giá cho chuyến tiếp theo" data-en="points — redeemable on your next trip">điểm — có thể dùng giảm giá cho chuyến tiếp theo</div>
+        </div>
+        <div class="loyalty-tier" id="lp-tier">Member</div>
+      </div>
+
+      <div class="sec-label" data-vi="Thông tin cá nhân" data-en="Personal Information">Thông tin cá nhân</div>
+      <form id="profile-form" onsubmit="saveProfile(event)">
+        <div class="profile-grid">
+          <div class="form-group">
+            <label class="form-label" data-vi="Họ và tên" data-en="Full Name">Họ và tên</label>
+            <input class="form-input" id="pf-name" type="text" placeholder="Nguyễn Văn A" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label" data-vi="Số điện thoại" data-en="Phone Number">Số điện thoại</label>
+            <input class="form-input" id="pf-phone" type="tel" placeholder="0901 234 567">
+          </div>
+          <div class="form-group full">
+            <label class="form-label" data-vi="Email" data-en="Email">Email</label>
+            <input class="form-input" id="pf-email" type="email" disabled>
+            <span class="form-hint" data-vi="Email không thể thay đổi" data-en="Email cannot be changed">Email không thể thay đổi</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label" data-vi="Ngày sinh" data-en="Date of Birth">Ngày sinh</label>
+            <input class="form-input" id="pf-dob" type="date">
+          </div>
+          <div class="form-group">
+            <label class="form-label" data-vi="Quốc tịch" data-en="Nationality">Quốc tịch</label>
+            <input class="form-input" id="pf-nationality" type="text" placeholder="Việt Nam">
+          </div>
+          <div class="form-group full">
+            <button type="submit" class="btn-save" id="save-btn" data-vi="Lưu thay đổi" data-en="Save Changes">Lưu thay đổi</button>
+            <div class="save-msg" id="save-msg"></div>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- ── BOOKINGS TAB ── -->
+    <div class="tab-panel" id="tab-bookings">
+      <div class="bookings-filter">
+        <button class="bfilter active" onclick="filterBookings('ALL')" data-vi="Tất cả" data-en="All">Tất cả</button>
+        <button class="bfilter" onclick="filterBookings('PENDING')" data-vi="Chờ xác nhận" data-en="Pending">Chờ xác nhận</button>
+        <button class="bfilter" onclick="filterBookings('CONFIRMED')" data-vi="Đã xác nhận" data-en="Confirmed">Đã xác nhận</button>
+        <button class="bfilter" onclick="filterBookings('COMPLETED')" data-vi="Hoàn thành" data-en="Completed">Hoàn thành</button>
+        <button class="bfilter" onclick="filterBookings('CANCELLED')" data-vi="Đã hủy" data-en="Cancelled">Đã hủy</button>
+      </div>
+      <div id="bookings-list">
+        <div class="bookings-loading">
+          <div class="skeleton skel-card"></div>
+          <div class="skeleton skel-card"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SETTINGS TAB ── -->
+    <div class="tab-panel" id="tab-settings">
+      <div class="sec-label" data-vi="Thông báo" data-en="Notifications">Thông báo</div>
+      <div class="settings-section">
+        <div class="settings-section-title" data-vi="Tùy chọn thông báo" data-en="Notification Preferences">Tùy chọn thông báo</div>
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <div class="settings-row-label" data-vi="Email xác nhận đặt tour" data-en="Booking confirmation emails">Email xác nhận đặt tour</div>
+            <div class="settings-row-desc" data-vi="Nhận email khi đặt tour thành công" data-en="Receive email when booking is confirmed">Nhận email khi đặt tour thành công</div>
+          </div>
+          <label class="toggle"><input type="checkbox" checked disabled><span class="toggle-slider"></span></label>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <div class="settings-row-label" data-vi="Nhắc nhở trước khởi hành" data-en="Pre-departure reminders">Nhắc nhở trước khởi hành</div>
+            <div class="settings-row-desc" data-vi="Nhận nhắc nhở 48 giờ trước khi tour khởi hành" data-en="Get reminders 48 hours before departure">Nhận nhắc nhở 48 giờ trước khi tour khởi hành</div>
+          </div>
+          <label class="toggle"><input type="checkbox" id="notif-reminder" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <div class="settings-row-label" data-vi="Ưu đãi & khuyến mãi" data-en="Deals & promotions">Ưu đãi & khuyến mãi</div>
+            <div class="settings-row-desc" data-vi="Nhận thông báo về tour giảm giá và ưu đãi đặc biệt" data-en="Get notified about discounts and special offers">Nhận thông báo về tour giảm giá và ưu đãi đặc biệt</div>
+          </div>
+          <label class="toggle"><input type="checkbox" id="notif-promo"><span class="toggle-slider"></span></label>
+        </div>
+      </div>
+
+      <div class="sec-label" data-vi="Tài khoản" data-en="Account">Tài khoản</div>
+      <div class="settings-section">
+        <div class="settings-section-title" data-vi="Quản lý tài khoản" data-en="Account Management">Quản lý tài khoản</div>
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <div class="settings-row-label" data-vi="Ngôn ngữ hiển thị" data-en="Display Language">Ngôn ngữ hiển thị</div>
+            <div class="settings-row-desc" data-vi="Thay đổi ngôn ngữ giao diện" data-en="Change interface language">Thay đổi ngôn ngữ giao diện</div>
+          </div>
+          <div class="lang-switcher">
+            <button class="lang-btn" id="settings-vi-btn" onclick="setLang('vi')">VI</button>
+            <button class="lang-btn" id="settings-en-btn" onclick="setLang('en')">EN</button>
+          </div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-row-info">
+            <div class="settings-row-label" data-vi="Xóa tài khoản" data-en="Delete Account">Xóa tài khoản</div>
+            <div class="settings-row-desc" data-vi="Xóa vĩnh viễn tài khoản và toàn bộ dữ liệu" data-en="Permanently delete your account and all data">Xóa vĩnh viễn tài khoản và toàn bộ dữ liệu</div>
+          </div>
+          <button class="btn-danger" onclick="confirmDeleteAccount()" data-vi="Xóa tài khoản" data-en="Delete Account">Xóa tài khoản</button>
+        </div>
+      </div>
+
+      <button class="btn-logout" onclick="signOut()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        <span data-vi="Đăng xuất" data-en="Sign Out">Đăng xuất</span>
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON)
+
+let currentUser = null
+let allBookings = []
+let currentFilter = 'ALL'
+let currentLang = localStorage.getItem('baggio_lang') || 'vi'
+
+// ══════════════════════════════════════════════════════════════
+// I18N
+// ══════════════════════════════════════════════════════════════
+const T = {
+  vi: {
+    member_since: 'Thành viên từ',
+    tier_bronze: 'Hạng Đồng',
+    tier_silver: 'Hạng Bạc',
+    tier_gold: 'Hạng Vàng',
+    tier_platinum: 'Hạng Bạch Kim',
+    saving: 'Đang lưu...',
+    saved: 'Đã lưu thành công!',
+    save_error: 'Lỗi khi lưu. Thử lại!',
+    no_bookings: 'Chưa có đặt tour nào',
+    no_bookings_sub: 'Khám phá và đặt tour ngay hôm nay!',
+    explore: 'Khám phá tour',
+    adults: 'người lớn',
+    children: 'trẻ em',
+    confirm_delete: 'Bạn có chắc muốn xóa tài khoản? Hành động này không thể hoàn tác.',
+    signed_out: 'Đã đăng xuất',
+    profile_saved: 'Hồ sơ đã được cập nhật',
+    days: 'ngày',
+    pay_SUCCESS: 'Đã thanh toán',
+    pay_PENDING: 'Chờ thanh toán',
+    pay_FAILED: 'TT thất bại',
+    pay_CANCELLED: 'TT đã hủy',
+    pay_REFUNDED: 'Đã hoàn tiền',
+    status_PENDING: 'Chờ xác nhận',
+    status_CONFIRMED: 'Đã xác nhận',
+    status_ONGOING: 'Đang diễn ra',
+    status_COMPLETED: 'Hoàn thành',
+    status_CANCELLED: 'Đã hủy',
+  },
+  en: {
+    member_since: 'Member since',
+    tier_bronze: 'Bronze',
+    tier_silver: 'Silver',
+    tier_gold: 'Gold',
+    tier_platinum: 'Platinum',
+    saving: 'Saving...',
+    saved: 'Saved successfully!',
+    save_error: 'Error saving. Please try again.',
+    no_bookings: 'No bookings yet',
+    no_bookings_sub: 'Explore and book a tour today!',
+    explore: 'Explore Tours',
+    adults: 'adults',
+    children: 'children',
+    confirm_delete: 'Are you sure you want to delete your account? This cannot be undone.',
+    signed_out: 'Signed out',
+    profile_saved: 'Profile updated',
+    days: 'days',
+    pay_SUCCESS: 'Paid',
+    pay_PENDING: 'Awaiting payment',
+    pay_FAILED: 'Payment failed',
+    pay_CANCELLED: 'Payment cancelled',
+    pay_REFUNDED: 'Refunded',
+    status_PENDING: 'Pending',
+    status_CONFIRMED: 'Confirmed',
+    status_ONGOING: 'Ongoing',
+    status_COMPLETED: 'Completed',
+    status_CANCELLED: 'Cancelled',
+  }
+}
+
+function t(key) { return (T[currentLang] || T.vi)[key] || key }
+
+function applyLang() {
+  document.querySelectorAll('[data-vi]').forEach(el => {
+    const val = el.dataset[currentLang] || el.dataset.vi
+    if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') el.placeholder = val
+    else el.innerHTML = val
+  })
+  document.querySelectorAll('.lang-btn').forEach(b => {
+    b.classList.toggle('active', b.textContent.trim().toLowerCase() === currentLang)
+  })
+  document.querySelectorAll('[data-tab]').forEach(b => {
+    const key = currentLang
+    b.textContent = b.dataset[key] || b.dataset.vi
+  })
+  // Loyalty sub text
+  const lpSub = document.getElementById('lp-sub')
+  if (lpSub) lpSub.textContent = lpSub.dataset[currentLang] || lpSub.dataset.vi
+
+  if (allBookings.length) renderBookings()
+}
+
+function setLang(lang) {
+  currentLang = lang
+  localStorage.setItem('baggio_lang', lang)
+  applyLang()
+}
+
+// ══════════════════════════════════════════════════════════════
+// AUTH
+// ══════════════════════════════════════════════════════════════
+async function signInWithGoogle() {
+  const btn = document.getElementById('google-btn')
+  btn.disabled = true
+  btn.style.opacity = '.6'
+  const { error } = await sb.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: window.location.href }
+  })
+  if (error) {
+    showToast('Lỗi đăng nhập: ' + error.message)
+    btn.disabled = false
+    btn.style.opacity = '1'
+  }
+}
+
+async function signOut() {
+  await sb.auth.signOut()
+  showToast(t('signed_out'))
+  showLogin()
+}
+
+function confirmDeleteAccount() {
+  if (confirm(t('confirm_delete'))) {
+    showToast('Tính năng đang phát triển / Feature coming soon')
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+// SESSION / UI STATE
+// ══════════════════════════════════════════════════════════════
+function showLogin() {
+  document.getElementById('login-screen').style.display = 'flex'
+  document.getElementById('account-screen').style.display = 'none'
+  document.getElementById('nav-user-info').style.display = 'none'
+  currentUser = null
+}
+
+function showAccount(user) {
+  currentUser = user
+  document.getElementById('login-screen').style.display = 'none'
+  document.getElementById('account-screen').style.display = 'block'
+  populateHero(user)
+  populateProfile(user)
+  loadBookings(user)
+  document.getElementById('nav-user-info').style.display = 'flex'
+}
+
+function populateHero(user) {
+  const meta = user.user_metadata || {}
+  const name = meta.full_name || meta.name || user.email.split('@')[0]
+  const avatar = meta.avatar_url || meta.picture || null
+  const email = user.email
+  const createdAt = new Date(user.created_at)
+  const year = createdAt.getFullYear()
+  const month = createdAt.toLocaleString(currentLang === 'vi' ? 'vi-VN' : 'en-US', { month: 'long' })
+
+  document.getElementById('acc-name').textContent = name
+  document.getElementById('acc-email').textContent = email
+  document.getElementById('acc-member-since').textContent = `${t('member_since')} ${month} ${year}`
+
+  // Avatar in hero
+  const heroWrap = document.getElementById('acc-avatar-wrap')
+  if (avatar) {
+    heroWrap.innerHTML = `<img src="${avatar}" class="acc-avatar" alt="${name}" onerror="this.parentNode.innerHTML='<div class=acc-avatar-placeholder>${name[0].toUpperCase()}</div>'">`
+  } else {
+    heroWrap.innerHTML = `<div class="acc-avatar-placeholder">${name[0].toUpperCase()}</div>`
+  }
+
+  // Nav avatar
+  const navWrap = document.getElementById('nav-avatar-wrap')
+  if (avatar) {
+    navWrap.innerHTML = `<img src="${avatar}" class="nav-avatar" alt="${name}" onerror="this.parentNode.innerHTML='<div class=nav-avatar-placeholder>${name[0].toUpperCase()}</div>'">`
+  } else {
+    navWrap.innerHTML = `<div class="nav-avatar-placeholder">${name[0].toUpperCase()}</div>`
+  }
+  document.getElementById('nav-username').textContent = name
+}
+
+function setTier(points) {
+  let tier, tierKey
+  if (points >= 50000)     { tier = '🏆 Platinum'; tierKey = 'tier_platinum' }
+  else if (points >= 20000){ tier = '★ Gold';     tierKey = 'tier_gold' }
+  else if (points >= 5000) { tier = '◈ Silver';   tierKey = 'tier_silver' }
+  else                     { tier = '◇ Bronze';   tierKey = 'tier_bronze' }
+
+  document.getElementById('acc-tier').textContent = t(tierKey)
+  document.getElementById('lp-tier').textContent = t(tierKey)
+  document.getElementById('lp-points').textContent = points.toLocaleString('vi-VN')
+  document.getElementById('stat-points').textContent = points.toLocaleString('vi-VN')
+}
+
+// ══════════════════════════════════════════════════════════════
+// PROFILE
+// ══════════════════════════════════════════════════════════════
+function populateProfile(user) {
+  const meta = user.user_metadata || {}
+  document.getElementById('pf-name').value   = meta.full_name || meta.name || ''
+  document.getElementById('pf-email').value  = user.email
+  document.getElementById('pf-phone').value  = meta.phone || ''
+  document.getElementById('pf-dob').value    = meta.dob || ''
+  document.getElementById('pf-nationality').value = meta.nationality || ''
+
+  // Fetch from users table if exists
+  sb.from('users')
+    .select('full_name,phone,loyalty_points')
+    .eq('email', user.email)
+    .maybeSingle()
+    .then(({ data }) => {
+      if (data) {
+        if (data.full_name)       document.getElementById('pf-name').value  = data.full_name
+        if (data.phone)           document.getElementById('pf-phone').value = data.phone
+        if (data.loyalty_points !== undefined) setTier(data.loyalty_points)
+      } else {
+        setTier(0)
+      }
+    })
+}
+
+async function saveProfile(e) {
+  e.preventDefault()
+  const btn = document.getElementById('save-btn')
+  const msg = document.getElementById('save-msg')
+  btn.textContent = t('saving')
+  btn.disabled = true
+  msg.className = 'save-msg'
+  msg.style.display = 'none'
+
+  const updates = {
+    full_name:   document.getElementById('pf-name').value.trim(),
+    phone:       document.getElementById('pf-phone').value.trim() || null,
+    dob:         document.getElementById('pf-dob').value || null,
+    nationality: document.getElementById('pf-nationality').value.trim() || null,
+  }
+
+  // Update Supabase auth metadata
+  const { error: authErr } = await sb.auth.updateUser({ data: {
+    full_name: updates.full_name,
+    phone: updates.phone,
+    dob: updates.dob,
+    nationality: updates.nationality,
+  }})
+
+  // Upsert into users table
+  await sb.from('users').upsert({
+    email:     currentUser.email,
+    full_name: updates.full_name,
+    phone:     updates.phone || null,
+  }, { onConflict: 'email' })
+
+  if (authErr) {
+    msg.textContent = t('save_error')
+    msg.className = 'save-msg err'
+  } else {
+    msg.textContent = t('saved')
+    msg.className = 'save-msg ok'
+    // Update name in hero + nav
+    document.getElementById('acc-name').textContent = updates.full_name
+    document.getElementById('nav-username').textContent = updates.full_name
+    showToast(t('profile_saved'))
+  }
+
+  btn.textContent = currentLang === 'en' ? 'Save Changes' : 'Lưu thay đổi'
+  btn.disabled = false
+}
+
+// ══════════════════════════════════════════════════════════════
+// BOOKINGS
+// ══════════════════════════════════════════════════════════════
+async function loadBookings(user) {
+  const { data, error } = await sb
+    .from('bookings')
+    .select(`
+      id, booking_ref, status, payment_status,
+      adult_count, child_count, total_price, created_at,
+      tours ( name_vi, name_en, cover_image, destination, duration_days )
+    `)
+    .eq('guest_email', user.email)
+    .order('created_at', { ascending: false })
+    .limit(50)
+
+  if (error) {
+    document.getElementById('bookings-list').innerHTML = `<div class="bookings-empty"><div class="bookings-empty-icon">⚠️</div><div class="bookings-empty-title">Lỗi tải dữ liệu</div><div class="bookings-empty-sub">${error.message}</div></div>`
+    return
+  }
+
+  allBookings = data || []
+  document.getElementById('stat-bookings').textContent = allBookings.length
+  renderBookings()
+}
+
+function filterBookings(status) {
+  currentFilter = status
+  document.querySelectorAll('.bfilter').forEach(b => b.classList.remove('active'))
+  event.currentTarget.classList.add('active')
+  renderBookings()
+}
+
+function renderBookings() {
+  const list = document.getElementById('bookings-list')
+  const filtered = currentFilter === 'ALL'
+    ? allBookings
+    : allBookings.filter(b => b.status === currentFilter)
+
+  if (!filtered.length) {
+    const isAll = currentFilter === 'ALL'
+    list.innerHTML = `
+      <div class="bookings-empty">
+        <div class="bookings-empty-icon">${isAll ? '🗺️' : '📋'}</div>
+        <div class="bookings-empty-title">${t('no_bookings')}</div>
+        <div class="bookings-empty-sub">${isAll ? t('no_bookings_sub') : ''}</div>
+        ${isAll ? `<a href="/" class="btn-explore">${t('explore')}</a>` : ''}
+      </div>`
+    return
+  }
+
+  list.innerHTML = filtered.map(b => {
+    const tour = b.tours || {}
+    const name = currentLang === 'en' ? (tour.name_en || tour.name_vi) : (tour.name_vi || tour.name_en)
+    const price = b.total_price ? b.total_price.toLocaleString('vi-VN') + 'đ' : '—'
+    const date = new Date(b.created_at).toLocaleDateString(currentLang === 'vi' ? 'vi-VN' : 'en-US', { day:'2-digit', month:'short', year:'numeric' })
+    const pax = b.adult_count + (b.child_count ? `, ${b.child_count} ${t('children')}` : '')
+    const dur = tour.duration_days ? `${tour.duration_days} ${t('days')}` : ''
+    const imgTag = tour.cover_image
+      ? `<img src="${tour.cover_image}" class="bc-img" alt="${name}" loading="lazy" onerror="this.style.display='none'">`
+      : `<div class="bc-img-placeholder">🗺️</div>`
+
+    return `
+      <div class="booking-card">
+        <div class="bc-header">
+          <span class="bc-ref">#${b.booking_ref || b.id.slice(0,8).toUpperCase()}</span>
+          <span class="bc-date">${date}</span>
+        </div>
+        <div class="bc-body">
+          ${imgTag}
+          <div class="bc-info">
+            <div class="bc-dest">${tour.destination || ''}</div>
+            <div class="bc-tour-name">${name || '—'}</div>
+            <div class="bc-meta">${pax}${dur ? ' · ' + dur : ''}</div>
+          </div>
+          <div class="bc-right">
+            <div class="bc-price-label">Tổng tiền</div>
+            <div class="bc-price">${price}</div>
+            <div><span class="status-badge ${b.status}">${t('status_' + b.status)}</span></div>
+            <div><span class="pay-badge ${b.payment_status}">${t('pay_' + b.payment_status)}</span></div>
+          </div>
+        </div>
+      </div>`
+  }).join('')
+}
+
+// ══════════════════════════════════════════════════════════════
+// TABS
+// ══════════════════════════════════════════════════════════════
+function switchTab(tab) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'))
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'))
+  document.getElementById('tab-' + tab).classList.add('active')
+  document.querySelector(`[data-tab="${tab}"]`).classList.add('active')
+}
+
+// ══════════════════════════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════════════════════════
+let toastTimer
+function showToast(msg) {
+  const el = document.getElementById('toast')
+  el.textContent = msg
+  el.classList.add('show')
+  clearTimeout(toastTimer)
+  toastTimer = setTimeout(() => el.classList.remove('show'), 3000)
+}
+
+// ══════════════════════════════════════════════════════════════
+// BOOT
+// ══════════════════════════════════════════════════════════════
+applyLang()
+
+sb.auth.onAuthStateChange((_event, session) => {
+  if (session?.user) {
+    showAccount(session.user)
+  } else {
+    showLogin()
+  }
+})
+
+sb.auth.getSession().then(({ data: { session } }) => {
+  if (session?.user) {
+    showAccount(session.user)
+  } else {
+    showLogin()
+  }
+})
+</script>
+</body>
+</html>
