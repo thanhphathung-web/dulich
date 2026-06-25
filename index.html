@@ -1015,7 +1015,7 @@ async function openModal(tourId) {
   }
 
   document.getElementById('modalBookBtn').onclick = () => {
-    window.location.href = `booking.html?tour=${t.slug}`
+    window.location.href = `booking.html?tour=${t.slug||''}&id=${t.id}`
   }
 
   document.getElementById('modalBg').classList.add('open')
@@ -1379,7 +1379,7 @@ async function runTripPlanner() {
         <div class="tp-card-meta">📅 ${t.duration_days}N${t.duration_nights||0}Đ</div>
         <div class="tp-card-footer">
           <div class="tp-card-price">${fmt(t.base_price)}<span style="font-size:.68rem;font-weight:400;color:rgba(255,255,255,.4)">đ</span></div>
-          <button class="tp-card-btn" onclick="event.stopPropagation();window.location.href='baggio-booking-live.html?tour=${t.slug}'">Đặt ngay</button>
+          <button class="tp-card-btn" onclick="event.stopPropagation();window.location.href='baggio-booking-live.html?tour=${t.slug||''}&id=${t.id}'">Đặt ngay</button>
         </div>
       </div>
     </div>`).join('')

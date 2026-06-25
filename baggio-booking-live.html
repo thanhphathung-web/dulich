@@ -512,27 +512,42 @@ function toast(msg,type='ok'){
 // ── LOAD TOURS ─────────────────────────────────────
 async function loadTours(){
   try{
-    const slug=new URLSearchParams(location.search).get('tour')
+    const params=new URLSearchParams(location.search)
+    const slug=params.get('tour')
+    const tourId=params.get('id')
+    const COLS='id,name_vi,slug,destination,region,duration_days,duration_nights,base_price,child_price_pct,max_pax,cover_image,includes_vi'
+
     if(slug){
-      // Chỉ load đúng 1 tour theo slug
-      const {data,error}=await sb.from('tours')
-        .select('id,name_vi,slug,destination,region,duration_days,duration_nights,base_price,child_price_pct,max_pax,cover_image,includes_vi')
+      const {data,error}=await sb.from('tours').select(COLS)
         .eq('slug',slug).eq('status','ACTIVE').limit(1)
       if(error)throw error
       if(data&&data.length>0){
         S.allTours=data
         renderTourList()
         selectTour(data[0].id)
+        return
       }
-    } else {
-      // Không có slug → load 20 tour để chọn
-      const {data,error}=await sb.from('tours')
-        .select('id,name_vi,slug,destination,region,duration_days,duration_nights,base_price,child_price_pct,max_pax,cover_image,includes_vi')
-        .eq('status','ACTIVE').order('base_price',{ascending:true}).limit(20)
-      if(error)throw error
-      S.allTours=data||[]
-      renderTourList()
     }
+
+    if(tourId){
+      // Fallback: tìm theo UUID nếu không có slug hoặc slug không khớp
+      const {data,error}=await sb.from('tours').select(COLS)
+        .eq('id',tourId).eq('status','ACTIVE').limit(1)
+      if(error)throw error
+      if(data&&data.length>0){
+        S.allTours=data
+        renderTourList()
+        selectTour(data[0].id)
+        return
+      }
+    }
+
+    // Không có tham số → load 20 tour để chọn
+    const {data,error}=await sb.from('tours').select(COLS)
+      .eq('status','ACTIVE').order('base_price',{ascending:true}).limit(20)
+    if(error)throw error
+    S.allTours=data||[]
+    renderTourList()
   }catch(e){
     document.getElementById('tourList').innerHTML='<div style="color:#c5372b;font-size:.85rem;padding:1rem">Không tải được danh sách tour. Kiểm tra kết nối Supabase.</div>'
     toast('Lỗi tải danh sách tour','err')
