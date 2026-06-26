@@ -605,6 +605,7 @@ async function selectTour(id){
       calM = d.getMonth()
       renderCal()
       pickDate(d.getDate(), d.getMonth(), d.getFullYear(), sched.id, sched.return_date || '')
+      goStep(2)
     }
   }
 }

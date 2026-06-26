@@ -208,7 +208,7 @@ nav{background:var(--card);border-bottom:1px solid var(--border);padding:.9rem 2
      NAV
      ══════════════════════════════════════════════════════ -->
 <nav>
-  <a href="/" class="nav-logo">Baggio<span>.</span></a>
+  <a href="/" class="nav-logo">Baggio<span>.</span>Travel</a>
   <ul class="nav-links">
     <li><a href="/" data-vi="Trang chủ" data-en="Home">Trang chủ</a></li>
     <li><a href="/?section=tours" data-vi="Tour" data-en="Tours">Tour</a></li>
@@ -348,11 +348,11 @@ nav{background:var(--card);border-bottom:1px solid var(--border);padding:.9rem 2
     <!-- ── BOOKINGS TAB ── -->
     <div class="tab-panel" id="tab-bookings">
       <div class="bookings-filter">
-        <button class="bfilter active" onclick="filterBookings('ALL')" data-vi="Tất cả" data-en="All">Tất cả</button>
-        <button class="bfilter" onclick="filterBookings('PENDING')" data-vi="Chờ xác nhận" data-en="Pending">Chờ xác nhận</button>
-        <button class="bfilter" onclick="filterBookings('CONFIRMED')" data-vi="Đã xác nhận" data-en="Confirmed">Đã xác nhận</button>
-        <button class="bfilter" onclick="filterBookings('COMPLETED')" data-vi="Hoàn thành" data-en="Completed">Hoàn thành</button>
-        <button class="bfilter" onclick="filterBookings('CANCELLED')" data-vi="Đã hủy" data-en="Cancelled">Đã hủy</button>
+        <button class="bfilter active" onclick="filterBookings('ALL', this)" data-vi="Tất cả" data-en="All">Tất cả</button>
+        <button class="bfilter" onclick="filterBookings('PENDING', this)" data-vi="Chờ xác nhận" data-en="Pending">Chờ xác nhận</button>
+        <button class="bfilter" onclick="filterBookings('CONFIRMED', this)" data-vi="Đã xác nhận" data-en="Confirmed">Đã xác nhận</button>
+        <button class="bfilter" onclick="filterBookings('COMPLETED', this)" data-vi="Hoàn thành" data-en="Completed">Hoàn thành</button>
+        <button class="bfilter" onclick="filterBookings('CANCELLED', this)" data-vi="Đã hủy" data-en="Cancelled">Đã hủy</button>
       </div>
       <div id="bookings-list">
         <div class="bookings-loading">
@@ -379,14 +379,14 @@ nav{background:var(--card);border-bottom:1px solid var(--border);padding:.9rem 2
             <div class="settings-row-label" data-vi="Nhắc nhở trước khởi hành" data-en="Pre-departure reminders">Nhắc nhở trước khởi hành</div>
             <div class="settings-row-desc" data-vi="Nhận nhắc nhở 48 giờ trước khi tour khởi hành" data-en="Get reminders 48 hours before departure">Nhận nhắc nhở 48 giờ trước khi tour khởi hành</div>
           </div>
-          <label class="toggle"><input type="checkbox" id="notif-reminder" checked><span class="toggle-slider"></span></label>
+          <label class="toggle"><input type="checkbox" id="notif-reminder" onchange="saveNotifPref('reminder', this.checked)"><span class="toggle-slider"></span></label>
         </div>
         <div class="settings-row">
           <div class="settings-row-info">
             <div class="settings-row-label" data-vi="Ưu đãi & khuyến mãi" data-en="Deals & promotions">Ưu đãi & khuyến mãi</div>
             <div class="settings-row-desc" data-vi="Nhận thông báo về tour giảm giá và ưu đãi đặc biệt" data-en="Get notified about discounts and special offers">Nhận thông báo về tour giảm giá và ưu đãi đặc biệt</div>
           </div>
-          <label class="toggle"><input type="checkbox" id="notif-promo"><span class="toggle-slider"></span></label>
+          <label class="toggle"><input type="checkbox" id="notif-promo" onchange="saveNotifPref('promo', this.checked)"><span class="toggle-slider"></span></label>
         </div>
       </div>
 
@@ -720,10 +720,10 @@ async function loadBookings(user) {
   renderBookings()
 }
 
-function filterBookings(status) {
+function filterBookings(status, btn) {
   currentFilter = status
   document.querySelectorAll('.bfilter').forEach(b => b.classList.remove('active'))
-  event.currentTarget.classList.add('active')
+  if (btn) btn.classList.add('active')
   renderBookings()
 }
 
@@ -803,9 +803,28 @@ function showToast(msg) {
 }
 
 // ══════════════════════════════════════════════════════════════
+// NOTIFICATIONS
+// ══════════════════════════════════════════════════════════════
+function saveNotifPref(key, value) {
+  const prefs = JSON.parse(localStorage.getItem('baggio_notif') || '{}')
+  prefs[key] = value
+  localStorage.setItem('baggio_notif', JSON.stringify(prefs))
+  showToast(value ? '🔔 Đã bật thông báo' : '🔕 Đã tắt thông báo')
+}
+
+function loadNotifPrefs() {
+  const prefs = JSON.parse(localStorage.getItem('baggio_notif') || '{}')
+  const reminder = document.getElementById('notif-reminder')
+  const promo    = document.getElementById('notif-promo')
+  if (reminder) reminder.checked = prefs.reminder !== false
+  if (promo)    promo.checked    = prefs.promo === true
+}
+
+// ══════════════════════════════════════════════════════════════
 // BOOT
 // ══════════════════════════════════════════════════════════════
 applyLang()
+loadNotifPrefs()
 
 sb.auth.onAuthStateChange((_event, session) => {
   if (session?.user) {

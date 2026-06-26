@@ -691,7 +691,7 @@ footer{background:var(--ink);color:rgba(250,248,243,.55);padding:3rem 2rem 1.5re
   <div>
     <div class="ft-title" data-i18n="ft_services">Dịch vụ</div>
     <ul class="ft-links">
-      <li><a href="booking.html" data-i18n="ft_book">Đặt tour</a></li>
+      <li><a href="/booking" data-i18n="ft_book">Đặt tour</a></li>
       <li><a href="baggio-admin.html">Quản lý</a></li>
       <li><a href="baggio-report.html" data-i18n="ft_report">Báo cáo</a></li>
     </ul>
@@ -1145,7 +1145,7 @@ async function openModal(tourId) {
   }
 
   document.getElementById('modalBookBtn').onclick = () => {
-    window.location.href = `booking.html?tour=${t.slug||''}&id=${t.id}`
+    window.location.href = `/booking?tour=${t.slug||t.id}`
   }
 
   document.getElementById('modalBg').classList.add('open')
@@ -1447,7 +1447,25 @@ async function runTripPlanner() {
   else if (budget === '10000000') q = q.gte('base_price', 5000000).lte('base_price', 10000000)
   else if (budget === '99999999') q = q.gte('base_price', 10000000)
 
-  q = q.order('base_price', { ascending: true }).limit(6)
+  // Server-side interest filter
+  const INTEREST_KEYWORDS = {
+    beach:['Phú Quốc','Nha Trang','Đà Nẵng','Phan Thiết','Vũng Tàu','Mũi Né','Hạ Long','Quy Nhơn'],
+    mountain:['Sa Pa','Đà Lạt','Hà Giang','Cao Bằng','Điện Biên','Lào Cai','Yên Bái','Sơn La'],
+    culture:['Hội An','Huế','Hà Nội','Ninh Bình','Quảng Nam','Đồng Tháp'],
+    food:['Hội An','Hà Nội','Cần Thơ','Đà Nẵng','Hồ Chí Minh'],
+    adventure:['Sa Pa','Hà Giang','Đà Lạt','Cao Bằng','Điện Biên'],
+    family:['Phú Quốc','Đà Lạt','Nha Trang','Hạ Long'],
+    couple:['Hội An','Đà Lạt','Phú Quốc','Sa Pa'],
+    wellness:['Đà Lạt','Phú Quốc','Nha Trang','Mũi Né'],
+    photography:['Hà Giang','Sa Pa','Hội An','Ninh Bình'],
+    festival:['Hội An','Huế','Hà Nội','Đà Nẵng'],
+  }
+  if (tpInterests.length > 0 && !dest) {
+    const matchDests = [...new Set(tpInterests.flatMap(i => INTEREST_KEYWORDS[i] || []))]
+    if (matchDests.length) q = q.in('destination', matchDests)
+  }
+
+  q = q.order('base_price', { ascending: true }).limit(12)
 
   const { data, error } = await q
 
@@ -1456,25 +1474,7 @@ async function runTripPlanner() {
     return
   }
 
-  // Filter by interests — map to destination keywords
   let filtered = data
-  if (tpInterests.length > 0) {
-    const INTEREST_KEYWORDS = {
-      beach:['Phú Quốc','Nha Trang','Đà Nẵng','Phan Thiết','Vũng Tàu','Mũi Né','Hạ Long','Quy Nhơn'],
-      mountain:['Sa Pa','Đà Lạt','Hà Giang','Cao Bằng','Điện Biên','Lào Cai','Yên Bái','Sơn La'],
-      culture:['Hội An','Huế','Hà Nội','Ninh Bình','Quảng Nam','Đồng Tháp'],
-      food:['Hội An','Hà Nội','Cần Thơ','Đà Nẵng','Hồ Chí Minh'],
-      adventure:['Sa Pa','Hà Giang','Đà Lạt','Cao Bằng','Điện Biên'],
-      family:['Phú Quốc','Đà Lạt','Nha Trang','Hạ Long'],
-      couple:['Hội An','Đà Lạt','Phú Quốc','Sa Pa'],
-      wellness:['Đà Lạt','Phú Quốc','Nha Trang','Mũi Né'],
-      photography:['Hà Giang','Sa Pa','Hội An','Ninh Bình'],
-      festival:['Hội An','Huế','Hà Nội','Đà Nẵng'],
-    }
-    const matchDests = new Set(tpInterests.flatMap(i => INTEREST_KEYWORDS[i] || []))
-    const byInterest = data.filter(t => matchDests.has(t.destination))
-    if (byInterest.length) filtered = byInterest
-  }
 
   // Build summary
   const parts = []

@@ -475,10 +475,14 @@ function selectSchedule(el, id, depart, ret, slots) {
 
 function bookNow() {
   if(!tour) return
-  const url = selectedSchedule
-    ? `/booking?tour=${tour.slug}&schedule=${selectedSchedule.id}`
-    : `/booking?tour=${tour.slug}`
-  window.location.href = url
+  if(!selectedSchedule) {
+    toast('👆 Vui lòng chọn ngày khởi hành bên dưới','err')
+    document.getElementById('scheduleList').scrollIntoView({behavior:'smooth',block:'center'})
+    document.getElementById('scheduleList').style.outline='2px solid var(--red)'
+    setTimeout(()=>document.getElementById('scheduleList').style.outline='',2000)
+    return
+  }
+  window.location.href = `/booking?tour=${tour.slug}&schedule=${selectedSchedule.id}`
 }
 
 function consultZalo() {
