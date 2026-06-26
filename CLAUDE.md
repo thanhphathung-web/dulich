@@ -54,7 +54,7 @@ Admin/tool pages use a dark developer palette (`--bg:#080b10`, blue/green/amber/
 - **Stack:** Node.js 20, Express 5, Prisma ORM, PostgreSQL via Supabase
 - **Auth:** JWT, `Authorization: Bearer <token>` header
 - **Rate limiting:** 100 req / 15 min / IP globally; webhook endpoint uses `express.raw()` for signature verification
-- **CORS whitelist:** `https://baggiotravel.com`, `http://localhost:3000`
+- **CORS whitelist:** `https://baggiotravel.vercel.app`, `http://localhost:3000`
 - **Key routes:** `/api/tours`, `/api/bookings`, `/api/payments`, `/api/users`, `/api/guides`
 - **Webhook:** `POST /api/payment/webhook` (MoMo / VNPay)
 
