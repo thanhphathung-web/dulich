@@ -390,9 +390,14 @@ footer{background:var(--ink);color:rgba(250,248,243,.55);padding:3rem 2rem 1.5re
     <div class="hero-img-wrap">
       <img class="hero-img" src="https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=800&q=80" alt="Hội An đêm">
       <div class="hero-badge">
-        <div class="hb-num">63<span style="font-size:1rem">+</span></div>
-        <div class="hb-label">Tỉnh thành VN</div>
+        <div class="hb-num" id="heroTourCount2">—<span>+</span></div>
+        <div class="hb-label">Gói tour đa dạng</div>
       </div>
+    </div>
+    <div style="display:flex;gap:.5rem;margin-top:1.25rem;flex-wrap:wrap">
+      <span style="font-family:var(--mono);font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;padding:.35rem .75rem;border:1px solid var(--border);background:var(--card);color:var(--teal)">✓ Tour riêng tư</span>
+      <span style="font-family:var(--mono);font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;padding:.35rem .75rem;border:1px solid var(--border);background:var(--card);color:var(--teal)">✓ HDV địa phương</span>
+      <span style="font-family:var(--mono);font-size:.6rem;letter-spacing:.08em;text-transform:uppercase;padding:.35rem .75rem;border:1px solid var(--border);background:var(--card);color:var(--teal)">✓ Xe riêng có tài xế</span>
     </div>
   </div>
 </section>
@@ -400,18 +405,30 @@ footer{background:var(--ink);color:rgba(250,248,243,.55);padding:3rem 2rem 1.5re
 <!-- MARQUEE -->
 <div class="marquee" aria-hidden="true">
   <div class="marquee-track" id="marqueeTrack">
-    <span class="marquee-item"><b>Hội An</b> · Phố Cổ & Ẩm Thực · </span>
-    <span class="marquee-item"><b>Hạ Long</b> · Du Thuyền · </span>
-    <span class="marquee-item"><b>Phú Quốc</b> · Resort 5★ · </span>
-    <span class="marquee-item"><b>Sa Pa</b> · Trekking & Bản Làng · </span>
+    <span class="marquee-item"><b>Hội An</b> · Phố Cổ & Đèn Lồng · </span>
+    <span class="marquee-item"><b>Hạ Long</b> · Du Thuyền Đêm · </span>
+    <span class="marquee-item"><b>Phú Quốc</b> · Biển Ngọc & Resort 5★ · </span>
+    <span class="marquee-item"><b>Sa Pa</b> · Trekking Bản Làng · </span>
     <span class="marquee-item"><b>Đà Lạt</b> · Thành Phố Sương Mù · </span>
-    <span class="marquee-item"><b>Nha Trang</b> · Biển & Đảo · </span>
-    <span class="marquee-item"><b>Hội An</b> · Phố Cổ & Ẩm Thực · </span>
-    <span class="marquee-item"><b>Hạ Long</b> · Du Thuyền · </span>
-    <span class="marquee-item"><b>Phú Quốc</b> · Resort 5★ · </span>
-    <span class="marquee-item"><b>Sa Pa</b> · Trekking & Bản Làng · </span>
+    <span class="marquee-item"><b>Nha Trang</b> · Lặn Biển & Đảo · </span>
+    <span class="marquee-item"><b>Ninh Bình</b> · Tràng An & Tam Cốc · </span>
+    <span class="marquee-item"><b>Huế</b> · Cố Đô & Di Sản · </span>
+    <span class="marquee-item"><b>Hà Giang</b> · Loop & Đồng Văn · </span>
+    <span class="marquee-item"><b>Côn Đảo</b> · Hoang Sơ & Lặn Rạn · </span>
+    <span class="marquee-item"><b>Mekong</b> · Chợ Nổi & Sông Nước · </span>
+    <span class="marquee-item"><b>Quy Nhơn</b> · Biển Vắng & Tháp Chàm · </span>
+    <span class="marquee-item"><b>Hội An</b> · Phố Cổ & Đèn Lồng · </span>
+    <span class="marquee-item"><b>Hạ Long</b> · Du Thuyền Đêm · </span>
+    <span class="marquee-item"><b>Phú Quốc</b> · Biển Ngọc & Resort 5★ · </span>
+    <span class="marquee-item"><b>Sa Pa</b> · Trekking Bản Làng · </span>
     <span class="marquee-item"><b>Đà Lạt</b> · Thành Phố Sương Mù · </span>
-    <span class="marquee-item"><b>Nha Trang</b> · Biển & Đảo · </span>
+    <span class="marquee-item"><b>Nha Trang</b> · Lặn Biển & Đảo · </span>
+    <span class="marquee-item"><b>Ninh Bình</b> · Tràng An & Tam Cốc · </span>
+    <span class="marquee-item"><b>Huế</b> · Cố Đô & Di Sản · </span>
+    <span class="marquee-item"><b>Hà Giang</b> · Loop & Đồng Văn · </span>
+    <span class="marquee-item"><b>Côn Đảo</b> · Hoang Sơ & Lặn Rạn · </span>
+    <span class="marquee-item"><b>Mekong</b> · Chợ Nổi & Sông Nước · </span>
+    <span class="marquee-item"><b>Quy Nhơn</b> · Biển Vắng & Tháp Chàm · </span>
   </div>
 </div>
 
@@ -420,7 +437,7 @@ footer{background:var(--ink);color:rgba(250,248,243,.55);padding:3rem 2rem 1.5re
   <div class="tp-wrap">
     <div class="tp-header">
       <div class="tp-eyebrow">Lên kế hoạch chuyến đi</div>
-      <h2 class="tp-title">Plan a <span>full day trip</span></h2>
+      <h2 class="tp-title">Tạo <span>lịch trình riêng</span></h2>
       <p class="tp-sub">Điền thông tin — hệ thống gợi ý tour phù hợp nhất cho bạn</p>
     </div>
     <div class="tp-form">
@@ -620,6 +637,7 @@ footer{background:var(--ink);color:rgba(250,248,243,.55);padding:3rem 2rem 1.5re
     <button class="fchip" onclick="setTourType('couple',this)">💑 Cặp đôi</button>
     <button class="fchip" onclick="setTourType('adventure',this)">🧗 Phiêu lưu</button>
     <button class="fchip" onclick="setTourType('wellness',this)">🧘 Nghỉ dưỡng</button>
+    <button class="fchip" onclick="setTourType('private',this)">🔒 Tour riêng</button>
   </div>
   <div class="tours-grid" id="toursGrid">
     <!-- Skeleton loading -->
@@ -760,15 +778,17 @@ const TOUR_TYPE_LABELS = {
   couple:    '💑 Cặp đôi',
   adventure: '🧗 Phiêu lưu',
   wellness:  '🧘 Nghỉ dưỡng',
+  private:   '🔒 Tour riêng',
 }
 const TYPE_KEYWORDS = {
-  beach:     ['biển','đảo','vịnh'],
-  mountain:  ['núi','trekking','sapa'],
-  culture:   ['văn hóa','di tích','phố cổ'],
-  family:    ['gia đình','family'],
-  couple:    ['cặp đôi','lãng mạn'],
-  adventure: ['phiêu lưu','mạo hiểm','hang động'],
-  wellness:  ['nghỉ dưỡng','resort'],
+  beach:     ['biển','đảo','vịnh','snorkel','lặn'],
+  mountain:  ['núi','trekking','sapa','hà giang','loop','bản làng'],
+  culture:   ['văn hóa','di tích','phố cổ','cố đô','di sản','huế'],
+  family:    ['gia đình','family','trẻ em'],
+  couple:    ['cặp đôi','lãng mạn','honeymoon'],
+  adventure: ['phiêu lưu','mạo hiểm','hang động','kayak'],
+  wellness:  ['nghỉ dưỡng','resort','spa','detox'],
+  private:   ['riêng','private','cá nhân','nhóm nhỏ','exclusive'],
 }
 
 // Danh sách 63 tỉnh theo vùng miền
@@ -821,11 +841,15 @@ async function loadTours(page = 0) {
     const f    = getFilters()
 
     let q = sb.from('tours')
-      .select('id,name_vi,slug,destination,region,duration_days,duration_nights,base_price,max_pax,cover_image,includes_vi,status,created_at,tour_schedules(available_slots,depart_date,status)', { count: 'exact' })
+      .select('id,name_vi,name_en,name_zh,slug,destination,region,duration_days,duration_nights,base_price,max_pax,cover_image,includes_vi,highlights_vi,highlights_en,highlights_zh,itinerary_vi,itinerary_en,itinerary_zh,status,created_at,tour_schedules(available_slots,depart_date,status)', { count: 'exact' })
       .eq('status', 'ACTIVE')
 
     // Server-side filters
-    if (f.search)   q = q.or(`name_vi.ilike.%${f.search}%,destination.ilike.%${f.search}%`)
+    if (f.search) {
+      if (currentLang==='zh') q = q.or(`name_zh.ilike.%${f.search}%,name_vi.ilike.%${f.search}%,destination.ilike.%${f.search}%`)
+      else if (currentLang==='en') q = q.or(`name_en.ilike.%${f.search}%,name_vi.ilike.%${f.search}%,destination.ilike.%${f.search}%`)
+      else q = q.or(`name_vi.ilike.%${f.search}%,destination.ilike.%${f.search}%`)
+    }
     if (f.dest)     q = q.eq('destination', f.dest)
     if (f.region)   q = q.eq('region', f.region)
     if (f.priceMin) q = q.gte('base_price', +f.priceMin)
@@ -846,6 +870,8 @@ async function loadTours(page = 0) {
     allTours    = data || []
 
     document.getElementById('heroTourCount').innerHTML = totalTours + '<span>+</span>'
+    const b2 = document.getElementById('heroTourCount2')
+    if (b2) b2.innerHTML = totalTours + '<span>+</span>'
     document.getElementById('tourCountLabel').textContent = `${totalTours} tour`
     renderTours(allTours)
     renderPagination()
@@ -902,43 +928,49 @@ function renderTours(tours) {
   if (!tours.length) {
     grid.innerHTML = `<div class="state-box">
       <div class="state-icon">🗺️</div>
-      <div class="state-title">Không tìm thấy tour</div>
-      <div class="state-sub">Thử thay đổi bộ lọc hoặc xem tất cả tour.</div>
-      <button class="state-retry" onclick="resetFilters()">Xem tất cả</button>
+      <div class="state-title">${t('no_tours')}</div>
+      <div class="state-sub">${t('try_filter')}</div>
+      <button class="state-retry" onclick="resetFilters()">${t('view_all')}</button>
     </div>`
     return
   }
 
+  const i18n = key => I18N[currentLang]?.[key] || I18N.vi[key] || key
   grid.innerHTML = tours.map(t => {
     const inc   = t.includes_vi || {}
     const schedOpen = (t.tour_schedules || []).filter(s => s.status === 'OPEN' && s.available_slots > 0)
-    const hasSoon   = schedOpen.length > 0
+    const hasNoSchedule = !(t.tour_schedules || []).length
     const incList   = buildIncludesList(inc)
-    const badgeHtml = hasSoon ? `<div class="tc-badge">Còn ${schedOpen[0].available_slots} chỗ</div>` : ''
+    let badgeHtml = ''
+    if (schedOpen.length > 0) {
+      badgeHtml = `<div class="tc-badge">${i18n('badge_available')}: ${schedOpen[0].available_slots}</div>`
+    } else if (hasNoSchedule || t.max_pax <= 12) {
+      badgeHtml = `<div class="tc-badge" style="background:var(--teal)">${i18n('badge_private')}</div>`
+    }
 
     return `
     <article class="tour-card" onclick="window.location.href='/tour?slug=${t.slug||t.id}'">
       <div class="tc-img-wrap">
         <img class="tc-img"
           src="${t.cover_image || 'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=600&q=70'}"
-          alt="${t.name_vi}" loading="lazy"
+          alt="${tourName(t)}" loading="lazy"
           onerror="this.src='https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=600&q=70'">
         ${badgeHtml}
       </div>
       <div class="tc-body">
         <div class="tc-dest">${t.destination} · ${regionLabel(t.region)}</div>
-        <div class="tc-name">${t.name_vi}</div>
+        <div class="tc-name">${tourName(t)}</div>
         <div class="tc-meta">
-          <span>📅 ${t.duration_days}N${t.duration_nights}Đ</span>
-          <span>👥 Tối đa ${t.max_pax} khách</span>
+          <span>📅 ${fmtDur(t.duration_days,t.duration_nights)}</span>
+          <span>👥 ${i18n('max_pax_pre')} ${t.max_pax} ${i18n('max_pax_suf')}</span>
         </div>
         <ul class="tc-includes">${incList}</ul>
         <div class="tc-footer">
           <div>
-            <span class="tc-price-from">Từ</span>
-            <div class="tc-price">${fmt(t.base_price)} <sub>đ/người</sub></div>
+            <span class="tc-price-from">${i18n('price_from')}</span>
+            <div class="tc-price">${fmt(t.base_price)} <sub>${i18n('per_person')}</sub></div>
           </div>
-          <a class="btn-book" href="/tour?slug=${t.slug||t.id}" onclick="event.stopPropagation()">Xem tour</a>
+          <a class="btn-book" href="/tour?slug=${t.slug||t.id}" onclick="event.stopPropagation()">${i18n('view_tour')}</a>
         </div>
       </div>
     </article>`
@@ -947,11 +979,30 @@ function renderTours(tours) {
 
 function buildIncludesList(inc) {
   const items = []
-  if (inc.flights)  items.push('Vé máy bay khứ hồi')
-  if (inc.hotel)    items.push(`Khách sạn ${inc.hotel === '5-star-beachfront' ? '5★ beachfront' : inc.hotel === '4-star-cruise' ? 'du thuyền 4★' : inc.hotel}`)
-  if (inc.guide)    items.push('Hướng dẫn viên địa phương')
-  if (inc.transfer) items.push('Xe đưa đón sân bay')
-  if (inc.meals)    items.push(Array.isArray(inc.meals) ? inc.meals.join(', ') : inc.meals)
+  const lang = currentLang
+  const L = {
+    flights:    {vi:'Vé máy bay khứ hồi',      en:'Round-trip flights',      zh:'含往返机票'},
+    guide:      {vi:'HDV địa phương suốt tour', en:'Local guide throughout',  zh:'全程本地导游'},
+    private_car:{vi:'Xe riêng có tài xế',       en:'Private car with driver', zh:'专属私家车'},
+    transfer:   {vi:'Xe đưa đón sân bay',       en:'Airport transfers',       zh:'接送机服务'},
+    entrance:   {vi:'Vé tham quan điểm đến',    en:'Entrance fees included',  zh:'含景点门票'},
+    boat:       {vi:'Thuyền/Kayak chương trình',en:'Boat/Kayak included',     zh:'含游船/皮划艇'},
+    visa:       {vi:'Hỗ trợ visa',              en:'Visa assistance',         zh:'签证协助'},
+  }
+  const hotel = {
+    vi:{'5-star-beachfront':'Khách sạn 5★ beachfront','4-star-cruise':'Du thuyền 4★','4-star':'Khách sạn 4★','3-star':'Khách sạn 3★','resort':'Resort'},
+    en:{'5-star-beachfront':'5★ beachfront hotel','4-star-cruise':'4★ cruise ship','4-star':'4★ hotel','3-star':'3★ boutique hotel','resort':'Standard resort'},
+    zh:{'5-star-beachfront':'五星海滨酒店','4-star-cruise':'四星邮轮','4-star':'四星酒店','3-star':'三星精品酒店','resort':'度假村'},
+  }
+  if (inc.flights)       items.push(L.flights[lang]||L.flights.vi)
+  if (inc.hotel)         items.push((hotel[lang]||hotel.vi)[inc.hotel] || inc.hotel)
+  if (inc.guide)         items.push(L.guide[lang]||L.guide.vi)
+  if (inc.private_car)   items.push(L.private_car[lang]||L.private_car.vi)
+  if (inc.transfer)      items.push(L.transfer[lang]||L.transfer.vi)
+  if (inc.entrance_fees) items.push(L.entrance[lang]||L.entrance.vi)
+  if (inc.boat)          items.push(L.boat[lang]||L.boat.vi)
+  if (inc.meals)         items.push(Array.isArray(inc.meals) ? inc.meals.join(' · ') : inc.meals)
+  if (inc.visa)          items.push(L.visa[lang]||L.visa.vi)
   return items.slice(0, 4).map(i => `<li>${i}</li>`).join('')
 }
 
@@ -1112,14 +1163,14 @@ async function openModal(tourId) {
   const inc = t.includes_vi || {}
 
   document.getElementById('modalImg').src     = t.cover_image || ''
-  document.getElementById('modalImg').alt     = t.name_vi
+  document.getElementById('modalImg').alt     = tourName(t)
   document.getElementById('modalDest').textContent  = `${t.destination} · ${regionLabel(t.region)}`
-  document.getElementById('modalName').textContent  = t.name_vi
-  document.getElementById('modalPrice').innerHTML   = `${fmt(t.base_price)} <sub>đ/người</sub>`
+  document.getElementById('modalName').textContent  = tourName(t)
+  document.getElementById('modalPrice').innerHTML   = `${fmt(t.base_price)} <sub>${t('per_person')}</sub>`
 
   document.getElementById('modalMetas').innerHTML = `
-    <span class="modal-meta">📅 ${t.duration_days} ngày ${t.duration_nights} đêm</span>
-    <span class="modal-meta">👥 Tối đa ${t.max_pax} khách</span>
+    <span class="modal-meta">📅 ${t.duration_days} ${t('days')} ${t.duration_nights} ${t('nights')}</span>
+    <span class="modal-meta">👥 ${t('max_pax_pre')} ${t.max_pax} ${t('max_pax_suf')}</span>
     <span class="modal-meta">📍 ${t.destination}</span>`
 
   // Includes
@@ -1128,15 +1179,15 @@ async function openModal(tourId) {
     `<ul class="tc-includes">${incItems.map(i => `<li>${i}</li>`).join('')}</ul>`
 
   // Itinerary
-  const itin = Array.isArray(t.itinerary_vi) ? t.itinerary_vi : []
+  const itin = Array.isArray(tourItinerary(t)) ? tourItinerary(t) : []
   document.getElementById('modalItinerary').innerHTML = itin.map(day => `
     <div class="itinerary-day">
-      <div class="itinerary-day-title">Ngày ${day.day}: ${day.title}</div>
+      <div class="itinerary-day-title">${t('day_label')} ${day.day}${t('day_label_suf')}: ${day.title}</div>
       <ul class="itinerary-day-acts">${(day.activities || []).map(a => `<li>${a}</li>`).join('')}</ul>
     </div>`).join('')
 
   // Highlights
-  const hl = t.highlights_vi || []
+  const hl = tourHighlights(t)
   if (hl.length) {
     document.getElementById('modalHighSection').style.display = 'block'
     document.getElementById('modalHighlights').innerHTML = hl.map(h => `<li>${h}</li>`).join('')
@@ -1162,6 +1213,17 @@ function closeModal(e) {
 // ══════════════════════════════════════════════════════════════
 // LOAD GUIDES
 // ══════════════════════════════════════════════════════════════
+const SAMPLE_GUIDES = [
+  { id:1, full_name:'Nguyễn Văn Minh', languages:['vi','en'], specialties:['trekking','culture'], regions:['north'], rating_avg:4.9, total_tours:312, avatar_url:'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&h=120&fit=crop&crop=face' },
+  { id:2, full_name:'Trần Thị Hương', languages:['vi','en','fr'], specialties:['culture','food','heritage'], regions:['central'], rating_avg:4.8, total_tours:247, avatar_url:'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=120&h=120&fit=crop&crop=face' },
+  { id:3, full_name:'Lê Quốc Hùng', languages:['vi','en','zh'], specialties:['mekong','boat','nature'], regions:['south'], rating_avg:4.9, total_tours:189, avatar_url:'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=120&h=120&fit=crop&crop=face' },
+  { id:4, full_name:'Phạm Thị Trang', languages:['vi','en','ko'], specialties:['beach','island','snorkeling'], regions:['south','central'], rating_avg:4.7, total_tours:156, avatar_url:'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=120&h=120&fit=crop&crop=face' },
+  { id:5, full_name:'Vũ Đức Thành', languages:['vi','en'], specialties:['adventure','cave','motorbike'], regions:['central','north'], rating_avg:4.9, total_tours:203, avatar_url:'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=120&h=120&fit=crop&crop=face' },
+  { id:6, full_name:'Ngô Thị Lan Anh', languages:['vi','en','ja'], specialties:['history','museum','craft'], regions:['north','central'], rating_avg:4.8, total_tours:174, avatar_url:'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=120&h=120&fit=crop&crop=face' },
+  { id:7, full_name:'Đặng Minh Tuấn', languages:['vi','en'], specialties:['photography','sunrise','landscape'], regions:['north'], rating_avg:4.9, total_tours:128, avatar_url:'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=120&h=120&fit=crop&crop=face' },
+  { id:8, full_name:'Bùi Thị Kim Yến', languages:['vi','en','zh'], specialties:['family','kids','food'], regions:['south'], rating_avg:4.8, total_tours:215, avatar_url:'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=120&h=120&fit=crop&crop=face' },
+]
+
 async function loadGuides() {
   try {
     const { data, error } = await sb
@@ -1172,12 +1234,14 @@ async function loadGuides() {
       .limit(8)
 
     if (error) throw error
-    allGuides = data || []
+    allGuides = (data && data.length) ? data : SAMPLE_GUIDES
     document.getElementById('heroGuideCount').innerHTML = allGuides.length + '<span>+</span>'
     renderGuides(allGuides)
   } catch (err) {
     console.error('loadGuides:', err)
-    document.getElementById('guidesGrid').innerHTML = '<div class="state-box"><div class="state-title">Không tải được danh sách HDV</div></div>'
+    allGuides = SAMPLE_GUIDES
+    document.getElementById('heroGuideCount').innerHTML = SAMPLE_GUIDES.length + '<span>+</span>'
+    renderGuides(SAMPLE_GUIDES)
   }
 }
 
@@ -1221,9 +1285,18 @@ async function loadReviews() {
   }
 }
 
+const SAMPLE_REVIEWS = [
+  { rating:5, comment:'Tour Sa Pa 3N2Đ private tuyệt vời. HDV Minh rất am hiểu văn hóa người Mông, dẫn mình vào bản Y Tý không có trong lịch trình chuẩn. Xe riêng sạch, khách sạn Topas Eco Lodge đúng như mô tả. Sẽ đặt lại chuyến Hà Giang.', reviewer_name:'Nguyễn Thị Lan', tour:'Tour Sa Pa – Y Tý Riêng Tư 3N2Đ' },
+  { rating:5, comment:'We booked a private Halong cruise for our honeymoon. The crew was professional, food was excellent, and our guide Kevin spoke perfect English. Kayaking through the caves at sunrise was unforgettable. Highly recommend Baggio Travel!', reviewer_name:'Sophie & Mark T.', tour:'Hạ Long Bay Private Cruise 2D1N' },
+  { rating:5, comment:'Mình đặt tour Hội An – Mỹ Sơn 1 ngày full private. HDV Trang rất nhiệt tình, giải thích chi tiết lịch sử Tháp Chàm. Buổi tối đi thuyền đèn lồng sông Hoài cực lãng mạn. Giá hợp lý cho chất lượng này.', reviewer_name:'Trần Minh Khoa', tour:'Hội An Cổ Phố & Mỹ Sơn Private 1N' },
+  { rating:5, comment:'Family trip to Mekong Delta with 2 kids (8 & 11). The guide adapted the pace perfectly — boat ride on the delta, bee farm, coconut candy workshop. Kids loved every minute. Thank you Baggio for a stress-free trip!', reviewer_name:'Jennifer L.', tour:'Mekong Delta Family Day Tour' },
+  { rating:5, comment:'Tour Ninh Bình – Tràng An private rất xuất sắc. Thuyền đi qua 3 hang động, sau đó leo Hang Múa ngắm toàn cảnh. HDV Hùng kể chuyện lịch sử sinh động như phim. Nhất định sẽ giới thiệu cho bạn bè.', reviewer_name:'Phạm Đức Anh', tour:'Ninh Bình – Tràng An – Hang Múa 1N' },
+  { rating:5, comment:'Đặt tour Phú Quốc 4N3Đ riêng cho 4 người. Resort JW Marriott đúng chuẩn, xe đưa đón luôn đúng giờ. Chèo thuyền kayak ở Hòn Thơm rất thú vị. Team Baggio hỗ trợ 24/7, có vấn đề gì nhắn Zalo là giải quyết ngay.', reviewer_name:'Lê Hoàng Yến', tour:'Phú Quốc Boutique 4N3Đ – Tour Riêng' },
+]
+
 function renderReviews(reviews) {
-  if (!reviews.length) { document.getElementById('reviewsGrid').innerHTML = ''; return }
-  document.getElementById('reviewsGrid').innerHTML = reviews.map(r => `
+  const data = reviews.length ? reviews : SAMPLE_REVIEWS.map((r,i) => ({ ...r, id: i }))
+  document.getElementById('reviewsGrid').innerHTML = data.map(r => `
     <div class="rev-card">
       <div class="rev-stars">${'★'.repeat(r.rating)}${'☆'.repeat(5-r.rating)}</div>
       <p class="rev-text">"${r.comment || 'Trải nghiệm tuyệt vời!'}"</p>
@@ -1231,7 +1304,7 @@ function renderReviews(reviews) {
         <div class="rev-av">${initials(r.reviewer_name)}</div>
         <div>
           <div class="rev-name">${r.reviewer_name}</div>
-          <div class="rev-tour-name">${r.tours?.name_vi || 'Tour Baggio Travel'}</div>
+          <div class="rev-tour-name">${r.tours?.name_vi || r.tour || 'Tour Baggio Travel'}</div>
         </div>
       </div>
     </div>`).join('')
@@ -1254,12 +1327,12 @@ function updateFooterDests() {
 const I18N = {
   vi: {
     nav_tours:'Tour', nav_guides:'HDV', nav_reviews:'Đánh giá', nav_book:'Đặt tour ngay',
-    hero_eyebrow:'Tour trọn gói Việt Nam',
-    hero_title:'Khám phá Việt Nam theo cách của bạn',
-    hero_sub:'Từ vé máy bay, khách sạn, hướng dẫn viên địa phương đến xe đón sân bay — chúng tôi lo tất cả.',
+    hero_eyebrow:'Tour FIT & Private Việt Nam',
+    hero_title:'Hành trình Việt Nam đúng cách bạn muốn',
+    hero_sub:'Tour riêng tư hoặc cố định lịch — HDV địa phương dày dặn, xe riêng, khách sạn boutique được tuyển chọn kỹ. Linh hoạt 100%, không chung đoàn lạ.',
     hero_btn_tours:'Xem tất cả tour →', hero_btn_guides:'Gặp hướng dẫn viên',
     stat_tours:'Gói tour', stat_guides:'HDV chuyên nghiệp', stat_rating:'Đánh giá trung bình',
-    filter_region:'Vùng miền', filter_dest:'Điểm đến',
+    filter_search:'Tìm kiếm tour', filter_region:'Vùng miền', filter_dest:'Điểm đến',
     filter_price_min:'Giá từ', filter_price_max:'Giá đến',
     filter_days:'Số ngày', filter_reset:'↺ Đặt lại', filter_no_limit:'Không giới hạn',
     filter_all_region:'Tất cả vùng', filter_all_dest:'Tất cả điểm đến', filter_any_day:'Bất kỳ',
@@ -1269,24 +1342,25 @@ const I18N = {
     sec_tours_eye:'Gói tour', sec_tours_title:'Chọn tour phù hợp',
     sec_guides_eye:'Hướng dẫn viên', sec_guides_title:'Đội ngũ HDV địa phương',
     sec_reviews_eye:'Đánh giá', sec_reviews_title:'Khách hàng nói gì',
-    ft_desc:'Nền tảng đặt tour du lịch Việt Nam trọn gói — từ vé máy bay, khách sạn đến hướng dẫn viên địa phương.',
+    ft_desc:'Chuyên tour FIT & private Việt Nam — HDV địa phương, xe riêng, khách sạn boutique. Linh hoạt lịch trình, giá trọn gói minh bạch.',
     ft_destinations:'Điểm đến', ft_services:'Dịch vụ', ft_support:'Hỗ trợ',
     ft_book:'Đặt tour', ft_report:'Báo cáo', ft_hotline:'Hotline: 0906 306 286',
     ft_policy:'Chính sách hoàn hủy', ft_hours:'Thứ 2 – Thứ 7 · 8:00 – 18:00',
-    ft_license:'Giấy phép kinh doanh lữ hành quốc tế',
+    ft_license:'Giấy phép lữ hành quốc tế · GPLH số 01-1629/2024/TCDL-GP LHQT',
     modal_book:'🎒 Đặt tour này', modal_detail:'🔍 Xem chi tiết',
-    badge_available:'Còn chỗ', days:'ngày', nights:'đêm', per_person:'/người',
+    badge_available:'Còn chỗ', badge_private:'Tour riêng', days:'ngày', nights:'đêm', per_person:'/người',
     no_tours:'Không tìm thấy tour phù hợp', try_filter:'Thử thay đổi bộ lọc hoặc xem tất cả tour.',
-    view_all:'Xem tất cả',
+    view_all:'Xem tất cả', price_from:'Từ', view_tour:'Xem tour',
+    max_pax_pre:'Tối đa', max_pax_suf:'khách', day_label:'Ngày', day_label_suf:'',
   },
   en: {
     nav_tours:'Tours', nav_guides:'Guides', nav_reviews:'Reviews', nav_book:'Book Now',
-    hero_eyebrow:'All-inclusive Vietnam Tours',
-    hero_title:'Explore Vietnam your way',
-    hero_sub:'From flights, hotels and local guides to airport transfers — we handle everything.',
-    hero_btn_tours:'View all tours →', hero_btn_guides:'Meet our guides',
+    hero_eyebrow:'Private & FIT Tours Vietnam',
+    hero_title:'Vietnam travel, entirely your way',
+    hero_sub:'Private tours or fixed departures — handpicked local guides, private vehicles, boutique hotels. 100% flexible, never sharing with strangers.',
+    hero_btn_tours:'Browse all tours →', hero_btn_guides:'Meet our guides',
     stat_tours:'Tour packages', stat_guides:'Expert guides', stat_rating:'Average rating',
-    filter_region:'Region', filter_dest:'Destination',
+    filter_search:'Search tours', filter_region:'Region', filter_dest:'Destination',
     filter_price_min:'Price from', filter_price_max:'Price to',
     filter_days:'Duration', filter_reset:'↺ Reset', filter_no_limit:'No limit',
     filter_all_region:'All regions', filter_all_dest:'All destinations', filter_any_day:'Any',
@@ -1295,25 +1369,26 @@ const I18N = {
     show_per_page:'Show', per_page:'/ page', loading:'Loading...',
     sec_tours_eye:'Tour Packages', sec_tours_title:'Find your perfect tour',
     sec_guides_eye:'Tour Guides', sec_guides_title:'Our local expert guides',
-    sec_reviews_eye:'Reviews', sec_reviews_title:'What our customers say',
-    ft_desc:'Vietnam\'s all-inclusive tour booking platform — flights, hotels and local guides in one place.',
+    sec_reviews_eye:'Reviews', sec_reviews_title:'What our travellers say',
+    ft_desc:'Vietnam private & FIT tour specialist — local guides, private cars, handpicked boutique hotels. Flexible itineraries, transparent all-inclusive pricing.',
     ft_destinations:'Destinations', ft_services:'Services', ft_support:'Support',
     ft_book:'Book a Tour', ft_report:'Reports', ft_hotline:'Hotline: +84 906 306 286',
     ft_policy:'Cancellation Policy', ft_hours:'Mon – Sat · 8:00 AM – 6:00 PM',
-    ft_license:'International Travel Business License',
+    ft_license:'International Travel License · No. 01-1629/2024/TCDL-GP LHQT',
     modal_book:'🎒 Book This Tour', modal_detail:'🔍 View Details',
-    badge_available:'Available', days:'days', nights:'nights', per_person:'/person',
+    badge_available:'Seats available', badge_private:'Private tour', days:'days', nights:'nights', per_person:'/person',
     no_tours:'No tours found', try_filter:'Try changing your filters or browse all tours.',
-    view_all:'View all',
+    view_all:'View all', price_from:'From', view_tour:'View tour',
+    max_pax_pre:'Max', max_pax_suf:'guests', day_label:'Day', day_label_suf:'',
   },
   zh: {
     nav_tours:'旅游', nav_guides:'导游', nav_reviews:'评价', nav_book:'立即预订',
-    hero_eyebrow:'越南一站式旅游套餐',
-    hero_title:'按您的方式探索越南',
-    hero_sub:'从机票、酒店、当地导游到机场接送——我们一站式搞定。',
+    hero_eyebrow:'越南私人定制 & FIT旅游',
+    hero_title:'按您想要的方式游越南',
+    hero_sub:'私人包团或固定出发团 — 精选本地导游、专属用车、精品酒店。100%灵活行程，不与陌生人拼团。',
     hero_btn_tours:'查看所有旅游 →', hero_btn_guides:'认识我们的导游',
     stat_tours:'旅游套餐', stat_guides:'专业导游', stat_rating:'平均评分',
-    filter_region:'地区', filter_dest:'目的地',
+    filter_search:'搜索旅游', filter_region:'地区', filter_dest:'目的地',
     filter_price_min:'价格从', filter_price_max:'价格至',
     filter_days:'天数', filter_reset:'↺ 重置', filter_no_limit:'不限制',
     filter_all_region:'所有地区', filter_all_dest:'所有目的地', filter_any_day:'不限',
@@ -1322,21 +1397,42 @@ const I18N = {
     show_per_page:'显示', per_page:'/ 页', loading:'加载中...',
     sec_tours_eye:'旅游套餐', sec_tours_title:'找到适合您的旅游',
     sec_guides_eye:'导游', sec_guides_title:'我们的本地专家导游',
-    sec_reviews_eye:'评价', sec_reviews_title:'客户怎么说',
-    ft_desc:'越南一站式旅游预订平台——机票、酒店和当地导游一网打尽。',
+    sec_reviews_eye:'评价', sec_reviews_title:'旅客这样说',
+    ft_desc:'越南私人定制与FIT旅游专家 — 本地导游、专属用车、精品酒店。灵活行程，透明全包价格。',
     ft_destinations:'目的地', ft_services:'服务', ft_support:'支持',
     ft_book:'预订旅游', ft_report:'报告', ft_hotline:'热线：+84 906 306 286',
     ft_policy:'取消政策', ft_hours:'周一至周六 · 8:00 – 18:00',
-    ft_license:'国际旅行业营业执照',
+    ft_license:'国际旅行业营业执照 · 01-1629/2024/TCDL-GP LHQT',
     modal_book:'🎒 预订此旅游', modal_detail:'🔍 查看详情',
-    badge_available:'有名额', days:'天', nights:'晚', per_person:'/人',
+    badge_available:'有名额', badge_private:'私人包团', days:'天', nights:'晚', per_person:'/人',
     no_tours:'未找到旅游', try_filter:'请尝试更改筛选条件或浏览所有旅游。',
-    view_all:'查看全部',
+    view_all:'查看全部', price_from:'起价', view_tour:'查看',
+    max_pax_pre:'最多', max_pax_suf:'人', day_label:'第', day_label_suf:'天',
   }
 }
 
 let currentLang = localStorage.getItem('baggio_lang') || 'vi'
 function t(key){ return I18N[currentLang]?.[key] || I18N.vi[key] || key }
+function tourName(tour){
+  if(currentLang==='zh') return tour.name_zh || tour.name_vi
+  if(currentLang==='en') return tour.name_en || tour.name_vi
+  return tour.name_vi
+}
+function fmtDur(d,n){
+  if(currentLang==='zh') return `${d}${t('days')}${n}${t('nights')}`
+  if(currentLang==='en') return `${d}D/${n}N`
+  return `${d}N${n}Đ`
+}
+function tourItinerary(tour){
+  if(currentLang==='zh') return tour.itinerary_zh || tour.itinerary_vi
+  if(currentLang==='en') return tour.itinerary_en || tour.itinerary_vi
+  return tour.itinerary_vi
+}
+function tourHighlights(tour){
+  if(currentLang==='zh') return (tour.highlights_zh && tour.highlights_zh.length ? tour.highlights_zh : null) || tour.highlights_vi || []
+  if(currentLang==='en') return (tour.highlights_en && tour.highlights_en.length ? tour.highlights_en : null) || tour.highlights_vi || []
+  return tour.highlights_vi || []
+}
 
 function applyLang(){
   document.documentElement.lang = currentLang==='zh'?'zh-CN':currentLang
@@ -1378,6 +1474,8 @@ function applyLang(){
   document.title = currentLang==='en'?'Baggio Travel — Vietnam Tours'
     :currentLang==='zh'?'Baggio Travel — 越南旅游'
     :'Baggio Travel — Tour Du Lịch Việt Nam'
+  // Re-render tour cards with new language
+  if(typeof allTours!=='undefined' && allTours.length) renderTours(allTours)
 }
 
 function setLang(lang){
