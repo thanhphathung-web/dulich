@@ -1017,7 +1017,7 @@ function onRegionChange() {
 
 function setRegionFilter(region, btn) {
   activeRegion = region
-  document.querySelectorAll('.fchip').forEach(b => b.classList.remove('active'))
+  document.querySelectorAll('#filterBar .fchip').forEach(b => b.classList.remove('active'))
   btn.classList.add('active')
   document.getElementById('filterRegion').value = region
   populateDestFilter(region)
@@ -1055,7 +1055,7 @@ function renderActiveFilterTags() {
   const tags = []
 
   if (f.search)    tags.push({ label: `"${f.search}"`, clear: () => { document.getElementById('searchInput').value=''; document.getElementById('searchClear').style.display='none'; applyFilters() } })
-  if (f.region)    tags.push({ label: regionLabel(f.region), clear: () => { document.getElementById('filterRegion').value=''; populateDestFilter(''); document.getElementById('filterDest').value=''; document.querySelectorAll('.fchip').forEach((b,i)=>b.classList.toggle('active',i===0)); applyFilters() } })
+  if (f.region)    tags.push({ label: regionLabel(f.region), clear: () => { document.getElementById('filterRegion').value=''; populateDestFilter(''); document.getElementById('filterDest').value=''; document.querySelectorAll('#filterBar .fchip').forEach((b,i)=>b.classList.toggle('active',i===0)); applyFilters() } })
   if (f.dest)      tags.push({ label: f.dest, clear: () => { document.getElementById('filterDest').value=''; applyFilters() } })
   if (f.priceMin)  tags.push({ label: `Từ ${PRICE_LABELS[f.priceMin]||f.priceMin}đ`, clear: () => { document.getElementById('filterPriceMin').value=''; applyFilters() } })
   if (f.priceMax)  tags.push({ label: `Đến ${PRICE_LABELS[f.priceMax]||f.priceMax}đ`, clear: () => { document.getElementById('filterPriceMax').value=''; applyFilters() } })
@@ -1094,7 +1094,7 @@ function resetFilters() {
   document.getElementById('filterPriceMin').value = ''
   document.getElementById('filterPriceMax').value = ''
   document.getElementById('filterDays').value     = ''
-  document.querySelectorAll('.fchip').forEach((b, i) => b.classList.toggle('active', i === 0))
+  document.querySelectorAll('#filterBar .fchip').forEach((b, i) => b.classList.toggle('active', i === 0))
   document.querySelectorAll('.sort-btn').forEach((b, i) => b.classList.toggle('active', i === 0))
   document.querySelectorAll('#typeBar .fchip').forEach(b => b.classList.remove('active'))
   document.getElementById('active-filters').style.display = 'none'

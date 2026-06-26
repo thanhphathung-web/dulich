@@ -594,6 +594,19 @@ async function selectTour(id){
   S.schedules=data||[]
   updateSummary()
   renderCal()
+
+  // Auto-pick schedule nếu URL có ?schedule=xxx (từ tour detail page)
+  const preScheduleId = new URLSearchParams(location.search).get('schedule')
+  if (preScheduleId) {
+    const sched = S.schedules.find(s => s.id === preScheduleId)
+    if (sched) {
+      const d = new Date(sched.depart_date)
+      calY = d.getFullYear()
+      calM = d.getMonth()
+      renderCal()
+      pickDate(d.getDate(), d.getMonth(), d.getFullYear(), sched.id, sched.return_date || '')
+    }
+  }
 }
 
 // ── CALENDAR ───────────────────────────────────────
@@ -832,9 +845,11 @@ async function submitBooking(){
 
     // Giảm available_slots nếu có schedule
     if(S.schedule?.id){
-      await sb.from('tour_schedules')
-        .update({available_slots:S.schedules.find(s=>s.id===S.schedule.id)?.available_slots-(S.adults+S.children)})
-        .eq('id',S.schedule.id)
+      const sched = S.schedules.find(s=>s.id===S.schedule.id)
+      if (sched) {
+        const newSlots = Math.max(0, sched.available_slots - (S.adults + S.children))
+        await sb.from('tour_schedules').update({available_slots: newSlots}).eq('id', S.schedule.id)
+      }
     }
 
     // Hiện màn hình thành công
