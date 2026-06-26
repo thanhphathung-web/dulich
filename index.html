@@ -153,10 +153,33 @@ nav{background:var(--card);border-bottom:1px solid var(--border);padding:.9rem 2
 .sec-count{font-family:var(--mono);font-size:.65rem;color:var(--muted);letter-spacing:.08em}
 
 /* ── FILTER CHIPS ── */
-.filter-bar{display:flex;gap:.5rem;margin-bottom:2.25rem;flex-wrap:wrap}
+.filter-bar{display:flex;gap:.5rem;margin-bottom:.75rem;flex-wrap:wrap}
 .fchip{font-family:var(--mono);font-size:.65rem;letter-spacing:.08em;text-transform:uppercase;padding:.4rem .9rem;border:1px solid var(--border);background:none;color:var(--muted);cursor:pointer;transition:all .2s}
 .fchip:hover{border-color:var(--red);color:var(--red)}
 .fchip.active{background:var(--red);border-color:var(--red);color:#fff}
+
+/* ── LOẠI HÌNH ── */
+.type-bar{display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:1.5rem;padding-top:.65rem;border-top:1px solid var(--border)}
+.type-label{font-family:var(--mono);font-size:.56rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);align-self:center;flex-shrink:0;margin-right:.2rem}
+
+/* ── CONTROLS ROW (sort + page size) ── */
+.controls-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:.85rem;gap:.75rem;flex-wrap:wrap}
+.sort-wrap{display:flex;align-items:center;gap:.4rem;flex-wrap:wrap}
+.sort-label{font-family:var(--mono);font-size:.56rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);flex-shrink:0}
+.sort-btn{font-family:var(--mono);font-size:.58rem;letter-spacing:.04em;text-transform:uppercase;padding:.3rem .7rem;border:1px solid var(--border);background:none;color:var(--muted);cursor:pointer;transition:all .15s;white-space:nowrap}
+.sort-btn:hover{border-color:var(--ink);color:var(--ink)}
+.sort-btn.active{background:var(--ink);border-color:var(--ink);color:#fff}
+.page-size-wrap{display:flex;align-items:center;gap:.5rem;flex-shrink:0}
+
+/* ── ACTIVE FILTERS BAR ── */
+#active-filters{background:var(--paper);border-bottom:1px solid var(--border);padding:.55rem 2rem;display:none}
+.af-inner{max-width:900px;margin:0 auto;display:flex;align-items:center;gap:.4rem;flex-wrap:wrap}
+.af-label{font-family:var(--mono);font-size:.56rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);flex-shrink:0;margin-right:.15rem}
+.af-tag{display:inline-flex;align-items:center;gap:.25rem;font-family:var(--mono);font-size:.58rem;letter-spacing:.03em;padding:.2rem .5rem;background:var(--red);color:#fff;border:none;cursor:pointer;transition:opacity .15s}
+.af-tag:hover{opacity:.75}
+.af-tag-x{opacity:.7;margin-left:.05rem}
+.af-clear{font-family:var(--mono);font-size:.55rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:none;border:none;cursor:pointer;text-decoration:underline;margin-left:auto;padding:0;transition:color .15s}
+.af-clear:hover{color:var(--red)}
 
 /* ── TOUR CARDS ── */
 .tours-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem}
@@ -485,6 +508,11 @@ footer{background:var(--ink);color:rgba(250,248,243,.55);padding:3rem 2rem 1.5re
   </div>
 </section>
 
+<!-- ACTIVE FILTERS -->
+<div id="active-filters">
+  <div class="af-inner" id="afInner"></div>
+</div>
+
 <!-- SEARCH -->
 <div id="search-section">
   <div class="search-wrap">
@@ -558,21 +586,40 @@ footer{background:var(--ink);color:rgba(250,248,243,.55);padding:3rem 2rem 1.5re
     </div>
     <div class="sec-count" id="tourCountLabel" data-i18n="loading">Đang tải...</div>
   </div>
-     <div style="display:flex;align-items:center;justify-content:flex-end;margin-bottom:.75rem;gap:.5rem">
-  <span style="font-size:.75rem;color:var(--muted);font-family:var(--mono)" data-i18n="show_per_page">Hiển thị</span>
-  <select id="pageSizeSelect" onchange="changePageSize(this.value)" style="border:1px solid var(--border);background:var(--card);padding:.35rem .65rem;font-family:var(--mono);font-size:.72rem;color:var(--ink);outline:none;cursor:pointer">
-    <option value="12">12 tour</option>
-    <option value="20">20 tour</option>
-    <option value="50">50 tour</option>
-    <option value="100">100 tour</option>
-  </select>
-  <span style="font-size:.75rem;color:var(--muted);font-family:var(--mono)" data-i18n="per_page">/trang</span>
-</div>
+  <div class="controls-row">
+    <div class="sort-wrap">
+      <span class="sort-label">Sắp xếp:</span>
+      <button class="sort-btn active" onclick="setSort('base_price','asc',this)">Giá thấp→cao</button>
+      <button class="sort-btn" onclick="setSort('base_price','desc',this)">Giá cao→thấp</button>
+      <button class="sort-btn" onclick="setSort('duration_days','asc',this)">Ngắn nhất</button>
+      <button class="sort-btn" onclick="setSort('created_at','desc',this)">Mới nhất</button>
+    </div>
+    <div class="page-size-wrap">
+      <span style="font-size:.75rem;color:var(--muted);font-family:var(--mono)" data-i18n="show_per_page">Hiển thị</span>
+      <select id="pageSizeSelect" onchange="changePageSize(this.value)" style="border:1px solid var(--border);background:var(--card);padding:.35rem .65rem;font-family:var(--mono);font-size:.72rem;color:var(--ink);outline:none;cursor:pointer">
+        <option value="12">12 tour</option>
+        <option value="20">20 tour</option>
+        <option value="50">50 tour</option>
+        <option value="100">100 tour</option>
+      </select>
+      <span style="font-size:.75rem;color:var(--muted);font-family:var(--mono)" data-i18n="per_page">/trang</span>
+    </div>
+  </div>
   <div class="filter-bar" id="filterBar">
     <button class="fchip active" onclick="setRegionFilter('',this)" data-i18n="chip_all">Tất cả</button>
     <button class="fchip" onclick="setRegionFilter('north',this)" data-i18n="chip_north">🏔 Miền Bắc</button>
     <button class="fchip" onclick="setRegionFilter('central',this)" data-i18n="chip_central">🏖 Miền Trung</button>
     <button class="fchip" onclick="setRegionFilter('south',this)" data-i18n="chip_south">🌊 Miền Nam</button>
+  </div>
+  <div class="type-bar" id="typeBar">
+    <span class="type-label">Loại hình:</span>
+    <button class="fchip" onclick="setTourType('beach',this)">🏖 Biển & Đảo</button>
+    <button class="fchip" onclick="setTourType('mountain',this)">🏔 Núi & Trekking</button>
+    <button class="fchip" onclick="setTourType('culture',this)">🏛 Văn hóa</button>
+    <button class="fchip" onclick="setTourType('family',this)">👨‍👩‍👧 Gia đình</button>
+    <button class="fchip" onclick="setTourType('couple',this)">💑 Cặp đôi</button>
+    <button class="fchip" onclick="setTourType('adventure',this)">🧗 Phiêu lưu</button>
+    <button class="fchip" onclick="setTourType('wellness',this)">🧘 Nghỉ dưỡng</button>
   </div>
   <div class="tours-grid" id="toursGrid">
     <!-- Skeleton loading -->
@@ -701,6 +748,28 @@ function toast(msg, type = 'ok') {
 let PAGE_SIZE = 24
 let currentPage = 0
 let totalTours  = 0
+let sortField      = 'base_price'
+let sortAsc        = true
+let activeTourType = ''
+
+const TOUR_TYPE_LABELS = {
+  beach:     '🏖 Biển & Đảo',
+  mountain:  '🏔 Núi & Trekking',
+  culture:   '🏛 Văn hóa',
+  family:    '👨‍👩‍👧 Gia đình',
+  couple:    '💑 Cặp đôi',
+  adventure: '🧗 Phiêu lưu',
+  wellness:  '🧘 Nghỉ dưỡng',
+}
+const TYPE_KEYWORDS = {
+  beach:     ['biển','đảo','vịnh'],
+  mountain:  ['núi','trekking','sapa'],
+  culture:   ['văn hóa','di tích','phố cổ'],
+  family:    ['gia đình','family'],
+  couple:    ['cặp đôi','lãng mạn'],
+  adventure: ['phiêu lưu','mạo hiểm','hang động'],
+  wellness:  ['nghỉ dưỡng','resort'],
+}
 
 // Danh sách 63 tỉnh theo vùng miền
 const PROVINCES = {
@@ -734,12 +803,13 @@ const ALL_ATTRACTIVE_DESTS = [...ATTRACTIVE_DESTS.north, ...ATTRACTIVE_DESTS.cen
 
 function getFilters() {
   return {
-    search:   document.getElementById('searchInput')?.value.trim() || '',
-    region:   document.getElementById('filterRegion')?.value || '',
-    dest:     document.getElementById('filterDest')?.value || '',
-    priceMin: document.getElementById('filterPriceMin')?.value || '',
-    priceMax: document.getElementById('filterPriceMax')?.value || '',
-    days:     document.getElementById('filterDays')?.value || '',
+    search:    document.getElementById('searchInput')?.value.trim() || '',
+    region:    document.getElementById('filterRegion')?.value || '',
+    dest:      document.getElementById('filterDest')?.value || '',
+    priceMin:  document.getElementById('filterPriceMin')?.value || '',
+    priceMax:  document.getElementById('filterPriceMax')?.value || '',
+    days:      document.getElementById('filterDays')?.value || '',
+    tourType:  activeTourType,
   }
 }
 
@@ -751,7 +821,7 @@ async function loadTours(page = 0) {
     const f    = getFilters()
 
     let q = sb.from('tours')
-      .select('id,name_vi,slug,destination,region,duration_days,duration_nights,base_price,max_pax,cover_image,includes_vi,status,tour_schedules(available_slots,depart_date,status)', { count: 'exact' })
+      .select('id,name_vi,slug,destination,region,duration_days,duration_nights,base_price,max_pax,cover_image,includes_vi,status,created_at,tour_schedules(available_slots,depart_date,status)', { count: 'exact' })
       .eq('status', 'ACTIVE')
 
     // Server-side filters
@@ -761,8 +831,12 @@ async function loadTours(page = 0) {
     if (f.priceMin) q = q.gte('base_price', +f.priceMin)
     if (f.priceMax) q = q.lte('base_price', +f.priceMax)
     if (f.days)     q = q.eq('duration_days', +f.days)
+    if (f.tourType && TYPE_KEYWORDS[f.tourType]) {
+      const orStr = TYPE_KEYWORDS[f.tourType].map(k => `name_vi.ilike.%${k}%,destination.ilike.%${k}%`).join(',')
+      q = q.or(orStr)
+    }
 
-    q = q.order('base_price', { ascending: true }).range(from, to)
+    q = q.order(sortField, { ascending: sortAsc }).range(from, to)
 
     const { data, error, count } = await q
     if (error) throw error
@@ -952,14 +1026,67 @@ function setRegionFilter(region, btn) {
 }
 
 function applyFilters() {
-  loadTours(0) // reset về trang 1, query Supabase với filter mới
+  renderActiveFilterTags()
+  loadTours(0)
 }
 
 // Giữ filterTours để không lỗi nếu còn dùng ở đâu đó
 function filterTours() { applyFilters() }
 
+function setSort(field, dir, btn) {
+  sortField = field
+  sortAsc   = dir === 'asc'
+  document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'))
+  if (btn) btn.classList.add('active')
+  loadTours(0)
+}
+
+function setTourType(type, btn) {
+  activeTourType = activeTourType === type ? '' : type
+  document.querySelectorAll('#typeBar .fchip').forEach(b => b.classList.remove('active'))
+  if (activeTourType && btn) btn.classList.add('active')
+  applyFilters()
+}
+
+function renderActiveFilterTags() {
+  const f = getFilters()
+  const PRICE_LABELS = {'1000000':'1tr','2000000':'2tr','5000000':'5tr','10000000':'10tr','20000000':'20tr'}
+  const DAYS_LABELS  = {'1':'1 ngày','2':'2 ngày','3':'3 ngày','4':'4 ngày','5':'5 ngày','6':'6 ngày','7':'7 ngày','10':'10 ngày','14':'14 ngày'}
+  const tags = []
+
+  if (f.search)    tags.push({ label: `"${f.search}"`, clear: () => { document.getElementById('searchInput').value=''; document.getElementById('searchClear').style.display='none'; applyFilters() } })
+  if (f.region)    tags.push({ label: regionLabel(f.region), clear: () => { document.getElementById('filterRegion').value=''; populateDestFilter(''); document.getElementById('filterDest').value=''; document.querySelectorAll('.fchip').forEach((b,i)=>b.classList.toggle('active',i===0)); applyFilters() } })
+  if (f.dest)      tags.push({ label: f.dest, clear: () => { document.getElementById('filterDest').value=''; applyFilters() } })
+  if (f.priceMin)  tags.push({ label: `Từ ${PRICE_LABELS[f.priceMin]||f.priceMin}đ`, clear: () => { document.getElementById('filterPriceMin').value=''; applyFilters() } })
+  if (f.priceMax)  tags.push({ label: `Đến ${PRICE_LABELS[f.priceMax]||f.priceMax}đ`, clear: () => { document.getElementById('filterPriceMax').value=''; applyFilters() } })
+  if (f.days)      tags.push({ label: DAYS_LABELS[f.days]||`${f.days} ngày`, clear: () => { document.getElementById('filterDays').value=''; applyFilters() } })
+  if (f.tourType)  tags.push({ label: TOUR_TYPE_LABELS[f.tourType], clear: () => { activeTourType=''; document.querySelectorAll('#typeBar .fchip').forEach(b=>b.classList.remove('active')); applyFilters() } })
+
+  const el = document.getElementById('active-filters')
+  if (!tags.length) { el.style.display = 'none'; return }
+
+  el.style.display = 'block'
+  const inner = document.getElementById('afInner')
+  inner.innerHTML = '<span class="af-label">Đang lọc:</span>'
+  tags.forEach(tag => {
+    const btn = document.createElement('button')
+    btn.className = 'af-tag'
+    btn.innerHTML = `${tag.label} <span class="af-tag-x">×</span>`
+    btn.onclick = tag.clear
+    inner.appendChild(btn)
+  })
+  const clearAll = document.createElement('button')
+  clearAll.className = 'af-clear'
+  clearAll.textContent = 'Xóa tất cả'
+  clearAll.onclick = resetFilters
+  inner.appendChild(clearAll)
+}
+
 function resetFilters() {
   activeRegion = ''
+  activeTourType = ''
+  sortField = 'base_price'
+  sortAsc = true
   document.getElementById('searchInput').value    = ''
   document.getElementById('searchClear').style.display = 'none'
   document.getElementById('filterRegion').value   = ''
@@ -968,6 +1095,9 @@ function resetFilters() {
   document.getElementById('filterPriceMax').value = ''
   document.getElementById('filterDays').value     = ''
   document.querySelectorAll('.fchip').forEach((b, i) => b.classList.toggle('active', i === 0))
+  document.querySelectorAll('.sort-btn').forEach((b, i) => b.classList.toggle('active', i === 0))
+  document.querySelectorAll('#typeBar .fchip').forEach(b => b.classList.remove('active'))
+  document.getElementById('active-filters').style.display = 'none'
   populateDestFilter('')
   loadTours(0)
 }
