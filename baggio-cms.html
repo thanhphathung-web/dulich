@@ -388,14 +388,24 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:13
         <div class="form-group">
           <label class="form-label">Phong cách du lịch (Travel Style — chọn nhiều)</label>
           <div class="check-group" id="travelStyleGroup">
-            ${[
-              ['family','👨‍👩‍👧 Gia đình'],['couple','💑 Cặp đôi/Honeymoon'],['solo','🧍 Du lịch solo'],
-              ['group','👥 Nhóm bạn'],['adventure','🧗 Phiêu lưu mạo hiểm'],['culture','🏛 Văn hóa lịch sử'],
-              ['beach','🏖 Biển & Đảo'],['mountain','🏔 Núi & Trekking'],['food','🍜 Ẩm thực'],
-              ['golf','⛳ Golf'],['photography','📸 Nhiếp ảnh'],['wellness','🧘 Wellness & Spa'],
-              ['festival','🎉 Lễ hội'],['sustainable','🌿 Du lịch bền vững'],['business','💼 Công tác'],
-              ['nightlife','🌙 Khám phá đêm'],['picnic','🧺 Picnic dã ngoại'],['cruise','🚢 Tàu thuyền'],
-            ].map(([k,v])=>`<label class="check-tag" data-key="${k}"><input type="checkbox" value="${k}" style="display:none">${v}</label>`).join('')}
+            <label class="check-tag" data-key="family"><input type="checkbox" value="family" style="display:none">👨‍👩‍👧 Gia đình</label>
+            <label class="check-tag" data-key="couple"><input type="checkbox" value="couple" style="display:none">💑 Cặp đôi/Honeymoon</label>
+            <label class="check-tag" data-key="solo"><input type="checkbox" value="solo" style="display:none">🧍 Du lịch solo</label>
+            <label class="check-tag" data-key="group"><input type="checkbox" value="group" style="display:none">👥 Nhóm bạn</label>
+            <label class="check-tag" data-key="adventure"><input type="checkbox" value="adventure" style="display:none">🧗 Phiêu lưu mạo hiểm</label>
+            <label class="check-tag" data-key="culture"><input type="checkbox" value="culture" style="display:none">🏛 Văn hóa lịch sử</label>
+            <label class="check-tag" data-key="beach"><input type="checkbox" value="beach" style="display:none">🏖 Biển & Đảo</label>
+            <label class="check-tag" data-key="mountain"><input type="checkbox" value="mountain" style="display:none">🏔 Núi & Trekking</label>
+            <label class="check-tag" data-key="food"><input type="checkbox" value="food" style="display:none">🍜 Ẩm thực</label>
+            <label class="check-tag" data-key="golf"><input type="checkbox" value="golf" style="display:none">⛳ Golf</label>
+            <label class="check-tag" data-key="photography"><input type="checkbox" value="photography" style="display:none">📸 Nhiếp ảnh</label>
+            <label class="check-tag" data-key="wellness"><input type="checkbox" value="wellness" style="display:none">🧘 Wellness & Spa</label>
+            <label class="check-tag" data-key="festival"><input type="checkbox" value="festival" style="display:none">🎉 Lễ hội</label>
+            <label class="check-tag" data-key="sustainable"><input type="checkbox" value="sustainable" style="display:none">🌿 Du lịch bền vững</label>
+            <label class="check-tag" data-key="business"><input type="checkbox" value="business" style="display:none">💼 Công tác</label>
+            <label class="check-tag" data-key="nightlife"><input type="checkbox" value="nightlife" style="display:none">🌙 Khám phá đêm</label>
+            <label class="check-tag" data-key="picnic"><input type="checkbox" value="picnic" style="display:none">🧺 Picnic dã ngoại</label>
+            <label class="check-tag" data-key="cruise"><input type="checkbox" value="cruise" style="display:none">🚢 Tàu thuyền</label>
           </div>
         </div>
         <div class="form-row-3">
