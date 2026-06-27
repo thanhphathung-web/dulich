@@ -20,6 +20,7 @@
     { "source": "/seo",      "destination": "/baggio-seo-guide.html" },
     { "source": "/deploy",   "destination": "/baggio-deploy-guide.html" },
     { "source": "/about",    "destination": "/baggio-website.html" },
-    { "source": "/account",  "destination": "/baggio-account.html" }
+    { "source": "/account",  "destination": "/baggio-account.html" },
+    { "source": "/seed",     "destination": "/seed-tours.html" }
   ]
 }

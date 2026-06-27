@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Baggio Travel — Seed Tours</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0d1117;--s1:#161b22;--s2:#1c2230;--border:#253047;--text:#e6edf3;--text2:#8b949e;--green:#3fb950;--blue:#58a6ff;--amber:#d29922;--red:#f85149}
+body{background:var(--bg);color:var(--text);font-family:system-ui,sans-serif;font-size:13px;padding:2rem;line-height:1.6}
+h1{font-size:1.1rem;margin-bottom:.3rem;color:var(--blue)}
+.sub{color:var(--text2);font-size:.8rem;margin-bottom:1.25rem}
+.btn{font-family:'Courier New',monospace;font-size:.65rem;letter-spacing:.08em;text-transform:uppercase;padding:.5rem 1.2rem;border-radius:5px;cursor:pointer;border:none;margin-right:.5rem;margin-bottom:.5rem;display:inline-flex;align-items:center;gap:.4rem}
+.btn-green{background:var(--green);color:#0d1117}.btn-green:hover{opacity:.85}.btn-green:disabled{opacity:.4;cursor:not-allowed}
+.btn-blue{background:none;border:1px solid var(--blue);color:var(--blue)}
+.btn-red{background:none;border:1px solid var(--red);color:var(--red)}
+.auth-bar{background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:.65rem 1rem;margin-bottom:1rem;display:flex;align-items:center;gap:.75rem;font-size:.8rem}
+.auth-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.dot-ok{background:var(--green)}.dot-wait{background:var(--amber)}
+.tour-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:.65rem;margin-bottom:1.25rem}
+.card{background:var(--s2);border:1px solid var(--border);border-radius:7px;overflow:hidden}
+.card-img{width:100%;height:100px;object-fit:cover;background:var(--s1);display:block}
+.card-body{padding:.65rem}
+.card-name{font-weight:600;font-size:.85rem;margin-bottom:.25rem}
+.card-meta{display:flex;flex-wrap:wrap;gap:.35rem;font-size:.7rem;color:var(--text2)}
+.card-status{margin-top:.35rem;font-size:.72rem}
+.ok{color:var(--green)}.err{color:var(--red)}.pending{color:var(--text2)}.info{color:var(--blue)}
+.badge{font-family:'Courier New',monospace;font-size:.52rem;padding:.12rem .38rem;border-radius:3px;text-transform:uppercase}
+.b-g{background:rgba(63,185,80,.12);border:1px solid rgba(63,185,80,.3);color:var(--green)}
+.b-b{background:rgba(88,166,255,.1);border:1px solid rgba(88,166,255,.25);color:var(--blue)}
+.b-a{background:rgba(210,153,34,.1);border:1px solid rgba(210,153,34,.25);color:var(--amber)}
+.log{background:var(--s1);border:1px solid var(--border);border-radius:6px;padding:.85rem;font-family:'Courier New',monospace;font-size:.72rem;line-height:1.9;max-height:260px;overflow-y:auto;color:var(--text2);margin-top:.75rem;white-space:pre-wrap}
+progress{width:100%;height:5px;margin:.6rem 0;accent-color:var(--green);display:none}
+</style>
+</head>
+<body>
+
+<h1>🌏 Baggio Travel — Tour Seed</h1>
+<p class="sub">Tạo 10 tour mẫu vào Supabase. Cần đăng nhập Admin trước.</p>
+
+<div style="background:var(--s2);border:1px solid var(--border);border-radius:6px;padding:.75rem 1rem;margin-bottom:.75rem">
+  <div style="font-size:.75rem;color:var(--amber);margin-bottom:.5rem">⚠ Cần <strong>Service Role Key</strong> để bypass RLS — lấy tại Supabase Dashboard → Settings → API → <code>service_role</code></div>
+  <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
+    <input id="serviceKey" type="password" placeholder="eyJhbGci... (paste service_role key vào đây)"
+      style="flex:1;min-width:320px;background:var(--s1);border:1px solid var(--border);color:var(--text);font-family:'Courier New',monospace;font-size:.72rem;padding:.45rem .75rem;border-radius:4px;outline:none"
+      oninput="document.getElementById('btnRun').disabled=!this.value.trim()">
+    <span style="font-size:.7rem;color:var(--text2)">Key chỉ dùng trong tab này, không lưu, không gửi đi</span>
+  </div>
+</div>
+
+<div>
+  <button class="btn btn-green" id="btnRun" onclick="runSeed()" disabled>▶ Chạy Seed (10 tours)</button>
+  <button class="btn btn-red" onclick="runClear()">🗑 Xóa tour DRAFT</button>
+</div>
+
+<progress id="prog" max="10" value="0"></progress>
+<div class="tour-grid" id="tourGrid"></div>
+<div class="log" id="log" style="display:none"></div>
+
+<script>
+const SUPABASE_URL  = 'https://lfnlezfphwjtdunyungi.supabase.co'
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxmbmxlemZwaHdqdGR1bnl1bmdpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0NjkwNzcsImV4cCI6MjA5NjA0NTA3N30.fmjvqhyiPcjB6qT5GDtfzMfY-C-WXP4QUIk-YW7FhJg'
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON)
+
+function slugVi(str){
+  const m={'à':'a','á':'a','ả':'a','ã':'a','ạ':'a','ă':'a','ắ':'a','ặ':'a','ằ':'a','ẵ':'a','ẳ':'a','â':'a','ấ':'a','ậ':'a','ầ':'a','ẫ':'a','ẩ':'a','đ':'d','è':'e','é':'e','ẹ':'e','ẻ':'e','ẽ':'e','ê':'e','ế':'e','ệ':'e','ề':'e','ễ':'e','ể':'e','ì':'i','í':'i','ị':'i','ỉ':'i','ĩ':'i','ò':'o','ó':'o','ọ':'o','ỏ':'o','õ':'o','ô':'o','ố':'o','ộ':'o','ồ':'o','ỗ':'o','ổ':'o','ơ':'o','ớ':'o','ợ':'o','ờ':'o','ỡ':'o','ở':'o','ù':'u','ú':'u','ụ':'u','ủ':'u','ũ':'u','ư':'u','ứ':'u','ự':'u','ừ':'u','ữ':'u','ử':'u','ỳ':'y','ý':'y','ỵ':'y','ỷ':'y','ỹ':'y'}
+  return str.toLowerCase().split('').map(c=>m[c]||c).join('').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')
+}
+
+// ══════════════════════════════════════════════════════
+// TOUR DATA — chỉ dùng cột tồn tại trong DB thực tế:
+// name_vi, slug, destination, region, duration_days,
+// duration_nights, base_price, child_price_pct,
+// min_pax, max_pax, status, cover_image, images,
+// includes_vi, itinerary_vi, highlights_vi, translation_status
+// ══════════════════════════════════════════════════════
+const TOURS = [
+
+  // ── MIỀN BẮC ─────────────────────────────────────
+  {
+    name_vi: 'Hạ Long – Nghỉ Đêm Tàu Cruise 3N2Đ',
+    destination: 'Hạ Long', region: 'north',
+    duration_days: 3, duration_nights: 2,
+    base_price: 6800000, child_price_pct: 65,
+    min_pax: 2, max_pax: 20, status: 'ACTIVE',
+    cover_image: 'https://images.unsplash.com/photo-1528181304800-259b08848526?w=800&q=80',
+    images: [
+      'https://images.unsplash.com/photo-1528181304800-259b08848526?w=800&q=80',
+      'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&q=80',
+    ],
+    includes_vi: {hotel:{star:4,room_count:1,desc:'Cabin giường đôi trên du thuyền'},guide:true,transfer:true,meals:true,insurance:true},
+    itinerary_vi: [
+      {day:1,title:'Hà Nội – Hạ Long – Xuống Tàu',activities:['07:00 Xe đón tại khách sạn Hà Nội','12:00 Lên tàu, check-in cabin, ăn trưa','Chiều tham quan Hang Sửng Sốt và bơi bãi cát trắng','19:00 BBQ hải sản trên tàu – ngắm hoàng hôn vịnh']},
+      {day:2,title:'Chèo Kayak – Làng Chài – Nấu Ăn',activities:['06:00 Tập Thái Cực trên boong tàu','Sáng chèo kayak khám phá Làng Chài Vung Viêng','11:30 Lớp học nấu ăn món Việt cùng đầu bếp tàu','Chiều leo núi Đảo Ti Tốp ngắm toàn cảnh vịnh']},
+      {day:3,title:'Bình Minh – Trở Về Hà Nội',activities:['06:00 Ngắm bình minh trên vịnh','07:30 Điểm tâm, trả cabin','11:00 Cập bến, xe đưa về Hà Nội','16:00 Về đến Hà Nội']},
+    ],
+    highlights_vi: ['Du thuyền 4 sao cabin riêng view vịnh','Chèo kayak qua hang động và làng chài cổ','Lớp học nấu ăn Việt trên tàu','Hoàng hôn và bình minh Vịnh Hạ Long','Hải sản tươi sống tại chỗ'],
+    translation_status: 'pending',
+  },
+
+  {
+    name_vi: 'Sa Pa – Trekking Bản Làng & Ruộng Bậc Thang 3N2Đ',
+    destination: 'Sa Pa', region: 'north',
+    duration_days: 3, duration_nights: 2,
+    base_price: 4200000, child_price_pct: 70,
+    min_pax: 4, max_pax: 16, status: 'ACTIVE',
+    cover_image: 'https://images.unsplash.com/photo-1503891450247-ee5f8ec46dc3?w=800&q=80',
+    images: [
+      'https://images.unsplash.com/photo-1503891450247-ee5f8ec46dc3?w=800&q=80',
+      'https://images.unsplash.com/photo-1504454043279-1cf90cc85a50?w=800&q=80',
+    ],
+    includes_vi: {hotel:{star:3,room_count:1,desc:'1 đêm khách sạn Sa Pa + 1 đêm homestay bản làng'},guide:true,transfer:true,meals:true,insurance:true},
+    itinerary_vi: [
+      {day:1,title:'Hà Nội – Sa Pa – Bản Cát Cát',activities:['06:30 Xe limousine từ Hà Nội','11:30 Đến Sa Pa, nhận phòng','14:30 Trekking xuống Bản Cát Cát (6km) – làng H\'Mông','18:00 Trở về thị trấn, ăn tối và dạo chợ đêm']},
+      {day:2,title:'Trekking Lao Chải – Tả Van – Homestay',activities:['08:00 Xuất phát trekking Lao Chải – Tả Van (14km)','12:30 Ăn trưa tại nhà dân','Chiều tham quan nhà máy giấy dó','19:00 Ăn tối cùng gia đình, giao lưu văn hoá – Homestay']},
+      {day:3,title:'Thác Bạc – Về Hà Nội',activities:['08:30 Tham quan Thác Bạc và Cổng Trời','10:30 Mua sắm thổ cẩm chợ Sa Pa','12:00 Xe về Hà Nội','17:30 Về đến Hà Nội']},
+    ],
+    highlights_vi: ['HDV người H\'Mông địa phương dẫn đường','Ăn tối và ngủ homestay tại bản làng thực sự','Ruộng bậc thang Mường Hoa mùa lúa chín','Trekking 14km qua 3 bản làng dân tộc','Chợ đêm Sa Pa – ẩm thực và thổ cẩm'],
+    translation_status: 'pending',
+  },
+
+  {
+    name_vi: 'Ninh Bình – Tràng An & Tam Cốc 2N1Đ',
+    destination: 'Ninh Bình', region: 'north',
+    duration_days: 2, duration_nights: 1,
+    base_price: 2100000, child_price_pct: 75,
+    min_pax: 2, max_pax: 24, status: 'ACTIVE',
+    cover_image: 'https://images.unsplash.com/photo-1536332672584-e39aeb9fff37?w=800&q=80',
+    images: [
+      'https://images.unsplash.com/photo-1536332672584-e39aeb9fff37?w=800&q=80',
+    ],
+    includes_vi: {hotel:{star:3,room_count:1,desc:'Khách sạn 3 sao gần Tràng An'},guide:true,transfer:true,meals:true,insurance:true},
+    itinerary_vi: [
+      {day:1,title:'Hà Nội – Ninh Bình – Tràng An – Bái Đính',activities:['07:30 Xe đón tại Hà Nội','09:30 Thăm Chùa Bái Đính','12:00 Ăn trưa cơm niêu Ninh Bình','13:30 Chèo thuyền Tràng An qua 9 hang động','19:00 Tối thịt dê núi và cơm cháy đặc sản']},
+      {day:2,title:'Tam Cốc – Hang Múa – Về Hà Nội',activities:['08:00 Thuyền Tam Cốc qua đồng lúa','10:30 Leo 500 bậc Hang Múa ngắm toàn cảnh','12:30 Ăn trưa, mua đặc sản','14:00 Xe về Hà Nội (16:30 đến nơi)']},
+    ],
+    highlights_vi: ['Chèo thuyền Tràng An di sản UNESCO kép','Toàn cảnh Ninh Bình từ đỉnh Hang Múa','Cơm niêu + thịt dê núi đặc trưng','Chùa Bái Đính lớn nhất Đông Nam Á'],
+    translation_status: 'pending',
+  },
+
+  // ── MIỀN TRUNG ───────────────────────────────────
+  {
+    name_vi: 'Hội An – Phố Cổ Đèn Lồng & Ẩm Thực 3N2Đ',
+    destination: 'Hội An', region: 'central',
+    duration_days: 3, duration_nights: 2,
+    base_price: 3400000, child_price_pct: 70,
+    min_pax: 2, max_pax: 20, status: 'ACTIVE',
+    cover_image: 'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=800&q=80',
+    images: [
+      'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=800&q=80',
+      'https://images.unsplash.com/photo-1598935888738-cd41fb994da7?w=800&q=80',
+    ],
+    includes_vi: {hotel:{star:3,room_count:1,desc:'Khách sạn 3 sao khu phố cổ'},guide:true,transfer:true,meals:true,insurance:true},
+    itinerary_vi: [
+      {day:1,title:'Đà Nẵng – Hội An – Khám Phá Phố Cổ',activities:['10:00 Xe đón về Hội An, nhận phòng','13:00 Ăn trưa Cơm Gà Bà Buội','14:30 HDV dẫn tham quan: Chùa Cầu, Nhà Cổ Phùng Hưng, Hội Quán Phúc Kiến','18:00 Phóng đèn hoa đăng xuống sông Hoài','20:00 Tối dạo chợ đêm: Cao Lầu, Bánh Mì Phượng']},
+      {day:2,title:'Làng Rau – Nấu Ăn – Mỹ Sơn',activities:['07:00 Đạp xe ra Làng Rau Trà Quế','09:30 Lớp học nấu ăn: Mì Quảng và Bánh Xèo','14:00 Xe đến Thánh Địa Mỹ Sơn – di sản Chăm Pa','19:30 Biểu diễn múa Chăm và ăn tối trên thuyền sông']},
+      {day:3,title:'Cù Lao Chàm – Biển Xanh',activities:['07:30 Tàu cao tốc ra Cù Lao Chàm (45 phút)','09:30 Bơi lặn ngắm san hô tại Bãi Chồng','12:00 Ăn trưa hải sản tươi tại đảo','16:00 Tàu về Hội An, tự do mua sắm']},
+    ],
+    highlights_vi: ['Đêm thắp đèn hoa đăng trên sông Hoài','Lớp học nấu Mì Quảng và Bánh Xèo trong nhà cổ','Đạp xe xuyên làng rau Trà Quế','Thánh địa Mỹ Sơn – di sản Chăm Pa','Lặn ngắm san hô Cù Lao Chàm'],
+    translation_status: 'pending',
+  },
+
+  {
+    name_vi: 'Đà Nẵng – Bà Nà Hills & Cầu Vàng 4N3Đ',
+    destination: 'Đà Nẵng', region: 'central',
+    duration_days: 4, duration_nights: 3,
+    base_price: 5200000, child_price_pct: 70,
+    min_pax: 2, max_pax: 18, status: 'ACTIVE',
+    cover_image: 'https://images.unsplash.com/photo-1583417319070-4a69db38a482?w=800&q=80',
+    images: [
+      'https://images.unsplash.com/photo-1583417319070-4a69db38a482?w=800&q=80',
+    ],
+    includes_vi: {hotel:{star:4,room_count:1,desc:'Khách sạn 4 sao ven biển Mỹ Khê'},guide:true,transfer:true,meals:true,insurance:true},
+    itinerary_vi: [
+      {day:1,title:'Đến Đà Nẵng – Phố Đêm',activities:['Nhận phòng khách sạn ven biển','Chiều tắm biển Mỹ Khê','Tối: Cầu Rồng phun lửa (thứ 7 & CN 21:00), ăn Mỳ Quảng']},
+      {day:2,title:'Bà Nà Hills – Cầu Vàng',activities:['07:30 Xe lên Bà Nà Hills','08:30 Cáp treo lên đỉnh – kỷ lục thế giới Guinness','09:00 Chụp ảnh Cầu Vàng','10:00 Tham quan Làng Pháp, vườn hoa Alpine','12:00 Ăn trưa buffet trên đỉnh','Chiều Fantasy Park']},
+      {day:3,title:'Ngũ Hành Sơn – Làng Đá – Biển',activities:['08:00 Tham quan Ngũ Hành Sơn','Khám phá hang động Huyền Không','10:30 Làng nghề điêu khắc đá mỹ nghệ Non Nước','Chiều tắm biển Non Nước','Tối BBQ hải sản chợ đêm Đà Nẵng']},
+      {day:4,title:'Núi Thần Tài – Về Sân Bay',activities:['08:00 Suối Khoáng Nóng Núi Thần Tài','10:00 Thư giãn trong bể khoáng thiên nhiên','12:00 Ăn trưa, mua đặc sản','14:00 Xe ra sân bay']},
+    ],
+    highlights_vi: ['Cầu Vàng Bà Nà Hills – biểu tượng du lịch VN','Cáp treo kỷ lục Guinness tại Bà Nà','Biển Mỹ Khê top 6 bãi biển đẹp nhất TG','Ngũ Hành Sơn hang động huyền bí','Cầu Rồng phun lửa cuối tuần'],
+    translation_status: 'pending',
+  },
+
+  {
+    name_vi: 'Huế – Cố Đô Vương Triều Nguyễn 2N1Đ',
+    destination: 'Huế', region: 'central',
+    duration_days: 2, duration_nights: 1,
+    base_price: 2400000, child_price_pct: 75,
+    min_pax: 2, max_pax: 22, status: 'ACTIVE',
+    cover_image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80',
+    images: [
+      'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&q=80',
+    ],
+    includes_vi: {hotel:{star:3,room_count:1,desc:'Khách sạn 3 sao trung tâm Huế'},guide:true,transfer:true,meals:true,insurance:true},
+    itinerary_vi: [
+      {day:1,title:'Đà Nẵng – Huế – Đại Nội – Lăng Tẩm',activities:['08:00 Xe từ Đà Nẵng qua đèo Hải Vân vào Huế','10:00 Thăm Đại Nội – Hoàng Cung Triều Nguyễn','12:30 Ăn trưa Cơm Hến và Bún Bò Huế','14:00 Lăng Khải Định – kiến trúc Đông Tây kết hợp','16:00 Lăng Minh Mạng – lăng đẹp nhất triều Nguyễn','18:30 Thuyền rồng trên sông Hương nghe ca Huế','20:00 Buffet Ẩm Thực Cung Đình Huế']},
+      {day:2,title:'Chùa Thiên Mụ – Làng Hương – Về',activities:['08:00 Chùa Thiên Mụ – ngôi chùa cổ nhất Huế','09:30 Làng nghề hương Thủy Xuân – tự tay cắm hương','11:00 Chợ Đông Ba mua đặc sản Mè Xửng, Tôm Chua','12:00 Ăn trưa Bánh Bèo Bánh Nậm Bánh Lọc','14:00 Xe về Đà Nẵng hoặc sân bay Phú Bài']},
+    ],
+    highlights_vi: ['Đại Nội – Hoàng Cung 143 công trình cổ','Ca Huế trên thuyền rồng sông Hương','Buffet ẩm thực cung đình 20+ món','Làng hương Thủy Xuân – tự cắm hương','Đèo Hải Vân – một trong những đèo đẹp nhất VN'],
+    translation_status: 'pending',
+  },
+
+  // ── MIỀN NAM ─────────────────────────────────────
+  {
+    name_vi: 'Phú Quốc – Đảo Ngọc Resort 5 Sao 4N3Đ',
+    destination: 'Phú Quốc', region: 'south',
+    duration_days: 4, duration_nights: 3,
+    base_price: 8500000, child_price_pct: 65,
+    min_pax: 2, max_pax: 14, status: 'ACTIVE',
+    cover_image: 'https://images.unsplash.com/photo-1540202403-b7abd6747a18?w=800&q=80',
+    images: [
+      'https://images.unsplash.com/photo-1540202403-b7abd6747a18?w=800&q=80',
+      'https://images.unsplash.com/photo-1559308688-0a6cf2e5de4e?w=800&q=80',
+    ],
+    includes_vi: {hotel:{star:5,room_count:1,desc:'Resort 5 sao hồ bơi vô cực view biển'},guide:true,transfer:true,meals:true,insurance:true},
+    itinerary_vi: [
+      {day:1,title:'Bay Đến Phú Quốc – Biển Chiều',activities:['Bay đến sân bay Phú Quốc, xe đón về resort','Chiều thư giãn hồ bơi vô cực nhìn ra biển','18:00 Hoàng hôn tại Dinh Cậu','20:00 Chợ Đêm Phú Quốc – ghẹ, tôm, cá thu nướng']},
+      {day:2,title:'Vinpearl Safari – Bãi Sao',activities:['08:00 Vinpearl Safari – safari thú hoang dã','12:00 Ăn trưa tại Safari Restaurant','14:00 Bãi Sao – bãi biển đẹp nhất Phú Quốc','Tắm biển, cocktail dừa tươi trên cát trắng','19:00 Nhum Biển và Ghẹ Cà Mau hấp sả']},
+      {day:3,title:'Cáp Treo Hòn Thơm – Lặn San Hô',activities:['08:30 Cáp treo vượt biển Hòn Thơm 7,899m – dài nhất TG','10:00 Bơi và lặn ngắm san hô tại đảo','12:30 Ăn trưa hải sản tươi tại đảo','17:00 Spa thư giãn tại resort','20:00 Grand World – phố đi bộ Châu Âu thu nhỏ']},
+      {day:4,title:'Nước Mắm – Hồ Tiêu – Về Nhà',activities:['08:00 Làng Chài Hàm Ninh – cua ghẹ tươi','09:30 Cơ sở sản xuất Nước Mắm Phú Quốc','11:00 Vườn Tiêu – thử tiêu tươi đặc sản','12:30 Ăn trưa, mua sắm quà','14:30 Xe ra sân bay']},
+    ],
+    highlights_vi: ['Resort 5 sao hồ bơi vô cực nhìn ra biển','Cáp treo Hòn Thơm dài nhất TG 7,899m','Vinpearl Safari – safari thú hoang dã','Lặn ngắm san hô Hòn Thơm','Hoàng hôn Dinh Cậu và chợ đêm hải sản tươi'],
+    translation_status: 'pending',
+  },
+
+  {
+    name_vi: 'Đà Lạt – Thành Phố Ngàn Hoa & Cà Phê 3N2Đ',
+    destination: 'Đà Lạt', region: 'south',
+    duration_days: 3, duration_nights: 2,
+    base_price: 3600000, child_price_pct: 70,
+    min_pax: 2, max_pax: 20, status: 'ACTIVE',
+    cover_image: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&q=80',
+    images: [
+      'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&q=80',
+    ],
+    includes_vi: {hotel:{star:3,room_count:1,desc:'Boutique hotel phong cách Pháp'},guide:true,transfer:true,meals:true,insurance:true},
+    itinerary_vi: [
+      {day:1,title:'TP.HCM – Đà Lạt – Chiều Phố',activities:['07:00 Xe từ TP.HCM (hoặc bay 45 phút)','11:30 Đến Đà Lạt, nhận phòng','14:30 Vườn Hoa Thành Phố','16:30 Hồ Xuân Hương – đạp vịt ven hồ','19:00 Chợ Đêm: Bánh Tráng Nướng, Nem Nướng, Phở Khô']},
+      {day:2,title:'Thác Datanla – Làng Cù Lần – Đồi Chè',activities:['09:00 Thác Datanla – xe trượt coaster xuống thác','11:00 Làng Cù Lần – bản văn hoá K\'Ho giữa rừng thông','12:30 Ăn trưa thịt nướng dã ngoại giữa rừng','14:30 Đồi Chè Cầu Đất – chụp ảnh bát ngát xanh','19:00 Lẩu bò rau rừng trong căn nhà gỗ ấm cúng']},
+      {day:3,title:'Dâu Tây – Cà Phê – Về TP.HCM',activities:['08:00 Vườn Dâu Tây Langbiang – tự hái dâu','11:00 Cafe Túi Mơ To giữa rừng thông','12:30 Mua đặc sản mứt, atiso, rượu vang Đà Lạt','14:30 Xe về TP.HCM']},
+    ],
+    highlights_vi: ['Đồi chè Cầu Đất bát ngát – địa điểm check-in nổi tiếng','Hái dâu tây tươi tại vườn Langbiang','Làng Cù Lần K\'Ho giữa rừng thông nguyên sinh','Thác Datanla – xe trượt coaster hồi hộp','Cà phê sáng tạo giữa rừng thông Đà Lạt'],
+    translation_status: 'pending',
+  },
+
+  {
+    name_vi: 'Mê Kông – Sông Nước Miền Tây & Chợ Nổi 2N1Đ',
+    destination: 'Cần Thơ', region: 'south',
+    duration_days: 2, duration_nights: 1,
+    base_price: 2600000, child_price_pct: 75,
+    min_pax: 2, max_pax: 24, status: 'ACTIVE',
+    cover_image: 'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=800&q=80',
+    images: [
+      'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?w=800&q=80',
+    ],
+    includes_vi: {hotel:{star:3,room_count:1,desc:'Khách sạn 3 sao Cần Thơ trung tâm'},guide:true,transfer:true,meals:true,insurance:true},
+    itinerary_vi: [
+      {day:1,title:'TP.HCM – Cần Thơ – Cồn Ấu',activities:['06:30 Xe từ TP.HCM','10:30 Đến Cần Thơ – ăn trưa Bún Cá Lóc','12:00 Thuyền ra Cồn Ấu giữa sông Hậu','Đạp xe vườn dừa, thăm trại ong mật','Thử trái cây tươi: sầu riêng, chôm chôm, măng cụt','19:00 Lẩu Cá Kèo miền Tây tại nhà hàng nổi trên sông']},
+      {day:2,title:'Chợ Nổi Cái Răng – Làng Nghề – Về',activities:['05:30 Thuyền ra Chợ Nổi Cái Răng khi bình minh','Mua trái cây tươi từ ghe hàng','07:30 Điểm tâm Hủ Tiếu Nam Vang','09:00 Làng nghề đan lát Mỹ Lồng','11:00 Vườn Trái Cây – hái quả ăn thỏa thích','12:30 Cá Tai Tượng chiên giòn giữa vườn xanh','14:00 Xe về TP.HCM']},
+    ],
+    highlights_vi: ['Chợ Nổi Cái Răng lúc 5:30 sáng độc đáo','Đạp xe xuyên vườn dừa và thử trái cây tươi','Nhà hàng nổi trên sông Hậu','Làng nghề đan lát Mỹ Lồng','Lẩu Cá Kèo và Cá Tai Tượng – đặc sản miền Tây'],
+    translation_status: 'pending',
+  },
+
+  {
+    name_vi: 'Nha Trang – Lặn Biển Hòn Mun & Vinpearl 3N2Đ',
+    destination: 'Nha Trang', region: 'central',
+    duration_days: 3, duration_nights: 2,
+    base_price: 4100000, child_price_pct: 70,
+    min_pax: 2, max_pax: 20, status: 'ACTIVE',
+    cover_image: 'https://images.unsplash.com/photo-1559308688-0a6cf2e5de4e?w=800&q=80',
+    images: [
+      'https://images.unsplash.com/photo-1559308688-0a6cf2e5de4e?w=800&q=80',
+    ],
+    includes_vi: {hotel:{star:4,room_count:1,desc:'Khách sạn 4 sao ven biển Trần Phú'},guide:true,transfer:true,meals:true,insurance:true},
+    itinerary_vi: [
+      {day:1,title:'Đến Nha Trang – Phố Biển',activities:['Nhận phòng khách sạn ven biển Trần Phú','Chiều: Biển Nha Trang và Chùa Long Sơn','Tháp Chăm Po Nagar – di tích 2.000 năm','Tối: Bún Cá Ngừ và Nem Nướng Ninh Hòa','Cáp treo Vinpearl về đêm view đẹp']},
+      {day:2,title:'Vinpearl Land – Tắm Bùn',activities:['08:00 Cáp treo vào Vinpearl Land','Aquarium – vương quốc đại dương 30.000 sinh vật','Công viên nước và trò chơi mạo hiểm','13:00 Buffet tại Vinpearl','16:30 Mud Bath I-Resort – tắm bùn khoáng độc đáo','19:30 BBQ hải sản chợ Đầm Nha Trang']},
+      {day:3,title:'Lặn Biển Hòn Mun – Về',activities:['07:30 Tàu ra đảo Hòn Mun','Lặn snorkeling và scuba với HDV chuyên nghiệp','12:30 Ăn trưa hải sản nướng trên tàu','14:00 Về đất liền','15:00 Mua đặc sản: Tôm khô, Mực khô, Yến sào','16:30 Tự do hoặc ra sân bay']},
+    ],
+    highlights_vi: ['Cáp treo Vinpearl vượt biển dài nhất TG','Lặn ngắm san hô Hòn Mun – khu bảo tồn biển quốc gia','Tắm bùn khoáng nóng I-Resort','Tháp Chăm Po Nagar 2.000 năm tuổi','Hải sản tươi sống giá tốt nhất VN'],
+    translation_status: 'pending',
+  },
+]
+
+// ── RENDER CARDS ─────────────────────────────────────
+function renderCards(){
+  const grid = document.getElementById('tourGrid')
+  grid.innerHTML = TOURS.map((t,i)=>{
+    const price = (t.base_price/1e6).toFixed(1)+'M₫'
+    const reg = {north:'🏔 Bắc',central:'🏖 Trung',south:'🌊 Nam'}[t.region]||t.region
+    return `
+    <div class="card" id="card-${i}">
+      <img class="card-img" src="${t.cover_image}" onerror="this.style.background='#1c2230'" loading="lazy">
+      <div class="card-body">
+        <div class="card-name">${t.name_vi}</div>
+        <div class="card-meta">
+          <span>📍 ${t.destination}</span><span>${reg}</span>
+          <span>${t.duration_days}N${t.duration_nights}Đ</span>
+          <span style="color:var(--amber);font-family:'Courier New',monospace">${price}</span>
+        </div>
+        <div class="card-status pending" id="st-${i}">Chờ seed</div>
+      </div>
+    </div>`
+  }).join('')
+}
+
+// ── SEED ─────────────────────────────────────────────
+async function runSeed(){
+  const btn = document.getElementById('btnRun')
+  const prog = document.getElementById('prog')
+  const log = document.getElementById('log')
+
+  const serviceKey = document.getElementById('serviceKey').value.trim()
+  if(!serviceKey){ alert('Cần nhập service role key trước'); return }
+  const client = supabase.createClient(SUPABASE_URL, serviceKey)
+
+  btn.disabled = true
+  prog.style.display = 'block'
+  log.style.display = 'block'
+  log.textContent = '▶ Bắt đầu seed 10 tours...\n'
+  let ok=0, fail=0
+
+  for(let i=0; i<TOURS.length; i++){
+    const t = TOURS[i]
+    const slug = slugVi(t.name_vi) + '-' + Date.now().toString().slice(-5)
+    const payload = {...t, slug}
+    const {error} = await client.from('tours').insert(payload)
+    prog.value = i+1
+    const st = document.getElementById('st-'+i)
+    if(error){
+      fail++
+      st.className='card-status err'
+      st.textContent='✗ '+error.message
+      log.textContent += `✗ [${i+1}] ${t.name_vi}\n   ${error.message}\n`
+    } else {
+      ok++
+      st.className='card-status ok'
+      st.textContent='✓ Đã tạo'
+      log.textContent += `✓ [${i+1}] ${t.name_vi}\n`
+    }
+    log.scrollTop = log.scrollHeight
+    await new Promise(r=>setTimeout(r,250))
+  }
+  log.textContent += `\n═══ Xong: ${ok} OK / ${fail} lỗi ═══`
+  btn.disabled = false
+  btn.textContent = `✓ Hoàn thành (${ok}/${TOURS.length})`
+}
+
+async function runClear(){
+  if(!confirm('Xóa toàn bộ tour DRAFT khỏi Supabase?')) return
+  const {error, count} = await sb.from('tours').delete({count:'exact'}).eq('status','DRAFT')
+  if(error){ alert('Lỗi: '+error.message); return }
+  alert(`Đã xóa ${count??'?'} tour DRAFT`)
+}
+
+// ── INIT ──────────────────────────────────────────────
+renderCards()
+</script>
+</body>
+</html>
