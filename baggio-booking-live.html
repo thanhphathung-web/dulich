@@ -202,8 +202,11 @@ body{background:var(--cream);color:var(--ink);font-family:var(--font);font-size:
 .ss-icon{font-size:1.2rem;margin-bottom:.4rem}
 .ss-title{font-weight:600;font-size:.82rem;color:var(--ink);margin-bottom:.15rem}
 .ss-desc{font-size:.72rem;color:var(--muted);font-weight:300;line-height:1.5}
-.btn-home{background:var(--ink);color:#fff;border:none;padding:.95rem 2.2rem;font-family:var(--font);font-weight:700;font-size:.9rem;cursor:pointer;transition:background .2s}
-.btn-home:hover{background:#2a2a35}
+.btn-zalo{display:inline-flex;align-items:center;gap:.55rem;background:#0068ff;color:#fff;border:none;padding:.95rem 2.2rem;font-family:var(--font);font-weight:700;font-size:.95rem;cursor:pointer;transition:background .2s;text-decoration:none;margin-bottom:.75rem}
+.btn-zalo:hover{background:#0057d9}
+.btn-zalo-note{font-size:.72rem;color:var(--muted);margin-bottom:1.5rem}
+.btn-home{background:transparent;color:var(--muted);border:1px solid var(--border);padding:.65rem 1.75rem;font-family:var(--font);font-weight:500;font-size:.82rem;cursor:pointer;transition:all .2s}
+.btn-home:hover{border-color:var(--ink);color:var(--ink)}
 @keyframes popIn{from{transform:scale(.5);opacity:0}to{transform:scale(1);opacity:1}}
 
 /* TOAST */
@@ -418,7 +421,7 @@ body{background:var(--cream);color:var(--ink);font-family:var(--font);font-size:
           </div>
           <div style="background:rgba(26,107,94,.07);padding:.65rem 1rem;font-size:.78rem;color:var(--teal);display:flex;gap:.5rem">
             <span>💡</span>
-            <span>Sau khi chuyển, nhắn mã <strong id="bankRef">BT-XXXX</strong> qua Zalo <strong>090 123 4567</strong> để xác nhận.</span>
+            <span>Sau khi chuyển, nhắn mã <strong id="bankRef">BT-XXXX</strong> qua Zalo <strong>0906 306 286</strong> để xác nhận.</span>
           </div>
         </div>
 
@@ -433,14 +436,21 @@ body{background:var(--cream);color:var(--ink);font-family:var(--font);font-size:
         <div class="success-wrap">
           <div class="success-icon">✅</div>
           <div class="success-title">Đặt tour thành công!</div>
-          <div class="success-sub">Chúng tôi đã nhận yêu cầu và sẽ liên hệ trong <strong>2 tiếng</strong> để xác nhận lịch trình.</div>
-          <div class="success-ref" id="successRef">Mã đặt tour: BT-XXXX</div>
-          <div class="success-steps">
-            <div class="ss"><div class="ss-icon">📧</div><div class="ss-title">Email xác nhận</div><div class="ss-desc">Kiểm tra hộp thư trong 2 tiếng</div></div>
-            <div class="ss"><div class="ss-icon">📞</div><div class="ss-title">Tư vấn viên gọi</div><div class="ss-desc">Xác nhận HDV và chi tiết tour</div></div>
-            <div class="ss"><div class="ss-icon">📱</div><div class="ss-title">Nhận e-voucher</div><div class="ss-desc">48 tiếng trước ngày khởi hành</div></div>
+          <div class="success-sub">Chúng tôi đã ghi nhận yêu cầu. Nhắn Zalo kèm mã bên dưới để đội ngũ xác nhận chỗ cho bạn ngay.</div>
+          <div class="success-ref" id="successRef" style="cursor:pointer" onclick="copyRef(this)" title="Nhấn để sao chép">Mã đặt tour: BT-XXXX</div>
+          <div>
+            <a id="zaloBtn" href="https://zalo.me/0906306286" target="_blank" rel="noopener" class="btn-zalo">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="6" fill="#fff" fill-opacity=".25"/><text x="12" y="17" text-anchor="middle" font-size="12" font-weight="700" fill="#fff" font-family="Arial">Z</text></svg>
+              Nhắn Zalo xác nhận ngay →
+            </a>
+            <div class="btn-zalo-note" id="zaloNote">Gửi mã <strong id="zaloRef">BT-XXXX</strong> qua Zalo <strong>0906 306 286</strong> để xác nhận chỗ</div>
           </div>
-          <button class="btn-home" onclick="location.href='index.html'">← Về trang chủ</button>
+          <div class="success-steps">
+            <div class="ss"><div class="ss-icon">✅</div><div class="ss-title">Đơn đã ghi nhận</div><div class="ss-desc">Lưu mã đặt tour của bạn</div></div>
+            <div class="ss"><div class="ss-icon">📞</div><div class="ss-title">Tư vấn viên gọi</div><div class="ss-desc">Xác nhận HDV và chi tiết tour</div></div>
+            <div class="ss"><div class="ss-icon">📋</div><div class="ss-title">Nhận e-voucher</div><div class="ss-desc">48 tiếng trước ngày khởi hành</div></div>
+          </div>
+          <button class="btn-home" onclick="location.href='/'">← Về trang chủ</button>
         </div>
       </div>
 
@@ -855,6 +865,8 @@ async function submitBooking(){
 
     // Hiện màn hình thành công
     document.getElementById('successRef').textContent=`Mã đặt tour: ${ref}`
+    document.getElementById('zaloRef').textContent=ref
+    document.getElementById('zaloBtn').href=`https://zalo.me/0906306286`
     document.querySelectorAll('.step-panel').forEach(p=>p.classList.remove('active'))
     document.getElementById('engineGrid').style.gridTemplateColumns='1fr'
     document.querySelector('.side-col').style.display='none'
@@ -869,6 +881,15 @@ async function submitBooking(){
     btn.disabled=false;btn.textContent='🎒 Xác nhận & Đặt cọc ngay'
     toast('Lỗi: '+e.message,'err')
   }
+}
+
+function copyRef(el){
+  const code = el.textContent.replace('Mã đặt tour: ','').trim()
+  navigator.clipboard.writeText(code).then(()=>{
+    const orig = el.textContent
+    el.textContent = '✅ Đã sao chép: '+code
+    setTimeout(()=>el.textContent=orig, 2000)
+  })
 }
 
 // ── NAV AUTH ──────────────────────────────────────────
