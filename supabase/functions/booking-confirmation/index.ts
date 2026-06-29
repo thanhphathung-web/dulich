@@ -6,7 +6,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const ZALO_NUMBER = '0906 306 286'
 const ZALO_LINK   = 'https://zalo.me/0906306286'
-const FROM_EMAIL  = 'booking@baggiotravel.com'
+const FROM_EMAIL  = 'onboarding@resend.dev'
 const BRAND_NAME  = 'Baggio Travel'
 
 Deno.serve(async (req) => {
