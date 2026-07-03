@@ -1873,9 +1873,6 @@ async function approveTourTranslation(){
 }
 
 function collectEnFields(){
-  // Chỉ gửi các cột thực tế có trong DB:
-  // name_en, highlights_en (TEXT[]), itinerary_en (JSONB), includes_en (JSONB)
-  // KHÔNG có: summary_en, description_en, excludes_en
   const itinText = document.getElementById('tf_itinerary_en').value
   const itinerary_en = itinText.split('\n').filter(l=>l.trim()).map((line,i)=>{
     const m = line.match(/^Day\s*(\d+):\s*(.+)/i)
@@ -1885,8 +1882,11 @@ function collectEnFields(){
   })
   return {
     name_en:        document.getElementById('tf_name_en').value.trim()||null,
+    summary_en:     document.getElementById('tf_summary_en').value.trim()||null,
+    description_en: document.getElementById('tf_desc_en').value.trim()||null,
     highlights_en:  document.getElementById('tf_highlights_en').value.split('\n').map(s=>s.trim()).filter(Boolean),
     includes_en:    document.getElementById('tf_includes_en').value.split('\n').map(s=>s.trim()).filter(Boolean),
+    excludes_en:    document.getElementById('tf_excludes_en').value.split('\n').map(s=>s.trim()).filter(Boolean),
     itinerary_en,
   }
 }
@@ -1993,8 +1993,11 @@ function collectZhFields(){
   })
   return {
     name_zh:       document.getElementById('tf_name_zh').value.trim()||null,
+    summary_zh:    document.getElementById('tf_summary_zh').value.trim()||null,
+    description_zh:document.getElementById('tf_desc_zh').value.trim()||null,
     highlights_zh: document.getElementById('tf_highlights_zh').value.split('\n').map(s=>s.trim()).filter(Boolean),
     includes_zh:   document.getElementById('tf_includes_zh').value.split('\n').map(s=>s.trim()).filter(Boolean),
+    excludes_zh:   document.getElementById('tf_excludes_zh').value.split('\n').map(s=>s.trim()).filter(Boolean),
     itinerary_zh,
   }
 }
