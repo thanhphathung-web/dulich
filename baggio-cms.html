@@ -1198,7 +1198,7 @@ function populateTourEditor(t){
     el.classList.toggle('checked',checked); el.querySelector('input').checked=checked
   })
   // Gallery
-  galleryUrls=t.gallery||[]; renderGallery()
+  galleryUrls=t.images||t.gallery||[]; renderGallery()
   if(t.cover_image){document.getElementById('coverImg').src=t.cover_image;document.getElementById('coverPreview').style.display='block'}
   updatePriceSummary()
   runValidation()
@@ -1407,7 +1407,7 @@ async function saveTour(status='ACTIVE'){
     guide_language:document.getElementById('tf_guide_lang').value||'vi',
     sub_destinations:document.getElementById('tf_sub_dests').value.split(',').map(s=>s.trim()).filter(Boolean),
     cover_image:document.getElementById('tf_cover').value.trim()||null,
-    gallery:galleryUrls,
+    images:galleryUrls,
     description:document.getElementById('tf_desc').value.trim()||null,
     highlights_vi:document.getElementById('tf_highlights').value.split('\n').map(s=>s.trim()).filter(Boolean),
     notes:document.getElementById('tf_notes').value.split('\n').map(s=>s.trim()).filter(Boolean),
@@ -1419,10 +1419,22 @@ async function saveTour(status='ACTIVE'){
     ...(editId?{}:{slug:slug_vi(name)+'-'+Date.now().toString().slice(-5)}),
   }
 
-  let error
-  if(editId){ ({error}=await sb.from('tours').update(data).eq('id',editId)) }
-  else { ({error}=await sb.from('tours').insert(data)) }
+  // Lưu; nếu DB thiếu cột (chưa chạy migration) thì bỏ qua cột đó và thử lại,
+  // thay vì hỏng toàn bộ. Báo rõ cột nào bị bỏ để không âm thầm mất dữ liệu.
+  let error, payload={...data}, dropped=[]
+  for(let i=0;i<30;i++){
+    if(editId){ ({error}=await sb.from('tours').update(payload).eq('id',editId)) }
+    else { ({error}=await sb.from('tours').insert(payload)) }
+    if(!error) break
+    const m = /'([a-z_]+)' column/i.exec(error.message||'') || /column "?([a-z_]+)"?/i.exec(error.message||'')
+    const col = m && m[1]
+    if((error.code==='PGRST204'||error.code==='42703'||/schema cache|does not exist/i.test(error.message||'')) && col && col in payload){
+      delete payload[col]; dropped.push(col); error=null; continue
+    }
+    break
+  }
   if(error){toast('Lỗi lưu: '+error.message,'err');return}
+  if(dropped.length) toast('⚠️ Đã lưu, nhưng DB chưa có các cột: '+dropped.join(', ')+' — chạy migration tours-add-columns.sql để lưu đủ','warn')
   toast(editId?`✅ Đã cập nhật "${name.slice(0,30)}"`:`✅ Tour "${name.slice(0,30)}" ${status==='ACTIVE'?'đã đăng bán':'lưu nháp'}`)
 
   loadTourList()

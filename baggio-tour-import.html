@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Nhập tour hàng loạt — Baggio Travel</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+const SUPABASE_URL  = 'https://lfnlezfphwjtdunyungi.supabase.co'
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxmbmxlemZwaHdqdGR1bnl1bmdpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0NjkwNzcsImV4cCI6MjA5NjA0NTA3N30.fmjvqhyiPcjB6qT5GDtfzMfY-C-WXP4QUIk-YW7FhJg'
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON)
+const CLAUDE_MODEL = 'claude-sonnet-4-6'  // đổi 'claude-opus-4-8' nếu muốn chất lượng cao nhất
+</script>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#080b10;--s2:#0e131b;--s3:#151c27;--card:#0f1620;--border:#1e2937;
+  --text:#e6edf3;--text2:#8b98a9;--blue:#3b82f6;--green:#22c55e;--amber:#f59e0b;
+  --red:#ef4444;--mono:'Space Mono',ui-monospace,monospace;
+}
+body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;font-size:14px;line-height:1.6}
+header{background:var(--s2);border-bottom:1px solid var(--border);padding:.9rem 1.5rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.logo{font-weight:700;font-size:1.05rem}.logo span{color:var(--amber)}
+.wrap{max-width:1100px;margin:0 auto;padding:1.5rem}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem}
+@media(max-width:860px){.grid{grid-template-columns:1fr}}
+.panel{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:1.15rem}
+.panel h2{font-size:.95rem;margin-bottom:.35rem}
+.hint{color:var(--text2);font-size:.8rem;margin-bottom:.85rem}
+label{display:block;font-size:.78rem;color:var(--text2);margin:.6rem 0 .25rem}
+textarea,input,select{width:100%;background:var(--s3);border:1px solid var(--border);border-radius:7px;color:var(--text);padding:.6rem .7rem;font-size:.83rem;font-family:inherit}
+textarea{min-height:230px;resize:vertical;font-family:var(--mono);font-size:.78rem;line-height:1.5}
+button{cursor:pointer;border:none;border-radius:7px;font-weight:600;font-size:.82rem;padding:.6rem 1rem;transition:filter .15s}
+button:hover{filter:brightness(1.1)}button:disabled{opacity:.5;cursor:not-allowed}
+.btn-primary{background:var(--blue);color:#fff}
+.btn-green{background:var(--green);color:#04120a}
+.btn-ghost{background:var(--s3);color:var(--text);border:1px solid var(--border)}
+.btn-red{background:transparent;color:var(--red);border:1px solid var(--red)}
+.row{display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;margin-top:.85rem}
+.log{background:#05080c;border:1px solid var(--border);border-radius:7px;padding:.7rem;font-family:var(--mono);font-size:.74rem;max-height:220px;overflow:auto;white-space:pre-wrap;color:var(--text2);margin-top:.85rem}
+.log b{color:var(--green)}.log i{color:var(--amber);font-style:normal}.log u{color:var(--red);text-decoration:none}
+.draft{border:1px solid var(--border);border-radius:8px;padding:.8rem;margin-bottom:.7rem;background:var(--s2)}
+.draft h3{font-size:.9rem;margin-bottom:.2rem}
+.draft .meta{color:var(--text2);font-size:.76rem;margin-bottom:.5rem}
+.draft .en{color:var(--blue);font-size:.78rem}
+.pill{display:inline-block;background:var(--s3);border:1px solid var(--border);border-radius:20px;padding:.1rem .55rem;font-size:.7rem;color:var(--text2);margin:0 .3rem .3rem 0}
+.warnpill{background:rgba(245,158,11,.12);border-color:var(--amber);color:var(--amber)}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;align-items:center;justify-content:center;z-index:100;padding:1rem}
+.modal .box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.5rem;max-width:440px;width:100%}
+.modal h2{margin-bottom:.5rem}.modal p{color:var(--text2);font-size:.82rem;margin-bottom:1rem}
+.count{font-family:var(--mono);color:var(--amber)}
+.notice{background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.35);border-radius:8px;padding:.7rem .85rem;font-size:.8rem;color:var(--text2);margin-bottom:1.1rem}
+.notice b{color:var(--text)}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">Baggio<span>·</span> Nhập tour hàng loạt</div>
+  <div style="display:flex;gap:.5rem;align-items:center">
+    <span id="keyState" style="font-size:.75rem;color:var(--text2)"></span>
+    <button class="btn-ghost" onclick="openKeyModal()">🔑 API key</button>
+    <a href="/cms" class="btn-ghost" style="text-decoration:none;padding:.6rem 1rem;border-radius:7px">← CMS</a>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="notice">
+    <b>Quy trình:</b> Dán <b>dữ liệu tour thật</b> (từ nhà cung cấp / đối tác) → AI soạn <b>bản nháp</b> song ngữ (VI/EN) →
+    lưu ở trạng thái <b>DRAFT</b> → bạn <b>duyệt & đăng</b>. AI chỉ định dạng lại thông tin bạn cung cấp,
+    <b>không bịa</b> giá / lịch trình / dịch vụ. Trường nào thiếu sẽ để trống và gắn cờ ⚠ để bạn bổ sung.
+  </div>
+
+  <div class="grid">
+    <!-- INPUT -->
+    <div class="panel">
+      <h2>1 · Dữ liệu tour thật từ nhà cung cấp</h2>
+      <p class="hint">Mỗi tour cách nhau bằng dòng <code>---</code>. Có thể dán văn bản tự do (tên, điểm đến, số ngày, giá, lịch trình, dịch vụ bao gồm...). Càng đầy đủ, bản nháp càng tốt.</p>
+      <textarea id="rawInput" placeholder="Tour Hội An – Mỹ Sơn 3N2Đ
+Điểm đến: Hội An, Quảng Nam (miền Trung)
+Giá: 3.200.000đ/khách, cọc 30%
+Số ngày: 3 ngày 2 đêm, tối thiểu 2 khách
+Bao gồm: khách sạn 3 sao, xe đưa đón, hướng dẫn viên, vé tham quan
+Lịch trình:
+Ngày 1: Đón sân bay – nhận phòng – phố cổ Hội An
+Ngày 2: Thánh địa Mỹ Sơn – làng gốm Thanh Hà
+Ngày 3: Tự do – tiễn sân bay
+---
+Tour Buôn Ma Thuột 3N2Đ
+Điểm đến: Buôn Ma Thuột, Đắk Lắk (miền Trung)
+Giá: 2.900.000đ ...
+"></textarea>
+      <div class="row">
+        <span class="hint" style="margin:0">Phát hiện <span class="count" id="blockCount">0</span> tour</span>
+        <div style="flex:1"></div>
+        <button class="btn-primary" id="genBtn" onclick="generate()">✨ Tạo bản nháp</button>
+      </div>
+      <div class="log" id="log">Chưa chạy.</div>
+    </div>
+
+    <!-- REVIEW -->
+    <div class="panel">
+      <h2>2 · Duyệt bản nháp <span class="count" id="draftCount"></span></h2>
+      <p class="hint">Kiểm tra nội dung. <b>Duyệt & Đăng</b> chuyển tour sang <code>ACTIVE</code> (hiển thị trên web). Cờ ⚠ = thiếu dữ liệu, nên sửa trong CMS trước khi đăng.</p>
+      <div class="row" style="margin-top:0">
+        <button class="btn-ghost" onclick="loadDrafts()">↻ Tải lại</button>
+        <button class="btn-green" id="pubAllBtn" onclick="publishAll()">✅ Duyệt & đăng tất cả (không có cờ ⚠)</button>
+      </div>
+      <div id="draftList" style="margin-top:.9rem"><p class="hint">Nhấn “Tải lại”.</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- KEY MODAL -->
+<div class="modal" id="keyModal" style="display:none">
+  <div class="box">
+    <h2>🔑 Anthropic API Key</h2>
+    <p>AI soạn bản nháp chạy bằng Claude. Key chỉ lưu trong <b>session này</b> (sessionStorage), không gửi đi đâu ngoài api.anthropic.com. Tạo key tại <a href="https://console.anthropic.com" target="_blank" style="color:var(--blue)">console.anthropic.com</a>.</p>
+    <input id="apiKeyInput" type="password" placeholder="sk-ant-...">
+    <div class="row">
+      <div style="flex:1"></div>
+      <button class="btn-ghost" onclick="closeKeyModal()">Huỷ</button>
+      <button class="btn-primary" onclick="saveKey()">Lưu</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── API KEY ──────────────────────────────────────────
+function getKey(){ return sessionStorage.getItem('anthropic_key') || '' }
+function refreshKeyState(){
+  const k=getKey()
+  document.getElementById('keyState').textContent = k ? '● key đã nhập' : '○ chưa có key'
+  document.getElementById('keyState').style.color = k ? 'var(--green)' : 'var(--text2)'
+}
+function openKeyModal(){ document.getElementById('apiKeyInput').value=getKey(); document.getElementById('keyModal').style.display='flex' }
+function closeKeyModal(){ document.getElementById('keyModal').style.display='none' }
+function saveKey(){
+  const v=document.getElementById('apiKeyInput').value.trim()
+  if(v) sessionStorage.setItem('anthropic_key',v); else sessionStorage.removeItem('anthropic_key')
+  refreshKeyState(); closeKeyModal()
+}
+
+// ── INPUT PARSING ────────────────────────────────────
+function blocks(){
+  return document.getElementById('rawInput').value
+    .split(/^\s*---\s*$/m).map(s=>s.trim()).filter(Boolean)
+}
+function updateCount(){ document.getElementById('blockCount').textContent = blocks().length }
+document.getElementById('rawInput').addEventListener('input', updateCount)
+
+// ── LOG ──────────────────────────────────────────────
+function log(html, cls){
+  const el=document.getElementById('log')
+  if(el.textContent==='Chưa chạy.') el.innerHTML=''
+  const tag = cls==='ok'?'b':cls==='warn'?'i':cls==='err'?'u':'span'
+  el.innerHTML += `<${tag}>${html}</${tag}>\n`
+  el.scrollTop = el.scrollHeight
+}
+
+const slugify = s => (s||'tour').toLowerCase()
+  .normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/đ/g,'d')
+  .replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,60)
+
+// ── CLAUDE: draft one tour from real supplier text ──
+async function draftTour(rawText){
+  const system = `Bạn là biên tập viên nội dung du lịch của công ty lữ hành Baggio Travel.
+Nhiệm vụ: CHUYỂN ĐỔI thông tin tour THẬT do người dùng cung cấp thành một bản ghi có cấu trúc, song ngữ Việt (VI) và Anh (EN).
+QUY TẮC BẮT BUỘC:
+- CHỈ dùng dữ kiện có trong văn bản đầu vào. TUYỆT ĐỐI KHÔNG bịa giá, ngày khởi hành, số chỗ, hạng khách sạn, hay dịch vụ không được nêu.
+- Nếu một trường không có trong đầu vào: để null (số) hoặc "" / [] (chuỗi/mảng). KHÔNG đoán.
+- Được phép: viết lại mô tả cho mượt, dịch VI↔EN, suy ra "region" từ địa danh (bắc/north, trung/central, nam/south) vì đó là địa lý.
+- base_price là SỐ nguyên VND (bỏ dấu chấm/đ). Nếu không có giá, để 0.
+Trả về DUY NHẤT một JSON hợp lệ (không markdown, không giải thích) theo schema:
+{
+ "name_vi": string, "name_en": string,
+ "destination": string, "region": "north"|"central"|"south"|"",
+ "duration_days": number|null, "duration_nights": number|null,
+ "min_pax": number|null, "max_pax": number|null,
+ "base_price": number,
+ "description_vi": string, "description_en": string,
+ "highlights_vi": string[], "highlights_en": string[],
+ "itinerary": [{"day": number, "title": string, "activities": string[]}],
+ "tags": string[],
+ "missing": string[]  // liệt kê các trường quan trọng còn THIẾU trong đầu vào (vd: "giá", "lịch trình")
+}`
+  const res = await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{
+      'content-type':'application/json',
+      'x-api-key':getKey(),
+      'anthropic-version':'2023-06-01',
+      'anthropic-dangerous-direct-browser-access':'true'
+    },
+    body: JSON.stringify({
+      model: CLAUDE_MODEL,
+      max_tokens: 3000,
+      system,
+      messages:[{role:'user', content:`Thông tin tour thật:\n\n${rawText}`}]
+    })
+  })
+  if(!res.ok){
+    const t = await res.text()
+    throw new Error(`Claude ${res.status}: ${t.slice(0,160)}`)
+  }
+  const data = await res.json()
+  if(data.stop_reason==='refusal') throw new Error('Claude từ chối yêu cầu này')
+  const text = (data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('')
+  const m = text.match(/\{[\s\S]*\}/)
+  if(!m) throw new Error('Không đọc được JSON từ phản hồi')
+  return JSON.parse(m[0])
+}
+
+// ── Map draft → tours row (DRAFT status) ────────────
+function toRow(d){
+  return {
+    name_vi: d.name_vi || 'Tour chưa đặt tên',
+    name_en: d.name_en || null,
+    destination: d.destination || null,
+    region: d.region || null,
+    status: 'DRAFT',
+    duration_days: d.duration_days ?? null,
+    duration_nights: d.duration_nights ?? null,
+    min_pax: d.min_pax ?? null,
+    max_pax: d.max_pax ?? null,
+    base_price: Number(d.base_price) || 0,
+    description: d.description_vi || null,
+    desc_en: d.description_en || null,
+    highlights_vi: Array.isArray(d.highlights_vi)?d.highlights_vi:[],
+    highlights_en: Array.isArray(d.highlights_en)?d.highlights_en:[],
+    itinerary_vi: Array.isArray(d.itinerary)?d.itinerary:[],
+    tags: Array.isArray(d.tags)?d.tags:[],
+    meta_description: (d.description_vi||'').slice(0,155) || null,
+    slug: slugify(d.name_vi)+'-'+Date.now().toString().slice(-5),
+    translation_status: (d.name_en && d.description_en) ? 'done' : 'pending'
+  }
+}
+
+// Insert with graceful drop of unknown columns
+async function insertRow(row){
+  let payload = {...row}
+  for(let i=0;i<6;i++){
+    const {error} = await sb.from('tours').insert(payload)
+    if(!error) return
+    if(error.code==='42501' || /row-level security/i.test(error.message||''))
+      throw new Error('Bị RLS chặn — bạn cần ĐĂNG NHẬP admin trước (mở /cms hoặc /account rồi quay lại).')
+    const m = /column "?([a-z_]+)"?/i.exec(error.message||'')
+    if(m && m[1] in payload){ delete payload[m[1]]; continue } // drop unknown col, retry
+    throw new Error(error.message)
+  }
+  throw new Error('Không lưu được sau nhiều lần thử')
+}
+
+// ── GENERATE ────────────────────────────────────────
+async function generate(){
+  if(!getKey()){ openKeyModal(); return }
+  const list = blocks()
+  if(!list.length){ log('Chưa có dữ liệu để xử lý.','warn'); return }
+  const btn=document.getElementById('genBtn'); btn.disabled=true
+  document.getElementById('log').innerHTML=''
+  let ok=0, fail=0
+  for(let i=0;i<list.length;i++){
+    const label = list[i].split('\n')[0].slice(0,50)
+    log(`[${i+1}/${list.length}] Soạn: ${label}…`)
+    try{
+      const draft = await draftTour(list[i])
+      await insertRow(toRow(draft))
+      const miss = (draft.missing&&draft.missing.length)? ` ⚠ thiếu: ${draft.missing.join(', ')}`:''
+      log(`   ✔ đã lưu DRAFT${miss}`, miss?'warn':'ok')
+      ok++
+    }catch(e){
+      log(`   ✖ ${e.message}`,'err'); fail++
+    }
+  }
+  log(`\nXong: ${ok} nháp đã tạo, ${fail} lỗi.`, fail?'warn':'ok')
+  btn.disabled=false
+  loadDrafts()
+}
+
+// ── DRAFTS REVIEW ───────────────────────────────────
+async function loadDrafts(){
+  const box=document.getElementById('draftList')
+  box.innerHTML='<p class="hint">Đang tải…</p>'
+  const {data,error,count} = await sb.from('tours')
+    .select('id,name_vi,name_en,destination,region,base_price,duration_days,duration_nights,description,itinerary_vi',{count:'exact'})
+    .eq('status','DRAFT').order('id',{ascending:false}).limit(200)
+  if(error){ box.innerHTML=`<p class="hint" style="color:var(--red)">${error.message}</p>`; return }
+  document.getElementById('draftCount').textContent = count?`(${count})`:''
+  if(!data.length){ box.innerHTML='<p class="hint">Không có bản nháp nào.</p>'; return }
+  box.innerHTML = data.map(t=>{
+    const flags=[]
+    if(!t.base_price) flags.push('⚠ chưa có giá')
+    if(!t.itinerary_vi || !t.itinerary_vi.length) flags.push('⚠ chưa có lịch trình')
+    if(!t.name_en) flags.push('⚠ chưa có tên EN')
+    const fmt = n => (n||0).toLocaleString('vi-VN')
+    return `<div class="draft">
+      <h3>${t.name_vi||'(chưa đặt tên)'}</h3>
+      ${t.name_en?`<div class="en">${t.name_en}</div>`:''}
+      <div class="meta">${t.destination||'?'} · ${t.region||'?'} · ${t.duration_days||'?'}N${t.duration_nights||'?'}Đ · ${fmt(t.base_price)}đ</div>
+      ${flags.map(f=>`<span class="pill warnpill">${f}</span>`).join('')}
+      <div class="row" style="margin-top:.5rem">
+        <button class="btn-green" onclick="publishOne('${t.id}')">✅ Duyệt & Đăng</button>
+        <a class="btn-ghost" href="/cms" style="text-decoration:none;padding:.6rem 1rem;border-radius:7px">✏️ Sửa ở CMS</a>
+        <button class="btn-red" onclick="removeOne('${t.id}')">🗑 Xoá</button>
+      </div>
+    </div>`
+  }).join('')
+}
+async function publishOne(id){
+  const {error}=await sb.from('tours').update({status:'ACTIVE'}).eq('id',id)
+  if(error){ alert('Lỗi: '+error.message); return }
+  loadDrafts()
+}
+async function removeOne(id){
+  const {error}=await sb.from('tours').delete().eq('id',id)
+  if(error){ alert('Lỗi: '+error.message); return }
+  loadDrafts()
+}
+async function publishAll(){
+  // publish only drafts without warning flags
+  const {data,error}=await sb.from('tours')
+    .select('id,base_price,name_en,itinerary_vi').eq('status','DRAFT')
+  if(error){ alert(error.message); return }
+  const ready=data.filter(t=>t.base_price && t.name_en && t.itinerary_vi && t.itinerary_vi.length).map(t=>t.id)
+  if(!ready.length){ alert('Không có bản nháp nào đủ điều kiện (còn cờ ⚠).'); return }
+  if(!confirm(`Đăng ${ready.length} tour đã đủ dữ liệu?`)) return
+  const {error:e2}=await sb.from('tours').update({status:'ACTIVE'}).in('id',ready)
+  if(e2){ alert(e2.message); return }
+  loadDrafts()
+}
+
+// init
+refreshKeyState(); updateCount()
+async function checkLogin(){
+  const {data:{session}} = await sb.auth.getSession()
+  if(!session?.user){
+    const n=document.createElement('div')
+    n.className='notice'
+    n.style.borderColor='var(--amber)'; n.style.background='rgba(245,158,11,.1)'
+    n.innerHTML='⚠ <b>Bạn chưa đăng nhập admin.</b> RLS sẽ chặn việc lưu tour. Hãy mở <a href="/account" style="color:var(--amber)">/account</a> hoặc <a href="/cms" style="color:var(--amber)">/cms</a> đăng nhập rồi quay lại trang này.'
+    document.querySelector('.wrap').prepend(n)
+  }
+}
+document.addEventListener('DOMContentLoaded',()=>{ if(!getKey()) openKeyModal(); checkLogin() })
+</script>
+</body>
+</html>

@@ -10,7 +10,6 @@
     { "source": "/comms",  "destination": "/baggio-comms.html"  },
     { "source": "/report", "destination": "/baggio-report.html" },
     { "source": "/tour", "destination": "/baggio-tour-detail.html" },
-    { "source": "/tour", "destination": "/baggio-tour-detail.html" },
     { "source": "/chatbot",  "destination": "/baggio-chatbot.html" },
     { "source": "/momo",     "destination": "/baggio-momo-integration.html" },
     { "source": "/vnpay",    "destination": "/baggio-vnpay.html" },
@@ -21,6 +20,6 @@
     { "source": "/deploy",   "destination": "/baggio-deploy-guide.html" },
     { "source": "/about",    "destination": "/baggio-website.html" },
     { "source": "/account",  "destination": "/baggio-account.html" },
-    { "source": "/seed",     "destination": "/seed-tours.html" }
+    { "source": "/tour-import", "destination": "/baggio-tour-import.html" }
   ]
 }
