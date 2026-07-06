@@ -355,16 +355,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:13
         </div>
         <div class="form-group">
           <label class="form-label">Phong cách du lịch (Travel Style — chọn nhiều)</label>
-          <div class="check-group" id="travelStyleGroup">
-            ${[
-              ['family','👨‍👩‍👧 Gia đình'],['couple','💑 Cặp đôi/Honeymoon'],['solo','🧍 Du lịch solo'],
-              ['group','👥 Nhóm bạn'],['adventure','🧗 Phiêu lưu mạo hiểm'],['culture','🏛 Văn hóa lịch sử'],
-              ['beach','🏖 Biển & Đảo'],['mountain','🏔 Núi & Trekking'],['food','🍜 Ẩm thực'],
-              ['golf','⛳ Golf'],['photography','📸 Nhiếp ảnh'],['wellness','🧘 Wellness & Spa'],
-              ['festival','🎉 Lễ hội'],['sustainable','🌿 Du lịch bền vững'],['business','💼 Công tác'],
-              ['nightlife','🌙 Khám phá đêm'],['picnic','🧺 Picnic dã ngoại'],['cruise','🚢 Tàu thuyền'],
-            ].map(([k,v])=>`<label class="check-tag" data-key="${k}"><input type="checkbox" value="${k}" style="display:none">${v}</label>`).join('')}
-          </div>
+          <div class="check-group" id="travelStyleGroup"></div>
         </div>
         <div class="form-row-3">
           <div class="form-group">
@@ -476,15 +467,20 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:13
         <div id="priceSummary" style="background:var(--s3);border:1px solid var(--border);border-radius:5px;padding:.65rem .85rem;font-size:.78rem;display:flex;gap:1.5rem;flex-wrap:wrap"></div>
         <div class="form-group">
           <label class="form-label">Bao gồm trong tour</label>
-          <div class="check-group" id="includesGroup">
-            ${[
-              ['flights','✈️ Vé máy bay'],['hotel','🏨 Khách sạn'],['guide','🧑‍💼 HDV'],
-              ['transfer','🚌 Xe đưa đón'],['meals','🍽️ Ăn uống'],['insurance','🛡️ Bảo hiểm'],
-              ['entrance','🎟️ Vé tham quan'],['boat','⛵ Tàu thuyền'],['activity','🏄 Hoạt động'],
-              ['photo','📸 Ảnh chuyên nghiệp'],
-            ].map(([k,v])=>`<label class="check-tag green" data-key="${k}"><input type="checkbox" value="${k}" style="display:none">${v}</label>`).join('')}
-          </div>
+          <div class="check-group" id="includesGroup"></div>
         </div>
+        <script>
+        // Render 2 nhóm checkbox bằng JS. Trước đây đoạn ${...}.map() bị đặt trong
+        // HTML tĩnh nên trình duyệt không chạy, hiện ra code thô. Chạy ở parse-time
+        // (trước DOMContentLoaded) nên handler click + pre-check gắn được vào label.
+        (function(){
+          const STYLES=[['family','👨‍👩‍👧 Gia đình'],['couple','💑 Cặp đôi/Honeymoon'],['solo','🧍 Du lịch solo'],['group','👥 Nhóm bạn'],['adventure','🧗 Phiêu lưu mạo hiểm'],['culture','🏛 Văn hóa lịch sử'],['beach','🏖 Biển & Đảo'],['mountain','🏔 Núi & Trekking'],['food','🍜 Ẩm thực'],['golf','⛳ Golf'],['photography','📸 Nhiếp ảnh'],['wellness','🧘 Wellness & Spa'],['festival','🎉 Lễ hội'],['sustainable','🌿 Du lịch bền vững'],['business','💼 Công tác'],['nightlife','🌙 Khám phá đêm'],['picnic','🧺 Picnic dã ngoại'],['cruise','🚢 Tàu thuyền']];
+          const INCLUDES=[['flights','✈️ Vé máy bay'],['hotel','🏨 Khách sạn'],['guide','🧑‍💼 HDV'],['transfer','🚌 Xe đưa đón'],['meals','🍽️ Ăn uống'],['insurance','🛡️ Bảo hiểm'],['entrance_fees','🎟️ Vé tham quan'],['activities','🏄 Hoạt động'],['boat','⛵ Tàu thuyền'],['photo','📸 Ảnh chuyên nghiệp']];
+          const tag=(k,v,cls)=>`<label class="check-tag${cls}" data-key="${k}"><input type="checkbox" value="${k}" style="display:none">${v}</label>`;
+          const tsg=document.getElementById('travelStyleGroup'); if(tsg) tsg.innerHTML=STYLES.map(([k,v])=>tag(k,v,'')).join('');
+          const ig=document.getElementById('includesGroup'); if(ig) ig.innerHTML=INCLUDES.map(([k,v])=>tag(k,v,' green')).join('');
+        })();
+        </script>
         <div class="form-row">
           <div class="form-group">
             <label class="form-label">Chính sách hoàn hủy</label>

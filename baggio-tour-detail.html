@@ -457,6 +457,8 @@ function renderTour(t) {
     inc.insurance && {icon:'🛡️', title:'Bảo hiểm', desc:'Du lịch toàn diện'},
     inc.entrance_fees && {icon:'🎟️', title:'Vé tham quan', desc:'Tất cả điểm trong lịch trình'},
     inc.activities && {icon:'🏄', title:'Hoạt động', desc: Array.isArray(inc.activities)?inc.activities.join(', '):inc.activities},
+    inc.boat && {icon:'⛵', title:'Tàu thuyền', desc: typeof inc.boat==='string'?inc.boat:'Có'},
+    inc.photo && {icon:'📸', title:'Ảnh chuyên nghiệp', desc:'Nhiếp ảnh gia đồng hành'},
   ].filter(Boolean)
 
   document.getElementById('includesGrid').innerHTML = includeItems.map(i=>`
