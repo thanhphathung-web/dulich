@@ -208,6 +208,7 @@ nav{background:var(--card);border-bottom:1px solid var(--border);padding:.9rem 2
 
     <!-- LEFT -->
     <div class="left-col">
+      <div id="tourMedia"></div>
       <div class="tabs">
         <button class="tab active" onclick="switchTab('itinerary',this)">📅 Lịch trình</button>
         <button class="tab" onclick="switchTab('includes',this)">✅ Bao gồm</button>
@@ -217,6 +218,7 @@ nav{background:var(--card);border-bottom:1px solid var(--border);padding:.9rem 2
 
       <!-- ITINERARY TAB -->
       <div class="tab-panel active" id="tab-itinerary">
+        <div id="tourIntro"></div>
         <div id="itineraryContent">
           <div class="skel skeleton" style="width:40%;height:20px;margin-bottom:1rem"></div>
           <div class="skel skeleton" style="width:90%"></div>
@@ -271,6 +273,7 @@ nav{background:var(--card);border-bottom:1px solid var(--border);padding:.9rem 2
           <div class="inc-section-title">📍 Điểm tập trung</div>
           <div id="meetingPoint" style="font-size:.88rem;color:var(--muted);padding:.85rem;background:var(--paper);border-left:3px solid var(--red)"></div>
         </div>
+        <div id="tourTags" style="margin-top:1.5rem"></div>
       </div>
 
       <!-- SHARE -->
@@ -391,6 +394,50 @@ function renderTour(t) {
     document.getElementById('reviewsList').innerHTML='<div style="text-align:center;padding:2rem;color:var(--muted);font-size:.88rem">Chưa có đánh giá nào. Hãy là người đầu tiên đánh giá!</div>'
   }
 
+  // Media: Hình ảnh (images) + Video giới thiệu (video_url)
+  const gal = Array.isArray(t.images) && t.images.length ? t.images
+    : (Array.isArray(t.gallery) ? t.gallery : (typeof t.gallery==='string' ? JSON.parse(t.gallery||'[]') : []))
+  let mediaHtml = ''
+  if(gal.length){
+    mediaHtml += `<div class="inc-section-title" style="margin-bottom:.75rem">📷 Hình ảnh</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.5rem;margin-bottom:1.5rem">${
+        gal.map(u=>`<a href="${u}" target="_blank" rel="noopener"><img src="${u}" loading="lazy" style="width:100%;height:110px;object-fit:cover;border-radius:8px;display:block" onerror="this.parentElement.style.display='none'"></a>`).join('')
+      }</div>`
+  }
+  const vurl = (t.video_url||'').trim()
+  const ytm = vurl.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([\w-]{11})/)
+  if(ytm){
+    mediaHtml += `<div class="inc-section-title" style="margin-bottom:.75rem">🎬 Video giới thiệu</div>
+      <div style="position:relative;padding-bottom:56.25%;height:0;margin-bottom:1.5rem;border-radius:10px;overflow:hidden">
+        <iframe src="https://www.youtube.com/embed/${ytm[1]}" title="Video" frameborder="0" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen style="position:absolute;inset:0;width:100%;height:100%"></iframe>
+      </div>`
+  } else if(vurl && /\.(mp4|webm|ogg)(\?|$)/i.test(vurl)){
+    mediaHtml += `<div class="inc-section-title" style="margin-bottom:.75rem">🎬 Video giới thiệu</div>
+      <video src="${vurl}" controls style="width:100%;border-radius:10px;margin-bottom:1.5rem;display:block"></video>`
+  } else if(vurl){
+    mediaHtml += `<div style="margin-bottom:1.5rem"><a href="${vurl}" target="_blank" rel="noopener" style="color:var(--red);font-weight:600">🎬 Xem video giới thiệu ↗</a></div>`
+  }
+  document.getElementById('tourMedia').innerHTML = mediaHtml
+
+  // Intro: Giới thiệu (description) + Điểm nổi bật (highlights_vi)
+  let introHtml = ''
+  if(t.description && String(t.description).trim()){
+    const paras = String(t.description).trim().split(/\n{2,}/)
+      .map(p=>`<p style="margin-bottom:.75rem">${p.replace(/\n/g,'<br>')}</p>`).join('')
+    introHtml += `<div class="inc-section-title">📝 Giới thiệu</div>
+      <div style="font-size:.9rem;line-height:1.9;color:var(--ink);margin-bottom:1.5rem">${paras}</div>`
+  }
+  const hl = Array.isArray(t.highlights_vi) ? t.highlights_vi
+    : (typeof t.highlights_vi==='string' ? JSON.parse(t.highlights_vi||'[]') : [])
+  if(hl.length){
+    introHtml += `<div class="inc-section-title">✨ Điểm nổi bật</div>
+      <ul style="list-style:none;padding:0;margin-bottom:1.5rem">${hl.map(h=>
+        `<li style="padding:.35rem 0 .35rem 1.6rem;position:relative;font-size:.88rem;line-height:1.7"><span style="position:absolute;left:0;color:var(--gold)">★</span>${h}</li>`
+      ).join('')}</ul>`
+  }
+  if(introHtml) introHtml += `<div class="inc-section-title" style="margin-bottom:1rem">📅 Lịch trình chi tiết</div>`
+  document.getElementById('tourIntro').innerHTML = introHtml
+
   // Itinerary
   const itin = Array.isArray(t.itinerary_vi) ? t.itinerary_vi : (typeof t.itinerary_vi==='string'?JSON.parse(t.itinerary_vi||'[]'):[])
   document.getElementById('itineraryContent').innerHTML = itin.length ? itin.map(day=>`
@@ -418,21 +465,52 @@ function renderTour(t) {
       <div class="inc-text"><strong>${i.title}</strong>${typeof i.desc==='string'?i.desc:''}</div>
     </div>`).join('')
 
-  document.getElementById('excludesList').innerHTML = [
+  const notesArr = Array.isArray(t.notes) ? t.notes
+    : (typeof t.notes==='string' ? JSON.parse(t.notes||'[]') : [])
+  const excludes = notesArr.length ? notesArr : [
     'Chi phí cá nhân (nước uống, mua sắm)',
     'Tiền tip cho HDV và tài xế',
     'Các dịch vụ phát sinh ngoài chương trình',
     'Phụ thu phòng đơn (nếu có)',
-  ].map(e=>`<li>${e}</li>`).join('')
+  ]
+  document.getElementById('excludesList').innerHTML = excludes.map(e=>`<li>${e}</li>`).join('')
 
   // Info tab
-  document.getElementById('infoGeneral').innerHTML = [
-    `<div style="display:flex;justify-content:space-between;padding:.35rem 0;border-bottom:1px solid var(--border)"><span style="color:var(--muted)">Điểm đến</span><strong>${t.destination}</strong></div>`,
-    `<div style="display:flex;justify-content:space-between;padding:.35rem 0;border-bottom:1px solid var(--border)"><span style="color:var(--muted)">Vùng miền</span><strong>${regionLabel(t.region)}</strong></div>`,
-    `<div style="display:flex;justify-content:space-between;padding:.35rem 0;border-bottom:1px solid var(--border)"><span style="color:var(--muted)">Thời gian</span><strong>${t.duration_days} ngày ${t.duration_nights} đêm</strong></div>`,
-    `<div style="display:flex;justify-content:space-between;padding:.35rem 0;border-bottom:1px solid var(--border)"><span style="color:var(--muted)">Số khách tối đa</span><strong>${t.max_pax} người</strong></div>`,
-    `<div style="display:flex;justify-content:space-between;padding:.35rem 0"><span style="color:var(--muted)">Giá trẻ em</span><strong>${t.child_price_pct||70}% giá người lớn</strong></div>`,
-  ].join('')
+  const TYPE_LB={day_tour:'Day Tour (1 ngày)',multi_day:'Nhiều ngày',seat_in_coach:'Ghép đoàn',private:'Riêng (Private)',self_guided:'Free & Easy',hop_on_off:'Hop-on Hop-off',cruise:'Du thuyền'}
+  const DIFF_LB={easy:'😌 Dễ',moderate:'🚶 Trung bình',challenging:'🏃 Khó',extreme:'🧗 Thử thách'}
+  const LANG_LB={vi:'🇻🇳 Tiếng Việt',en:'🇬🇧 English',zh:'🇨🇳 中文',ko:'🇰🇷 한국어',vi_en:'🇻🇳🇬🇧 Việt + Anh'}
+  const SEASON_LB={spring:'🌸 Mùa xuân (T1–T4)',summer:'☀️ Mùa hè (T5–T8)',autumn:'🍂 Mùa thu (T9–T11)',winter:'❄️ Mùa đông (T12–T2)',dry:'🏜 Mùa khô',rainy:'🌧 Mùa mưa'}
+  const CLASS_LB={budget:'💚 Tiết kiệm',standard:'🔵 Tiêu chuẩn',premium:'🟡 Cao cấp',luxury:'👑 Sang trọng'}
+  const CANCEL_LB={flexible:'🟢 Linh hoạt — hoàn 100% nếu hủy trước 24h',moderate:'🟡 Trung bình — hoàn 100% nếu hủy trước 7 ngày',strict:'🔴 Nghiêm ngặt — không hoàn tiền'}
+  const subDest = Array.isArray(t.sub_destinations) ? t.sub_destinations
+    : (typeof t.sub_destinations==='string' ? JSON.parse(t.sub_destinations||'[]') : [])
+  const infoRows = [
+    ['Điểm đến', t.destination],
+    ['Vùng miền', regionLabel(t.region)],
+    ['Điểm tham quan', subDest.length ? subDest.join(', ') : null],
+    ['Thời gian', `${t.duration_days} ngày ${t.duration_nights} đêm`],
+    ['Số khách tối đa', t.max_pax ? `${t.max_pax} người` : null],
+    ['Loại tour', TYPE_LB[t.tour_type]],
+    ['Hạng dịch vụ', CLASS_LB[t.service_class]],
+    ['Ngôn ngữ HDV', LANG_LB[t.guide_language]],
+    ['Độ khó', DIFF_LB[t.difficulty]],
+    ['Mùa đẹp nhất', SEASON_LB[t.best_season]],
+    ['Giá trẻ em', `${t.child_price_pct||70}% giá người lớn`],
+    ['Chính sách hủy', CANCEL_LB[t.cancel_policy]],
+  ].filter(r=>r[1])
+  document.getElementById('infoGeneral').innerHTML = infoRows.map((r,i)=>
+    `<div style="display:flex;justify-content:space-between;gap:1rem;padding:.35rem 0;${i<infoRows.length-1?'border-bottom:1px solid var(--border)':''}"><span style="color:var(--muted);flex-shrink:0">${r[0]}</span><strong style="text-align:right">${r[1]}</strong></div>`
+  ).join('')
+
+  // Tags (thẻ)
+  const tags = Array.isArray(t.tags) ? t.tags
+    : (typeof t.tags==='string' ? JSON.parse(t.tags||'[]') : [])
+  document.getElementById('tourTags').innerHTML = tags.length
+    ? `<div class="inc-section-title" style="margin-bottom:.6rem">🏷 Thẻ</div>
+       <div style="display:flex;flex-wrap:wrap;gap:.4rem">${tags.map(tg=>
+         `<span style="background:var(--paper);border:1px solid var(--border);border-radius:20px;padding:.25rem .7rem;font-size:.78rem;color:var(--muted)">${tg}</span>`
+       ).join('')}</div>`
+    : ''
 
   document.getElementById('meetingPoint').textContent = t.meeting_point || 'Liên hệ để biết điểm tập trung cụ thể'
 

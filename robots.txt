@@ -1,0 +1,17 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /cms
+Disallow: /operations
+Disallow: /guides-mgmt
+Disallow: /suppliers
+Disallow: /comms
+Disallow: /report
+Disallow: /seed
+Disallow: /tour-import
+Disallow: /api-docs
+Disallow: /schema
+Disallow: /email
+Disallow: /deploy
+
+Sitemap: https://baggiotravel.vercel.app/sitemap.xml
