@@ -14,4 +14,4 @@ Disallow: /schema
 Disallow: /email
 Disallow: /deploy
 
-Sitemap: https://baggiotravel.vercel.app/sitemap.xml
+Sitemap: https://baggio.website/sitemap.xml
