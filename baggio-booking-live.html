@@ -787,7 +787,9 @@ async function submitBooking(){
       payment_status:   'PENDING',
     }
 
-    const {data,error}=await sb.from('bookings').insert(booking).select().single()
+    // Không .select() lại dòng vừa insert — RLS chỉ cho chủ/admin đọc bookings;
+    // màn xác nhận dùng mã 'ref' sinh ở client nên không cần dữ liệu trả về.
+    const {error}=await sb.from('bookings').insert(booking)
     if(error)throw error
 
     // Giảm available_slots nếu có schedule
