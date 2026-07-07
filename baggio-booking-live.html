@@ -787,16 +787,30 @@ async function submitBooking(){
       payment_status:   'PENDING',
     }
 
+    // Trừ chỗ TRƯỚC (nguyên tử, chống overbooking) qua RPC reserve_slots.
+    // Client không còn được UPDATE tour_schedules trực tiếp sau khi áp RLS.
+    const pax=S.adults+S.children
+    let reserved=false
+    if(S.schedule?.id){
+      const {error:rErr}=await sb.rpc('reserve_slots',{p_schedule_id:String(S.schedule.id),p_qty:pax})
+      if(rErr){
+        // not_enough_slots hoặc schedule không tồn tại → dừng, không tạo booking
+        toast('❌ Lịch khởi hành này đã hết chỗ. Vui lòng chọn ngày khác.')
+        console.warn('reserve_slots:',rErr.message)
+        return
+      }
+      reserved=true
+    }
+
     // Không .select() lại dòng vừa insert — RLS chỉ cho chủ/admin đọc bookings;
     // màn xác nhận dùng mã 'ref' sinh ở client nên không cần dữ liệu trả về.
     const {error}=await sb.from('bookings').insert(booking)
-    if(error)throw error
-
-    // Giảm available_slots nếu có schedule
-    if(S.schedule?.id){
-      await sb.from('tour_schedules')
-        .update({available_slots:S.schedules.find(s=>s.id===S.schedule.id)?.available_slots-(S.adults+S.children)})
-        .eq('id',S.schedule.id)
+    if(error){
+      // Insert lỗi → hoàn lại số chỗ đã trừ để không thất thoát
+      if(reserved){
+        await sb.rpc('release_slots',{p_schedule_id:String(S.schedule.id),p_qty:pax})
+      }
+      throw error
     }
 
     // Hiện màn hình thành công
