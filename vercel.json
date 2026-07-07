@@ -19,6 +19,7 @@
     { "source": "/seo",      "destination": "/baggio-seo-guide.html" },
     { "source": "/deploy",   "destination": "/baggio-deploy-guide.html" },
     { "source": "/about",    "destination": "/baggio-website.html" },
-    { "source": "/tour-import", "destination": "/baggio-tour-import.html" }
+    { "source": "/tour-import", "destination": "/baggio-tour-import.html" },
+    { "source": "/translate", "destination": "/baggio-translate.html" }
   ]
 }

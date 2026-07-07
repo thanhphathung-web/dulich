@@ -9,6 +9,7 @@ Disallow: /comms
 Disallow: /report
 Disallow: /seed
 Disallow: /tour-import
+Disallow: /translate
 Disallow: /api-docs
 Disallow: /schema
 Disallow: /email
