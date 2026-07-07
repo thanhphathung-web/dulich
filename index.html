@@ -423,8 +423,8 @@ footer{background:var(--ink);color:rgba(250,248,243,.55);padding:3rem 2rem 1.5re
   </div>
 </div>
 
-<!-- TRIP PLANNER -->
-<section id="trip-planner">
+<!-- TRIP PLANNER — đã gộp vào Quick Filter bên dưới; ẩn để tránh trùng lọc -->
+<section id="trip-planner" style="display:none">
   <div class="tp-wrap">
     <div class="tp-header">
       <div class="tp-eyebrow">Lên kế hoạch chuyến đi</div>
@@ -605,6 +605,21 @@ footer{background:var(--ink);color:rgba(250,248,243,.55);padding:3rem 2rem 1.5re
     <button class="fchip" onclick="setRegionFilter('central',this)" data-i18n="chip_central">🏖 Miền Trung</button>
     <button class="fchip" onclick="setRegionFilter('south',this)" data-i18n="chip_south">🌊 Miền Nam</button>
   </div>
+  <div style="display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;margin-top:.6rem">
+    <span style="font-size:.72rem;color:var(--muted);font-family:var(--mono)" data-i18n="filter_interests">Sở thích:</span>
+    <div class="filter-bar" id="interestBar" style="margin:0">
+      <button class="fchip" data-int="beach" onclick="toggleInterestChip(this)" data-i18n="int_beach">🏖 Biển</button>
+      <button class="fchip" data-int="mountain" onclick="toggleInterestChip(this)" data-i18n="int_mountain">🏔 Núi</button>
+      <button class="fchip" data-int="culture" onclick="toggleInterestChip(this)" data-i18n="int_culture">🏛 Văn hóa</button>
+      <button class="fchip" data-int="food" onclick="toggleInterestChip(this)" data-i18n="int_food">🍜 Ẩm thực</button>
+      <button class="fchip" data-int="adventure" onclick="toggleInterestChip(this)" data-i18n="int_adventure">🧗 Phiêu lưu</button>
+      <button class="fchip" data-int="family" onclick="toggleInterestChip(this)" data-i18n="int_family">👨‍👩‍👧 Gia đình</button>
+      <button class="fchip" data-int="couple" onclick="toggleInterestChip(this)" data-i18n="int_couple">💑 Cặp đôi</button>
+      <button class="fchip" data-int="wellness" onclick="toggleInterestChip(this)" data-i18n="int_wellness">🧘 Nghỉ dưỡng</button>
+      <button class="fchip" data-int="photography" onclick="toggleInterestChip(this)" data-i18n="int_photography">📸 Nhiếp ảnh</button>
+      <button class="fchip" data-int="festival" onclick="toggleInterestChip(this)" data-i18n="int_festival">🎉 Lễ hội</button>
+    </div>
+  </div>
   <div class="tours-grid" id="toursGrid">
     <!-- Skeleton loading -->
     <div class="skel-card"><div class="skel-img skeleton"></div><div class="skel-body"><div class="skel-line short skeleton"></div><div class="skel-line title skeleton"></div><div class="skel-line med skeleton"></div><div class="skel-line long skeleton"></div><div class="skel-line long skeleton"></div></div></div>
@@ -752,6 +767,34 @@ function getFilters() {
   }
 }
 
+// ── Sở thích (interests) — lọc client-side ──
+let activeInterests = []
+const DEST_INTEREST_MAP = {
+  beach:['Phú Quốc','Nha Trang','Đà Nẵng','Phan Thiết','Vũng Tàu','Mũi Né','Hạ Long','Quy Nhơn'],
+  mountain:['Sa Pa','Đà Lạt','Hà Giang','Cao Bằng','Điện Biên','Lào Cai','Yên Bái','Sơn La','Buôn Ma Thuột'],
+  culture:['Hội An','Huế','Hà Nội','Ninh Bình','Quảng Nam','Đồng Tháp','Mê Kông'],
+  food:['Hội An','Hà Nội','Cần Thơ','Đà Nẵng','Hồ Chí Minh','Buôn Ma Thuột','Mê Kông'],
+  adventure:['Sa Pa','Hà Giang','Đà Lạt','Cao Bằng','Điện Biên','Buôn Ma Thuột'],
+  family:['Phú Quốc','Đà Lạt','Nha Trang','Hạ Long','Ninh Bình'],
+  couple:['Hội An','Đà Lạt','Phú Quốc','Sa Pa','Hạ Long'],
+  wellness:['Đà Lạt','Phú Quốc','Nha Trang','Mũi Né'],
+  photography:['Hà Giang','Sa Pa','Hội An','Ninh Bình','Buôn Ma Thuột'],
+  festival:['Hội An','Huế','Hà Nội','Đà Nẵng','Buôn Ma Thuột'],
+}
+function tourMatchesInterests(tour){
+  if(!activeInterests.length) return true
+  const styles = Array.isArray(tour.travel_styles) ? tour.travel_styles : []
+  // Ưu tiên travel_styles (tour đã tick trong CMS); chưa có thì fallback theo điểm đến
+  if(styles.length) return activeInterests.some(i => styles.includes(i))
+  return activeInterests.some(i => (DEST_INTEREST_MAP[i] || []).includes(tour.destination))
+}
+function toggleInterestChip(el){
+  const val = el.dataset.int
+  if(activeInterests.includes(val)){ activeInterests = activeInterests.filter(v=>v!==val); el.classList.remove('active') }
+  else { activeInterests.push(val); el.classList.add('active') }
+  applyFilters()
+}
+
 async function loadTours(page = 0) {
   try {
     document.getElementById('tourCountLabel').textContent = t('loading')
@@ -760,7 +803,7 @@ async function loadTours(page = 0) {
     const f    = getFilters()
 
     let q = sb.from('tours')
-      .select('id,name_vi,name_en,name_zh,slug,destination,region,duration_days,duration_nights,base_price,max_pax,cover_image,includes_vi,status,tour_schedules(available_slots,depart_date,status)', { count: 'exact' })
+      .select('id,name_vi,name_en,name_zh,slug,destination,region,duration_days,duration_nights,base_price,max_pax,cover_image,includes_vi,travel_styles,status,tour_schedules(available_slots,depart_date,status)', { count: 'exact' })
       .eq('status', 'ACTIVE')
 
     // Server-side filters
@@ -775,14 +818,23 @@ async function loadTours(page = 0) {
     if (f.priceMax) q = q.lte('base_price', +f.priceMax)
     if (f.days)     q = q.eq('duration_days', +f.days)
 
-    q = q.order('base_price', { ascending: true }).range(from, to)
+    q = q.order('base_price', { ascending: true })
 
-    const { data, error, count } = await q
-    if (error) throw error
-
-    currentPage = page
-    totalTours  = count || 0
-    allTours    = data || []
+    if (activeInterests.length) {
+      // Lọc sở thích client-side (travel_styles đa số còn trống → fallback theo điểm đến); phân trang client
+      const { data, error } = await q.limit(1000)
+      if (error) throw error
+      const pool = (data || []).filter(tourMatchesInterests)
+      currentPage = page
+      totalTours  = pool.length
+      allTours    = pool.slice(from, to)
+    } else {
+      const { data, error, count } = await q.range(from, to)
+      if (error) throw error
+      currentPage = page
+      totalTours  = count || 0
+      allTours    = data || []
+    }
 
     document.getElementById('heroTourCount').innerHTML = totalTours + '<span>+</span>'
     document.getElementById('tourCountLabel').textContent = toursUnit(totalTours)
@@ -961,6 +1013,8 @@ function filterTours() { applyFilters() }
 
 function resetFilters() {
   activeRegion = ''
+  activeInterests = []
+  document.querySelectorAll('#interestBar .fchip').forEach(b => b.classList.remove('active'))
   document.getElementById('searchInput').value    = ''
   document.getElementById('searchClear').style.display = 'none'
   document.getElementById('filterRegion').value   = ''
@@ -1151,6 +1205,7 @@ const I18N = {
     view_all:'Xem tất cả',
     price_from:'Từ', view_tour:'Xem tour', prev_page:'← Trước', next_page:'Sau →', page_word:'Trang',
     inc_flights:'Vé máy bay khứ hồi', inc_hotel:'Khách sạn', inc_guide:'Hướng dẫn viên địa phương', inc_transfer:'Xe đưa đón sân bay',
+    filter_interests:'Sở thích:', int_beach:'🏖 Biển', int_mountain:'🏔 Núi', int_culture:'🏛 Văn hóa', int_food:'🍜 Ẩm thực', int_adventure:'🧗 Phiêu lưu', int_family:'👨‍👩‍👧 Gia đình', int_couple:'💑 Cặp đôi', int_wellness:'🧘 Nghỉ dưỡng', int_photography:'📸 Nhiếp ảnh', int_festival:'🎉 Lễ hội',
   },
   en: {
     nav_tours:'Tours', nav_guides:'Guides', nav_reviews:'Reviews', nav_book:'Book Now',
@@ -1180,6 +1235,7 @@ const I18N = {
     view_all:'View all',
     price_from:'From', view_tour:'View tour', prev_page:'← Prev', next_page:'Next →', page_word:'Page',
     inc_flights:'Round-trip flights', inc_hotel:'Hotel', inc_guide:'Local guide', inc_transfer:'Airport transfer',
+    filter_interests:'Interests:', int_beach:'🏖 Beach', int_mountain:'🏔 Mountain', int_culture:'🏛 Culture', int_food:'🍜 Food', int_adventure:'🧗 Adventure', int_family:'👨‍👩‍👧 Family', int_couple:'💑 Couple', int_wellness:'🧘 Resort', int_photography:'📸 Photo', int_festival:'🎉 Festival',
   },
   zh: {
     nav_tours:'旅游', nav_guides:'导游', nav_reviews:'评价', nav_book:'立即预订',
@@ -1209,6 +1265,7 @@ const I18N = {
     view_all:'查看全部',
     price_from:'起', view_tour:'查看', prev_page:'← 上一页', next_page:'下一页 →', page_word:'第',
     inc_flights:'往返机票', inc_hotel:'酒店', inc_guide:'当地导游', inc_transfer:'机场接送',
+    filter_interests:'兴趣:', int_beach:'🏖 海滩', int_mountain:'🏔 山地', int_culture:'🏛 文化', int_food:'🍜 美食', int_adventure:'🧗 探险', int_family:'👨‍👩‍👧 家庭', int_couple:'💑 情侣', int_wellness:'🧘 度假', int_photography:'📸 摄影', int_festival:'🎉 节日',
   }
 }
 
