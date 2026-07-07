@@ -871,7 +871,7 @@ async function loadTourList(){
   if(status) q=q.eq('status',status)
   if(region) q=q.eq('region',region)
   if(i18n) q=q.eq('translation_status',i18n)
-  if(search) q=q.or(`name.ilike.%${search}%,destination.ilike.%${search}%`)
+  if(search){ const s=search.replace(/[,()*%]/g,' ').trim(); if(s) q=q.or(`name_vi.ilike.%${s}%,name_en.ilike.%${s}%,name_zh.ilike.%${s}%,destination.ilike.%${s}%`) }
   q=q.order('created_at',{ascending:false}).limit(50)
   const {data,count}=await q
   document.getElementById('sb_tours').textContent=count||0
