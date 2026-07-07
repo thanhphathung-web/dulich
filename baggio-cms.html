@@ -282,6 +282,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:13
       <div class="lang-tabs" id="langTabs">
         <div class="lang-tab active" onclick="switchLangTab('vi',this)" id="tab-vi">🇻🇳 Tiếng Việt</div>
         <div class="lang-tab" onclick="switchLangTab('en',this)" id="tab-en">🇬🇧 English <span class="tab-badge pending" id="tabBadgeEn">chưa dịch</span></div>
+        <div class="lang-tab" onclick="switchLangTab('zh',this)" id="tab-zh">🇨🇳 中文 <span class="tab-badge pending" id="tabBadgeZh">chưa dịch</span></div>
       </div>
     </div>
 
@@ -651,6 +652,86 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:13
     <div style="height:2rem"></div>
   </div><!-- /panel-en -->
 
+  <!-- ZH PANEL -->
+  <div class="lang-panel" id="panel-zh" style="flex:1;overflow-y:auto;padding:1.25rem">
+
+    <!-- TRANSLATE BAR -->
+    <div class="translate-bar" id="translateBarZh">
+      <div class="tbar-status" id="translateStatusZh">
+        <strong>🌐 Bản dịch Tiếng Trung</strong> — Nhấn "Auto-translate" để dịch tự động bằng AI
+      </div>
+      <button class="btn btn-translate" id="btnTranslateInPanelZh" onclick="autoTranslateTourZh()">
+        ✨ Auto-translate
+      </button>
+      <button class="btn btn-default btn-approve" id="btnApproveZh" onclick="approveTourTranslationZh()" style="display:none">
+        ✅ Approve bản dịch
+      </button>
+    </div>
+
+    <!-- ZH: Basic Info -->
+    <div class="editor-section">
+      <div class="es-header">📋 基本信息 (ZH)</div>
+      <div class="es-body">
+        <div class="form-group en-field-wrap">
+          <div class="vi-ref-label">🇻🇳 Bản VI (tham chiếu)</div>
+          <div class="vi-ref" id="ref_name_zh"></div>
+          <label class="form-label">Tour Name (ZH) 团名 *</label>
+          <input class="form-input" id="tf_name_zh" placeholder="例如：会安－美山 三天两夜全包团" oninput="markZhModified()">
+        </div>
+        <div class="form-group en-field-wrap" style="margin-top:.5rem">
+          <div class="vi-ref-label">🇻🇳 Mô tả tóm tắt VI</div>
+          <div class="vi-ref" id="ref_summary_zh"></div>
+          <label class="form-label">Summary (ZH) 简介 — 1–2 句用于卡片</label>
+          <textarea class="form-textarea" id="tf_summary_zh" style="min-height:72px" placeholder="团卡片的简短介绍..." oninput="markZhModified()"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- ZH: Content -->
+    <div class="editor-section">
+      <div class="es-header">📝 内容 (ZH)</div>
+      <div class="es-body">
+        <div class="form-group en-field-wrap">
+          <div class="vi-ref-label">🇻🇳 Điểm nổi bật VI</div>
+          <div class="vi-ref" id="ref_highlights_zh"></div>
+          <label class="form-label">Highlights (ZH) 亮点 — 每行一条</label>
+          <textarea class="form-textarea" id="tf_highlights_zh" style="min-height:90px" placeholder="漫步会安古镇灯笼街&#10;探访神秘的美山圣地&#10;体验传统灯笼制作工坊" oninput="markZhModified()"></textarea>
+        </div>
+        <div class="form-group en-field-wrap" style="margin-top:.5rem">
+          <div class="vi-ref-label">🇻🇳 Mô tả chi tiết VI</div>
+          <div class="vi-ref" id="ref_desc_zh"></div>
+          <label class="form-label">Full Description (ZH) 详细介绍</label>
+          <textarea class="form-textarea" id="tf_desc_zh" style="min-height:100px" placeholder="引人入胜的中文完整团介绍..." oninput="markZhModified()"></textarea>
+        </div>
+        <div class="form-group en-field-wrap" style="margin-top:.5rem">
+          <div class="vi-ref-label">🇻🇳 Lịch trình VI</div>
+          <div class="vi-ref" id="ref_itinerary_zh"></div>
+          <label class="form-label">Itinerary (ZH) 行程 — “第N天：标题 – 活动”</label>
+          <textarea class="form-textarea" id="tf_itinerary_zh" style="min-height:140px" placeholder="第1天：岘港机场接机 – 会安入住 – 古镇夜游&#10;第2天：清河陶艺村 – 美山圣地 – 会安夜市&#10;第3天：自由购物 – 送机" oninput="markZhModified()"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- ZH: Includes/Excludes -->
+    <div class="editor-section">
+      <div class="es-header">✅ 费用包含 / 不含 (ZH)</div>
+      <div class="es-body">
+        <div class="form-group en-field-wrap">
+          <div class="vi-ref-label">🇻🇳 Bao gồm VI</div>
+          <div class="vi-ref" id="ref_includes_zh"></div>
+          <label class="form-label">Includes (ZH) 包含 — 每行一条</label>
+          <textarea class="form-textarea" id="tf_includes_zh" style="min-height:80px" placeholder="往返机场接送&#10;两晚酒店（双人间）&#10;每日早餐" oninput="markZhModified()"></textarea>
+        </div>
+        <div class="form-group" style="margin-top:.5rem">
+          <label class="form-label">Excludes (ZH) 不含 — 每行一条</label>
+          <textarea class="form-textarea" id="tf_excludes_zh" style="min-height:72px" placeholder="国际／国内机票&#10;个人消费&#10;小费" oninput="markZhModified()"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div style="height:2rem"></div>
+  </div><!-- /panel-zh -->
+
   </div><!-- /editor-pane -->
 
 </div><!-- /page-new_tour -->
@@ -946,6 +1027,10 @@ function resetTourEditor(){
   ;['tf_name_en','tf_summary_en','tf_desc_en','tf_highlights_en','tf_includes_en','tf_excludes_en','tf_itinerary_en'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''})
   updateEnTabBadge('pending', null)
   enModified = false
+  // Clear ZH panel
+  ;['tf_name_zh','tf_summary_zh','tf_desc_zh','tf_highlights_zh','tf_includes_zh','tf_excludes_zh','tf_itinerary_zh'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=''})
+  updateZhTabBadge('pending', null)
+  zhModified = false
   document.getElementById('btnAutoTranslate').style.display='none'
   switchLangTab('vi', document.getElementById('tab-vi'))
 }
@@ -1005,8 +1090,9 @@ function populateTourEditor(t){
   // Datalist
   document.getElementById('destDL').innerHTML=ALL_PROV.map(p=>`<option value="${p}">`).join('')
 
-  // ── i18n: populate EN fields ──
+  // ── i18n: populate EN + ZH fields ──
   populateEnPanel(t)
+  populateZhPanel(t)
   // Show translate button only for existing tours
   document.getElementById('btnAutoTranslate').style.display = t.id ? 'inline-flex' : 'none'
   // Reset to VI tab when opening a tour
@@ -1454,8 +1540,9 @@ function switchLangTab(lang, el){
   document.querySelectorAll('.lang-panel').forEach(p=>p.classList.remove('active'))
   if(el) el.classList.add('active')
   document.getElementById('panel-'+lang)?.classList.add('active')
-  // Update VI refs when switching to EN
+  // Update VI refs when switching to a translation panel
   if(lang==='en') updateViRefs()
+  if(lang==='zh') updateZhRefs()
 }
 
 function updateViRefs(){
@@ -1473,6 +1560,22 @@ function updateViRefs(){
   set('ref_highlights', hl)
   set('ref_includes', inc)
   set('ref_summary', desc.slice(0,200)+(desc.length>200?'...':''))
+}
+
+function updateZhRefs(){
+  const name=document.getElementById('tf_name')?.value||''
+  const desc=document.getElementById('tf_desc')?.value||''
+  const itin=document.getElementById('tf_itinerary')?.value||''
+  const hl=document.getElementById('tf_highlights')?.value||''
+  const inc=[...document.querySelectorAll('#includesGroup .check-tag.checked')].map(el=>el.textContent.trim()).join(', ')
+
+  const set=(id,val)=>{const el=document.getElementById(id);if(el)el.textContent=val||'(chưa nhập)'}
+  set('ref_name_zh', name)
+  set('ref_desc_zh', desc)
+  set('ref_itinerary_zh', itin)
+  set('ref_highlights_zh', hl)
+  set('ref_includes_zh', inc)
+  set('ref_summary_zh', desc.slice(0,200)+(desc.length>200?'...':''))
 }
 
 // ════════════════════════════════════════════
@@ -1519,6 +1622,53 @@ function markEnModified(){
   enModified = true
   // If status was 'auto', signal editor has modified it
   const badge = document.getElementById('tabBadgeEn')
+  if(badge.classList.contains('auto')){
+    badge.textContent = 'đang sửa'
+  }
+}
+
+// ════════════════════════════════════════════
+// I18N — POPULATE / CLEAR ZH PANEL
+// ════════════════════════════════════════════
+function populateZhPanel(t){
+  const ts = t.translation_status_zh || 'pending'
+
+  document.getElementById('tf_name_zh').value       = t.name_zh || ''
+  document.getElementById('tf_summary_zh').value    = t.summary_zh || ''
+  document.getElementById('tf_desc_zh').value       = t.description_zh || ''
+  document.getElementById('tf_highlights_zh').value = (t.highlights_zh||[]).join('\n')
+  document.getElementById('tf_includes_zh').value   = (t.includes_zh||[]).join('\n')
+  document.getElementById('tf_excludes_zh').value   = (t.excludes_zh||[]).join('\n')
+  const itinZh = Array.isArray(t.itinerary_zh) ? t.itinerary_zh : []
+  document.getElementById('tf_itinerary_zh').value  = itinZh.map(d=>`第${d.day}天：${d.title}${d.activities?.length?' – '+d.activities.join(' – '):''}`).join('\n')
+
+  updateZhTabBadge(ts, t.translated_at_zh || null)
+}
+
+function updateZhTabBadge(status, translatedAt){
+  const badge = document.getElementById('tabBadgeZh')
+  const approveBtn = document.getElementById('btnApproveZh')
+  const statusEl = document.getElementById('translateStatusZh')
+
+  const labels = { pending:'chưa dịch', auto:'chờ review', reviewed:'đã duyệt', manual:'manual' }
+  badge.textContent = labels[status] || 'chưa dịch'
+  badge.className = `tab-badge ${status==='reviewed'||status==='manual'?'reviewed':status==='auto'?'auto':'pending'}`
+
+  if(statusEl){
+    const dateStr = translatedAt ? new Date(translatedAt).toLocaleDateString('vi-VN') : ''
+    if(status==='pending') statusEl.innerHTML='<strong>🌐 Bản dịch Tiếng Trung</strong> — Nhấn "Auto-translate" để dịch tự động bằng AI'
+    else if(status==='auto') statusEl.innerHTML=`<strong>🟡 Đã dịch tự động ${dateStr}</strong> — Vui lòng review rồi nhấn "Approve"`
+    else if(status==='reviewed') statusEl.innerHTML=`<strong>🟢 Đã duyệt ${dateStr}</strong> — Bản dịch đã được editor approve`
+    else if(status==='manual') statusEl.innerHTML=`<strong>🟢 Nhập tay ${dateStr}</strong> — Bản dịch được nhập thủ công`
+  }
+
+  approveBtn.style.display = (status==='auto') ? 'inline-flex' : 'none'
+}
+
+let zhModified = false
+function markZhModified(){
+  zhModified = true
+  const badge = document.getElementById('tabBadgeZh')
   if(badge.classList.contains('auto')){
     badge.textContent = 'đang sửa'
   }
@@ -1666,6 +1816,136 @@ function collectEnFields(){
 }
 
 // (EN fields saved via approveTourTranslation or auto-translate flow)
+
+// ════════════════════════════════════════════
+// I18N — AUTO TRANSLATE ZH (MyMemory API — vi|zh-CN)
+// ════════════════════════════════════════════
+async function mymemoryZh(text){
+  if(!text?.trim()) return ''
+  const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=vi|zh-CN`
+  const res = await fetch(url)
+  if(!res.ok) throw new Error(`MyMemory lỗi ${res.status}`)
+  const data = await res.json()
+  if(data.responseStatus !== 200) throw new Error(data.responseDetails || 'Dịch thất bại')
+  return data.responseData.translatedText
+}
+
+async function mymemoryArrayZh(arr){
+  if(!arr?.length) return []
+  const SEP = ' |||| '
+  const joined = arr.join(SEP)
+  if(joined.length <= 450){
+    const translated = await mymemoryZh(joined)
+    return translated.split('||||').map(s=>s.trim())
+  }
+  const results = []
+  for(const item of arr){
+    results.push(await mymemoryZh(item))
+    await new Promise(r=>setTimeout(r,200))
+  }
+  return results
+}
+
+async function autoTranslateTourZh(){
+  const id = currentEditTourId
+  if(!id){ toast('Lưu tour trước khi dịch','warn'); return }
+
+  const badge = document.getElementById('tabBadgeZh')
+  if(badge?.textContent==='đã duyệt'){
+    if(!confirm('Tour này đã được approve. Dịch lại sẽ ghi đè bản ZH hiện tại. Tiếp tục?')) return
+  }
+
+  const btn = document.getElementById('btnTranslateInPanelZh')
+  if(btn){ btn.disabled=true; btn.innerHTML='⏳ Đang dịch...' }
+
+  try {
+    const nameVi       = document.getElementById('tf_name').value.trim()
+    const descVi       = document.getElementById('tf_desc').value.trim()
+    const itinViRaw    = document.getElementById('tf_itinerary').value.trim()
+    const highlightsVi = document.getElementById('tf_highlights').value.split('\n').map(s=>s.trim()).filter(Boolean)
+    const includesVi   = [...document.querySelectorAll('#includesGroup .check-tag.checked')].map(el=>el.textContent.trim())
+    const notesVi      = document.getElementById('tf_notes').value.split('\n').map(s=>s.trim()).filter(Boolean)
+    const summaryVi    = descVi.split(/[.!?]\s+/).slice(0,2).join('. ').trim()
+
+    toast('🌐 Đang dịch tên tour sang tiếng Trung...')
+    const nameZh       = await mymemoryZh(nameVi)
+    const summaryZh    = await mymemoryZh(summaryVi)
+    const descZh       = await mymemoryZh(descVi.slice(0, 480))
+    const itinZh       = await mymemoryZh(itinViRaw.slice(0, 480))
+    const highlightsZh = await mymemoryArrayZh(highlightsVi)
+    const includesZh   = await mymemoryArrayZh(includesVi)
+    const notesZh      = await mymemoryArrayZh(notesVi)
+
+    document.getElementById('tf_name_zh').value       = nameZh
+    document.getElementById('tf_summary_zh').value    = summaryZh
+    document.getElementById('tf_desc_zh').value       = descZh
+    document.getElementById('tf_itinerary_zh').value  = itinZh
+    document.getElementById('tf_highlights_zh').value = highlightsZh.join('\n')
+    document.getElementById('tf_includes_zh').value   = includesZh.join('\n')
+    document.getElementById('tf_excludes_zh').value   = notesZh.join('\n')
+
+    const zhData = collectZhFields()
+    const {error: saveErr} = await sb.from('tours').update({
+      ...zhData,
+      translation_status_zh: 'auto',
+      translated_at_zh: new Date().toISOString(),
+    }).eq('id', id)
+    if(saveErr && !saveErr.message?.includes('column')) throw new Error('Lưu DB thất bại: ' + saveErr.message)
+
+    updateZhTabBadge('auto', new Date().toISOString())
+    toast(`✅ Đã dịch: "${nameZh?.slice(0,40)}"`)
+    switchLangTab('zh', document.getElementById('tab-zh'))
+
+  } catch(err){
+    toast('Lỗi dịch: ' + err.message, 'err')
+    console.error('[autoTranslateZh]', err)
+  } finally {
+    if(btn){ btn.disabled=false; btn.innerHTML='✨ Auto-translate' }
+  }
+}
+
+async function approveTourTranslationZh(){
+  const id = currentEditTourId
+  if(!id) return
+
+  const zhData = collectZhFields()
+  const {error} = await sb.from('tours').update({
+    ...zhData,
+    translation_status_zh: 'reviewed',
+  }).eq('id', id)
+
+  if(error){
+    if(error.message?.includes('column') || error.code === '42703'){
+      toast('⚠️ Chưa chạy migration i18n ZH — cột ZH chưa có trong DB','warn')
+    } else {
+      toast('Lỗi lưu: '+error.message,'err')
+    }
+    return
+  }
+  updateZhTabBadge('reviewed', new Date().toISOString())
+  zhModified = false
+  toast('🟢 Đã approve bản dịch ZH')
+}
+
+function collectZhFields(){
+  const itinText = document.getElementById('tf_itinerary_zh').value
+  const itinerary_zh = itinText.split('\n').filter(l=>l.trim()).map((line,i)=>{
+    // Chấp nhận “第N天：”, “Day N:”, “Ngày N:” hoặc dòng thường
+    const m = line.match(/^\s*(?:Day|Ngày|第)\s*(\d+)\s*天?\s*[:：]\s*(.+)/i)
+    const content = m ? m[2] : line
+    const parts = content.split(/\s*[–\-]\s*/)
+    return{day:m?Number(m[1]):i+1, title:parts[0]||`第${i+1}天`, activities:parts.slice(1)}
+  })
+  return {
+    name_zh:        document.getElementById('tf_name_zh').value.trim()||null,
+    summary_zh:     document.getElementById('tf_summary_zh').value.trim()||null,
+    description_zh: document.getElementById('tf_desc_zh').value.trim()||null,
+    highlights_zh:  document.getElementById('tf_highlights_zh').value.split('\n').map(s=>s.trim()).filter(Boolean),
+    includes_zh:    document.getElementById('tf_includes_zh').value.split('\n').map(s=>s.trim()).filter(Boolean),
+    excludes_zh:    document.getElementById('tf_excludes_zh').value.split('\n').map(s=>s.trim()).filter(Boolean),
+    itinerary_zh,
+  }
+}
 
 document.addEventListener('DOMContentLoaded',()=>{
   // Click-to-toggle check tags
