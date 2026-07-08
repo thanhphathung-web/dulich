@@ -5,7 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Baggio Travel — Nhà cung cấp</title>
 <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+const SUPABASE_URL  = 'https://lfnlezfphwjtdunyungi.supabase.co'
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxmbmxlemZwaHdqdGR1bnl1bmdpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0NjkwNzcsImV4cCI6MjA5NjA0NTA3N30.fmjvqhyiPcjB6qT5GDtfzMfY-C-WXP4QUIk-YW7FhJg'
+</script>
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -384,10 +389,9 @@ tr:hover td{background:rgba(255,255,255,.02)}
 
 <script>
 // ══════════════════════════════════════════
-// STATE — lưu localStorage
+// STATE — dữ liệu trên Supabase (bảng suppliers + supplier_transactions)
 // ══════════════════════════════════════════
-const S_KEY = 'baggio_suppliers_v2'
-const TX_KEY = 'baggio_transactions'
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON)
 const fmt = n => Number(n||0).toLocaleString('vi-VN')
 const fmtD = d => d ? new Date(d).toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit',year:'numeric'}) : '—'
 
@@ -397,10 +401,29 @@ let currentCat = 'all'
 let editSupId = null
 let txSupId = null
 
-function getSuppliers(){ try{return JSON.parse(localStorage.getItem(S_KEY)||'[]')}catch{return[]}}
-function saveSuppliers(){ localStorage.setItem(S_KEY,JSON.stringify(suppliers)) }
-function getTx(){ try{return JSON.parse(localStorage.getItem(TX_KEY)||'[]')}catch{return[]}}
-function saveTx_local(){ localStorage.setItem(TX_KEY,JSON.stringify(transactions)) }
+// Tải NCC + giao dịch từ Supabase → chuẩn hoá tên cột về shape UI đang dùng
+async function loadData(){
+  const [supRes, txRes] = await Promise.all([
+    sb.from('suppliers').select('*').order('created_at',{ascending:false}),
+    sb.from('supplier_transactions').select('*').order('tx_date',{ascending:false, nullsFirst:false})
+  ])
+  if(supRes.error) toast('Lỗi tải NCC: '+supRes.error.message,'err')
+  if(txRes.error)  toast('Lỗi tải giao dịch: '+txRes.error.message,'err')
+  suppliers = (supRes.data||[]).map(r=>({ ...r, tags: r.tags||[], createdAt: r.created_at }))
+  transactions = (txRes.data||[]).map(r=>({
+    id:r.id, supId:r.supplier_id, supName:r.sup_name, date:r.tx_date,
+    amount:r.amount, desc:r.description, type:r.type, createdAt:r.created_at
+  }))
+}
+
+// Tải lại dữ liệu rồi vẽ lại trang đang mở
+async function refresh(){
+  await loadData()
+  renderPage()
+  const active = document.querySelector('.page.active')?.id
+  if(active==='page-analytics')    renderAnalytics()
+  if(active==='page-transactions') renderTransactions()
+}
 
 setInterval(()=>document.getElementById('clockEl').textContent=new Date().toLocaleTimeString('vi-VN'),1000)
 
@@ -443,8 +466,6 @@ const UNIT_MAP = {per_night:'/đêm',per_person:'/người',per_trip:'/chuyến'
 const STATUS_MAP = {active:['badge-active','Đang HT'],preferred:['badge-preferred','⭐ Ưu tiên'],inactive:['badge-inactive','Ngừng HT']}
 
 function renderPage(){
-  suppliers=getSuppliers()
-  transactions=getTx()
   const statusF=document.getElementById('statusFilter')?.value||''
   const searchQ=document.getElementById('searchInput')?.value?.toLowerCase()||''
 
@@ -469,7 +490,7 @@ function updateSidebarCounts(){
 }
 
 function updateStats(){
-  const txList=getTx()
+  const txList=transactions
   const totalCost=txList.reduce((s,t)=>t.type!=='refund'?s+Number(t.amount||0):s,0)
   const saved=suppliers.reduce((s,sup)=>{
     const contract=Number(sup.contract_price||0)
@@ -492,7 +513,7 @@ function renderSupGrid(list){
     </div>`
     return
   }
-  const txList=getTx()
+  const txList=transactions
   el.innerHTML=list.map(s=>{
     const [bCls,bLabel]=STATUS_MAP[s.status]||['badge-inactive','Không rõ']
     const contract=Number(s.contract_price||0)
@@ -573,11 +594,11 @@ function editSupplier(id){
 
 function closeSupModal(){ document.getElementById('supModal').classList.remove('open'); editSupId=null }
 
-function saveSupplier(){
+async function saveSupplier(){
   const name=document.getElementById('sf_name').value.trim()
   if(!name){toast('Vui lòng nhập tên NCC','warn');return}
-  const data={
-    id:editSupId||`sup_${Date.now()}`,
+  const isEdit=!!editSupId
+  const payload={
     name, cat:document.getElementById('sf_cat').value,
     contact:document.getElementById('sf_contact').value.trim(),
     phone:document.getElementById('sf_phone').value.trim(),
@@ -592,21 +613,25 @@ function saveSupplier(){
     rating:Number(document.getElementById('sf_rating').value)||0,
     notes:document.getElementById('sf_notes').value.trim(),
     tags:document.getElementById('sf_tags').value.split(',').map(t=>t.trim()).filter(Boolean),
-    createdAt:editSupId?suppliers.find(s=>s.id===editSupId)?.createdAt:new Date().toISOString(),
-    updatedAt:new Date().toISOString(),
   }
-  if(editSupId){ const i=suppliers.findIndex(s=>s.id===editSupId); if(i>=0)suppliers[i]=data }
-  else suppliers.unshift(data)
-  saveSuppliers()
+  let error
+  if(isEdit){
+    payload.updated_at=new Date().toISOString()
+    ;({error}=await sb.from('suppliers').update(payload).eq('id',editSupId))
+  } else {
+    ;({error}=await sb.from('suppliers').insert(payload))
+  }
+  if(error){toast('Lỗi lưu NCC: '+error.message,'err');return}
   closeSupModal()
-  renderPage()
-  toast(editSupId?'✅ Đã cập nhật NCC':'✅ Đã thêm NCC mới')
+  await refresh()
+  toast(isEdit?'✅ Đã cập nhật NCC':'✅ Đã thêm NCC mới')
 }
 
-function deleteSup(id){
-  if(!confirm('Xóa nhà cung cấp này?'))return
-  suppliers=suppliers.filter(s=>s.id!==id)
-  saveSuppliers(); renderPage()
+async function deleteSup(id){
+  if(!confirm('Xóa nhà cung cấp này? (Các giao dịch liên quan cũng bị xóa)'))return
+  const {error}=await sb.from('suppliers').delete().eq('id',id)
+  if(error){toast('Lỗi xóa NCC: '+error.message,'err');return}
+  await refresh()
   toast('🗑 Đã xóa NCC','warn')
 }
 
@@ -631,25 +656,24 @@ function openTxModal(supId,supName){
 }
 function closeTxModal(){ document.getElementById('txModal').classList.remove('open') }
 
-function saveTx(){
+async function saveTx(){
   const amount=Number(document.getElementById('tx_amount').value)
   if(!amount){toast('Vui lòng nhập số tiền','warn');return}
-  transactions=getTx()
-  transactions.unshift({
-    id:`tx_${Date.now()}`, supId:txSupId,
-    supName:document.getElementById('txSupName').textContent,
-    date:document.getElementById('tx_date').value,
-    amount, desc:document.getElementById('tx_desc').value.trim(),
-    type:document.getElementById('tx_type').value,
-    createdAt:new Date().toISOString()
+  const {error}=await sb.from('supplier_transactions').insert({
+    supplier_id:txSupId,
+    sup_name:document.getElementById('txSupName').textContent,
+    tx_date:document.getElementById('tx_date').value||null,
+    amount,
+    description:document.getElementById('tx_desc').value.trim(),
+    type:document.getElementById('tx_type').value
   })
-  saveTx_local()
-  closeTxModal(); renderPage()
+  if(error){toast('Lỗi lưu giao dịch: '+error.message,'err');return}
+  closeTxModal()
+  await refresh()
   toast('✅ Đã ghi nhận giao dịch')
 }
 
 function renderTransactions(){
-  transactions=getTx()
   const sup=suppliers
   const TYPES={booking:'Đặt dịch vụ',payment:'Thanh toán',refund:'Hoàn tiền',penalty:'Phí phạt'}
   const el=document.getElementById('txTbl')
@@ -673,7 +697,7 @@ function renderTransactions(){
 
 function exportTx(){
   const rows=[['Ngày','NCC','Mô tả','Loại','Số tiền']]
-  getTx().forEach(t=>rows.push([fmtD(t.date),t.supName||'',t.desc||'',t.type,t.amount]))
+  transactions.forEach(t=>rows.push([fmtD(t.date),t.supName||'',t.desc||'',t.type,t.amount]))
   const bom='\uFEFF'
   const csv=bom+rows.map(r=>r.map(v=>`"${v}"`).join(',')).join('\n')
   const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}))
@@ -685,8 +709,6 @@ function exportTx(){
 // ANALYTICS
 // ══════════════════════════════════════════
 function renderAnalytics(){
-  suppliers=getSuppliers()
-  transactions=getTx()
   const cats=['hotel','flight','transport','food','activity','other']
   const catLabels=['Khách sạn','Hãng bay','Vận chuyển','Ăn uống','HĐ','Khác']
   const catColors=['rgba(188,140,255,.7)','rgba(88,166,255,.7)','rgba(210,153,34,.7)','rgba(63,185,80,.7)','rgba(248,81,73,.7)','rgba(139,148,158,.7)']
@@ -739,22 +761,14 @@ function renderAnalytics(){
 }
 
 // ══════════════════════════════════════════
-// INIT — SEED DATA MẪU
+// INIT
 // ══════════════════════════════════════════
-function seedIfEmpty(){
-  if(getSuppliers().length>0) return
-  const seeds=[
-    {id:'sup_1',name:'Mường Thanh Hội An',cat:'hotel',contact:'Nguyễn Thị Mai',phone:'0235 3861 999',email:'sale@muongthanh-hoian.com',address:'Đường Võ Thị Sáu, Hội An',area:'Hội An, Quảng Nam',contract_price:450000,market_price:650000,unit:'per_night',status:'preferred',rating:5,notes:'Giá net, bao breakfast. Cần đặt trước 7 ngày.',tags:['4 sao','breakfast','hồ bơi','trung tâm'],createdAt:new Date().toISOString()},
-    {id:'sup_2',name:'Vinpearl Phú Quốc',cat:'hotel',contact:'Sales Team',phone:'0297 3598 888',email:'phuquoc@vinpearl.com',address:'Bãi Dài, Phú Quốc',area:'Phú Quốc, Kiên Giang',contract_price:2800000,market_price:4200000,unit:'per_night',status:'preferred',rating:5,notes:'Resort 5 sao. All-inclusive package.',tags:['5 sao','all-inclusive','resort','biển'],createdAt:new Date().toISOString()},
-    {id:'sup_3',name:'Vietnam Airlines',cat:'flight',contact:'Sales Corp',phone:'1900 1100',email:'corporate@vietnamairlines.com',address:'Hà Nội',area:'Toàn quốc',contract_price:0,market_price:0,unit:'per_person',status:'active',rating:4,notes:'Tài khoản doanh nghiệp. Ưu đãi 10% vé nhóm >10 người.',tags:['bay thẳng','hành lý 23kg','bữa ăn'],createdAt:new Date().toISOString()},
-    {id:'sup_4',name:'Xe Du lịch Hoàng Long',cat:'transport',contact:'Anh Hoàng',phone:'0905 123 456',email:'hoanglong.xe@gmail.com',address:'45 Nguyễn Huệ, Đà Nẵng',area:'Miền Trung',contract_price:2500000,market_price:3500000,unit:'per_trip',status:'active',rating:4,notes:'Xe 16 chỗ và 45 chỗ. Tài xế kinh nghiệm.',tags:['16 chỗ','45 chỗ','có AC','wifi'],createdAt:new Date().toISOString()},
-    {id:'sup_5',name:'Nhà hàng Phố Hội',cat:'food',contact:'Chị Lan',phone:'0235 3861 234',email:'nhahangphohoi@gmail.com',address:'22 Phan Bội Châu, Hội An',area:'Hội An',contract_price:150000,market_price:220000,unit:'per_person',status:'active',rating:5,notes:'Set menu: khai vị, món chính, tráng miệng. Giá net cho nhóm >10.',tags:['set menu','đặc sản Hội An','view sông'],createdAt:new Date().toISOString()},
-  ]
-  localStorage.setItem(S_KEY,JSON.stringify(seeds))
-}
-
-document.addEventListener('DOMContentLoaded',()=>{
-  seedIfEmpty()
+document.addEventListener('DOMContentLoaded', async ()=>{
+  const {data:{session}} = await sb.auth.getSession()
+  if(!session){
+    toast('⚠ Chưa đăng nhập admin — đăng nhập tại /account để quản lý NCC','warn')
+  }
+  await loadData()
   renderPage()
 })
 document.addEventListener('keydown',e=>{
