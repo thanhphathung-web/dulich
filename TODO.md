@@ -10,12 +10,12 @@
 ## 🚦 P0 — Chặn go-live / ảnh hưởng trực tiếp doanh thu
 
 ### Cơ sở dữ liệu (cần chạy tay trong Supabase SQL Editor)
-- [ ] ⚠️ Chạy `supabase/tours-add-columns.sql` — CMS đang gửi ~21 cột chưa tồn tại trong bảng `tours` → lỗi `PGRST204` khi Đăng bán; nhiều field ở trang chi tiết bị trống.
-- [ ] ⚠️ Chạy `supabase/tours-add-zh-columns.sql` — hỗ trợ tab dịch tiếng Trung trong CMS.
+- [x] ⚠️ Chạy `supabase/tours-add-columns.sql` — CMS cần các cột này (audience, video_url, description...). ✔ Đã áp dụng (verify 2026-07-09: đủ 28/28 cột `tours`).
+- [x] ⚠️ Chạy `supabase/tours-add-zh-columns.sql` — hỗ trợ tab dịch tiếng Trung trong CMS. ✔ Đã áp dụng.
 - [x] ⚠️ Chạy `supabase/suppliers.sql` — tạo bảng `suppliers` + `supplier_transactions` + RLS cho trang `/suppliers`. ✔ Đã chạy trên production 2026-07-08.
 - [x] ⚠️ Chạy `supabase/comms.sql` — tạo bảng `communications` + `comm_reminders` + RLS cho trang `/comms`. ✔ Đã chạy trên production 2026-07-09.
-- [ ] ⚠️ Chạy `supabase/rls-tours.sql` — thay toàn bộ RLS policy của `tours` + gán `role='admin'` cho `thanhphathung@gmail.com`. **Sau khi chạy phải ĐĂNG XUẤT/ĐĂNG NHẬP LẠI** thì quyền ghi mới có hiệu lực (role nằm trong JWT).
-- [ ] Kiểm tra lại toàn bộ RLS đã đúng: anon chỉ đọc tour `ACTIVE`, không ghi được bảng nào; admin ghi được CMS + đọc bookings.
+- [x] ⚠️ Chạy `supabase/rls-tours.sql` — RLS policy của `tours` + gán `role='admin'`. ✔ Đã áp dụng (verify 2026-07-09: `tours` có 3 policy chuẩn, `thanhphathung@gmail.com` role=admin).
+- [x] Kiểm tra RLS các bảng khác + RPC. ✔ Verify 2026-07-09 trên production: `rls-all-tables.sql` đủ policy (guides/bookings/reviews/tour_schedules/users), **`public select bookings` đã bị gỡ → không còn rò rỉ PII đơn khách**; `rpc-reserve-slots.sql` có `reserve_slots`/`release_slots` (SECURITY DEFINER). Không cần chạy lại.
 
 ### Thanh toán (hiện tại: chuyển khoản thủ công + xác nhận qua Zalo)
 - [ ] Tích hợp cổng thanh toán tự động (**VNPay** hoặc **Momo**) — hiện `baggio-vnpay.html`/`baggio-momo-integration.html` mới chỉ là **tài liệu hướng dẫn**, chưa nối vào luồng đặt tour thật.
