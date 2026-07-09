@@ -12,7 +12,8 @@
 ### Cơ sở dữ liệu (cần chạy tay trong Supabase SQL Editor)
 - [ ] ⚠️ Chạy `supabase/tours-add-columns.sql` — CMS đang gửi ~21 cột chưa tồn tại trong bảng `tours` → lỗi `PGRST204` khi Đăng bán; nhiều field ở trang chi tiết bị trống.
 - [ ] ⚠️ Chạy `supabase/tours-add-zh-columns.sql` — hỗ trợ tab dịch tiếng Trung trong CMS.
-- [ ] ⚠️ Chạy `supabase/suppliers.sql` — tạo bảng `suppliers` + `supplier_transactions` + RLS cho trang `/suppliers` (nếu chưa chạy sẽ báo lỗi khi mở trang NCC).
+- [x] ⚠️ Chạy `supabase/suppliers.sql` — tạo bảng `suppliers` + `supplier_transactions` + RLS cho trang `/suppliers`. ✔ Đã chạy trên production 2026-07-08.
+- [x] ⚠️ Chạy `supabase/comms.sql` — tạo bảng `communications` + `comm_reminders` + RLS cho trang `/comms`. ✔ Đã chạy trên production 2026-07-09.
 - [ ] ⚠️ Chạy `supabase/rls-tours.sql` — thay toàn bộ RLS policy của `tours` + gán `role='admin'` cho `thanhphathung@gmail.com`. **Sau khi chạy phải ĐĂNG XUẤT/ĐĂNG NHẬP LẠI** thì quyền ghi mới có hiệu lực (role nằm trong JWT).
 - [ ] Kiểm tra lại toàn bộ RLS đã đúng: anon chỉ đọc tour `ACTIVE`, không ghi được bảng nào; admin ghi được CMS + đọc bookings.
 
@@ -48,18 +49,18 @@
 
 ---
 
-## 🛠️ P2 — Vận hành nội bộ (admin / CMS / ops) · ~70% xong
+## 🛠️ P2 — Vận hành nội bộ (admin / CMS / ops) · ~80% xong
 
-> Rà soát ngày 2026-07-08 (đọc code từng trang). Tình trạng nối Supabase:
-> **Xong (DB thật):** `/admin` · `/guides-mgmt` · `/report` · `/suppliers` (mới nối)
-> **Một phần:** `/operations` (chỉ đọc) · `/comms` (log lưu localStorage)
-> **Còn hở chính:** log `/comms` chưa lên server · chưa phân quyền nhân viên
+> Rà soát 2026-07-08, cập nhật 2026-07-09. Tình trạng nối Supabase:
+> **Xong (DB thật):** `/admin` · `/guides-mgmt` · `/report` · `/suppliers` · `/comms`
+> **Một phần:** `/operations` (chỉ đọc — muốn ghi/phân công ngay tại đây thì cần thêm)
+> **Còn hở chính:** chưa phân quyền nhân viên (chỉ có 1 role admin)
 
 - [x] **Báo cáo doanh thu** (`/report`) — số liệu thật từ `bookings`, có so sánh kỳ trước. ✔
 - [x] **`/admin`** — CRUD đầy đủ: xác nhận/huỷ đơn, phân HDV, publish/xoá review, xem tours (`bookings`, `tours`, `guides`, `reviews`, `tour_schedules`). ✔
 - [x] **`/guides-mgmt`** — CRUD `guides` đầy đủ, tính lương, xếp hạng từ reviews. ✔
 - [x] **`/suppliers` — ĐÃ nối Supabase** (2026-07-08). Bỏ localStorage + seed giả; CRUD NCC & giao dịch chạy trên bảng `suppliers` + `supplier_transactions`, RLS admin-only. ⚠️ **Cần chạy `supabase/suppliers.sql`** trong SQL Editor để tạo bảng trước khi dùng.
-- [ ] **`/comms` — log không lưu server.** Danh sách khách đọc `bookings` thật, nhưng nhật ký liên lạc + nhắc nhở chỉ lưu `localStorage` (mất khi đổi máy/xoá cache); "gửi" chỉ là deeplink Zalo thủ công. Cần bảng `communications`/`reminders` + lưu lên DB.
+- [x] **`/comms` — ĐÃ lưu log lên server** (2026-07-09). Nhật ký liên lạc + nhắc nhở chuyển từ localStorage sang bảng `communications` + `comm_reminders` (RLS admin-only); staff_name lấy từ email đăng nhập. ⚠️ Cần chạy `supabase/comms.sql` (đã chạy trên production). "Gửi" vẫn là deeplink Zalo thủ công — việc ghi nhận liên lạc giờ đồng bộ đa thiết bị.
 - [ ] **`/operations` — hiện chỉ đọc.** Dashboard điều phối read-only; nếu muốn phân công/đổi lịch ngay tại đây thì cần thêm thao tác ghi (giờ phải làm ở `/admin`).
 - [ ] **Phân quyền nhân viên** — mới chỉ có 1 role `admin` (ai đăng nhập admin cũng full quyền). Cần role-based access (điều phối viên / kế toán / HDV...) trong RLS.
 - [ ] Đối soát thanh toán trong `/admin`: hiện **thủ công** (đọc `payment_status`, xác nhận tay) → chuyển tự động sau khi có webhook (phụ thuộc P0).
