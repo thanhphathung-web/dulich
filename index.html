@@ -712,7 +712,7 @@ async function loadTours(page = 0) {
     const f    = getFilters()
 
     let q = sb.from('tours')
-      .select('id,name_vi,name_en,name_zh,slug,destination,region,duration_days,duration_nights,base_price,max_pax,cover_image,itinerary_vi,highlights_vi,includes_vi,travel_styles,status,tour_schedules(available_slots,depart_date,status)', { count: 'exact' })
+      .select('id,name_vi,name_en,name_zh,slug,destination,region,duration_days,duration_nights,base_price,max_pax,cover_image,itinerary_vi,highlights_vi,includes_vi,itinerary_en,highlights_en,includes_en,itinerary_zh,highlights_zh,includes_zh,travel_styles,status,tour_schedules(available_slots,depart_date,status)', { count: 'exact' })
       .eq('status', 'ACTIVE')
 
     // Server-side filters
@@ -970,16 +970,20 @@ async function openModal(tourId) {
   document.getElementById('modalIncludes').innerHTML =
     `<ul class="tc-includes">${incItems.map(i => `<li>${i}</li>`).join('')}</ul>`
 
-  // Itinerary
-  const itin = Array.isArray(t.itinerary_vi) ? t.itinerary_vi : []
+  // Itinerary — ưu tiên bản dịch theo ngôn ngữ, fallback VI
+  const itinRaw = currentLang==='en' ? t.itinerary_en : currentLang==='zh' ? t.itinerary_zh : null
+  const itin = Array.isArray(itinRaw) && itinRaw.length ? itinRaw : (Array.isArray(t.itinerary_vi) ? t.itinerary_vi : [])
+  const dayWord = currentLang==='en' ? 'Day' : currentLang==='zh' ? '第' : 'Ngày'
+  const daySuffix = currentLang==='zh' ? '天' : ''
   document.getElementById('modalItinerary').innerHTML = itin.length ? itin.map(day => `
     <div class="itinerary-day">
-      <div class="itinerary-day-title">Ngày ${day.day}: ${day.title}</div>
+      <div class="itinerary-day-title">${dayWord} ${day.day}${daySuffix}: ${day.title}</div>
       <ul class="itinerary-day-acts">${(day.activities || []).map(a => `<li>${a}</li>`).join('')}</ul>
     </div>`).join('') : '<div style="color:var(--muted);font-size:.85rem;font-weight:300">Lịch trình chi tiết sẽ được cung cấp sau khi đặt tour.</div>'
 
-  // Highlights
-  const hl = t.highlights_vi || []
+  // Highlights — ưu tiên bản dịch theo ngôn ngữ, fallback VI
+  const hlRaw = currentLang==='en' ? t.highlights_en : currentLang==='zh' ? t.highlights_zh : null
+  const hl = (Array.isArray(hlRaw) && hlRaw.length ? hlRaw : null) || t.highlights_vi || []
   if (hl.length) {
     document.getElementById('modalHighSection').style.display = 'block'
     document.getElementById('modalHighlights').innerHTML = hl.map(h => `<li>${h}</li>`).join('')

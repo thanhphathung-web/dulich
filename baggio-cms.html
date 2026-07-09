@@ -874,6 +874,26 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:13
 // ════════════════════════════════════════════
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON)
 const fmt = n => Number(n||0).toLocaleString('vi-VN')
+
+async function checkCmsSession(){
+  const {data:{session}} = await sb.auth.getSession()
+  const role = session?.user?.app_metadata?.role
+  const email = session?.user?.email || ''
+  const b = document.createElement('div')
+  b.id = 'cmsLoginBanner'
+  b.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;padding:.6rem 1.25rem;font-size:.82rem;display:flex;align-items:center;gap:.75rem'
+  if(!session){
+    b.style.background = '#7c2d12'; b.style.color = '#fff'
+    b.innerHTML = '⚠️ <strong>Chưa đăng nhập</strong> — Mọi thao tác lưu/dịch/approve sẽ bị RLS chặn và <u>không có hiệu lực</u>. <a href="/account" style="color:#fca5a5;font-weight:700;margin-left:.35rem">Đăng nhập ngay →</a>'
+    document.body.prepend(b)
+    document.querySelector('.topbar')?.style.setProperty('margin-top','38px')
+  } else if(role !== 'admin'){
+    b.style.background = '#78350f'; b.style.color = '#fff'
+    b.innerHTML = `⚠️ Đang đăng nhập với <strong>${email}</strong> — tài khoản này <u>không có quyền admin</u>, mọi thao tác ghi sẽ bị chặn. <a href="/account" style="color:#fca5a5;font-weight:700;margin-left:.35rem">Đăng nhập bằng tài khoản admin →</a>`
+    document.body.prepend(b)
+    document.querySelector('.topbar')?.style.setProperty('margin-top','38px')
+  }
+}
 const fmtD = d => d ? new Date(d).toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit',year:'numeric'}) : '—'
 const slug_vi = s => s.toLowerCase()
   .replace(/[àáâãạảấầẩẫậắằẳẵặ]/g,'a').replace(/[èéêẹẻẽếềểễệ]/g,'e')
@@ -1285,7 +1305,7 @@ async function saveTour(status='ACTIVE'){
     cover_image:document.getElementById('tf_cover').value.trim()||null,
     images:galleryUrls,
     description:document.getElementById('tf_desc').value.trim()||null,
-    highlights:document.getElementById('tf_highlights').value.split('\n').map(s=>s.trim()).filter(Boolean),
+    highlights_vi:document.getElementById('tf_highlights').value.split('\n').map(s=>s.trim()).filter(Boolean),
     notes:document.getElementById('tf_notes').value.split('\n').map(s=>s.trim()).filter(Boolean),
     itinerary_vi:itinerary, includes_vi:includes, travel_styles,
     tags:document.getElementById('tf_tags').value.split(',').map(t=>t.trim()).filter(Boolean),
@@ -1748,15 +1768,15 @@ async function autoTranslateTour(){
     document.getElementById('tf_includes_en').value   = includesEn.join('\n')
     document.getElementById('tf_excludes_en').value   = notesEn.join('\n')
 
-    // Lưu vào Supabase nếu migration đã chạy
+    // Lưu vào Supabase
     const enData = collectEnFields()
-    const {error: saveErr} = await sb.from('tours').update({
+    const {data: savedEn, error: saveErr} = await sb.from('tours').update({
       ...enData,
       translation_status: 'auto',
       translated_at: new Date().toISOString(),
-    }).eq('id', id)
-    // Bỏ qua lỗi nếu cột chưa có (migration chưa chạy)
+    }).eq('id', id).select('id')
     if(saveErr && !saveErr.message?.includes('column')) throw new Error('Lưu DB thất bại: ' + saveErr.message)
+    if(!saveErr && !savedEn?.length) throw new Error('RLS chặn — phiên đăng nhập hết hạn. Mở /account đăng nhập lại rồi thử lại.')
 
     updateEnTabBadge('auto', new Date().toISOString())
     toast(`✅ Đã dịch: "${nameEn?.slice(0,40)}"`)
@@ -1778,10 +1798,10 @@ async function approveTourTranslation(){
   if(!id) return
 
   const enData = collectEnFields()
-  const {error} = await sb.from('tours').update({
+  const {data: savedEn, error} = await sb.from('tours').update({
     ...enData,
     translation_status: 'reviewed',
-  }).eq('id', id)
+  }).eq('id', id).select('id')
 
   if(error){
     if(error.message?.includes('column') || error.code === '42703'){
@@ -1791,15 +1811,13 @@ async function approveTourTranslation(){
     }
     return
   }
+  if(!savedEn?.length){ toast('⚠️ Không lưu được — phiên đăng nhập hết hạn. Đăng nhập lại tại /account rồi thử lại.','err'); return }
   updateEnTabBadge('reviewed', new Date().toISOString())
   enModified = false
   toast('🟢 Đã approve bản dịch EN')
 }
 
 function collectEnFields(){
-  // Chỉ gửi các cột thực tế có trong DB:
-  // name_en, highlights_en (TEXT[]), itinerary_en (JSONB), includes_en (JSONB)
-  // KHÔNG có: summary_en, description_en, excludes_en
   const itinText = document.getElementById('tf_itinerary_en').value
   const itinerary_en = itinText.split('\n').filter(l=>l.trim()).map((line,i)=>{
     const m = line.match(/^Day\s*(\d+):\s*(.+)/i)
@@ -1809,8 +1827,11 @@ function collectEnFields(){
   })
   return {
     name_en:        document.getElementById('tf_name_en').value.trim()||null,
+    summary_en:     document.getElementById('tf_summary_en').value.trim()||null,
+    description_en: document.getElementById('tf_desc_en').value.trim()||null,
     highlights_en:  document.getElementById('tf_highlights_en').value.split('\n').map(s=>s.trim()).filter(Boolean),
     includes_en:    document.getElementById('tf_includes_en').value.split('\n').map(s=>s.trim()).filter(Boolean),
+    excludes_en:    document.getElementById('tf_excludes_en').value.split('\n').map(s=>s.trim()).filter(Boolean),
     itinerary_en,
   }
 }
@@ -1885,12 +1906,13 @@ async function autoTranslateTourZh(){
     document.getElementById('tf_excludes_zh').value   = notesZh.join('\n')
 
     const zhData = collectZhFields()
-    const {error: saveErr} = await sb.from('tours').update({
+    const {data: savedZh, error: saveErr} = await sb.from('tours').update({
       ...zhData,
       translation_status_zh: 'auto',
       translated_at_zh: new Date().toISOString(),
-    }).eq('id', id)
+    }).eq('id', id).select('id')
     if(saveErr && !saveErr.message?.includes('column')) throw new Error('Lưu DB thất bại: ' + saveErr.message)
+    if(!saveErr && !savedZh?.length) throw new Error('RLS chặn — phiên đăng nhập hết hạn. Mở /account đăng nhập lại rồi thử lại.')
 
     updateZhTabBadge('auto', new Date().toISOString())
     toast(`✅ Đã dịch: "${nameZh?.slice(0,40)}"`)
@@ -1909,10 +1931,10 @@ async function approveTourTranslationZh(){
   if(!id) return
 
   const zhData = collectZhFields()
-  const {error} = await sb.from('tours').update({
+  const {data: savedZh, error} = await sb.from('tours').update({
     ...zhData,
     translation_status_zh: 'reviewed',
-  }).eq('id', id)
+  }).eq('id', id).select('id')
 
   if(error){
     if(error.message?.includes('column') || error.code === '42703'){
@@ -1922,6 +1944,7 @@ async function approveTourTranslationZh(){
     }
     return
   }
+  if(!savedZh?.length){ toast('⚠️ Không lưu được — phiên đăng nhập hết hạn. Đăng nhập lại tại /account rồi thử lại.','err'); return }
   updateZhTabBadge('reviewed', new Date().toISOString())
   zhModified = false
   toast('🟢 Đã approve bản dịch ZH')
@@ -1948,6 +1971,7 @@ function collectZhFields(){
 }
 
 document.addEventListener('DOMContentLoaded',()=>{
+  checkCmsSession()
   // Click-to-toggle check tags
   document.querySelectorAll('.check-tag').forEach(tag=>{
     tag.addEventListener('click',()=>{
