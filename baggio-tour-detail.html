@@ -186,7 +186,7 @@ nav{background:var(--card);border-bottom:1px solid var(--border);padding:.9rem 2
     <button onclick="setDetailLang('en')" id="dlEN" style="background:none;border:none;font-family:var(--mono);font-size:.65rem;font-weight:600;padding:.25rem .5rem;cursor:pointer;color:var(--muted);border-radius:3px;transition:all .15s;letter-spacing:.04em">EN</button>
     <button onclick="setDetailLang('zh')" id="dlZH" style="background:none;border:none;font-family:var(--mono);font-size:.65rem;font-weight:600;padding:.25rem .5rem;cursor:pointer;color:var(--muted);border-radius:3px;transition:all .15s;letter-spacing:.04em">中</button>
   </div>
-  <a href="#" class="nav-cta" id="navBookBtn">Đặt tour ngay</a>
+  <a href="#" class="nav-cta" id="navBookBtn" data-dl="dl_nav_book">Đặt tour ngay</a>
 </nav>
 
 <!-- HERO -->
@@ -215,10 +215,10 @@ nav{background:var(--card);border-bottom:1px solid var(--border);padding:.9rem 2
     <div class="left-col">
       <div id="tourMedia"></div>
       <div class="tabs">
-        <button class="tab active" onclick="switchTab('itinerary',this)">📅 Lịch trình</button>
-        <button class="tab" onclick="switchTab('includes',this)">✅ Bao gồm</button>
-        <button class="tab" onclick="switchTab('reviews',this)">⭐ Đánh giá</button>
-        <button class="tab" onclick="switchTab('info',this)">ℹ️ Thông tin</button>
+        <button class="tab active" onclick="switchTab('itinerary',this)" data-dl="dl_tab_itinerary">📅 Lịch trình</button>
+        <button class="tab" onclick="switchTab('includes',this)" data-dl="dl_tab_includes">✅ Bao gồm</button>
+        <button class="tab" onclick="switchTab('reviews',this)" data-dl="dl_tab_reviews">⭐ Đánh giá</button>
+        <button class="tab" onclick="switchTab('info',this)" data-dl="dl_tab_info">ℹ️ Thông tin</button>
       </div>
 
       <!-- ITINERARY TAB -->
@@ -234,9 +234,9 @@ nav{background:var(--card);border-bottom:1px solid var(--border);padding:.9rem 2
 
       <!-- INCLUDES TAB -->
       <div class="tab-panel" id="tab-includes">
-        <div class="inc-section-title">✅ Bao gồm trong tour</div>
+        <div class="inc-section-title" data-dl="dl_sec_includes">✅ Bao gồm trong tour</div>
         <div class="inc-grid" id="includesGrid"></div>
-        <div class="inc-section-title" style="margin-top:1.5rem">❌ Không bao gồm</div>
+        <div class="inc-section-title" style="margin-top:1.5rem" data-dl="dl_sec_excludes">❌ Không bao gồm</div>
         <ul class="exc-list" id="excludesList"></ul>
       </div>
 
@@ -259,11 +259,11 @@ nav{background:var(--card);border-bottom:1px solid var(--border);padding:.9rem 2
       <div class="tab-panel" id="tab-info">
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem">
           <div>
-            <div class="inc-section-title">📋 Thông tin chung</div>
+            <div class="inc-section-title" data-dl="dl_sec_general">📋 Thông tin chung</div>
             <div id="infoGeneral" style="display:flex;flex-direction:column;gap:.5rem;font-size:.85rem"></div>
           </div>
           <div>
-            <div class="inc-section-title">⚠️ Lưu ý quan trọng</div>
+            <div class="inc-section-title" data-dl="dl_sec_notes">⚠️ Lưu ý quan trọng</div>
             <ul class="exc-list">
               <li>Mang theo CMND/CCCD hoặc Passport bản gốc</li>
               <li>Đặt cọc 30% để giữ chỗ, thanh toán đủ trước 7 ngày</li>
@@ -275,7 +275,7 @@ nav{background:var(--card);border-bottom:1px solid var(--border);padding:.9rem 2
           </div>
         </div>
         <div style="margin-top:1.5rem">
-          <div class="inc-section-title">📍 Điểm tập trung</div>
+          <div class="inc-section-title" data-dl="dl_sec_meeting">📍 Điểm tập trung</div>
           <div id="meetingPoint" style="font-size:.88rem;color:var(--muted);padding:.85rem;background:var(--paper);border-left:3px solid var(--red)"></div>
         </div>
         <div id="tourTags" style="margin-top:1.5rem"></div>
@@ -283,7 +283,7 @@ nav{background:var(--card);border-bottom:1px solid var(--border);padding:.9rem 2
 
       <!-- SHARE -->
       <div class="share-bar">
-        <span class="share-label">Chia sẻ:</span>
+        <span class="share-label" data-dl="dl_share">Chia sẻ:</span>
         <button class="share-btn" onclick="shareZalo()">💬 Zalo</button>
         <button class="share-btn" onclick="shareFacebook()">📘 Facebook</button>
         <button class="share-btn" onclick="copyLink()">🔗 Copy link</button>
@@ -294,16 +294,16 @@ nav{background:var(--card);border-bottom:1px solid var(--border);padding:.9rem 2
     <div class="right-col">
       <div class="booking-card">
         <div class="bc-header">
-          <span class="bc-price-from">Giá từ</span>
+          <span class="bc-price-from" data-dl="dl_price_from">Giá từ</span>
           <div class="bc-price" id="bcPrice">—<span class="bc-price-per"> đ/người</span></div>
         </div>
         <div class="bc-body">
-          <div class="bc-schedule-title">Chọn ngày khởi hành</div>
+          <div class="bc-schedule-title" data-dl="dl_schedule">Chọn ngày khởi hành</div>
           <div class="schedule-list" id="scheduleList">
             <div style="font-size:.8rem;color:var(--muted);text-align:center;padding:1rem">⏳ Đang tải lịch...</div>
           </div>
-          <button class="btn-book" id="bookBtn" onclick="bookNow()">🎒 Đặt tour ngay</button>
-          <button class="btn-consult" onclick="consultZalo()">💬 Tư vấn miễn phí</button>
+          <button class="btn-book" id="bookBtn" onclick="bookNow()" data-dl="dl_book">🎒 Đặt tour ngay</button>
+          <button class="btn-consult" onclick="consultZalo()" data-dl="dl_consult">💬 Tư vấn miễn phí</button>
           <div class="bc-features">
             <div class="bc-feat">Xác nhận trong 2 tiếng</div>
             <div class="bc-feat">Hoàn tiền 100% nếu hủy trước 7 ngày</div>
@@ -334,6 +334,31 @@ let tour = null
 let selectedSchedule = null
 let detailLang = localStorage.getItem('baggio_lang') || 'vi'
 
+// Nhãn tĩnh (chrome) trên trang chi tiết — dịch theo detailLang
+const DL_LABELS = {
+  dl_tab_itinerary: { vi:'📅 Lịch trình', en:'📅 Itinerary', zh:'📅 行程' },
+  dl_tab_includes:  { vi:'✅ Bao gồm', en:'✅ Includes', zh:'✅ 包含' },
+  dl_tab_reviews:   { vi:'⭐ Đánh giá', en:'⭐ Reviews', zh:'⭐ 评价' },
+  dl_tab_info:      { vi:'ℹ️ Thông tin', en:'ℹ️ Info', zh:'ℹ️ 信息' },
+  dl_sec_includes:  { vi:'✅ Bao gồm trong tour', en:'✅ Included in tour', zh:'✅ 旅游包含' },
+  dl_sec_excludes:  { vi:'❌ Không bao gồm', en:'❌ Not included', zh:'❌ 不包含' },
+  dl_sec_general:   { vi:'📋 Thông tin chung', en:'📋 General info', zh:'📋 基本信息' },
+  dl_sec_notes:     { vi:'⚠️ Lưu ý quan trọng', en:'⚠️ Important notes', zh:'⚠️ 重要提示' },
+  dl_sec_meeting:   { vi:'📍 Điểm tập trung', en:'📍 Meeting point', zh:'📍 集合地点' },
+  dl_share:         { vi:'Chia sẻ:', en:'Share:', zh:'分享：' },
+  dl_price_from:    { vi:'Giá từ', en:'Price from', zh:'价格从' },
+  dl_schedule:      { vi:'Chọn ngày khởi hành', en:'Select departure date', zh:'选择出发日期' },
+  dl_book:          { vi:'🎒 Đặt tour ngay', en:'🎒 Book now', zh:'🎒 立即预订' },
+  dl_consult:       { vi:'💬 Tư vấn miễn phí', en:'💬 Free consultation', zh:'💬 免费咨询' },
+  dl_nav_book:      { vi:'Đặt tour ngay', en:'Book now', zh:'立即预订' },
+}
+function applyDetailLabels(){
+  document.querySelectorAll('[data-dl]').forEach(el=>{
+    const m = DL_LABELS[el.dataset.dl]
+    if(m) el.textContent = m[detailLang] || m.vi
+  })
+}
+
 function setDetailLang(lang){
   detailLang = lang
   localStorage.setItem('baggio_lang', lang)
@@ -343,6 +368,8 @@ function setDetailLang(lang){
     btn.style.background = active ? 'var(--red)' : 'none'
     btn.style.color = active ? '#fff' : 'var(--muted)'
   })
+  document.documentElement.lang = lang==='zh'?'zh-CN':lang
+  applyDetailLabels()
   if(tour) renderTour(tour)
 }
 
@@ -622,7 +649,7 @@ function copyLink() {
 }
 
 // ── INIT ──────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', loadTour)
+document.addEventListener('DOMContentLoaded', ()=>{ setDetailLang(detailLang); loadTour() })
 </script>
 </body>
 </html>
