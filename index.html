@@ -334,21 +334,21 @@ footer{background:var(--ink);color:rgba(250,248,243,.55);padding:3rem 2rem 1.5re
       <div class="modal-name" id="modalName"></div>
       <div class="modal-metas" id="modalMetas"></div>
       <div class="modal-section">
-        <div class="modal-section-title">✈️ Bao gồm trong tour</div>
+        <div class="modal-section-title" data-i18n="modal_sec_includes">✈️ Bao gồm trong tour</div>
         <div id="modalIncludes"></div>
       </div>
       <div class="modal-section">
-        <div class="modal-section-title">📅 Lịch trình chi tiết</div>
+        <div class="modal-section-title" data-i18n="modal_sec_itinerary">📅 Lịch trình chi tiết</div>
         <div id="modalItinerary"></div>
       </div>
       <div class="modal-section" id="modalHighSection" style="display:none">
-        <div class="modal-section-title">⭐ Điểm nổi bật</div>
+        <div class="modal-section-title" data-i18n="modal_sec_highlights">⭐ Điểm nổi bật</div>
         <ul class="tc-includes" id="modalHighlights"></ul>
       </div>
     </div>
     <div class="modal-footer">
       <div>
-        <div style="font-size:.68rem;color:var(--muted)">Giá từ</div>
+        <div style="font-size:.68rem;color:var(--muted)" data-i18n="modal_price_from">Giá từ</div>
         <div class="modal-price" id="modalPrice"></div>
       </div>
       <button class="btn-book-modal" id="modalBookBtn">🎒 Đặt tour này</button>
@@ -1122,6 +1122,7 @@ const I18N = {
     ft_policy:'Chính sách hoàn hủy', ft_hours:'Thứ 2 – Thứ 7 · 8:00 – 18:00',
     ft_license:'Giấy phép kinh doanh lữ hành quốc tế',
     modal_book:'🎒 Đặt tour này', modal_detail:'🔍 Xem chi tiết',
+    modal_sec_includes:'✈️ Bao gồm trong tour', modal_sec_itinerary:'📅 Lịch trình chi tiết', modal_sec_highlights:'⭐ Điểm nổi bật', modal_price_from:'Giá từ',
     badge_available:'Còn chỗ', days:'ngày', nights:'đêm', per_person:'/người',
     no_tours:'Không tìm thấy tour phù hợp', try_filter:'Thử thay đổi bộ lọc hoặc xem tất cả tour.',
     view_all:'Xem tất cả',
@@ -1152,6 +1153,7 @@ const I18N = {
     ft_policy:'Cancellation Policy', ft_hours:'Mon – Sat · 8:00 AM – 6:00 PM',
     ft_license:'International Travel Business License',
     modal_book:'🎒 Book This Tour', modal_detail:'🔍 View Details',
+    modal_sec_includes:'✈️ Included in tour', modal_sec_itinerary:'📅 Detailed Itinerary', modal_sec_highlights:'⭐ Highlights', modal_price_from:'Price from',
     badge_available:'Available', days:'days', nights:'nights', per_person:'/person',
     no_tours:'No tours found', try_filter:'Try changing your filters or browse all tours.',
     view_all:'View all',
@@ -1182,6 +1184,7 @@ const I18N = {
     ft_policy:'取消政策', ft_hours:'周一至周六 · 8:00 – 18:00',
     ft_license:'国际旅行业营业执照',
     modal_book:'🎒 预订此旅游', modal_detail:'🔍 查看详情',
+    modal_sec_includes:'✈️ 旅游包含', modal_sec_itinerary:'📅 详细行程', modal_sec_highlights:'⭐ 亮点', modal_price_from:'价格从',
     badge_available:'有名额', days:'天', nights:'晚', per_person:'/人',
     no_tours:'未找到旅游', try_filter:'请尝试更改筛选条件或浏览所有旅游。',
     view_all:'查看全部',
