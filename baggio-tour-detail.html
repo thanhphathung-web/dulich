@@ -181,6 +181,11 @@ nav{background:var(--card);border-bottom:1px solid var(--border);padding:.9rem 2
     <li><a href="index.html#guides">HDV</a></li>
     <li><a href="index.html#reviews">Đánh giá</a></li>
   </ul>
+  <div id="detailLangSwitcher" style="display:flex;gap:2px;background:var(--paper);border:1px solid var(--border);border-radius:4px;padding:2px;margin-right:.75rem">
+    <button onclick="setDetailLang('vi')" id="dlVI" style="background:var(--red);color:#fff;border:none;font-family:var(--mono);font-size:.65rem;font-weight:600;padding:.25rem .5rem;cursor:pointer;border-radius:3px;transition:all .15s;letter-spacing:.04em">VI</button>
+    <button onclick="setDetailLang('en')" id="dlEN" style="background:none;border:none;font-family:var(--mono);font-size:.65rem;font-weight:600;padding:.25rem .5rem;cursor:pointer;color:var(--muted);border-radius:3px;transition:all .15s;letter-spacing:.04em">EN</button>
+    <button onclick="setDetailLang('zh')" id="dlZH" style="background:none;border:none;font-family:var(--mono);font-size:.65rem;font-weight:600;padding:.25rem .5rem;cursor:pointer;color:var(--muted);border-radius:3px;transition:all .15s;letter-spacing:.04em">中</button>
+  </div>
   <a href="#" class="nav-cta" id="navBookBtn">Đặt tour ngay</a>
 </nav>
 
@@ -327,6 +332,29 @@ const regionLabel = r => ({north:'Miền Bắc',central:'Miền Trung',south:'Mi
 
 let tour = null
 let selectedSchedule = null
+let detailLang = localStorage.getItem('baggio_lang') || 'vi'
+
+function setDetailLang(lang){
+  detailLang = lang
+  localStorage.setItem('baggio_lang', lang)
+  ;['VI','EN','ZH'].forEach(c=>{
+    const btn = document.getElementById('dl'+c)
+    const active = (c==='VI'&&lang==='vi')||(c==='EN'&&lang==='en')||(c==='ZH'&&lang==='zh')
+    btn.style.background = active ? 'var(--red)' : 'none'
+    btn.style.color = active ? '#fff' : 'var(--muted)'
+  })
+  if(tour) renderTour(tour)
+}
+
+function pickLang(vi, en, zh){
+  if(detailLang==='en' && en) return en
+  if(detailLang==='zh' && zh) return zh
+  return vi
+}
+function pickArr(vi, en, zh){
+  const arr = detailLang==='en' ? en : detailLang==='zh' ? zh : null
+  return (Array.isArray(arr) && arr.length) ? arr : (Array.isArray(vi) ? vi : [])
+}
 
 function toast(msg,type='ok'){
   const w=document.getElementById('toastWrap'),t=document.createElement('div')
@@ -353,15 +381,24 @@ async function loadTour() {
 
   if(error||!data) { window.location.href='index.html'; return }
   tour = data
+  setDetailLang(detailLang)
   renderTour(data)
 }
 
 function renderTour(t) {
+  // Sync lang switcher buttons
+  setDetailLang(detailLang)
+
+  const tourName = pickLang(t.name_vi, t.name_en, t.name_zh) || t.name_vi
+  const tourDesc = pickLang(t.description, t.description_en, t.description_zh)
+  const tourHL   = pickArr(t.highlights_vi, t.highlights_en, t.highlights_zh)
+  const tourItin = pickArr(t.itinerary_vi, t.itinerary_en, t.itinerary_zh)
+
   // Meta
-  document.title = `${t.name_vi} — Baggio Travel`
+  document.title = `${tourName} — Baggio Travel`
   document.getElementById('heroImg').src = t.cover_image || 'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=1200&q=80'
-  document.getElementById('heroImg').alt = t.name_vi
-  document.getElementById('heroTitle').textContent = t.name_vi
+  document.getElementById('heroImg').alt = tourName
+  document.getElementById('heroTitle').textContent = tourName
   document.getElementById('heroDest').textContent = t.destination
   document.getElementById('heroDestTag').textContent = `${t.destination} · ${regionLabel(t.region)}`
   document.getElementById('heroDays').textContent = `${t.duration_days} ngày ${t.duration_nights} đêm`
@@ -419,32 +456,36 @@ function renderTour(t) {
   }
   document.getElementById('tourMedia').innerHTML = mediaHtml
 
-  // Intro: Giới thiệu (description) + Điểm nổi bật (highlights_vi)
+  // Intro: Giới thiệu + Điểm nổi bật
+  const introLabel = detailLang==='en' ? 'Introduction' : detailLang==='zh' ? '行程简介' : 'Giới thiệu'
+  const hlLabel    = detailLang==='en' ? 'Highlights'   : detailLang==='zh' ? '亮点'     : 'Điểm nổi bật'
+  const itinLabel  = detailLang==='en' ? 'Detailed Itinerary' : detailLang==='zh' ? '详细行程' : 'Lịch trình chi tiết'
+  const noItinMsg  = detailLang==='en' ? 'Detailed itinerary will be provided after booking.' : detailLang==='zh' ? '详细行程将在预订后提供。' : 'Lịch trình chi tiết sẽ được cung cấp sau khi đặt tour.'
+  const dayWord    = detailLang==='en' ? 'Day' : detailLang==='zh' ? '第' : 'Ngày'
+  const daySuffix  = detailLang==='zh' ? '天' : ''
+
   let introHtml = ''
-  if(t.description && String(t.description).trim()){
-    const paras = String(t.description).trim().split(/\n{2,}/)
+  if(tourDesc && String(tourDesc).trim()){
+    const paras = String(tourDesc).trim().split(/\n{2,}/)
       .map(p=>`<p style="margin-bottom:.75rem">${p.replace(/\n/g,'<br>')}</p>`).join('')
-    introHtml += `<div class="inc-section-title">📝 Giới thiệu</div>
+    introHtml += `<div class="inc-section-title">📝 ${introLabel}</div>
       <div style="font-size:.9rem;line-height:1.9;color:var(--ink);margin-bottom:1.5rem">${paras}</div>`
   }
-  const hl = Array.isArray(t.highlights_vi) ? t.highlights_vi
-    : (typeof t.highlights_vi==='string' ? JSON.parse(t.highlights_vi||'[]') : [])
-  if(hl.length){
-    introHtml += `<div class="inc-section-title">✨ Điểm nổi bật</div>
-      <ul style="list-style:none;padding:0;margin-bottom:1.5rem">${hl.map(h=>
+  if(tourHL.length){
+    introHtml += `<div class="inc-section-title">✨ ${hlLabel}</div>
+      <ul style="list-style:none;padding:0;margin-bottom:1.5rem">${tourHL.map(h=>
         `<li style="padding:.35rem 0 .35rem 1.6rem;position:relative;font-size:.88rem;line-height:1.7"><span style="position:absolute;left:0;color:var(--gold)">★</span>${h}</li>`
       ).join('')}</ul>`
   }
-  if(introHtml) introHtml += `<div class="inc-section-title" style="margin-bottom:1rem">📅 Lịch trình chi tiết</div>`
+  if(introHtml) introHtml += `<div class="inc-section-title" style="margin-bottom:1rem">📅 ${itinLabel}</div>`
   document.getElementById('tourIntro').innerHTML = introHtml
 
   // Itinerary
-  const itin = Array.isArray(t.itinerary_vi) ? t.itinerary_vi : (typeof t.itinerary_vi==='string'?JSON.parse(t.itinerary_vi||'[]'):[])
-  document.getElementById('itineraryContent').innerHTML = itin.length ? itin.map(day=>`
+  document.getElementById('itineraryContent').innerHTML = tourItin.length ? tourItin.map(day=>`
     <div class="itin-day" data-day="${day.day}">
-      <div class="itin-title">Ngày ${day.day}: ${day.title}</div>
+      <div class="itin-title">${dayWord} ${day.day}${daySuffix}: ${day.title}</div>
       <ul class="itin-acts">${(day.activities||[]).map(a=>`<li>${a}</li>`).join('')}</ul>
-    </div>`).join('') : '<div style="color:var(--muted);font-size:.88rem">Lịch trình chi tiết sẽ được cung cấp sau khi đặt tour.</div>'
+    </div>`).join('') : `<div style="color:var(--muted);font-size:.88rem">${noItinMsg}</div>`
 
   // Includes
   const inc = t.includes_vi || {}
