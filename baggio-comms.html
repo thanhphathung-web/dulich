@@ -290,8 +290,6 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:13
 
 <script>
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON)
-const LOG_KEY = 'baggio_comms_log'
-const REMIND_KEY = 'baggio_comms_reminders'
 const fmt = n => Number(n||0).toLocaleString('vi-VN')
 const fmtD = d => d ? new Date(d).toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit',year:'numeric'}) : '—'
 const fmtDT = d => d ? new Date(d).toLocaleString('vi-VN',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '—'
@@ -299,6 +297,10 @@ const fmtDT = d => d ? new Date(d).toLocaleString('vi-VN',{day:'2-digit',month:'
 let bookingsCache = []
 let filteredBookings = []
 let selectedBooking = null
+let staffName = 'Baggio Staff'
+// Cache log + nhắc nhở theo booking_id (nạp 1 lần từ Supabase, render đồng bộ)
+let logsByBooking = {}
+let remindersByBooking = {}
 const CHANNEL_ICONS = {zalo:'💬',call:'📞',email:'📧',sms:'📱',meeting:'🤝',note:'📝'}
 const CHANNEL_LABELS = {zalo:'Zalo',call:'Gọi điện',email:'Email',sms:'SMS',meeting:'Gặp mặt',note:'Ghi chú nội bộ'}
 
@@ -312,11 +314,30 @@ function toast(msg,type='ok'){
   setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity .3s';setTimeout(()=>t.remove(),300)},3000)
 }
 
-// ── LOGS ──────────────────────────────────────
-function getLogs(bookingId){ try{return JSON.parse(localStorage.getItem(`${LOG_KEY}_${bookingId}`)||'[]')}catch{return[]} }
-function saveLogs(bookingId,logs){ localStorage.setItem(`${LOG_KEY}_${bookingId}`,JSON.stringify(logs)) }
-function getReminders(bookingId){ try{return JSON.parse(localStorage.getItem(`${REMIND_KEY}_${bookingId}`)||'[]')}catch{return[]} }
-function saveReminders(bookingId,rems){ localStorage.setItem(`${REMIND_KEY}_${bookingId}`,JSON.stringify(rems)) }
+// ── LOGS + REMINDERS (đọc từ cache bộ nhớ, nạp bởi loadCommsData) ──
+function getLogs(bookingId){ return logsByBooking[bookingId] || [] }
+function getReminders(bookingId){ return remindersByBooking[bookingId] || [] }
+
+// Nạp toàn bộ log + nhắc nhở của các booking đang hiển thị → map bộ nhớ
+async function loadCommsData(){
+  logsByBooking = {}; remindersByBooking = {}
+  const ids = bookingsCache.map(b=>b.id)
+  if(!ids.length) return
+  const [cRes, rRes] = await Promise.all([
+    sb.from('communications').select('*').in('booking_id', ids).order('created_at',{ascending:true}),
+    sb.from('comm_reminders').select('*').in('booking_id', ids).order('remind_date',{ascending:true})
+  ])
+  if(cRes.error) toast('Lỗi tải nhật ký: '+cRes.error.message,'err')
+  if(rRes.error) toast('Lỗi tải nhắc nhở: '+rRes.error.message,'err')
+  for(const r of (cRes.data||[])){
+    if(!logsByBooking[r.booking_id]) logsByBooking[r.booking_id]=[]
+    logsByBooking[r.booking_id].push({ id:r.id, channel:r.channel, dir:r.direction, text:r.body, createdAt:r.created_at, staffName:r.staff_name })
+  }
+  for(const r of (rRes.data||[])){
+    if(!remindersByBooking[r.booking_id]) remindersByBooking[r.booking_id]=[]
+    remindersByBooking[r.booking_id].push({ id:r.id, date:r.remind_date, channel:r.channel, note:r.note, done:r.done })
+  }
+}
 
 // ── LOAD BOOKINGS ──────────────────────────────
 async function loadBookings(){
@@ -328,6 +349,7 @@ async function loadBookings(){
   bookingsCache=data||[]
   filteredBookings=[...bookingsCache]
   document.getElementById('bookingCount').textContent=bookingsCache.length
+  await loadCommsData()
   renderBookingList(filteredBookings)
 }
 
@@ -426,26 +448,34 @@ function useTemplate(i){
 }
 
 // ── SEND MESSAGE ───────────────────────────────
-function sendMsg(){
+async function sendMsg(){
   const b=selectedBooking; if(!b)return
   const text=document.getElementById('msgInput').value.trim()
   if(!text){toast('Vui lòng nhập nội dung','warn');return}
   const channel=document.getElementById('channelSel').value
   const dir=document.getElementById('dirSel').value
-  const logs=getLogs(b.id)
-  logs.push({id:`log_${Date.now()}`,channel,dir,text,createdAt:new Date().toISOString(),staffName:'Baggio Staff'})
-  saveLogs(b.id,logs)
+  const {data,error}=await sb.from('communications')
+    .insert({booking_id:b.id,channel,direction:dir,body:text,staff_name:staffName})
+    .select().single()
+  if(error){toast('Lỗi ghi liên lạc: '+error.message,'err');return}
+  if(!logsByBooking[b.id]) logsByBooking[b.id]=[]
+  logsByBooking[b.id].push({id:data.id,channel:data.channel,dir:data.direction,text:data.body,createdAt:data.created_at,staffName:data.staff_name})
   document.getElementById('msgInput').value=''
   document.getElementById('msgInput').style.height='auto'
 
   // Auto remind
   if(document.getElementById('autoRemind').checked){
     const tomorrow=new Date(); tomorrow.setDate(tomorrow.getDate()+1)
-    const rems=getReminders(b.id)
-    rems.push({id:`rm_${Date.now()}`,date:tomorrow.toISOString().split('T')[0],channel,note:`Theo dõi: ${text.slice(0,60)}...`,done:false})
-    saveReminders(b.id,rems)
+    const {data:rd,error:re}=await sb.from('comm_reminders')
+      .insert({booking_id:b.id,remind_date:tomorrow.toISOString().split('T')[0],channel,note:`Theo dõi: ${text.slice(0,60)}...`,done:false})
+      .select().single()
+    if(re){ toast('Đã ghi liên lạc, nhưng lỗi tạo nhắc: '+re.message,'warn') }
+    else {
+      if(!remindersByBooking[b.id]) remindersByBooking[b.id]=[]
+      remindersByBooking[b.id].push({id:rd.id,date:rd.remind_date,channel:rd.channel,note:rd.note,done:rd.done})
+      toast('✅ Đã ghi và tạo nhắc nhở ngày mai')
+    }
     document.getElementById('autoRemind').checked=false
-    toast('✅ Đã ghi và tạo nhắc nhở ngày mai')
   } else {
     toast('✅ Đã ghi nhận liên lạc')
   }
@@ -518,10 +548,12 @@ function renderConversation(){
   el.scrollTop=el.scrollHeight
 }
 
-function doneReminder(bookingId,remId){
-  const rems=getReminders(bookingId).map(r=>r.id===remId?{...r,done:true}:r)
-  saveReminders(bookingId,rems)
-  renderConversation(); updateStatStrip()
+async function doneReminder(bookingId,remId){
+  const {error}=await sb.from('comm_reminders').update({done:true}).eq('id',remId)
+  if(error){toast('Lỗi cập nhật nhắc: '+error.message,'err');return}
+  const r=(remindersByBooking[bookingId]||[]).find(x=>x.id===remId)
+  if(r) r.done=true
+  renderConversation(); updateStatStrip(); renderBookingList(filteredBookings)
   toast('✅ Đã hoàn thành nhắc nhở')
 }
 
@@ -551,19 +583,30 @@ function openReminder(){
   document.getElementById('reminderModal').classList.add('open')
 }
 function closeReminder(){ document.getElementById('reminderModal').classList.remove('open') }
-function saveReminder(){
+async function saveReminder(){
   const b=selectedBooking; if(!b)return
   const date=document.getElementById('rm_date').value
   if(!date){toast('Chọn ngày nhắc','warn');return}
-  const rems=getReminders(b.id)
-  rems.push({id:`rm_${Date.now()}`,date,channel:document.getElementById('rm_channel').value,note:document.getElementById('rm_note').value.trim()||'Liên hệ khách hàng',done:false})
-  saveReminders(b.id,rems)
-  closeReminder(); renderConversation(); updateStatStrip()
+  const {data,error}=await sb.from('comm_reminders')
+    .insert({booking_id:b.id,remind_date:date,channel:document.getElementById('rm_channel').value,note:document.getElementById('rm_note').value.trim()||'Liên hệ khách hàng',done:false})
+    .select().single()
+  if(error){toast('Lỗi tạo nhắc: '+error.message,'err');return}
+  if(!remindersByBooking[b.id]) remindersByBooking[b.id]=[]
+  remindersByBooking[b.id].push({id:data.id,date:data.remind_date,channel:data.channel,note:data.note,done:data.done})
+  closeReminder(); renderConversation(); updateStatStrip(); renderBookingList(filteredBookings)
   toast('🔔 Đã tạo nhắc nhở')
 }
 
 // ── INIT ───────────────────────────────────────
-document.addEventListener('DOMContentLoaded', loadBookings)
+document.addEventListener('DOMContentLoaded', async ()=>{
+  const {data:{session}} = await sb.auth.getSession()
+  if(!session){
+    toast('⚠ Chưa đăng nhập admin — đăng nhập tại /account để xem & ghi nhật ký','warn')
+  } else if(session.user?.email){
+    staffName = session.user.email
+  }
+  loadBookings()
+})
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeReminder()})
 </script>
 </body>
