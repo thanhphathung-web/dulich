@@ -21,6 +21,7 @@
     { "source": "/about",    "destination": "/baggio-website.html" },
     { "source": "/tour-import", "destination": "/baggio-tour-import.html" },
     { "source": "/translate", "destination": "/baggio-translate.html" },
-    { "source": "/account", "destination": "/baggio-account.html" }
+    { "source": "/account", "destination": "/baggio-account.html" },
+    { "source": "/chinh-sach", "destination": "/chinh-sach-hoan-huy.html" }
   ]
 }

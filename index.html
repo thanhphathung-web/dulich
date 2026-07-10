@@ -20,6 +20,8 @@
 <meta property="og:description" content="Chuyên tour du lịch Việt Nam: Hội An, Đà Nẵng, Buôn Ma Thuột. Đặt tour trực tuyến, hướng dẫn viên bản địa, giá minh bạch.">
 <meta property="og:url" content="https://baggio.website/">
 <meta property="og:image" content="https://baggio.website/og-cover.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 
 <!-- Twitter Card -->
 <meta name="twitter:card" content="summary_large_image">
@@ -362,8 +364,7 @@ footer{background:var(--ink);color:rgba(250,248,243,.55);padding:3rem 2rem 1.5re
   <ul class="nav-links">
     <li><a href="#tours" data-i18n="nav_tours">Tour</a></li>
     <li><a href="#guides" data-i18n="nav_guides">HDV</a></li>
-    <li><a href="#reviews" data-i18n="nav_reviews">Đánh giá</a></li>
-    <li><a href="baggio-admin.html">Admin</a></li>
+    <li id="navReviewsLi"><a href="#reviews" data-i18n="nav_reviews">Đánh giá</a></li>
   </ul>
   <div style="display:flex;align-items:center;gap:.65rem">
     <div class="lang-switcher" id="langSwitcher">
@@ -387,7 +388,7 @@ footer{background:var(--ink);color:rgba(250,248,243,.55);padding:3rem 2rem 1.5re
     <div class="hero-stats">
       <div><div class="stat-num" id="heroTourCount">—<span>+</span></div><div class="stat-label" data-i18n="stat_tours">Gói tour</div></div>
       <div><div class="stat-num" id="heroGuideCount">—<span>+</span></div><div class="stat-label" data-i18n="stat_guides">HDV chuyên nghiệp</div></div>
-      <div><div class="stat-num">4.9<span>★</span></div><div class="stat-label" data-i18n="stat_rating">Đánh giá trung bình</div></div>
+      <div><div class="stat-num">100<span>%</span></div><div class="stat-label" data-i18n="stat_refund">Hoàn cọc khi hủy sớm</div></div>
     </div>
     <div class="hero-btns">
       <a href="#tours" class="btn-red" data-i18n="hero_btn_tours">Xem tất cả tour →</a>
@@ -561,7 +562,7 @@ footer{background:var(--ink);color:rgba(250,248,243,.55);padding:3rem 2rem 1.5re
       <div class="sec-eyebrow" data-i18n="sec_reviews_eye">Đánh giá</div>
       <h2 class="sec-title" data-i18n="sec_reviews_title">Khách hàng nói gì</h2>
     </div>
-    <div style="font-family:var(--mono);font-size:.65rem;color:var(--muted)">★★★★★ 4.9 / 5</div>
+    <div style="font-family:var(--mono);font-size:.65rem;color:var(--muted)" id="reviewsAvg"></div>
   </div>
   <div class="reviews-grid" id="reviewsGrid">
     <div class="rev-card"><div class="skel-line long skeleton" style="margin-bottom:1rem;height:80px"></div><div style="display:flex;gap:.65rem;align-items:center"><div style="width:36px;height:36px;border-radius:50%" class="skeleton"></div><div style="flex:1"><div class="skel-line med skeleton" style="margin-bottom:.3rem"></div><div class="skel-line short skeleton"></div></div></div></div>
@@ -600,8 +601,8 @@ footer{background:var(--ink);color:rgba(250,248,243,.55);padding:3rem 2rem 1.5re
     <div class="ft-title" data-i18n="ft_services">Dịch vụ</div>
     <ul class="ft-links">
       <li><a href="booking.html" data-i18n="ft_book">Đặt tour</a></li>
-      <li><a href="baggio-admin.html">Quản lý</a></li>
-      <li><a href="baggio-report.html" data-i18n="ft_report">Báo cáo</a></li>
+      <li><a href="chinh-sach-hoan-huy.html" data-i18n="ft_policy">Chính sách hoàn hủy</a></li>
+      <li><a href="https://zalo.me/0906306286" target="_blank">Chat Zalo</a></li>
     </ul>
   </div>
   <div>
@@ -610,10 +611,10 @@ footer{background:var(--ink);color:rgba(250,248,243,.55);padding:3rem 2rem 1.5re
       <li><a href="tel:0906306286" data-i18n="ft_hotline">Hotline: 0906 306 286</a></li>
       <li><a href="https://zalo.me/0906306286" target="_blank">Zalo: 0906 306 286</a></li>
       <li><a href="mailto:thanhphathung@gmail.com">Email hỗ trợ</a></li>
-      <li><a href="#" data-i18n="ft_policy">Chính sách hoàn hủy</a></li>
+      <li><a href="chinh-sach-hoan-huy.html" data-i18n="ft_policy">Chính sách hoàn hủy</a></li>
     </ul>
     <div style="margin-top:1rem;font-size:.7rem;color:rgba(250,248,243,.3);line-height:1.6">
-      © 2026 Baggio Travel Inc.<br>
+      © 2026 Baggio Travel<br>
       <span data-i18n="ft_license">Giấy phép kinh doanh lữ hành quốc tế</span>
     </div>
   </div>
@@ -1065,11 +1066,24 @@ async function loadReviews() {
     renderReviews(data || [])
   } catch (err) {
     console.error('loadReviews:', err)
+    renderReviews([])
   }
 }
 
 function renderReviews(reviews) {
-  if (!reviews.length) { document.getElementById('reviewsGrid').innerHTML = ''; return }
+  const sec   = document.getElementById('reviews')
+  const navLi = document.getElementById('navReviewsLi')
+  // Chưa có review thật → ẩn cả section (không show 4.9★ suông làm mất niềm tin)
+  if (!reviews.length) {
+    sec.style.display = 'none'
+    if (navLi) navLi.style.display = 'none'
+    document.getElementById('reviewsGrid').innerHTML = ''
+    return
+  }
+  sec.style.display = ''
+  if (navLi) navLi.style.display = ''
+  const avg = (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1)
+  document.getElementById('reviewsAvg').textContent = `★ ${avg} / 5 · ${reviews.length} đánh giá`
   document.getElementById('reviewsGrid').innerHTML = reviews.map(r => `
     <div class="rev-card">
       <div class="rev-stars">${'★'.repeat(r.rating)}${'☆'.repeat(5-r.rating)}</div>
@@ -1078,7 +1092,7 @@ function renderReviews(reviews) {
         <div class="rev-av">${initials(r.reviewer_name)}</div>
         <div>
           <div class="rev-name">${r.reviewer_name}</div>
-          <div class="rev-tour-name">${r.tours?.name || 'Tour Baggio Travel'}</div>
+          <div class="rev-tour-name">${r.tours?.name_vi || 'Tour Baggio Travel'}</div>
         </div>
       </div>
     </div>`).join('')
@@ -1105,7 +1119,7 @@ const I18N = {
     hero_title:'Khám phá Việt Nam theo cách của bạn',
     hero_sub:'Từ vé máy bay, khách sạn, hướng dẫn viên địa phương đến xe đón sân bay — chúng tôi lo tất cả.',
     hero_btn_tours:'Xem tất cả tour →', hero_btn_guides:'Gặp hướng dẫn viên',
-    stat_tours:'Gói tour', stat_guides:'HDV chuyên nghiệp', stat_rating:'Đánh giá trung bình',
+    stat_tours:'Gói tour', stat_guides:'HDV chuyên nghiệp', stat_refund:'Hoàn cọc khi hủy sớm',
     filter_region:'Vùng miền', filter_dest:'Điểm đến',
     filter_price_min:'Giá từ', filter_price_max:'Giá đến',
     filter_days:'Số ngày', filter_reset:'↺ Đặt lại', filter_no_limit:'Không giới hạn',
@@ -1136,7 +1150,7 @@ const I18N = {
     hero_title:'Explore Vietnam your way',
     hero_sub:'From flights, hotels and local guides to airport transfers — we handle everything.',
     hero_btn_tours:'View all tours →', hero_btn_guides:'Meet our guides',
-    stat_tours:'Tour packages', stat_guides:'Expert guides', stat_rating:'Average rating',
+    stat_tours:'Tour packages', stat_guides:'Expert guides', stat_refund:'Refund if cancelled early',
     filter_region:'Region', filter_dest:'Destination',
     filter_price_min:'Price from', filter_price_max:'Price to',
     filter_days:'Duration', filter_reset:'↺ Reset', filter_no_limit:'No limit',
@@ -1167,7 +1181,7 @@ const I18N = {
     hero_title:'按您的方式探索越南',
     hero_sub:'从机票、酒店、当地导游到机场接送——我们一站式搞定。',
     hero_btn_tours:'查看所有旅游 →', hero_btn_guides:'认识我们的导游',
-    stat_tours:'旅游套餐', stat_guides:'专业导游', stat_rating:'平均评分',
+    stat_tours:'旅游套餐', stat_guides:'专业导游', stat_refund:'提前取消可退订金',
     filter_region:'地区', filter_dest:'目的地',
     filter_price_min:'价格从', filter_price_max:'价格至',
     filter_days:'天数', filter_reset:'↺ 重置', filter_no_limit:'不限制',
