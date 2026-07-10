@@ -372,11 +372,10 @@ body{background:var(--cream);color:var(--ink);font-family:var(--font);font-size:
         <div class="confirm-box" id="confirmBox"></div>
         <div style="font-weight:600;font-size:.85rem;margin-bottom:.75rem">Phương thức thanh toán</div>
         <div class="pay-methods">
-          <div class="popt selected" onclick="selectPay(this,'MOMO')"><span class="popt-icon">📱</span><div class="popt-name">MoMo</div></div>
-          <div class="popt" onclick="selectPay(this,'VNPAY')"><span class="popt-icon">💳</span><div class="popt-name">VNPay QR</div></div>
-          <div class="popt" onclick="selectPay(this,'BANK_TRANSFER')"><span class="popt-icon">🏦</span><div class="popt-name">Chuyển khoản</div></div>
+          <div class="popt selected" onclick="selectPay(this,'BANK_TRANSFER')"><span class="popt-icon">🏦</span><div class="popt-name">Chuyển khoản QR</div></div>
           <div class="popt" onclick="selectPay(this,'CASH')"><span class="popt-icon">💵</span><div class="popt-name">Tiền mặt</div></div>
         </div>
+        <div style="font-size:.75rem;color:var(--muted);margin-top:.4rem">📱 Thanh toán MoMo &amp; VNPay QR sắp ra mắt</div>
         <div class="deposit-note">
           <span>💡</span>
           <span>Chỉ cần đặt cọc <strong>30%</strong> để giữ chỗ. Thanh toán phần còn lại trước <strong>7 ngày</strong> khởi hành. Hoàn 100% nếu huỷ trước 7 ngày.</span>
@@ -477,7 +476,7 @@ const S = {
   startDate: null, endDate: null,
   adults: 2, children: 0, infants: 0,
   room: 'STANDARD', roomExtra: 0,
-  payMethod: 'MOMO',
+  payMethod: 'BANK_TRANSFER',
   allTours: [], schedules: []
 }
 
@@ -635,19 +634,19 @@ function selectRoom(el,type){
 function selectPay(el,method){
   document.querySelectorAll('.popt').forEach(p=>p.classList.remove('selected'))
   el.classList.add('selected');S.payMethod=method
-  const bankInfo=document.getElementById('bankInfo')
-  if(method==='BANK_TRANSFER'){
-    const deposit=Math.round(calcTotal()*.3)
-    const name=(document.getElementById('cfName')?.value?.trim()||'KHACH').toUpperCase().split(' ').pop()
-    const content='DAT COC '+name
-    document.getElementById('bankAmount').textContent=deposit.toLocaleString('vi-VN')+'đ'
-    document.getElementById('bankContent').textContent=content
-    bankInfo.style.display='block'
-    // Vẽ QR bằng canvas thuần — không cần thư viện ngoài
-    drawQR(deposit, content)
-  } else {
-    bankInfo.style.display='none'
-  }
+  if(method==='BANK_TRANSFER') showBankInfo()
+  else document.getElementById('bankInfo').style.display='none'
+}
+
+function showBankInfo(){
+  const deposit=Math.round(calcTotal()*.3)
+  const name=(document.getElementById('cfName')?.value?.trim()||'KHACH').toUpperCase().split(' ').pop()
+  const content='DAT COC '+name
+  document.getElementById('bankAmount').textContent=deposit.toLocaleString('vi-VN')+'đ'
+  document.getElementById('bankContent').textContent=content
+  document.getElementById('bankInfo').style.display='block'
+  // Vẽ QR bằng canvas thuần — không cần thư viện ngoài
+  drawQR(deposit, content)
 }
 
 function drawQR(amount, content){
@@ -735,7 +734,7 @@ function goStep(n){
     if(i+1===n)p.classList.add('active')
   })
   document.getElementById('pFill').style.width=pws[n]||'0%'
-  if(n===5)buildConfirm()
+  if(n===5){buildConfirm();if(S.payMethod==='BANK_TRANSFER')showBankInfo()}
   S.step=n
   window.scrollTo({top:0,behavior:'smooth'})
 }
@@ -780,6 +779,7 @@ async function submitBooking(){
       child_count:      S.children,
       infant_count:     S.infants,
       room_type:        S.room,
+      payment_method:   S.payMethod,
       total_price:      total,
       deposit_amount:   Math.round(total*0.3),
       special_requests: document.getElementById('cfNote').value.trim()||null,
@@ -804,7 +804,12 @@ async function submitBooking(){
 
     // Không .select() lại dòng vừa insert — RLS chỉ cho chủ/admin đọc bookings;
     // màn xác nhận dùng mã 'ref' sinh ở client nên không cần dữ liệu trả về.
-    const {error}=await sb.from('bookings').insert(booking)
+    let {error}=await sb.from('bookings').insert(booking)
+    if(error&&error.code==='42703'){
+      // DB chưa có cột payment_method — bỏ trường này ra, không được chặn khách đặt
+      delete booking.payment_method
+      ;({error}=await sb.from('bookings').insert(booking))
+    }
     if(error){
       // Insert lỗi → hoàn lại số chỗ đã trừ để không thất thoát
       if(reserved){

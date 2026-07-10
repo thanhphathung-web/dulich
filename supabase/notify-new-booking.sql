@@ -9,6 +9,9 @@
 
 create extension if not exists pg_net;
 
+-- Khách chọn trả kiểu gì (BANK_TRANSFER / CASH) — frontend gửi lên
+alter table public.bookings add column if not exists payment_method text;
+
 create or replace function public.notify_new_booking()
 returns trigger
 language plpgsql
@@ -40,6 +43,10 @@ begin
         'Tổng: '      || to_char(coalesce(new.total_price,0),   'FM999,999,999')  || 'đ'
                       || ' — Cọc 30%: '
                       || to_char(coalesce(new.deposit_amount,0),'FM999,999,999')  || 'đ' || E'\n' ||
+        'Thanh toán: ' || case coalesce(new.payment_method,'?')
+                            when 'BANK_TRANSFER' then 'Chuyển khoản QR'
+                            when 'CASH' then 'Tiền mặt'
+                            else coalesce(new.payment_method,'?') end             || E'\n' ||
         'Ghi chú: '   || coalesce(new.special_requests, '—'),
       'priority', 4,
       'tags',     jsonb_build_array('tada', 'moneybag')
