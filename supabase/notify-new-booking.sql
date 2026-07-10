@@ -1,8 +1,9 @@
 -- ═══════════════════════════════════════════════════════════════
 -- THÔNG BÁO ĐƠN MỚI — push notification qua ntfy.sh khi có booking
--- Kênh nhận: cài app "ntfy" (Android/iOS) → Subscribe topic:
---   baggio-don-moi-3bccbf0e03
--- Hoặc mở web: https://ntfy.sh/baggio-don-moi-3bccbf0e03
+-- ⚠ REPO PUBLIC: thay __NTFY_TOPIC__ (2 chỗ bên dưới) bằng topic bí mật
+--   TRƯỚC KHI chạy, và KHÔNG commit topic thật lên repo.
+--   Ai biết topic sẽ đọc được tên/SĐT khách → topic phải giữ kín.
+-- Kênh nhận: cài app "ntfy" (Android/iOS) → Subscribe đúng topic đó.
 -- Sau này muốn thêm email: thêm 1 lệnh net.http_post nữa vào cùng
 -- function này (đã chừa sẵn chỗ bên dưới).
 -- ═══════════════════════════════════════════════════════════════
@@ -31,7 +32,7 @@ begin
   perform net.http_post(
     url  := 'https://ntfy.sh',
     body := jsonb_build_object(
-      'topic',    'baggio-don-moi-3bccbf0e03',
+      'topic',    '__NTFY_TOPIC__',
       'title',    'ĐƠN MỚI ' || new.booking_ref || ' — cọc ' || to_char(coalesce(new.deposit_amount,0), 'FM999,999,999') || 'đ',
       'message',
         'Tour: '      || coalesce(v_tour, new.tour_id::text)                       || E'\n' ||
