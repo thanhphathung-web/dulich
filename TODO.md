@@ -25,7 +25,7 @@
 
 ### Email / thông báo tự động
 - [x] Gửi **email xác nhận đặt tour tự động** — ✔ 2026-07-11: nối Resend qua trigger `notify_new_booking` (Kênh 2, xem `supabase/booking-confirm-email.sql`); domain baggio.website verified, key trong Vault, test end-to-end OK (đơn TEST-EMAIL-01, Resend trả 200).
-- [ ] Email nhắc thanh toán cọc + email e-voucher trước ngày khởi hành.
+- [x] Email nhắc thanh toán cọc + email e-voucher trước ngày khởi hành — ✔ 2026-07-11: 2 job pg_cron (`baggio-deposit-reminders` mỗi giờ, `baggio-evouchers` 8:45–19:45 VN), xem `supabase/booking-emails-cron.sql`; test cả 2 luồng OK. Tối đa 2 email/lượt để né rate limit Resend (2 req/s).
 - [ ] (Tuỳ chọn) Thông báo Zalo/SMS cho admin khi có đơn mới.
 
 ---

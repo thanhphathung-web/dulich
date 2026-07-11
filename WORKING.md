@@ -65,6 +65,11 @@ Tất cả đã verify trên https://baggio.website sau deploy (curl check số 
   - API key nằm trong Supabase Vault tên `resend_api_key` (chủ shop tự dán). Function đọc key runtime — không có key thì bỏ qua email, không chặn booking.
   - Migration: `supabase/booking-confirm-email.sql` — vá function TẠI CHỖ (giữ topic ntfy bí mật; lưu ý body function trên DB dùng CRLF). Nếu chạy lại `notify-new-booking.sql` phải chạy lại file email sau đó.
   - Test end-to-end OK: đơn `TEST-EMAIL-01` → ntfy 200 + Resend 200 (kiểm tra qua `net._http_response`). Debug sau này: `select id,status_code,left(content::text,200) from net._http_response order by id desc;`
+- **Email nhắc cọc + e-voucher (2026-07-11, cùng ngày)**: 2 job pg_cron — xem `supabase/booking-emails-cron.sql`.
+  - `baggio-deposit-reminders` (mỗi giờ :15): đơn payment PENDING quá 24h (≤7 ngày, chưa hủy), nhắc đúng 1 lần (`deposit_reminder_sent_at`), chỉ gửi 8h–20h VN.
+  - `baggio-evouchers` (mỗi giờ 8:45–19:45 VN): đơn CONFIRMED+SUCCESS có lịch đi trong ≤2 ngày (`voucher_sent_at`), kèm tên/SĐT HDV nếu đã phân công.
+  - ⚠️ **Resend free = 2 request/giây** → mỗi lượt cron chỉ gửi tối đa 2 email (đã dính 429 khi burst 3 email lúc test). Mọi email trong 1 transaction commit cùng lúc → pg_net bắn burst; đừng gộp nhiều email 1 lượt.
+  - Test cả 2 luồng OK (TEST-EMAIL-01 nhắc cọc, TEST-VOUCHER-01 e-voucher — đơn voucher giữ lại, lịch test FULL đã xóa).
 
 ## 4. Việc còn treo
 
