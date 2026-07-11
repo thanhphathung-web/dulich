@@ -5,6 +5,12 @@
 
 ## 0. Đợt 2026-07-11
 
+- **3 migration P0 ĐÃ CHẠY trên production** (qua Chrome → Dashboard SQL Editor,
+  paste bằng monaco API): `tours-add-columns.sql` (58 cột), `tours-add-zh-columns.sql`
+  (9 cột _zh), `rls-tours.sql` (3 policy chuẩn + role admin cho thanhphathung@gmail.com).
+  Verify: anon qua REST chỉ thấy đúng 20 tour ACTIVE. **Chủ shop cần đăng xuất/đăng
+  nhập lại rồi thử Lưu tour trong /cms** (JWT cũ chưa mang role admin).
+
 - **🔥 BUG P0 phát hiện & sửa**: trang chi tiết tour (`/tour?slug=...`) trên production
   **treo "Đang tải..." vĩnh viễn** do đệ quy vô hạn `setDetailLang` ↔ `renderTour`
   (lỗi từ đợt i18n trước, RangeError trong console). Khách không xem được chi tiết
