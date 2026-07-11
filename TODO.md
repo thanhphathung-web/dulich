@@ -15,7 +15,7 @@
 - [x] ⚠️ Chạy `supabase/suppliers.sql` — tạo bảng `suppliers` + `supplier_transactions` + RLS cho trang `/suppliers`. ✔ Đã chạy trên production 2026-07-08.
 - [x] ⚠️ Chạy `supabase/comms.sql` — tạo bảng `communications` + `comm_reminders` + RLS cho trang `/comms`. ✔ Đã chạy trên production 2026-07-09.
 - [x] ⚠️ Chạy `supabase/rls-tours.sql` — ✔ Đã chạy trên production 2026-07-11: 3 policy chuẩn, role admin đã gán cho `thanhphathung@gmail.com`. ⚠️ **CHỦ SHOP PHẢI ĐĂNG XUẤT/ĐĂNG NHẬP LẠI** rồi thử Lưu 1 tour trong /cms (JWT cũ chưa có role).
-- [~] Kiểm tra lại toàn bộ RLS đã đúng: anon chỉ đọc tour `ACTIVE` ✔ (verify qua REST 2026-07-11: anon thấy đúng 20 tour ACTIVE, không thấy tour khác); còn lại: xác nhận admin ghi được CMS sau khi đăng nhập lại.
+- [x] Kiểm tra lại toàn bộ RLS đã đúng — ✔ 2026-07-11: anon chỉ đọc tour `ACTIVE` (verify qua REST); admin sau khi đăng nhập lại ĐÃ ghi được từ CMS (test Đăng bán tour "Mùa Hoa Cà Phê" — updated_at + các cột mới lưu đủ, hết PGRST204/42501).
 
 ### Thanh toán (hiện tại: chuyển khoản thủ công + xác nhận qua Zalo)
 - [ ] Tích hợp cổng thanh toán tự động (**VNPay** hoặc **Momo**) — hiện `baggio-vnpay.html`/`baggio-momo-integration.html` mới chỉ là **tài liệu hướng dẫn**, chưa nối vào luồng đặt tour thật.
