@@ -60,7 +60,11 @@ Tất cả đã verify trên https://baggio.website sau deploy (curl check số 
 - File: `supabase/notify-new-booking.sql` — **topic trong file là placeholder**; topic thật là bí mật (repo public, ai biết topic đọc được PII khách). Topic thật lưu ngoài repo (chủ shop giữ, xem Zalo/ghi chú riêng).
 - Đã thêm cột `bookings.payment_method` (text): BANK_TRANSFER / CASH.
 - Đã test end-to-end 2 lần (insert thật qua anon REST → nhận push). Đơn test `TEST-PM-02`/`TEST-ROT-03`: chủ shop quyết định GIỮ LẠI, không cần xóa (2026-07-11) — đừng hỏi lại.
-- **Kênh email CHƯA nối** (user chọn làm sau bằng Resend — cần đăng ký resend.com lấy API key; free tier gửi được về chính email chủ tài khoản, đủ dùng). Chỗ nối đã chừa sẵn trong function ("Kênh 2").
+- **Kênh email ĐÃ NỐI (2026-07-11)**: Resend, gửi email xác nhận cho KHÁCH (guest_email) khi có booking.
+  - Domain `baggio.website` verified trong Resend (4 DNS record trên Vercel: MX+SPF trên `send`, DKIM `resend._domainkey`, DMARC p=none). From: `booking@baggio.website`, reply-to Gmail chủ shop.
+  - API key nằm trong Supabase Vault tên `resend_api_key` (chủ shop tự dán). Function đọc key runtime — không có key thì bỏ qua email, không chặn booking.
+  - Migration: `supabase/booking-confirm-email.sql` — vá function TẠI CHỖ (giữ topic ntfy bí mật; lưu ý body function trên DB dùng CRLF). Nếu chạy lại `notify-new-booking.sql` phải chạy lại file email sau đó.
+  - Test end-to-end OK: đơn `TEST-EMAIL-01` → ntfy 200 + Resend 200 (kiểm tra qua `net._http_response`). Debug sau này: `select id,status_code,left(content::text,200) from net._http_response order by id desc;`
 
 ## 4. Việc còn treo
 

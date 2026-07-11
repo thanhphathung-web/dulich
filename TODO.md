@@ -24,7 +24,7 @@
 - [ ] Xử lý callback/return URL: trang "thanh toán thành công / thất bại" cho khách.
 
 ### Email / thông báo tự động
-- [ ] Gửi **email xác nhận đặt tour tự động** — trang success đang *hứa* "email trong 2 tiếng" nhưng `baggio-email-system.html` mới là tài liệu, chưa chạy thật. Cần nối Resend/SendGrid qua serverless function.
+- [x] Gửi **email xác nhận đặt tour tự động** — ✔ 2026-07-11: nối Resend qua trigger `notify_new_booking` (Kênh 2, xem `supabase/booking-confirm-email.sql`); domain baggio.website verified, key trong Vault, test end-to-end OK (đơn TEST-EMAIL-01, Resend trả 200).
 - [ ] Email nhắc thanh toán cọc + email e-voucher trước ngày khởi hành.
 - [ ] (Tuỳ chọn) Thông báo Zalo/SMS cho admin khi có đơn mới.
 
