@@ -70,8 +70,8 @@
 
 ## 📈 P3 — SEO / Marketing / Tăng trưởng
 
-- [ ] Mở rộng `sitemap.xml`: hiện chỉ có `/`, `/about`, `/booking` — cần thêm URL từng tour (`/tour?...`) và trang danh mục.
-- [ ] Thêm structured data (JSON-LD `TouristTrip`/`Product`) cho từng tour để lên rich result Google.
+- [x] Mở rộng `sitemap.xml` — đã thêm 20 URL tour (`/tour?slug=...`) + `/chinh-sach` (2026-07-11). ⚠️ Sitemap là file tĩnh: khi thêm/gỡ tour cần cập nhật lại.
+- [x] Thêm structured data — JSON-LD `Product` (giá, brand, rating thật nếu có review) + meta description + canonical, inject sau khi load tour (2026-07-11).
 - [ ] Cài Google Analytics / GA4 (hướng dẫn có sẵn trong `baggio-seo-guide.html`, cần gắn thật `G-XXXXXXXXXX`).
 - [ ] Meta tags / OpenGraph động cho trang chi tiết tour (chia sẻ Facebook/Zalo đẹp).
 - [ ] Trang blog/cẩm nang du lịch để kéo traffic organic.
@@ -84,7 +84,7 @@
 - [ ] Rà soát API key để lộ ở client: chatbot & tour-import nhập key lúc chạy (OK), nhưng đảm bảo **không** commit Supabase service_role key hay secret cổng thanh toán.
 - [ ] Cân nhắc tách JS/CSS inline khổng lồ (index.html ~82KB, cms.html ~118KB) để dễ bảo trì — hoặc chấp nhận đánh đổi vì đang là static.
 - [ ] Backup định kỳ database Supabase.
-- [ ] Trang 404 tuỳ chỉnh.
+- [x] Trang 404 tuỳ chỉnh — `404.html` theo style trang chủ, Vercel tự nhận (2026-07-11).
 - [ ] Kiểm thử responsive/mobile toàn bộ luồng đặt tour.
 - [ ] Dọn các trang "tài liệu" khỏi production nếu không cần (đã `Disallow` trong robots.txt nhưng vẫn truy cập được qua URL).
 

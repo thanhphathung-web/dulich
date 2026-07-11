@@ -1,7 +1,20 @@
 # WORKING.md — Nhật ký làm việc & trạng thái hệ thống
 
-> Cập nhật: 2026-07-10. File này ghi lại đợt audit + sửa lỗi "sẵn sàng bán hàng"
+> Cập nhật: 2026-07-11. File này ghi lại đợt audit + sửa lỗi "sẵn sàng bán hàng"
 > (mục tiêu: bán 100 tour có doanh số thực). KHÔNG ghi secret vào file này — repo public.
+
+## 0. Đợt 2026-07-11
+
+- **🔥 BUG P0 phát hiện & sửa**: trang chi tiết tour (`/tour?slug=...`) trên production
+  **treo "Đang tải..." vĩnh viễn** do đệ quy vô hạn `setDetailLang` ↔ `renderTour`
+  (lỗi từ đợt i18n trước, RangeError trong console). Khách không xem được chi tiết
+  tour nào cho đến bản vá này. Đã test lại render + đổi ngôn ngữ VI/EN/ZH.
+- Trang chủ: bỏ cột "Điểm đến" footer → cột "Loại tour" (3 vùng + 10 sở thích);
+  nav "Tour" thành dropdown cùng phân loại; link áp filter và nhảy tới #tours (`7dda4c5`).
+- SEO: sitemap.xml thêm 20 URL tour + /chinh-sach (file tĩnh — thêm tour mới phải cập nhật);
+  JSON-LD Product + meta description + canonical trên trang chi tiết tour; 404.html mới.
+- Lưu ý kỹ thuật: `html{scroll-behavior:smooth}` trên trang chủ bị Chrome hủy scroll
+  khi grid render lại → hàm `scrollToTours()` phải dùng `behavior:'instant'`.
 
 ## 1. Kết quả audit trang chủ (2026-07-10, sáng)
 

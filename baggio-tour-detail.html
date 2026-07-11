@@ -408,13 +408,51 @@ async function loadTour() {
 
   if(error||!data) { window.location.href='index.html'; return }
   tour = data
-  setDetailLang(detailLang)
-  renderTour(data)
+  setDetailLang(detailLang) // tự gọi renderTour khi tour đã có
+}
+
+// ── SEO: meta description + canonical + JSON-LD (Google render được JS) ──
+function injectSEO(t, tourName, tourDesc) {
+  const url = `https://baggio.website/tour?slug=${t.slug}`
+  const desc = (tourDesc || `Tour ${t.destination} ${t.duration_days} ngày ${t.duration_nights} đêm trọn gói từ ${fmt(t.base_price)}đ/người — khách sạn, HDV địa phương, xe đưa đón.`).replace(/\s+/g,' ').trim().slice(0,160)
+
+  let meta = document.querySelector('meta[name="description"]')
+  if(!meta){ meta = document.createElement('meta'); meta.name = 'description'; document.head.appendChild(meta) }
+  meta.content = desc
+
+  let canon = document.querySelector('link[rel="canonical"]')
+  if(!canon){ canon = document.createElement('link'); canon.rel = 'canonical'; document.head.appendChild(canon) }
+  canon.href = url
+
+  const ld = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: tourName,
+    description: desc,
+    brand: { '@type': 'Brand', name: 'Baggio Travel' },
+    offers: {
+      '@type': 'Offer',
+      url,
+      priceCurrency: 'VND',
+      price: t.base_price,
+      availability: 'https://schema.org/InStock'
+    }
+  }
+  if(t.cover_image) ld.image = t.cover_image
+  // Chỉ đưa rating khi có review thật đã publish (không claim ảo)
+  const pub = (t.reviews||[]).filter(r=>r.is_published)
+  if(pub.length) ld.aggregateRating = {
+    '@type': 'AggregateRating',
+    ratingValue: (pub.reduce((s,r)=>s+r.rating,0)/pub.length).toFixed(1),
+    reviewCount: pub.length
+  }
+  let s = document.getElementById('ldJson')
+  if(!s){ s = document.createElement('script'); s.id = 'ldJson'; s.type = 'application/ld+json'; document.head.appendChild(s) }
+  s.textContent = JSON.stringify(ld)
 }
 
 function renderTour(t) {
-  // Sync lang switcher buttons
-  setDetailLang(detailLang)
+  // KHÔNG gọi setDetailLang ở đây — setDetailLang gọi renderTour, sẽ đệ quy vô hạn
 
   const tourName = pickLang(t.name_vi, t.name_en, t.name_zh) || t.name_vi
   const tourDesc = pickLang(t.description, t.description_en, t.description_zh)
@@ -423,6 +461,7 @@ function renderTour(t) {
 
   // Meta
   document.title = `${tourName} — Baggio Travel`
+  injectSEO(t, tourName, tourDesc)
   document.getElementById('heroImg').src = t.cover_image || 'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=1200&q=80'
   document.getElementById('heroImg').alt = tourName
   document.getElementById('heroTitle').textContent = tourName
