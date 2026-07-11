@@ -59,7 +59,7 @@ Tất cả đã verify trên https://baggio.website sau deploy (curl check số 
 - Lỗi gửi được nuốt trong exception handler — không bao giờ chặn việc tạo booking.
 - File: `supabase/notify-new-booking.sql` — **topic trong file là placeholder**; topic thật là bí mật (repo public, ai biết topic đọc được PII khách). Topic thật lưu ngoài repo (chủ shop giữ, xem Zalo/ghi chú riêng).
 - Đã thêm cột `bookings.payment_method` (text): BANK_TRANSFER / CASH.
-- Đã test end-to-end 2 lần (insert thật qua anon REST → nhận push). Đơn test `TEST-PM-02` cần xóa: `delete from bookings where booking_ref = 'TEST-PM-02';`
+- Đã test end-to-end 2 lần (insert thật qua anon REST → nhận push). Đơn test `TEST-PM-02`/`TEST-ROT-03`: chủ shop quyết định GIỮ LẠI, không cần xóa (2026-07-11) — đừng hỏi lại.
 - **Kênh email CHƯA nối** (user chọn làm sau bằng Resend — cần đăng ký resend.com lấy API key; free tier gửi được về chính email chủ tài khoản, đủ dùng). Chỗ nối đã chừa sẵn trong function ("Kênh 2").
 
 ## 4. Việc còn treo
