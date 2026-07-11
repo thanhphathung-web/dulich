@@ -269,6 +269,19 @@ tr:hover td{background:rgba(255,255,255,.02)}
 
 <script>
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON)
+
+// ── RBAC guard (UX) — bảo mật thật nằm ở RLS phía server ──
+;(async()=>{
+  try{
+    const {data:{session}} = await sb.auth.getSession()
+    if(!session){ location.replace('/account'); return }
+    let role = null
+    try{ ({data:role} = await sb.rpc('staff_role')) }catch(_){}
+    if(!role && session.user?.app_metadata?.role==='admin') role='admin'
+    if(!['admin','manager','accountant'].includes(role)) location.replace('/account')
+  }catch(e){ console.error('rbacGuard:',e) }
+})()
+
 const fmt = n => Number(n||0).toLocaleString('vi-VN')
 const fmtD = d => d ? new Date(d).toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit',year:'numeric'}) : '—'
 let reportData = []

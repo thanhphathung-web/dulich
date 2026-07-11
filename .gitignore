@@ -1,2 +1,4 @@
 .vercel
 .tmp.driveupload/
+resendapi*.txt
+.tmp-*.txt

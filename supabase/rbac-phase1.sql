@@ -61,6 +61,12 @@ begin
   if uid is null then
     raise exception 'user_not_found: % chua dang nhap lan nao', target_email;
   end if;
+  -- Chống tự khóa: không cho hạ cấp admin CUỐI CÙNG
+  if new_role <> 'admin'
+     and exists (select 1 from public.staff_roles where user_id = uid and role = 'admin')
+     and (select count(*) from public.staff_roles where role = 'admin') <= 1 then
+    raise exception 'last_admin: khong the ha cap admin cuoi cung';
+  end if;
   insert into public.staff_roles(user_id, role, email, added_by)
   values (uid, new_role, target_email, auth.uid())
   on conflict (user_id) do update
@@ -75,6 +81,11 @@ returns void language plpgsql security definer set search_path = public as $$
 begin
   if not public.has_role('admin') then
     raise exception 'forbidden';
+  end if;
+  -- Chống tự khóa: không cho xóa admin CUỐI CÙNG
+  if exists (select 1 from public.staff_roles where email = target_email and role = 'admin')
+     and (select count(*) from public.staff_roles where role = 'admin') <= 1 then
+    raise exception 'last_admin: khong the xoa admin cuoi cung';
   end if;
   delete from public.staff_roles where email = target_email;
 end;

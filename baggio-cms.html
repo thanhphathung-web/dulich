@@ -877,8 +877,13 @@ const fmt = n => Number(n||0).toLocaleString('vi-VN')
 
 async function checkCmsSession(){
   const {data:{session}} = await sb.auth.getSession()
-  const role = session?.user?.app_metadata?.role
   const email = session?.user?.email || ''
+  // RBAC: role đọc từ staff_roles; fallback app_metadata admin kiểu cũ
+  let role = null
+  if(session){
+    try{ ({data:role} = await sb.rpc('staff_role')) }catch(_){}
+    if(!role && session.user?.app_metadata?.role === 'admin') role = 'admin'
+  }
   const b = document.createElement('div')
   b.id = 'cmsLoginBanner'
   b.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;padding:.6rem 1.25rem;font-size:.82rem;display:flex;align-items:center;gap:.75rem'
@@ -887,9 +892,9 @@ async function checkCmsSession(){
     b.innerHTML = '⚠️ <strong>Chưa đăng nhập</strong> — Mọi thao tác lưu/dịch/approve sẽ bị RLS chặn và <u>không có hiệu lực</u>. <a href="/account" style="color:#fca5a5;font-weight:700;margin-left:.35rem">Đăng nhập ngay →</a>'
     document.body.prepend(b)
     document.querySelector('.topbar')?.style.setProperty('margin-top','38px')
-  } else if(role !== 'admin'){
+  } else if(!['admin','manager','content'].includes(role)){
     b.style.background = '#78350f'; b.style.color = '#fff'
-    b.innerHTML = `⚠️ Đang đăng nhập với <strong>${email}</strong> — tài khoản này <u>không có quyền admin</u>, mọi thao tác ghi sẽ bị chặn. <a href="/account" style="color:#fca5a5;font-weight:700;margin-left:.35rem">Đăng nhập bằng tài khoản admin →</a>`
+    b.innerHTML = `⚠️ Đang đăng nhập với <strong>${email}</strong> — tài khoản này <u>không có quyền biên tập</u> (cần role admin/manager/content), mọi thao tác ghi sẽ bị chặn. <a href="/account" style="color:#fca5a5;font-weight:700;margin-left:.35rem">Đổi tài khoản →</a>`
     document.body.prepend(b)
     document.querySelector('.topbar')?.style.setProperty('margin-top','38px')
   }

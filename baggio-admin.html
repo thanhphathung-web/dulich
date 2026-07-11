@@ -271,6 +271,10 @@ tr:hover td{background:rgba(255,255,255,.02)}
   <div class="sb-item" onclick="nav('reviews',this)">
     <span class="sb-icon">⭐</span> Đánh giá
   </div>
+  <div class="sb-section" id="sbStaffSection" style="display:none">Hệ thống</div>
+  <div class="sb-item" id="sbStaffItem" style="display:none" onclick="nav('staff',this)">
+    <span class="sb-icon">🔐</span> Phân quyền nhân viên
+  </div>
 </nav>
 
 <!-- MAIN CONTENT -->
@@ -520,6 +524,42 @@ tr:hover td{background:rgba(255,255,255,.02)}
     </div>
   </div>
 
+  <!-- ═══ PHÂN QUYỀN NHÂN VIÊN (chỉ admin) ═══ -->
+  <div class="page" id="page-staff">
+    <div class="table-card" style="margin-bottom:1rem">
+      <div class="tc-header">
+        <div class="tc-title">Gán quyền theo email</div>
+      </div>
+      <div style="padding:1rem;display:flex;gap:.6rem;flex-wrap:wrap;align-items:center">
+        <input id="staffEmail" type="email" placeholder="email@gmail.com (đã đăng nhập /account ít nhất 1 lần)"
+               style="flex:1;min-width:260px;background:var(--s1);border:1px solid var(--border);color:inherit;padding:.55rem .75rem;border-radius:6px">
+        <select id="staffRole" style="background:var(--s1);border:1px solid var(--border);color:inherit;padding:.55rem .75rem;border-radius:6px">
+          <option value="admin">admin — toàn quyền + gán role</option>
+          <option value="manager">manager — gần như admin, trừ gán role</option>
+          <option value="sales" selected>sales — đơn đặt tour + CRM</option>
+          <option value="ops">ops — lịch tour, HDV, nhà cung cấp</option>
+          <option value="accountant">accountant — báo cáo, doanh thu (chỉ đọc đơn)</option>
+          <option value="content">content — CMS tour/dịch/review, không thấy khách</option>
+        </select>
+        <button class="tc-btn" onclick="assignStaffRole()">✚ Gán role</button>
+      </div>
+      <div style="padding:0 1rem 1rem;font-size:.75rem;color:var(--muted)">
+        Nhân viên phải đăng nhập Google tại <b>/account</b> ít nhất 1 lần rồi mới gán được.
+        Đổi role có hiệu lực <b>ngay lập tức</b> (không cần đăng nhập lại).
+      </div>
+    </div>
+    <div class="table-card">
+      <div class="tc-header">
+        <div class="tc-title">Nhân viên hiện có</div>
+        <div class="tc-actions"><button class="tc-btn" onclick="loadStaffRoles()">↺ Tải lại</button></div>
+      </div>
+      <table>
+        <thead><tr><th>Email</th><th>Role</th><th>Gán lúc</th><th>Thao tác</th></tr></thead>
+        <tbody id="staffTbl"><tr class="loading-row"><td colspan="4">⏳ Đang tải...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
 </main>
 
 <script>
@@ -527,6 +567,25 @@ tr:hover td{background:rgba(255,255,255,.02)}
 // INIT
 // ══════════════════════════════════════════════════════
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON)
+
+// ── RBAC guard (UX): chỉ role trong danh sách được ở lại trang.
+// Lớp bảo mật THẬT là RLS phía server — guard này chỉ điều hướng.
+;(async()=>{
+  try{
+    const {data:{session}} = await sb.auth.getSession()
+    if(!session){ location.replace('/account'); return }
+    let role = null
+    try{ ({data:role} = await sb.rpc('staff_role')) }catch(_){}
+    if(!role && session.user?.app_metadata?.role==='admin') role='admin' // fallback role cũ
+    if(!['admin','manager'].includes(role)) location.replace('/account')
+    // Menu "Phân quyền" chỉ hiện cho admin (server vẫn chặn manager qua RPC/RLS)
+    if(role==='admin'){
+      document.getElementById('sbStaffSection').style.display=''
+      document.getElementById('sbStaffItem').style.display=''
+    }
+  }catch(e){ console.error('rbacGuard:',e) }
+})()
+
 const fmt = n => Number(n||0).toLocaleString('vi-VN')
 const fmtD = d => d ? new Date(d).toLocaleDateString('vi-VN') : '—'
 const fmtDT = d => d ? new Date(d).toLocaleString('vi-VN',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}) : '—'
@@ -575,7 +634,51 @@ const pageLoaders = {
 }
 const pageTitles = {
   dashboard:'Dashboard',bookings:'Quản lý đơn đặt tour',guides:'Hướng dẫn viên',
-  schedule:'Lịch khởi hành',finance:'Doanh thu & Lợi nhuận',tours:'Quản lý Tour',reviews:'Đánh giá'
+  schedule:'Lịch khởi hành',finance:'Doanh thu & Lợi nhuận',tours:'Quản lý Tour',reviews:'Đánh giá',
+  staff:'Phân quyền nhân viên'
+}
+pageLoaders.staff = () => loadStaffRoles()
+
+// ══════════════════════════════════════════════════════
+// PHÂN QUYỀN NHÂN VIÊN (RBAC — bảng staff_roles, RPC admin-only)
+// ══════════════════════════════════════════════════════
+const ROLE_LABELS = {admin:'👑 admin',manager:'🎖 manager',sales:'💬 sales',ops:'🗓 ops',accountant:'🧮 accountant',content:'✏️ content'}
+async function loadStaffRoles(){
+  const tbl = document.getElementById('staffTbl')
+  const {data,error} = await sb.from('staff_roles').select('email,role,created_at,updated_at').order('role')
+  if(error){ tbl.innerHTML = `<tr><td colspan="4">Lỗi: ${error.message}</td></tr>`; return }
+  if(!data?.length){ tbl.innerHTML = '<tr><td colspan="4">Chưa có nhân viên nào.</td></tr>'; return }
+  tbl.innerHTML = data.map(r=>`<tr>
+    <td>${r.email||'—'}</td>
+    <td>${ROLE_LABELS[r.role]||r.role}</td>
+    <td>${fmtDT(r.updated_at||r.created_at)}</td>
+    <td><button class="tc-btn" onclick="removeStaffRole('${r.email}')">🗑 Thu hồi</button></td>
+  </tr>`).join('')
+}
+async function assignStaffRole(){
+  const email = document.getElementById('staffEmail').value.trim()
+  const role  = document.getElementById('staffRole').value
+  if(!email){ alert('Nhập email nhân viên'); return }
+  const {error} = await sb.rpc('set_staff_role',{target_email:email,new_role:role})
+  if(error){
+    const m = error.message||''
+    alert(m.includes('user_not_found') ? `${email} chưa từng đăng nhập /account — nhờ họ đăng nhập Google 1 lần rồi gán lại.`
+        : m.includes('last_admin')     ? 'Không thể hạ cấp admin cuối cùng (tránh tự khóa).'
+        : m.includes('forbidden')      ? 'Chỉ admin mới được gán role.'
+        : 'Lỗi: '+m)
+    return
+  }
+  document.getElementById('staffEmail').value=''
+  loadStaffRoles()
+}
+async function removeStaffRole(email){
+  if(!confirm(`Thu hồi toàn bộ quyền nhân viên của ${email}?`)) return
+  const {error} = await sb.rpc('remove_staff_role',{target_email:email})
+  if(error){
+    alert(error.message?.includes('last_admin') ? 'Không thể xóa admin cuối cùng (tránh tự khóa).' : 'Lỗi: '+error.message)
+    return
+  }
+  loadStaffRoles()
 }
 
 function nav(page, el) {

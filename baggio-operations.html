@@ -386,6 +386,19 @@ body{background:var(--bg);color:var(--text);font-family:var(--font);font-size:13
 // INIT
 // ══════════════════════════════════════════════
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON)
+
+// ── RBAC guard (UX) — bảo mật thật nằm ở RLS phía server ──
+;(async()=>{
+  try{
+    const {data:{session}} = await sb.auth.getSession()
+    if(!session){ location.replace('/account'); return }
+    let role = null
+    try{ ({data:role} = await sb.rpc('staff_role')) }catch(_){}
+    if(!role && session.user?.app_metadata?.role==='admin') role='admin'
+    if(!['admin','manager','ops','accountant'].includes(role)) location.replace('/account')
+  }catch(e){ console.error('rbacGuard:',e) }
+})()
+
 const fmt    = n => Number(n||0).toLocaleString('vi-VN')
 const fmtD   = d => d ? new Date(d).toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit',year:'numeric'}) : '—'
 const today  = () => new Date().toISOString().split('T')[0]

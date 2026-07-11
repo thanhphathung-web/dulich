@@ -10,6 +10,18 @@
 const SUPABASE_URL  = 'https://lfnlezfphwjtdunyungi.supabase.co'
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxmbmxlemZwaHdqdGR1bnl1bmdpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0NjkwNzcsImV4cCI6MjA5NjA0NTA3N30.fmjvqhyiPcjB6qT5GDtfzMfY-C-WXP4QUIk-YW7FhJg'
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON)
+
+// ── RBAC guard (UX) — bảo mật thật nằm ở RLS phía server ──
+;(async()=>{
+  try{
+    const {data:{session}} = await sb.auth.getSession()
+    if(!session){ location.replace('/account'); return }
+    let role = null
+    try{ ({data:role} = await sb.rpc('staff_role')) }catch(_){}
+    if(!role && session.user?.app_metadata?.role==='admin') role='admin'
+    if(!['admin','manager','content'].includes(role)) location.replace('/account')
+  }catch(e){ console.error('rbacGuard:',e) }
+})()
 </script>
 <style>
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
