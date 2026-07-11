@@ -63,7 +63,7 @@
 - [x] **`/suppliers` — ĐÃ nối Supabase** (2026-07-08). Bỏ localStorage + seed giả; CRUD NCC & giao dịch chạy trên bảng `suppliers` + `supplier_transactions`, RLS admin-only. ⚠️ **Cần chạy `supabase/suppliers.sql`** trong SQL Editor để tạo bảng trước khi dùng.
 - [x] **`/comms` — ĐÃ lưu log lên server** (2026-07-09). Nhật ký liên lạc + nhắc nhở chuyển từ localStorage sang bảng `communications` + `comm_reminders` (RLS admin-only); staff_name lấy từ email đăng nhập. ⚠️ Cần chạy `supabase/comms.sql` (đã chạy trên production). "Gửi" vẫn là deeplink Zalo thủ công — việc ghi nhận liên lạc giờ đồng bộ đa thiết bị.
 - [ ] **`/operations` — hiện chỉ đọc.** Dashboard điều phối read-only; nếu muốn phân công/đổi lịch ngay tại đây thì cần thêm thao tác ghi (giờ phải làm ở `/admin`).
-- [ ] **Phân quyền nhân viên** — mới chỉ có 1 role `admin` (ai đăng nhập admin cũng full quyền). Cần role-based access (điều phối viên / kế toán / HDV...) trong RLS.
+- [x] **Phân quyền nhân viên** — ✔ 2026-07-11 CHẠY TRÊN PRODUCTION: 6 role (admin/manager/sales/ops/accountant/content), bảng `staff_roles` + `has_role()`, RLS toàn bộ bảng theo ma trận `docs/rbac-plan.md`, guard 9 trang nội bộ, panel gán role trong /admin (menu "Phân quyền nhân viên", chỉ admin thấy). Đã test 3 persona qua mô phỏng JWT. Fallback admin kiểu cũ (app_metadata) còn giữ 1 nhịp — gỡ sau khi chạy ổn.
 - [ ] Đối soát thanh toán trong `/admin`: hiện **thủ công** (đọc `payment_status`, xác nhận tay) → chuyển tự động sau khi có webhook (phụ thuộc P0).
 - [ ] Quy trình đăng tour hàng loạt theo memory: nhập dữ liệu THẬT → AI soạn nháp song ngữ (`DRAFT`) → người duyệt → `ACTIVE`. **Không auto-publish.** *(chưa xác minh trong lượt rà soát này)*
 

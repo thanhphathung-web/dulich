@@ -5,6 +5,21 @@
 
 ## 0. Đợt 2026-07-11
 
+- **🔐 SỰ CỐ BẢO MẬT (đã xử lý một phần)**: commit RBAC vô tình kéo file `resendapi.txt`
+  (API key Resend user lưu trong thư mục repo) lên GitHub PUBLIC trong ~2 phút.
+  Đã force-push gỡ khỏi toàn bộ lịch sử + thêm `.gitignore`. **KEY PHẢI COI LÀ LỘ**
+  → chủ shop cần: xóa key cũ trong Resend → tạo key mới → cập nhật Vault
+  (`select vault.update_secret((select id from vault.secrets where name='resend_api_key'), 'KEY_MỚI');`).
+  Bài học: file secret KHÔNG để trong thư mục repo; luôn `git status` trước khi `git add -A`.
+- **RBAC nhân viên (Phases 1–3) CHẠY TRÊN PRODUCTION**: bảng `staff_roles` + `staff_role()`/
+  `has_role()`/`has_role_or_legacy()` + RPC `set_staff_role`/`remove_staff_role` (chống tự khóa
+  admin cuối); RLS 10 bảng viết lại theo ma trận `docs/rbac-plan.md` (fallback app_metadata
+  admin giữ 1 nhịp); guard client 9 trang nội bộ; panel "Phân quyền nhân viên" trong /admin.
+  Test 3 persona qua mô phỏng JWT trong SQL (khách no-role bị chặn sạch; content sửa tour được
+  nhưng không thấy bookings/suppliers/comms; accountant đọc bookings không sửa được).
+  File: `supabase/rbac-phase1.sql`, `supabase/rbac-phase2.sql`. Gán role: /admin → Phân quyền
+  (nhân viên phải đăng nhập /account 1 lần trước). Đổi role hiệu lực NGAY, không cần re-login.
+
 - **3 migration P0 ĐÃ CHẠY trên production** (qua Chrome → Dashboard SQL Editor,
   paste bằng monaco API): `tours-add-columns.sql` (58 cột), `tours-add-zh-columns.sql`
   (9 cột _zh), `rls-tours.sql` (3 policy chuẩn + role admin cho thanhphathung@gmail.com).
