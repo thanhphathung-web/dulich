@@ -54,8 +54,10 @@ begin
     )
   );
 
-  -- ── Kênh 2: email (CHƯA BẬT — nối Resend/API khác vào đây sau) ──
-  -- perform net.http_post(url := 'https://api.resend.com/emails', ...);
+  -- ── Kênh 2: email xác nhận cho khách — ĐÃ BẬT qua migration riêng ──
+  -- Xem supabase/booking-confirm-email.sql (vá function tại chỗ, đọc key từ Vault).
+  -- Nếu chạy lại file NÀY (tạo lại function từ đầu) thì phải chạy lại
+  -- booking-confirm-email.sql sau đó để nối lại kênh email.
 
   return new;
 exception when others then
