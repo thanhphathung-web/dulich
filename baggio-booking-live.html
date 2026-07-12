@@ -583,13 +583,15 @@ function renderCal(){
     const date=new Date(calY,calM,d)
     const isPast=date<today
     const sched=schedMap[d]
+    const isFull=sched&&Number(sched.slots)<=0 // lịch còn OPEN nhưng hết chỗ
     const isSelected=S.startDate&&S.startDate.getDate()===d&&S.startDate.getMonth()===calM&&S.startDate.getFullYear()===calY
     let cls='cal-day'
-    if(isPast||!sched)cls+=' disabled'
-    if(sched&&!isPast)cls+=' has-slot'
+    if(isPast||!sched||isFull)cls+=' disabled'
+    if(sched&&!isPast&&!isFull)cls+=' has-slot'
     if(isSelected)cls+=' selected'
-    const slotsHtml=sched&&!isPast?`<span class="cal-day-slots">${sched.slots} chỗ</span>`:''
-    html+=`<div class="${cls}" onclick="pickDate(${d},${calM},${calY},'${sched?.id||''}','${sched?.returnDate||''}')">
+    const slotsHtml=sched&&!isPast?`<span class="cal-day-slots">${isFull?'Hết chỗ':sched.slots+' chỗ'}</span>`:''
+    const clickable=sched&&!isPast&&!isFull
+    html+=`<div class="${cls}" ${clickable?`onclick="pickDate(${d},${calM},${calY},'${sched.id}','${sched.returnDate||''}')"`:''}>
       <span class="cal-day-num">${d}</span>${slotsHtml}
     </div>`
   }
@@ -797,6 +799,7 @@ async function submitBooking(){
         // not_enough_slots hoặc schedule không tồn tại → dừng, không tạo booking
         toast('❌ Lịch khởi hành này đã hết chỗ. Vui lòng chọn ngày khác.')
         console.warn('reserve_slots:',rErr.message)
+        btn.disabled=false;btn.textContent='🎒 Xác nhận & Đặt cọc ngay' // nhả nút để khách chọn lại
         return
       }
       reserved=true

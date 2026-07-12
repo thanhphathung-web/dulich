@@ -39,9 +39,9 @@
 - [ ] Trang "Đơn đặt tour của tôi": trạng thái đơn, hoá đơn/e-voucher tải về, nút huỷ/đổi lịch.
 
 ### Luồng đặt tour (`/booking`)
-- [ ] Xác nhận cơ chế giữ chỗ (slot reserve/release RPC đã có) hoạt động đúng khi nhiều khách đặt cùng lúc; xử lý khi hết chỗ.
-- [ ] Validate ngày khởi hành theo lịch tour thật (không cho chọn ngày không có chuyến).
-- [ ] Trang chi tiết tour: đảm bảo mọi field hiển thị đủ sau khi chạy migration (mô tả, không bao gồm, video, chính sách huỷ...).
+- [x] Xác nhận cơ chế giữ chỗ — ✔ 2026-07-12 test race trên production: 2 request song song cùng giành số chỗ cuối → đúng 1 thắng, 1 bị `not_enough_slots`, hoàn trả chuẩn. Sửa kèm: nút submit bị kẹt "Đang xử lý..." khi hết chỗ (giờ nhả nút để khách chọn ngày khác).
+- [x] Validate ngày khởi hành theo lịch thật — ✔ đã có sẵn (lịch chỉ cho bấm ngày có schedule OPEN tương lai); sửa thêm 2026-07-12: ngày còn OPEN nhưng 0 chỗ giờ hiện "Hết chỗ" và không bấm được.
+- [~] Trang chi tiết tour: cột DB đã đủ sau migration 07-11, trang render đúng khi có dữ liệu — còn lại là việc nội dung: chủ shop bổ sung mô tả/video/không-bao-gồm cho từng tour qua /cms.
 
 ### Nội dung & tin cậy
 - [ ] Ảnh tour thật thay cho ảnh Unsplash placeholder (ví dụ `sumImg` trong booking).
