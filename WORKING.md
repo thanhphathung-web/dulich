@@ -3,39 +3,68 @@
 > Cập nhật: 2026-07-11. File này ghi lại đợt audit + sửa lỗi "sẵn sàng bán hàng"
 > (mục tiêu: bán 100 tour có doanh số thực). KHÔNG ghi secret vào file này — repo public.
 
-## 0. Đợt 2026-07-11
+## 0. Đợt 2026-07-10 → 07-11 (phiên lớn: UI + SEO + P0 database + email + RBAC)
 
-- **🔐 SỰ CỐ BẢO MẬT (đã xử lý một phần)**: commit RBAC vô tình kéo file `resendapi.txt`
-  (API key Resend user lưu trong thư mục repo) lên GitHub PUBLIC trong ~2 phút.
-  Đã force-push gỡ khỏi toàn bộ lịch sử + thêm `.gitignore`. **KEY PHẢI COI LÀ LỘ**
-  → chủ shop cần: xóa key cũ trong Resend → tạo key mới → cập nhật Vault
-  (`select vault.update_secret((select id from vault.secrets where name='resend_api_key'), 'KEY_MỚI');`).
-  Bài học: file secret KHÔNG để trong thư mục repo; luôn `git status` trước khi `git add -A`.
-- **RBAC nhân viên (Phases 1–3) CHẠY TRÊN PRODUCTION**: bảng `staff_roles` + `staff_role()`/
-  `has_role()`/`has_role_or_legacy()` + RPC `set_staff_role`/`remove_staff_role` (chống tự khóa
-  admin cuối); RLS 10 bảng viết lại theo ma trận `docs/rbac-plan.md` (fallback app_metadata
-  admin giữ 1 nhịp); guard client 9 trang nội bộ; panel "Phân quyền nhân viên" trong /admin.
-  Test 3 persona qua mô phỏng JWT trong SQL (khách no-role bị chặn sạch; content sửa tour được
-  nhưng không thấy bookings/suppliers/comms; accountant đọc bookings không sửa được).
-  File: `supabase/rbac-phase1.sql`, `supabase/rbac-phase2.sql`. Gán role: /admin → Phân quyền
-  (nhân viên phải đăng nhập /account 1 lần trước). Đổi role hiệu lực NGAY, không cần re-login.
-
-- **3 migration P0 ĐÃ CHẠY trên production** (qua Chrome → Dashboard SQL Editor,
-  paste bằng monaco API): `tours-add-columns.sql` (58 cột), `tours-add-zh-columns.sql`
-  (9 cột _zh), `rls-tours.sql` (3 policy chuẩn + role admin cho thanhphathung@gmail.com).
-  Verify: anon qua REST chỉ thấy đúng 20 tour ACTIVE. **Chủ shop cần đăng xuất/đăng
-  nhập lại rồi thử Lưu tour trong /cms** (JWT cũ chưa mang role admin).
-
+### 0a. Trang chủ & SEO
+- Footer: bỏ cột "Điểm đến" (tự sinh) → cột **"Loại tour"** (3 vùng miền + 10 sở thích,
+  lưới 2 cột); nav "Tour" thành **dropdown hover** cùng phân loại. Link áp filter thật
+  (đồng bộ chip trên trang) và nhảy tới #tours (`7dda4c5`).
 - **🔥 BUG P0 phát hiện & sửa**: trang chi tiết tour (`/tour?slug=...`) trên production
   **treo "Đang tải..." vĩnh viễn** do đệ quy vô hạn `setDetailLang` ↔ `renderTour`
-  (lỗi từ đợt i18n trước, RangeError trong console). Khách không xem được chi tiết
-  tour nào cho đến bản vá này. Đã test lại render + đổi ngôn ngữ VI/EN/ZH.
-- Trang chủ: bỏ cột "Điểm đến" footer → cột "Loại tour" (3 vùng + 10 sở thích);
-  nav "Tour" thành dropdown cùng phân loại; link áp filter và nhảy tới #tours (`7dda4c5`).
-- SEO: sitemap.xml thêm 20 URL tour + /chinh-sach (file tĩnh — thêm tour mới phải cập nhật);
-  JSON-LD Product + meta description + canonical trên trang chi tiết tour; 404.html mới.
-- Lưu ý kỹ thuật: `html{scroll-behavior:smooth}` trên trang chủ bị Chrome hủy scroll
-  khi grid render lại → hàm `scrollToTours()` phải dùng `behavior:'instant'`.
+  (lỗi từ đợt i18n trước). Khách không xem được chi tiết tour nào cho tới bản vá
+  (`5d395f8`). Đã test render + đổi ngôn ngữ VI/EN/ZH trên production.
+- SEO: `sitemap.xml` 3 → 24 URL (20 tour + /chinh-sach; file tĩnh — thêm tour mới phải
+  cập nhật); JSON-LD Product + meta description + canonical inject sau khi load tour
+  (rating chỉ đưa khi có review thật); `404.html` tùy chỉnh theo style trang chủ.
+- Lưu ý kỹ thuật: `html{scroll-behavior:smooth}` bị Chrome hủy scroll khi grid render
+  lại → `scrollToTours()` phải dùng `behavior:'instant'` và gọi SAU khi loadTours xong.
+
+### 0b. P0 database (3 migration, chạy qua Chrome → Dashboard SQL Editor, bơm SQL bằng monaco API)
+- `tours-add-columns.sql` → bảng tours 58 cột (hết lỗi PGRST204 khi Đăng bán trong CMS).
+- `tours-add-zh-columns.sql` → đủ 9 cột `_zh` cho tab dịch tiếng Trung.
+- `rls-tours.sql` → 3 policy chuẩn; role admin (app_metadata) gán cho thanhphathung@gmail.com.
+- Verify 2 chiều: anon qua REST chỉ thấy đúng 20 tour ACTIVE; chủ shop đăng nhập lại
+  → **Đăng bán tour từ /cms thành công** (updated_at + các cột mới lưu đủ, hết 42501).
+
+### 0c. Hệ thống email (Resend) — 3 luồng, CHẠY TRÊN PRODUCTION
+- **Xác nhận đơn cho khách**: Kênh 2 trong trigger `notify_new_booking` (chi tiết mục 3).
+- **Nhắc cọc + e-voucher**: 2 job pg_cron (chi tiết mục 3).
+- Domain `baggio.website` verified trong Resend; 4 DNS record thêm vào Vercel DNS
+  (MX + SPF trên `send`, DKIM `resend._domainkey` — dán qua clipboard, DMARC p=none).
+- Màn hình đặt tour thành công giờ ghi "Email xác nhận đã gửi..." — lời hứa THẬT (`1950db5`).
+
+### 0d. RBAC phân quyền nhân viên (Phases 1–4) — CHẠY TRÊN PRODUCTION
+- **6 role**: admin / manager / sales / ops / accountant / content. Ma trận quyền từng
+  bảng: `docs/rbac-plan.md` §3 (content không thấy PII khách + giá vốn; accountant chỉ đọc).
+- **Cơ chế**: bảng `staff_roles` + `staff_role()`/`has_role()` (security definer) — đổi role
+  hiệu lực NGAY không cần re-login; RPC `set_staff_role`/`remove_staff_role` admin-only,
+  có guard **chống tự khóa admin cuối cùng**. File: `supabase/rbac-phase1.sql`.
+- **RLS 10 bảng** viết lại theo ma trận qua `has_role_or_legacy()` — **fallback app_metadata
+  admin còn giữ 1 nhịp, cần gỡ khi chạy ổn**. File: `supabase/rbac-phase2.sql`.
+- **Guard client 9 trang nội bộ** (admin/report/comms/operations/guides-mgmt/suppliers/
+  cms/tour-import/translate) — sai role đá về /account; CMS giữ kiểu banner cảnh báo.
+- **Panel gán role trong /admin** → menu "🔐 Phân quyền nhân viên" (chỉ admin thấy):
+  gán/thu hồi theo email. Nhân viên phải đăng nhập Google tại /account 1 lần trước.
+- **Test**: mô phỏng JWT trong SQL editor (`set_config('request.jwt.claims',...)` +
+  `set local role authenticated` + CTE `update...returning`, tất cả trong transaction
+  rollback) — khách no-role bị chặn sạch; content sửa tour được nhưng mù bookings/
+  suppliers/comms; accountant đọc 4 đơn nhưng không ghi được. Verify production:
+  chủ shop vẫn vào /admin, panel hiện đúng 1 admin.
+
+### 0e. 🔐 SỰ CỐ BẢO MẬT (cần chủ shop hoàn tất xử lý)
+- Commit RBAC vô tình kéo file `resendapi.txt` (API key Resend chủ shop lưu trong thư mục
+  repo) lên GitHub PUBLIC trong ~2 phút. Đã force-push gỡ khỏi toàn bộ lịch sử
+  (`d38c0ea` → `8771095`) + thêm `.gitignore` (`resendapi*.txt`, `.tmp-*.txt`).
+- **KEY PHẢI COI LÀ LỘ** → chủ shop cần: xóa key cũ trong Resend → tạo key mới → cập nhật
+  Vault: `select vault.update_secret((select id from vault.secrets where name='resend_api_key'), 'KEY_MỚI');`
+  Trong lúc chưa thay: email tạm ngừng, booking KHÔNG ảnh hưởng (function bỏ qua êm).
+- Bài học: file secret KHÔNG để trong thư mục repo; kiểm tra `git status` trước `git add -A`.
+
+### 0f. Commit đợt này (Vercel auto-deploy)
+`7dda4c5` footer/nav loại tour · `5d395f8` fix tour detail + SEO + 404 · `a99cccd`/`cfe2208`/
+`7c4def0` docs · `8292c70` email xác nhận đơn · `1950db5` success screen · `8fdcb11` cron
+nhắc cọc + e-voucher · `b9b4191` merge rbac-design · `8771095` RBAC 1–3 (force-push sạch
+secret) · `9dc6b63` docs.
 
 ## 1. Kết quả audit trang chủ (2026-07-10, sáng)
 
@@ -88,15 +117,21 @@ Tất cả đã verify trên https://baggio.website sau deploy (curl check số 
 
 ## 4. Việc còn treo
 
-1. **Chủ shop cung cấp**: tên pháp nhân + MST + số GP lữ hành quốc tế → chèn footer. Nếu chưa có GP thì bỏ dòng claim ở footer.
-2. **Chủ shop duyệt** các con số trong `chinh-sach-hoan-huy.html` (mức hoàn 50% khi hủy 3–6 ngày, đổi lịch miễn phí 1 lần… là bản nháp theo chuẩn ngành, khớp 3 mức `cancel_policy` trong CMS).
-3. **MoMo/VNPay thật**: cần đăng ký merchant (MoMo Business / VNPay-QR) — làm khi có GP kinh doanh; UI chỉ cần thêm lại nút + redirect.
-4. **Email báo đơn qua Resend** (khi user sẵn sàng đăng ký).
-5. **P2 (đã hoãn)**: GA4 + Meta Pixel, cân bằng danh mục tour (9/20 là Buôn Ma Thuột), nút Zalo float trang chủ, xin review thật từ khách cũ.
+1. **🔴 KHẨN — Chủ shop thay API key Resend** (bị lộ trong sự cố 0e): xóa key cũ trên
+   resend.com/api-keys → tạo key mới → cập nhật Vault (câu SQL ở mục 0e). Chưa thay thì
+   email xác nhận/nhắc cọc/e-voucher không gửi được (booking vẫn bình thường).
+2. **Chủ shop cung cấp**: tên pháp nhân + MST + số GP lữ hành quốc tế → chèn footer. Nếu chưa có GP thì bỏ dòng claim ở footer.
+3. **Chủ shop duyệt** các con số trong `chinh-sach-hoan-huy.html` (mức hoàn 50% khi hủy 3–6 ngày, đổi lịch miễn phí 1 lần… là bản nháp theo chuẩn ngành, khớp 3 mức `cancel_policy` trong CMS).
+4. **MoMo/VNPay thật**: cần đăng ký merchant (MoMo Business / VNPay-QR) — làm khi có GP kinh doanh; kèm theo là webhook tự cập nhật payment_status (P0 còn lại duy nhất).
+5. **RBAC nhịp 2**: gỡ fallback app_metadata admin trong `has_role_or_legacy` sau khi hệ thống chạy ổn vài tuần; gộp role nếu team nhỏ.
+6. **P2/P3 (đã hoãn)**: GA4 + Meta Pixel, quyền ghi cho /operations, cân bằng danh mục tour (9/20 là Buôn Ma Thuột), nút Zalo float, xin review thật từ khách cũ, OG động cho trang tour.
 
 ## 5. Hạ tầng & cách vận hành (cho phiên sau)
 
-- Site tĩnh HTML thuần trên Vercel, domain baggio.website; rewrite URL trong `vercel.json` (`/booking`, `/admin`, `/chinh-sach`…).
-- DB: Supabase project `lfnlezfphwjtdunyungi`; tour ACTIVE hiện qua RLS; bookings: anon INSERT được, SELECT chỉ chủ đơn (JWT email) hoặc admin.
-- Supabase CLI có sẵn tại `C:\Users\GlobalDMC\AppData\Local\supabase-cli\supabase.exe` nhưng **PAT đã revoke** — chạy SQL bằng Dashboard SQL Editor (user tự dán hoặc qua Chrome extension khi có quyền).
+- Site tĩnh HTML thuần trên Vercel, domain baggio.website (registrar + DNS đều Vercel); rewrite URL trong `vercel.json` (`/booking`, `/admin`, `/chinh-sach`…).
+- DB: Supabase project `lfnlezfphwjtdunyungi`; tour ACTIVE hiện qua RLS; bookings: anon INSERT được, SELECT chỉ chủ đơn (JWT email) hoặc staff theo role.
+- **Phân quyền**: bảng `staff_roles` (6 role) + `has_role()`; gán role qua /admin → "Phân quyền nhân viên". RLS là lớp bảo mật thật, guard client chỉ là UX.
+- **Email**: Resend, from `booking@baggio.website`, key trong Supabase Vault (`resend_api_key`); 3 luồng: xác nhận đơn (trigger), nhắc cọc + e-voucher (pg_cron `baggio-deposit-reminders`, `baggio-evouchers`). Giới hạn 2 email/lượt (Resend free 2 req/s). Debug: `net._http_response`.
+- Supabase CLI có sẵn tại `C:\Users\GlobalDMC\AppData\Local\supabase-cli\supabase.exe` nhưng **PAT đã revoke** — chạy SQL qua Dashboard SQL Editor (Chrome extension: bơm SQL bằng `monaco.editor.getModels()[0].setValue(...)`, KHÔNG gõ phím vào editor).
 - Đặt cọc = 30% tổng tour; QR chuyển khoản vẽ qua `qr.sepay.vn` (TCB 4042828666 / TRAN HUNG VI).
+- Đơn test trong DB (giữ theo ý chủ shop): TEST-PM-02, TEST-ROT-03, TEST-EMAIL-01, TEST-VOUCHER-01.
