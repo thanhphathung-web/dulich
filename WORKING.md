@@ -1,7 +1,8 @@
 # WORKING.md — Nhật ký làm việc & trạng thái hệ thống
 
-> Cập nhật: 2026-07-11. File này ghi lại đợt audit + sửa lỗi "sẵn sàng bán hàng"
+> Cập nhật: 2026-07-14. File này ghi lại đợt audit + sửa lỗi "sẵn sàng bán hàng"
 > (mục tiêu: bán 100 tour có doanh số thực). KHÔNG ghi secret vào file này — repo public.
+> Mục 6 (dưới cùng): chương trình đăng tour hàng loạt + phiên 2026-07-14 (Nha Trang + fix filter).
 
 ## 0. Đợt 2026-07-10 → 07-11 (phiên lớn: UI + SEO + P0 database + email + RBAC)
 
@@ -135,3 +136,66 @@ Tất cả đã verify trên https://baggio.website sau deploy (curl check số 
 - Supabase CLI có sẵn tại `C:\Users\GlobalDMC\AppData\Local\supabase-cli\supabase.exe` nhưng **PAT đã revoke** — chạy SQL qua Dashboard SQL Editor (Chrome extension: bơm SQL bằng `monaco.editor.getModels()[0].setValue(...)`, KHÔNG gõ phím vào editor).
 - Đặt cọc = 30% tổng tour; QR chuyển khoản vẽ qua `qr.sepay.vn` (TCB 4042828666 / TRAN HUNG VI).
 - Đơn test trong DB (giữ theo ý chủ shop): TEST-PM-02, TEST-ROT-03, TEST-EMAIL-01, TEST-VOUCHER-01.
+
+## 6. Chương trình đăng tour hàng loạt (day tour cho khách nước ngoài)
+
+Mục tiêu chủ shop: tăng nhanh số tour bán được. Cách làm đã chốt (memory `tour-import-workflow`):
+dữ liệu tour → Claude soạn bản nháp song ngữ VI/EN đầy đủ (highlights, lịch trình, includes/
+excludes, mô tả, SEO meta) → chạy lên Supabase. **Quy trình mặc định là DRAFT→duyệt→ACTIVE**,
+NHƯNG chủ shop đã chọn đăng thẳng ACTIVE theo TỪNG batch (hỏi rõ qua AskUserQuestion mỗi lần —
+KHÔNG tự suy ra được phép ACTIVE cho batch sau).
+
+### 6a. 4 batch đã chạy production (mỗi tour day_tour, duration_days=1)
+| Batch | Slug | destination / region | File | Commit |
+|---|---|---|---|---|
+| TP.HCM | 10021→10030 | 'TP. Hồ Chí Minh' / south | `supabase/tours-hcmc-10.sql` | (đợt trước) |
+| Hà Nội | 10031→10040 | 'Hà Nội' / north | `supabase/tours-hanoi-10.sql` | (đợt trước) |
+| Đà Nẵng | 10041→10050 | 'Đà Nẵng' / central | `supabase/tours-danang-10.sql` | `eb943d5` |
+| Nha Trang | 10051→10060 | 'Nha Trang' / central | `supabase/tours-nha-trang-10.sql` | `add5409` |
+
+- Mỗi file **idempotent** (`WHERE NOT EXISTS` theo slug), chạy lặp không trùng.
+- ⚠️ **Giá base_price là AI ƯỚC TÍNH thị trường 2026 + ảnh Unsplash placeholder** → chủ shop
+  cần **rà giá thật + thay ảnh** trong CMS cho cả 40 tour này (việc còn treo).
+
+### 6b. Lịch khởi hành hàng ngày — tự nối vĩnh viễn
+- Function `public.extend_day_tour_schedules()`: mọi tour ACTIVE có `duration_days=1` luôn được
+  phủ đủ 60 ngày lịch tới (NOT EXISTS chống trùng, `total_slots=max_pax`, day tour →
+  `return_date=depart_date`, `status='OPEN'`). Tour nhiều ngày KHÔNG đụng (lịch tay trong CMS).
+- pg_cron `baggio-extend-day-tour-schedules` chạy 00:05 VN mỗi đêm (`'5 17 * * *'` UTC) —
+  file `supabase/tours-schedules-cron.sql`. Mỗi file batch cũng gọi function này ở cuối để có
+  lịch ngay không phải chờ cron. Day tour mới đăng sau này TỰ CÓ lịch sau 1 đêm.
+
+### 6c. Phiên 2026-07-14 (chi tiết)
+- **Batch Đà Nẵng** (10041→10050): file đã soạn từ trước, phiên này chủ shop chọn ACTIVE →
+  chạy prod OK (mỗi tour 60 lịch), verify public đủ 10/10 + commit `eb943d5`.
+- **Batch Nha Trang** (10051→10060): soạn mới 10 tour (4 đảo Hòn Mun, VinWonders, city tour +
+  tắm bùn, Bình Hưng, Điệp Sơn, lặn Hòn Mun, Yang Bay, sông Cái, Dốc Lết, food tour đêm) →
+  ACTIVE → verify public đủ 10/10 → commit `add5409`.
+- **🔧 Fix filter điểm đến (commit `87f45dd`, đã deploy)**: verify batch Nha Trang phát hiện
+  dropdown lọc "điểm đến" trong `index.html` dùng **danh sách 63 TỈNH** + `.eq('destination')`
+  **exact-match**. Tour lưu destination theo TÊN THÀNH PHỐ khác tên tỉnh → không lọc ra được:
+  'Nha Trang' vs tỉnh 'Khánh Hòa' (0 tour), 'TP. Hồ Chí Minh' vs 'Hồ Chí Minh' (0 tour — batch
+  HCMC dính từ trước). Hà Nội/Đà Nẵng ok vì trùng tên tỉnh. **Sửa**: thêm `PROVINCE_CITIES`
+  (map tỉnh→[thành phố]) trong index.html → lọc tỉnh dùng `.in([tỉnh, ...TP con])` bắt cả tour
+  lưu theo tên TP; và thêm tên TP làm option chọn trực tiếp trong dropdown (khách nước ngoài
+  tìm "Nha Trang"/"Hội An", không tìm "Khánh Hòa"). Badge card GIỮ tên TP (không đổi destination).
+  Verify prod sau deploy: Khánh Hòa→11, Hồ Chí Minh→10, dropdown có option "Nha Trang"/"Hội An".
+  - **BẢO TRÌ**: batch tour cho thành phố tên ≠ tên tỉnh (Sa Pa/Lào Cai, Đà Lạt/Lâm Đồng,
+    Phú Quốc/Kiên Giang…) → nhớ thêm entry vào `PROVINCE_CITIES` mới lọc theo tỉnh được. Đã có
+    sẵn 13 tỉnh: Khánh Hòa, Hồ Chí Minh, Quảng Nam, Thừa Thiên Huế, Lào Cai, Lâm Đồng, Quảng Ninh,
+    Kiên Giang, Bình Thuận, Bà Rịa-Vũng Tàu, Bình Định, Đắk Lắk, Cần Thơ.
+- Toàn bộ commit phiên này đã push `origin/main` (repo `thanhphathung-web/dulich`) → Vercel deploy.
+
+### 6d. Cách deploy SQL phiên này (khác mục 5 — quan trọng)
+- Cách bơm SQL tự động qua Chrome (monaco setValue) phiên này **thất bại**: máy chủ shop có
+  **phần mềm quản lý clipboard chạy nền liên tục ghi đè clipboard Windows** (paste ra rác), và
+  `navigator.clipboard.readText()` trong page làm **treo renderer + kẹt permission prompt** của
+  extension. → Cách chạy được: **chủ shop tự copy file .sql → paste vào Supabase SQL Editor
+  (tab mới) → Run**. Lần sau ưu tiên cách này ngay từ đầu.
+
+### 6e. Việc còn treo (chương trình tour)
+1. **Chủ shop rà giá thật + thay ảnh placeholder** cho 40 tour AI soạn (4 batch) trong CMS.
+2. **sitemap.xml**: mục 0a ghi file tĩnh, thêm tour mới phải cập nhật. Hiện site đã ~60 tour
+   nhưng sitemap có thể vẫn 24 URL → CẦN kiểm tra & bổ sung 40 tour mới cho SEO (chưa làm).
+3. Batch tiếp theo (nếu có): hỏi lại chủ shop ACTIVE hay DRAFT; nếu thành phố tên ≠ tỉnh thì
+   cập nhật `PROVINCE_CITIES` (mục 6c).
