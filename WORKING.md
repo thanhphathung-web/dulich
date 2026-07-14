@@ -153,10 +153,15 @@ KHÔNG tự suy ra được phép ACTIVE cho batch sau).
 | Đà Nẵng | 10041→10050 | 'Đà Nẵng' / central | `supabase/tours-danang-10.sql` | `eb943d5` |
 | Nha Trang | 10051→10060 | 'Nha Trang' / central | `supabase/tours-nha-trang-10.sql` | `add5409` |
 | Phú Quốc | 10061→10070 | 'Phú Quốc' / south | `supabase/tours-phu-quoc-10.sql` | `b8d99b1` |
+| Sa Pa | 10071→10080 | 'Sa Pa' / north | `supabase/tours-sa-pa-10.sql` | `46a086c` |
 
 - Mỗi file **idempotent** (`WHERE NOT EXISTS` theo slug), chạy lặp không trùng.
 - ⚠️ **Giá base_price là AI ƯỚC TÍNH thị trường 2026 + ảnh Unsplash placeholder** → chủ shop
-  cần **rà giá thật + thay ảnh** trong CMS cho cả 50 tour này (việc còn treo).
+  cần **rà giá thật + thay ảnh** trong CMS cho cả 60 tour này (việc còn treo).
+- ⚠️ **Chỉ đưa tour chạy HÀNG NGÀY** vào batch (khớp auto-schedule). Tour theo lịch cố định
+  (vd chợ phiên Bắc Hà chỉ Chủ Nhật) KHÔNG đưa vào — nếu cần phải thêm tay + lịch riêng.
+- Khi soạn: tránh dấu `'` trong chuỗi (tên "H'Mông"→"Mông"/"Hmong") và dấu `"` lồng trong
+  jsonb; validate `json.loads` mọi literal `'...'::jsonb` trước khi giao.
 
 ### 6b. Lịch khởi hành hàng ngày — tự nối vĩnh viễn
 - Function `public.extend_day_tour_schedules()`: mọi tour ACTIVE có `duration_days=1` luôn được
@@ -195,8 +200,8 @@ KHÔNG tự suy ra được phép ACTIVE cho batch sau).
   (tab mới) → Run**. Lần sau ưu tiên cách này ngay từ đầu.
 
 ### 6e. Việc còn treo (chương trình tour)
-1. **Chủ shop rà giá thật + thay ảnh placeholder** cho 50 tour AI soạn (5 batch) trong CMS.
-2. **sitemap.xml** → cập nhật đủ tới batch Phú Quốc: 74 URL (4 tĩnh + 70 tour), khớp DB ACTIVE,
+1. **Chủ shop rà giá thật + thay ảnh placeholder** cho 60 tour AI soạn (6 batch) trong CMS.
+2. **sitemap.xml** → cập nhật đủ tới batch Sa Pa: 84 URL (4 tĩnh + 80 tour), khớp DB ACTIVE,
    XML hợp lệ. **LƯU Ý**: file TĨNH, thêm tour mới sau này vẫn phải cập nhật tay (nguồn chuẩn:
    `select slug from tours where status='ACTIVE'`).
 3. Batch tiếp theo (nếu có): hỏi lại chủ shop ACTIVE hay DRAFT; nếu thành phố tên ≠ tỉnh thì
