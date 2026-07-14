@@ -207,3 +207,30 @@ KHÔNG tự suy ra được phép ACTIVE cho batch sau).
    `select slug from tours where status='ACTIVE'`).
 3. Batch tiếp theo (nếu có): hỏi lại chủ shop ACTIVE hay DRAFT; nếu thành phố tên ≠ tỉnh thì
    cập nhật `PROVINCE_CITIES` (mục 6c).
+
+### 6f. Quyết định thiết kế catalog tour (đọc trước khi sửa)
+
+1. **`destination` = TÊN THÀNH PHỐ hướng khách, KHÔNG phải tên tỉnh.** Tour lưu
+   `destination='Nha Trang'`, `'Hạ Long'`, `'Sa Pa'`, `'Phú Quốc'`, `'TP. Hồ Chí Minh'`,
+   `'Hội An'`… — tên du lịch khách nước ngoài tìm, không dùng tên tỉnh (Khánh Hòa, Quảng Ninh…).
+   Badge card hiển thị thẳng `destination`. **Vì:** khách Tây search "Nha Trang"/"Hoi An" chứ
+   không search "Khánh Hòa"/"Quảng Nam".
+
+2. **Cầu nối filter tỉnh làm ở FRONTEND (`PROVINCE_CITIES` trong index.html), KHÔNG normalize DB.**
+   Dropdown "điểm đến" liệt kê 63 tỉnh; query dùng `.in([tỉnh, ...TP con])` để chọn tỉnh bắt được
+   cả tour lưu theo tên TP, đồng thời render tên TP thành option chọn trực tiếp. **Vì:** không đánh
+   đổi tên TP quen thuộc trên card lấy khả năng lọc; DB giữ tên địa danh thật.
+   **⚠ Đánh đổi — phải bảo trì:** batch tour cho TP tên ≠ tỉnh phải thêm entry vào `PROVINCE_CITIES`
+   (đã có 13 tỉnh). **KHÔNG** sửa bằng cách đổi `destination` sang tên tỉnh.
+
+3. **Batch auto-schedule chỉ nhận tour CHẠY HÀNG NGÀY (`duration_days=1`).** `extend_day_tour_schedules()`
+   + pg_cron tự phủ 60 ngày lịch cho mọi tour ACTIVE 1 ngày. Tour lịch cố định (chợ phiên Bắc Hà —
+   chỉ CN) hoặc cruise ngủ đêm (2N1Đ…) KHÔNG đưa vào batch → nhập tay + lịch riêng, tránh auto-fill
+   sinh ngày đặt sai trên trang có thanh toán.
+
+4. **sitemap.xml là file TĨNH** — thêm/gỡ tour phải cập nhật tay từ `select slug from tours where
+   status='ACTIVE'`. Trang detail dùng `/tour?slug=...`.
+
+5. **Quy trình đăng ACTIVE là quyết định per-batch của chủ shop** (mặc định workflow là DRAFT→duyệt).
+   Mỗi batch phải hỏi lại — không tự suy ra được phép ACTIVE. Giá AI ước tính + ảnh placeholder ⇒
+   luôn kèm cảnh báo rà lại CMS.
