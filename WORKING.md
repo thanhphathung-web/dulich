@@ -139,98 +139,53 @@ Tất cả đã verify trên https://baggio.website sau deploy (curl check số 
 
 ## 6. Chương trình đăng tour hàng loạt (day tour cho khách nước ngoài)
 
-Mục tiêu chủ shop: tăng nhanh số tour bán được. Cách làm đã chốt (memory `tour-import-workflow`):
-dữ liệu tour → Claude soạn bản nháp song ngữ VI/EN đầy đủ (highlights, lịch trình, includes/
-excludes, mô tả, SEO meta) → chạy lên Supabase. **Quy trình mặc định là DRAFT→duyệt→ACTIVE**,
-NHƯNG chủ shop đã chọn đăng thẳng ACTIVE theo TỪNG batch (hỏi rõ qua AskUserQuestion mỗi lần —
-KHÔNG tự suy ra được phép ACTIVE cho batch sau).
+Claude soạn bản nháp song ngữ VI/EN đầy đủ → chạy lên Supabase. Mặc định DRAFT→duyệt→ACTIVE,
+nhưng chủ shop chọn ACTIVE thẳng theo TỪNG batch (hỏi qua AskUserQuestion mỗi lần). Chi tiết
+vận hành: memory `tour-import-workflow` + `tour-catalog-design-decisions`.
 
-### 6a. 4 batch đã chạy production (mỗi tour day_tour, duration_days=1)
+### 6a. 7 batch đã chạy production — 70 tour (day_tour, duration_days=1, 2026-07-14)
 | Batch | Slug | destination / region | File | Commit |
 |---|---|---|---|---|
-| TP.HCM | 10021→10030 | 'TP. Hồ Chí Minh' / south | `supabase/tours-hcmc-10.sql` | (đợt trước) |
-| Hà Nội | 10031→10040 | 'Hà Nội' / north | `supabase/tours-hanoi-10.sql` | (đợt trước) |
-| Đà Nẵng | 10041→10050 | 'Đà Nẵng' / central | `supabase/tours-danang-10.sql` | `eb943d5` |
-| Nha Trang | 10051→10060 | 'Nha Trang' / central | `supabase/tours-nha-trang-10.sql` | `add5409` |
-| Phú Quốc | 10061→10070 | 'Phú Quốc' / south | `supabase/tours-phu-quoc-10.sql` | `b8d99b1` |
-| Sa Pa | 10071→10080 | 'Sa Pa' / north | `supabase/tours-sa-pa-10.sql` | `46a086c` |
-| Hạ Long | 10081→10090 | 'Hạ Long' / north | `supabase/tours-ha-long-10.sql` | `cea1234` |
+| TP.HCM | 10021→10030 | 'TP. Hồ Chí Minh' / south | `tours-hcmc-10.sql` | (đợt trước) |
+| Hà Nội | 10031→10040 | 'Hà Nội' / north | `tours-hanoi-10.sql` | (đợt trước) |
+| Đà Nẵng | 10041→10050 | 'Đà Nẵng' / central | `tours-danang-10.sql` | `eb943d5` |
+| Nha Trang | 10051→10060 | 'Nha Trang' / central | `tours-nha-trang-10.sql` | `add5409` |
+| Phú Quốc | 10061→10070 | 'Phú Quốc' / south | `tours-phu-quoc-10.sql` | `b8d99b1` |
+| Sa Pa | 10071→10080 | 'Sa Pa' / north | `tours-sa-pa-10.sql` | `46a086c` |
+| Hạ Long | 10081→10090 | 'Hạ Long' / north | `tours-ha-long-10.sql` | `cea1234` |
 
-- Mỗi file **idempotent** (`WHERE NOT EXISTS` theo slug), chạy lặp không trùng.
-- ⚠️ **Giá base_price là AI ƯỚC TÍNH thị trường 2026 + ảnh Unsplash placeholder** → chủ shop
-  cần **rà giá thật + thay ảnh** trong CMS cho cả 70 tour này (việc còn treo).
-- ⚠️ **Chỉ đưa tour chạy HÀNG NGÀY** vào batch (khớp auto-schedule). Tour theo lịch cố định
-  (vd chợ phiên Bắc Hà chỉ Chủ Nhật) KHÔNG đưa vào — nếu cần phải thêm tay + lịch riêng.
-- Khi soạn: tránh dấu `'` trong chuỗi (tên "H'Mông"→"Mông"/"Hmong") và dấu `"` lồng trong
-  jsonb; validate `json.loads` mọi literal `'...'::jsonb` trước khi giao.
+File idempotent (`WHERE NOT EXISTS` theo slug). Filter fix `87f45dd`. Mỗi batch: verify (public
+hoặc REST đủ 10/10) → sitemap → commit → push (`origin/main`, repo `thanhphathung-web/dulich`).
 
-### 6b. Lịch khởi hành hàng ngày — tự nối vĩnh viễn
-- Function `public.extend_day_tour_schedules()`: mọi tour ACTIVE có `duration_days=1` luôn được
-  phủ đủ 60 ngày lịch tới (NOT EXISTS chống trùng, `total_slots=max_pax`, day tour →
-  `return_date=depart_date`, `status='OPEN'`). Tour nhiều ngày KHÔNG đụng (lịch tay trong CMS).
-- pg_cron `baggio-extend-day-tour-schedules` chạy 00:05 VN mỗi đêm (`'5 17 * * *'` UTC) —
-  file `supabase/tours-schedules-cron.sql`. Mỗi file batch cũng gọi function này ở cuối để có
-  lịch ngay không phải chờ cron. Day tour mới đăng sau này TỰ CÓ lịch sau 1 đêm.
+### 6b. Lịch tự nối vĩnh viễn
+`public.extend_day_tour_schedules()`: mọi tour ACTIVE `duration_days=1` luôn được phủ 60 ngày lịch
+tới (NOT EXISTS chống trùng, `total_slots=max_pax`, `return_date=depart_date`, `status='OPEN'`);
+tour nhiều ngày không đụng. pg_cron `baggio-extend-day-tour-schedules` chạy 00:05 VN (`'5 17 * * *'`
+UTC, `supabase/tours-schedules-cron.sql`); mỗi file batch cũng gọi hàm ở cuối để có lịch ngay.
 
-### 6c. Phiên 2026-07-14 (chi tiết)
-- **Batch Đà Nẵng** (10041→10050): file đã soạn từ trước, phiên này chủ shop chọn ACTIVE →
-  chạy prod OK (mỗi tour 60 lịch), verify public đủ 10/10 + commit `eb943d5`.
-- **Batch Nha Trang** (10051→10060): soạn mới 10 tour (4 đảo Hòn Mun, VinWonders, city tour +
-  tắm bùn, Bình Hưng, Điệp Sơn, lặn Hòn Mun, Yang Bay, sông Cái, Dốc Lết, food tour đêm) →
-  ACTIVE → verify public đủ 10/10 → commit `add5409`.
-- **🔧 Fix filter điểm đến (commit `87f45dd`, đã deploy)**: verify batch Nha Trang phát hiện
-  dropdown lọc "điểm đến" trong `index.html` dùng **danh sách 63 TỈNH** + `.eq('destination')`
-  **exact-match**. Tour lưu destination theo TÊN THÀNH PHỐ khác tên tỉnh → không lọc ra được:
-  'Nha Trang' vs tỉnh 'Khánh Hòa' (0 tour), 'TP. Hồ Chí Minh' vs 'Hồ Chí Minh' (0 tour — batch
-  HCMC dính từ trước). Hà Nội/Đà Nẵng ok vì trùng tên tỉnh. **Sửa**: thêm `PROVINCE_CITIES`
-  (map tỉnh→[thành phố]) trong index.html → lọc tỉnh dùng `.in([tỉnh, ...TP con])` bắt cả tour
-  lưu theo tên TP; và thêm tên TP làm option chọn trực tiếp trong dropdown (khách nước ngoài
-  tìm "Nha Trang"/"Hội An", không tìm "Khánh Hòa"). Badge card GIỮ tên TP (không đổi destination).
-  Verify prod sau deploy: Khánh Hòa→11, Hồ Chí Minh→10, dropdown có option "Nha Trang"/"Hội An".
-  - **BẢO TRÌ**: batch tour cho thành phố tên ≠ tên tỉnh (Sa Pa/Lào Cai, Đà Lạt/Lâm Đồng,
-    Phú Quốc/Kiên Giang…) → nhớ thêm entry vào `PROVINCE_CITIES` mới lọc theo tỉnh được. Đã có
-    sẵn 13 tỉnh: Khánh Hòa, Hồ Chí Minh, Quảng Nam, Thừa Thiên Huế, Lào Cai, Lâm Đồng, Quảng Ninh,
-    Kiên Giang, Bình Thuận, Bà Rịa-Vũng Tàu, Bình Định, Đắk Lắk, Cần Thơ.
-- Toàn bộ commit phiên này đã push `origin/main` (repo `thanhphathung-web/dulich`) → Vercel deploy.
+### 6c. Quyết định thiết kế catalog (ĐỌC TRƯỚC KHI SỬA)
+1. **`destination` = TÊN THÀNH PHỐ hướng khách, KHÔNG phải tên tỉnh** ('Nha Trang', 'Hạ Long',
+   'Hội An', 'TP. Hồ Chí Minh'…). Badge card hiện thẳng `destination`. Vì khách Tây search tên TP.
+2. **Filter tỉnh bắc cầu ở FRONTEND (`PROVINCE_CITIES` trong index.html), KHÔNG normalize DB.**
+   Dropdown liệt kê 63 tỉnh; query `.in([tỉnh, ...TP con])` để chọn tỉnh bắt cả tour tên TP, và
+   render tên TP thành option chọn trực tiếp. **⚠ Bảo trì:** batch cho TP tên ≠ tỉnh phải thêm
+   entry vào `PROVINCE_CITIES` (đã có 13: Khánh Hòa, Hồ Chí Minh, Quảng Nam, Thừa Thiên Huế, Lào
+   Cai, Lâm Đồng, Quảng Ninh, Kiên Giang, Bình Thuận, Bà Rịa-Vũng Tàu, Bình Định, Đắk Lắk, Cần Thơ).
+   **KHÔNG** sửa bằng cách đổi `destination` sang tên tỉnh.
+3. **Batch chỉ nhận tour CHẠY HÀNG NGÀY** (khớp auto-schedule). Tour lịch cố định (chợ Bắc Hà chỉ
+   CN) / cruise ngủ đêm → nhập tay + lịch riêng, tránh auto-fill sinh ngày đặt sai.
+4. **sitemap.xml TĨNH** — thêm/gỡ tour cập nhật tay từ `select slug from tours where status='ACTIVE'`.
+   Trang detail: `/tour?slug=...`.
+5. **Soạn file**: tránh dấu `'` trong chuỗi (tên "H'Mông"→"Mông"/"Hmong"), tránh `"` lồng trong
+   jsonb; validate `json.loads` mọi literal `'...'::jsonb` trước khi giao.
 
-### 6d. Cách deploy SQL phiên này (khác mục 5 — quan trọng)
-- Cách bơm SQL tự động qua Chrome (monaco setValue) phiên này **thất bại**: máy chủ shop có
-  **phần mềm quản lý clipboard chạy nền liên tục ghi đè clipboard Windows** (paste ra rác), và
-  `navigator.clipboard.readText()` trong page làm **treo renderer + kẹt permission prompt** của
-  extension. → Cách chạy được: **chủ shop tự copy file .sql → paste vào Supabase SQL Editor
-  (tab mới) → Run**. Lần sau ưu tiên cách này ngay từ đầu.
+### 6d. Deploy SQL (khác mục 5)
+Bơm tự động qua Chrome (monaco setValue) **thất bại** phiên này: phần mềm clipboard nền ghi đè
+clipboard Windows, `navigator.clipboard.readText()` treo renderer. → **Chủ shop tự copy file .sql
+→ paste vào Supabase SQL Editor (tab mới) → Run.** Verify không cần browser: REST API với anon key.
 
 ### 6e. Việc còn treo (chương trình tour)
-1. **Chủ shop rà giá thật + thay ảnh placeholder** cho 70 tour AI soạn (7 batch) trong CMS.
-2. **sitemap.xml** → cập nhật đủ tới batch Hạ Long: 94 URL (4 tĩnh + 90 tour), khớp DB ACTIVE,
-   XML hợp lệ. **LƯU Ý**: file TĨNH, thêm tour mới sau này vẫn phải cập nhật tay (nguồn chuẩn:
-   `select slug from tours where status='ACTIVE'`).
-3. Batch tiếp theo (nếu có): hỏi lại chủ shop ACTIVE hay DRAFT; nếu thành phố tên ≠ tỉnh thì
-   cập nhật `PROVINCE_CITIES` (mục 6c).
-
-### 6f. Quyết định thiết kế catalog tour (đọc trước khi sửa)
-
-1. **`destination` = TÊN THÀNH PHỐ hướng khách, KHÔNG phải tên tỉnh.** Tour lưu
-   `destination='Nha Trang'`, `'Hạ Long'`, `'Sa Pa'`, `'Phú Quốc'`, `'TP. Hồ Chí Minh'`,
-   `'Hội An'`… — tên du lịch khách nước ngoài tìm, không dùng tên tỉnh (Khánh Hòa, Quảng Ninh…).
-   Badge card hiển thị thẳng `destination`. **Vì:** khách Tây search "Nha Trang"/"Hoi An" chứ
-   không search "Khánh Hòa"/"Quảng Nam".
-
-2. **Cầu nối filter tỉnh làm ở FRONTEND (`PROVINCE_CITIES` trong index.html), KHÔNG normalize DB.**
-   Dropdown "điểm đến" liệt kê 63 tỉnh; query dùng `.in([tỉnh, ...TP con])` để chọn tỉnh bắt được
-   cả tour lưu theo tên TP, đồng thời render tên TP thành option chọn trực tiếp. **Vì:** không đánh
-   đổi tên TP quen thuộc trên card lấy khả năng lọc; DB giữ tên địa danh thật.
-   **⚠ Đánh đổi — phải bảo trì:** batch tour cho TP tên ≠ tỉnh phải thêm entry vào `PROVINCE_CITIES`
-   (đã có 13 tỉnh). **KHÔNG** sửa bằng cách đổi `destination` sang tên tỉnh.
-
-3. **Batch auto-schedule chỉ nhận tour CHẠY HÀNG NGÀY (`duration_days=1`).** `extend_day_tour_schedules()`
-   + pg_cron tự phủ 60 ngày lịch cho mọi tour ACTIVE 1 ngày. Tour lịch cố định (chợ phiên Bắc Hà —
-   chỉ CN) hoặc cruise ngủ đêm (2N1Đ…) KHÔNG đưa vào batch → nhập tay + lịch riêng, tránh auto-fill
-   sinh ngày đặt sai trên trang có thanh toán.
-
-4. **sitemap.xml là file TĨNH** — thêm/gỡ tour phải cập nhật tay từ `select slug from tours where
-   status='ACTIVE'`. Trang detail dùng `/tour?slug=...`.
-
-5. **Quy trình đăng ACTIVE là quyết định per-batch của chủ shop** (mặc định workflow là DRAFT→duyệt).
-   Mỗi batch phải hỏi lại — không tự suy ra được phép ACTIVE. Giá AI ước tính + ảnh placeholder ⇒
-   luôn kèm cảnh báo rà lại CMS.
+1. **Rà giá thật + thay ảnh placeholder cho 70 tour AI soạn** trong CMS (đề xuất: xuất checklist
+   → sinh SQL UPDATE hàng loạt).
+2. **sitemap.xml**: hiện 94 URL (4 tĩnh + 90 tour), khớp DB ACTIVE — batch sau nhớ cập nhật.
+3. Batch sau: hỏi lại ACTIVE/DRAFT; nếu TP tên ≠ tỉnh thì thêm vào `PROVINCE_CITIES` (mục 6c).
