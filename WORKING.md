@@ -152,10 +152,11 @@ KHÔNG tự suy ra được phép ACTIVE cho batch sau).
 | Hà Nội | 10031→10040 | 'Hà Nội' / north | `supabase/tours-hanoi-10.sql` | (đợt trước) |
 | Đà Nẵng | 10041→10050 | 'Đà Nẵng' / central | `supabase/tours-danang-10.sql` | `eb943d5` |
 | Nha Trang | 10051→10060 | 'Nha Trang' / central | `supabase/tours-nha-trang-10.sql` | `add5409` |
+| Phú Quốc | 10061→10070 | 'Phú Quốc' / south | `supabase/tours-phu-quoc-10.sql` | `b8d99b1` |
 
 - Mỗi file **idempotent** (`WHERE NOT EXISTS` theo slug), chạy lặp không trùng.
 - ⚠️ **Giá base_price là AI ƯỚC TÍNH thị trường 2026 + ảnh Unsplash placeholder** → chủ shop
-  cần **rà giá thật + thay ảnh** trong CMS cho cả 40 tour này (việc còn treo).
+  cần **rà giá thật + thay ảnh** trong CMS cho cả 50 tour này (việc còn treo).
 
 ### 6b. Lịch khởi hành hàng ngày — tự nối vĩnh viễn
 - Function `public.extend_day_tour_schedules()`: mọi tour ACTIVE có `duration_days=1` luôn được
@@ -194,10 +195,9 @@ KHÔNG tự suy ra được phép ACTIVE cho batch sau).
   (tab mới) → Run**. Lần sau ưu tiên cách này ngay từ đầu.
 
 ### 6e. Việc còn treo (chương trình tour)
-1. **Chủ shop rà giá thật + thay ảnh placeholder** cho 40 tour AI soạn (4 batch) trong CMS.
-2. ~~sitemap.xml thiếu 40 tour mới~~ → **ĐÃ XONG (2026-07-14)**: bổ sung đủ, giờ 64 URL
-   (4 tĩnh + 60 tour), đối chiếu 60/60 slug khớp DB ACTIVE, XML hợp lệ. **LƯU Ý**: file TĨNH,
-   thêm tour mới sau này vẫn phải cập nhật tay (nguồn chuẩn: `select slug from tours where
-   status='ACTIVE'`).
+1. **Chủ shop rà giá thật + thay ảnh placeholder** cho 50 tour AI soạn (5 batch) trong CMS.
+2. **sitemap.xml** → cập nhật đủ tới batch Phú Quốc: 74 URL (4 tĩnh + 70 tour), khớp DB ACTIVE,
+   XML hợp lệ. **LƯU Ý**: file TĨNH, thêm tour mới sau này vẫn phải cập nhật tay (nguồn chuẩn:
+   `select slug from tours where status='ACTIVE'`).
 3. Batch tiếp theo (nếu có): hỏi lại chủ shop ACTIVE hay DRAFT; nếu thành phố tên ≠ tỉnh thì
    cập nhật `PROVINCE_CITIES` (mục 6c).
