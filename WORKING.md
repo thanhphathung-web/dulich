@@ -195,7 +195,9 @@ KHÔNG tự suy ra được phép ACTIVE cho batch sau).
 
 ### 6e. Việc còn treo (chương trình tour)
 1. **Chủ shop rà giá thật + thay ảnh placeholder** cho 40 tour AI soạn (4 batch) trong CMS.
-2. **sitemap.xml**: mục 0a ghi file tĩnh, thêm tour mới phải cập nhật. Hiện site đã ~60 tour
-   nhưng sitemap có thể vẫn 24 URL → CẦN kiểm tra & bổ sung 40 tour mới cho SEO (chưa làm).
+2. ~~sitemap.xml thiếu 40 tour mới~~ → **ĐÃ XONG (2026-07-14)**: bổ sung đủ, giờ 64 URL
+   (4 tĩnh + 60 tour), đối chiếu 60/60 slug khớp DB ACTIVE, XML hợp lệ. **LƯU Ý**: file TĨNH,
+   thêm tour mới sau này vẫn phải cập nhật tay (nguồn chuẩn: `select slug from tours where
+   status='ACTIVE'`).
 3. Batch tiếp theo (nếu có): hỏi lại chủ shop ACTIVE hay DRAFT; nếu thành phố tên ≠ tỉnh thì
    cập nhật `PROVINCE_CITIES` (mục 6c).
