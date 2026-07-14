@@ -702,6 +702,26 @@ const PROVINCES = {
 }
 const ALL_PROVINCES = [...PROVINCES.north, ...PROVINCES.central, ...PROVINCES.south].sort()
 
+// Thành phố/điểm đến du lịch có tên KHÁC tên tỉnh. Dùng để: (1) khi lọc theo
+// tỉnh, bắt luôn tour lưu destination theo tên thành phố; (2) cho chọn trực
+// tiếp tên thành phố trong dropdown (khách nước ngoài tìm "Nha Trang", "Hội An"...
+// chứ không tìm "Khánh Hòa", "Quảng Nam"). Badge card vẫn hiện tên thành phố.
+const PROVINCE_CITIES = {
+  'Khánh Hòa':         ['Nha Trang'],
+  'Hồ Chí Minh':       ['TP. Hồ Chí Minh'],
+  'Quảng Nam':         ['Hội An'],
+  'Thừa Thiên Huế':    ['Huế'],
+  'Lào Cai':           ['Sa Pa'],
+  'Lâm Đồng':          ['Đà Lạt'],
+  'Quảng Ninh':        ['Hạ Long'],
+  'Kiên Giang':        ['Phú Quốc'],
+  'Bình Thuận':        ['Phan Thiết', 'Mũi Né'],
+  'Bà Rịa - Vũng Tàu': ['Vũng Tàu'],
+  'Bình Định':         ['Quy Nhơn'],
+  'Đắk Lắk':           ['Buôn Ma Thuột'],
+  'Cần Thơ':           ['Mê Kông'],
+}
+
 function getFilters() {
   return {
     search:   document.getElementById('searchInput')?.value.trim() || '',
@@ -775,7 +795,12 @@ async function loadTours(page = 0) {
       const s = f.search.replace(/[,()*%]/g, ' ').trim()
       if (s) q = q.or(`name_vi.ilike.%${s}%,name_en.ilike.%${s}%,name_zh.ilike.%${s}%,destination.ilike.%${s}%`)
     }
-    if (f.dest)     q = q.eq('destination', f.dest)
+    if (f.dest) {
+      // Chọn tỉnh có thành phố con → khớp cả tên tỉnh lẫn tên thành phố.
+      // Chọn thẳng tên thành phố → khớp chính xác.
+      const cities = PROVINCE_CITIES[f.dest]
+      q = cities ? q.in('destination', [f.dest, ...cities]) : q.eq('destination', f.dest)
+    }
     if (f.region)   q = q.eq('region', f.region)
     if (f.priceMin) q = q.gte('base_price', +f.priceMin)
     if (f.priceMax) q = q.lte('base_price', +f.priceMax)
@@ -954,6 +979,13 @@ function populateDestFilter(region) {
     o.value = d; o.textContent = d
     if (d === prev) o.selected = true
     sel.appendChild(o)
+    // Thành phố con (nếu có): cho chọn trực tiếp, thụt lề để phân cấp
+    ;(PROVINCE_CITIES[d] || []).forEach(city => {
+      const co = document.createElement('option')
+      co.value = city; co.textContent = '   ' + city
+      if (city === prev) co.selected = true
+      sel.appendChild(co)
+    })
   })
 }
 
