@@ -700,11 +700,11 @@ let PAGE_SIZE = 24
 let currentPage = 0
 let totalTours  = 0
 
-// Danh sách 63 tỉnh theo vùng miền
+// Danh sách 34 tỉnh/thành theo vùng miền (sau sáp nhập 1/7/2025)
 const PROVINCES = {
-  north:   ['Hà Nội','Hải Phòng','Hà Giang','Cao Bằng','Bắc Kạn','Lạng Sơn','Tuyên Quang','Lào Cai','Yên Bái','Thái Nguyên','Phú Thọ','Bắc Giang','Quảng Ninh','Vĩnh Phúc','Bắc Ninh','Hải Dương','Hưng Yên','Hà Nam','Nam Định','Thái Bình','Ninh Bình','Hòa Bình','Điện Biên','Lai Châu','Sơn La'],
-  central: ['Thanh Hóa','Nghệ An','Hà Tĩnh','Quảng Bình','Quảng Trị','Thừa Thiên Huế','Đà Nẵng','Quảng Nam','Quảng Ngãi','Bình Định','Phú Yên','Khánh Hòa','Ninh Thuận','Bình Thuận','Kon Tum','Gia Lai','Đắk Lắk','Đắk Nông','Lâm Đồng'],
-  south:   ['Hồ Chí Minh','Bà Rịa - Vũng Tàu','Bình Dương','Bình Phước','Tây Ninh','Đồng Nai','Long An','Tiền Giang','Bến Tre','Trà Vinh','Vĩnh Long','Đồng Tháp','An Giang','Kiên Giang','Cần Thơ','Hậu Giang','Sóc Trăng','Bạc Liêu','Cà Mau'],
+  north:   ['Hà Nội','Hải Phòng','Quảng Ninh','Bắc Ninh','Hưng Yên','Ninh Bình','Phú Thọ','Thái Nguyên','Lạng Sơn','Cao Bằng','Tuyên Quang','Lào Cai','Điện Biên','Lai Châu','Sơn La'],
+  central: ['Thanh Hóa','Nghệ An','Hà Tĩnh','Quảng Trị','Huế','Đà Nẵng','Quảng Ngãi','Gia Lai','Khánh Hòa','Đắk Lắk','Lâm Đồng'],
+  south:   ['Hồ Chí Minh','Đồng Nai','Tây Ninh','Cần Thơ','Vĩnh Long','Đồng Tháp','An Giang','Cà Mau'],
 }
 const ALL_PROVINCES = [...PROVINCES.north, ...PROVINCES.central, ...PROVINCES.south].sort()
 
@@ -713,19 +713,16 @@ const ALL_PROVINCES = [...PROVINCES.north, ...PROVINCES.central, ...PROVINCES.so
 // tiếp tên thành phố trong dropdown (khách nước ngoài tìm "Nha Trang", "Hội An"...
 // chứ không tìm "Khánh Hòa", "Quảng Nam"). Badge card vẫn hiện tên thành phố.
 const PROVINCE_CITIES = {
-  'Khánh Hòa':         ['Nha Trang'],
-  'Hồ Chí Minh':       ['TP. Hồ Chí Minh'],
-  'Quảng Nam':         ['Hội An'],
-  'Thừa Thiên Huế':    ['Huế'],
-  'Lào Cai':           ['Sa Pa'],
-  'Lâm Đồng':          ['Đà Lạt'],
-  'Quảng Ninh':        ['Hạ Long'],
-  'Kiên Giang':        ['Phú Quốc'],
-  'Bình Thuận':        ['Phan Thiết', 'Mũi Né'],
-  'Bà Rịa - Vũng Tàu': ['Vũng Tàu'],
-  'Bình Định':         ['Quy Nhơn'],
-  'Đắk Lắk':           ['Buôn Ma Thuột'],
-  'Cần Thơ':           ['Mê Kông'],
+  'Khánh Hòa':   ['Nha Trang'],
+  'Hồ Chí Minh': ['TP. Hồ Chí Minh', 'Vũng Tàu'],   // Vũng Tàu sáp nhập vào TP.HCM
+  'Đà Nẵng':     ['Hội An'],                          // Hội An (Quảng Nam cũ) → Đà Nẵng
+  'Lào Cai':     ['Sa Pa'],
+  'Lâm Đồng':    ['Đà Lạt', 'Phan Thiết', 'Mũi Né'], // Bình Thuận cũ → Lâm Đồng
+  'Quảng Ninh':  ['Hạ Long'],
+  'An Giang':    ['Phú Quốc'],                        // Phú Quốc (Kiên Giang cũ) → An Giang
+  'Gia Lai':     ['Quy Nhơn'],                        // Quy Nhơn (Bình Định cũ) → Gia Lai
+  'Đắk Lắk':     ['Buôn Ma Thuột'],
+  'Cần Thơ':     ['Mê Kông'],
 }
 
 function getFilters() {
@@ -1351,7 +1348,7 @@ function setLang(lang){
 // INIT — chạy tất cả khi trang load
 // ══════════════════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', async () => {
-  populateDestFilter('') // load đủ 63 tỉnh ngay khi mở trang
+  populateDestFilter('') // load đủ 34 tỉnh ngay khi mở trang
   await Promise.all([loadTours(), loadGuides(), loadReviews()])
   applyLang()
 })

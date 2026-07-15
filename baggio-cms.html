@@ -935,9 +935,10 @@ function saveCurrent(){}
 // VALIDATION DATA
 // ════════════════════════════════════════════
 const REGION_PROV = {
-  north:['Hà Nội','Hải Phòng','Hà Giang','Cao Bằng','Bắc Kạn','Lạng Sơn','Tuyên Quang','Lào Cai','Yên Bái','Thái Nguyên','Phú Thọ','Bắc Giang','Quảng Ninh','Vĩnh Phúc','Bắc Ninh','Hải Dương','Hưng Yên','Hà Nam','Nam Định','Thái Bình','Ninh Bình','Hòa Bình','Điện Biên','Lai Châu','Sơn La','Hạ Long','Sa Pa'],
-  central:['Thanh Hóa','Nghệ An','Hà Tĩnh','Quảng Bình','Quảng Trị','Thừa Thiên Huế','Huế','Đà Nẵng','Quảng Nam','Hội An','Quảng Ngãi','Bình Định','Phú Yên','Khánh Hòa','Nha Trang','Ninh Thuận','Bình Thuận','Kon Tum','Gia Lai','Đắk Lắk','Đắk Nông','Lâm Đồng','Đà Lạt'],
-  south:['Hồ Chí Minh','TP Hồ Chí Minh','Bà Rịa - Vũng Tàu','Vũng Tàu','Bình Dương','Bình Phước','Tây Ninh','Đồng Nai','Long An','Tiền Giang','Bến Tre','Trà Vinh','Vĩnh Long','Đồng Tháp','An Giang','Kiên Giang','Phú Quốc','Cần Thơ','Hậu Giang','Sóc Trăng','Bạc Liêu','Cà Mau'],
+  // 34 tỉnh/thành sau sáp nhập 1/7/2025 + tên TP du lịch (alias) để validate destination
+  north:['Hà Nội','Hải Phòng','Quảng Ninh','Bắc Ninh','Hưng Yên','Ninh Bình','Phú Thọ','Thái Nguyên','Lạng Sơn','Cao Bằng','Tuyên Quang','Lào Cai','Điện Biên','Lai Châu','Sơn La','Hạ Long','Sa Pa'],
+  central:['Thanh Hóa','Nghệ An','Hà Tĩnh','Quảng Trị','Huế','Đà Nẵng','Hội An','Quảng Ngãi','Gia Lai','Quy Nhơn','Khánh Hòa','Nha Trang','Đắk Lắk','Buôn Ma Thuột','Lâm Đồng','Đà Lạt','Phan Thiết','Mũi Né'],
+  south:['Hồ Chí Minh','TP Hồ Chí Minh','Đồng Nai','Tây Ninh','Cần Thơ','Mê Kông','Vĩnh Long','Đồng Tháp','An Giang','Phú Quốc','Cà Mau','Vũng Tàu'],
 }
 const REGION_KW = {
   north:['hà nội','hạ long','sa pa','sapa','lào cai','ninh bình','hà giang','cao bằng','điện biên','yên bái'],
@@ -1158,7 +1159,7 @@ function runValidation(){
     const partial=ALL_PROV.find(p=>p.toLowerCase().includes(dest.toLowerCase())||dest.toLowerCase().includes(p.toLowerCase()))
     if(matched) items.push({i:'✅',t:`Điểm đến "${dest}" hợp lệ`})
     else if(partial) items.push({i:'⚠️',t:`Có thể bạn muốn nhập "${partial}"?`})
-    else items.push({i:'⚠️',t:`"${dest}" không có trong danh sách 63 tỉnh thành`})
+    else items.push({i:'⚠️',t:`"${dest}" không có trong danh sách 34 tỉnh thành`})
   }
 
   // Region match

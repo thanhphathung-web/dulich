@@ -167,10 +167,12 @@ UTC, `supabase/tours-schedules-cron.sql`); mỗi file batch cũng gọi hàm ở
 1. **`destination` = TÊN THÀNH PHỐ hướng khách, KHÔNG phải tên tỉnh** ('Nha Trang', 'Hạ Long',
    'Hội An', 'TP. Hồ Chí Minh'…). Badge card hiện thẳng `destination`. Vì khách Tây search tên TP.
 2. **Filter tỉnh bắc cầu ở FRONTEND (`PROVINCE_CITIES` trong index.html), KHÔNG normalize DB.**
-   Dropdown liệt kê 63 tỉnh; query `.in([tỉnh, ...TP con])` để chọn tỉnh bắt cả tour tên TP, và
-   render tên TP thành option chọn trực tiếp. **⚠ Bảo trì:** batch cho TP tên ≠ tỉnh phải thêm
-   entry vào `PROVINCE_CITIES` (đã có 13: Khánh Hòa, Hồ Chí Minh, Quảng Nam, Thừa Thiên Huế, Lào
-   Cai, Lâm Đồng, Quảng Ninh, Kiên Giang, Bình Thuận, Bà Rịa-Vũng Tàu, Bình Định, Đắk Lắk, Cần Thơ).
+   Dropdown liệt kê 34 tỉnh (sau sáp nhập 1/7/2025); query `.in([tỉnh, ...TP con])` để chọn tỉnh
+   bắt cả tour tên TP, và render tên TP thành option chọn trực tiếp. **⚠ Bảo trì:** batch cho TP
+   tên ≠ tỉnh phải thêm entry vào `PROVINCE_CITIES`. Sau sáp nhập, một số TP đổi tỉnh chủ quản:
+   Hội An→Đà Nẵng, Phú Quốc→An Giang, Vũng Tàu→Hồ Chí Minh, Quy Nhơn→Gia Lai, Phan Thiết/Mũi Né→
+   Lâm Đồng (giữ: Nha Trang→Khánh Hòa, Sa Pa→Lào Cai, Đà Lạt→Lâm Đồng, Hạ Long→Quảng Ninh,
+   Buôn Ma Thuột→Đắk Lắk, Mê Kông→Cần Thơ).
    **KHÔNG** sửa bằng cách đổi `destination` sang tên tỉnh.
 3. **Batch chỉ nhận tour CHẠY HÀNG NGÀY** (khớp auto-schedule). Tour lịch cố định (chợ Bắc Hà chỉ
    CN) / cruise ngủ đêm → nhập tay + lịch riêng, tránh auto-fill sinh ngày đặt sai.
