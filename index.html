@@ -480,9 +480,15 @@ footer{background:var(--ink);color:rgba(250,248,243,.55);padding:3rem 2rem 1.5re
       </select>
     </div>
     <div class="sf-group">
-      <label class="sf-label" data-i18n="filter_dest">Điểm đến</label>
+      <label class="sf-label" data-i18n="filter_province">Tỉnh</label>
+      <select class="sf-select" id="filterProvince" onchange="onProvinceChange()">
+        <option value="">Tất cả tỉnh</option>
+      </select>
+    </div>
+    <div class="sf-group">
+      <label class="sf-label" data-i18n="filter_dest">Địa điểm</label>
       <select class="sf-select" id="filterDest" onchange="applyFilters()">
-        <option value="">Tất cả điểm đến</option>
+        <option value="">Tất cả địa điểm</option>
       </select>
     </div>
     <div class="sf-group">
@@ -706,29 +712,38 @@ const PROVINCES = {
   central: ['Thanh Hóa','Nghệ An','Hà Tĩnh','Quảng Trị','Huế','Đà Nẵng','Quảng Ngãi','Gia Lai','Khánh Hòa','Đắk Lắk','Lâm Đồng'],
   south:   ['Hồ Chí Minh','Đồng Nai','Tây Ninh','Cần Thơ','Vĩnh Long','Đồng Tháp','An Giang','Cà Mau'],
 }
-const ALL_PROVINCES = [...PROVINCES.north, ...PROVINCES.central, ...PROVINCES.south].sort()
+const ALL_PROVINCES = [...PROVINCES.north, ...PROVINCES.central, ...PROVINCES.south]
 
-// Thành phố/điểm đến du lịch có tên KHÁC tên tỉnh. Dùng để: (1) khi lọc theo
-// tỉnh, bắt luôn tour lưu destination theo tên thành phố; (2) cho chọn trực
-// tiếp tên thành phố trong dropdown (khách nước ngoài tìm "Nha Trang", "Hội An"...
-// chứ không tìm "Khánh Hòa", "Quảng Nam"). Badge card vẫn hiện tên thành phố.
-const PROVINCE_CITIES = {
-  'Khánh Hòa':   ['Nha Trang'],
-  'Hồ Chí Minh': ['TP. Hồ Chí Minh', 'Vũng Tàu'],   // Vũng Tàu sáp nhập vào TP.HCM
-  'Đà Nẵng':     ['Hội An'],                          // Hội An (Quảng Nam cũ) → Đà Nẵng
-  'Lào Cai':     ['Sa Pa'],
-  'Lâm Đồng':    ['Đà Lạt', 'Phan Thiết', 'Mũi Né'], // Bình Thuận cũ → Lâm Đồng
+// Địa điểm (điểm đến du lịch) theo từng tỉnh mới — tour lưu `destination` theo tên
+// điểm đến này. Dùng để: (1) chọn "Tỉnh" (34) → lọc dropdown "Địa điểm" còn các điểm
+// thuộc tỉnh đó; (2) query .in('destination', [...]) bắt mọi tour trong tỉnh. Khách Tây
+// tìm "Nha Trang", "Hội An"… chứ không tìm "Khánh Hòa", "Đà Nẵng".
+// ⚠ Bảo trì: thêm tour ở điểm đến mới → thêm điểm vào đúng tỉnh ở đây.
+const PROVINCE_DESTS = {
+  'Hà Nội':      ['Hà Nội'],
   'Quảng Ninh':  ['Hạ Long'],
-  'An Giang':    ['Phú Quốc'],                        // Phú Quốc (Kiên Giang cũ) → An Giang
-  'Gia Lai':     ['Quy Nhơn'],                        // Quy Nhơn (Bình Định cũ) → Gia Lai
+  'Ninh Bình':   ['Ninh Bình'],
+  'Lào Cai':     ['Sa Pa'],
+  'Huế':         ['Huế'],
+  'Đà Nẵng':     ['Đà Nẵng', 'Hội An'],   // Hội An (Quảng Nam cũ) → Đà Nẵng
+  'Khánh Hòa':   ['Nha Trang'],
   'Đắk Lắk':     ['Buôn Ma Thuột'],
-  'Cần Thơ':     ['Mê Kông'],
+  'Lâm Đồng':    ['Đà Lạt'],
+  'Hồ Chí Minh': ['TP. Hồ Chí Minh'],
+  'Cần Thơ':     ['Cần Thơ'],
+  'An Giang':    ['Phú Quốc'],             // Phú Quốc (Kiên Giang cũ) → An Giang
 }
+// Điểm đến gộp theo vùng (lọc dropdown Địa điểm khi chỉ chọn Vùng miền)
+const REGION_DESTS = Object.fromEntries(
+  Object.entries(PROVINCES).map(([r, provs]) => [r, provs.flatMap(p => PROVINCE_DESTS[p] || [])])
+)
+const ALL_DESTS = [...REGION_DESTS.north, ...REGION_DESTS.central, ...REGION_DESTS.south]
 
 function getFilters() {
   return {
     search:   document.getElementById('searchInput')?.value.trim() || '',
     region:   document.getElementById('filterRegion')?.value || '',
+    province: document.getElementById('filterProvince')?.value || '',
     dest:     document.getElementById('filterDest')?.value || '',
     priceMin: document.getElementById('filterPriceMin')?.value || '',
     priceMax: document.getElementById('filterPriceMax')?.value || '',
@@ -799,10 +814,11 @@ async function loadTours(page = 0) {
       if (s) q = q.or(`name_vi.ilike.%${s}%,name_en.ilike.%${s}%,name_zh.ilike.%${s}%,destination.ilike.%${s}%`)
     }
     if (f.dest) {
-      // Chọn tỉnh có thành phố con → khớp cả tên tỉnh lẫn tên thành phố.
-      // Chọn thẳng tên thành phố → khớp chính xác.
-      const cities = PROVINCE_CITIES[f.dest]
-      q = cities ? q.in('destination', [f.dest, ...cities]) : q.eq('destination', f.dest)
+      // Chọn thẳng 1 địa điểm → khớp chính xác.
+      q = q.eq('destination', f.dest)
+    } else if (f.province) {
+      // Chỉ chọn Tỉnh (34) → bắt mọi địa điểm thuộc tỉnh đó (bắc cầu tỉnh→điểm đến).
+      q = q.in('destination', PROVINCE_DESTS[f.province] || [f.province])
     }
     if (f.region)   q = q.eq('region', f.region)
     if (f.priceMin) q = q.gte('base_price', +f.priceMin)
@@ -972,31 +988,54 @@ function clearSearch() {
   applyFilters()
 }
 
-function populateDestFilter(region) {
+// Cột "Tỉnh" (34): liệt kê tỉnh theo vùng (hoặc tất cả). Link xuống cột "Địa điểm".
+function populateProvinceFilter(region) {
+  const sel  = document.getElementById('filterProvince')
+  if (!sel) return
+  const prev = sel.value
+  sel.innerHTML = `<option value="">${t('filter_all_province')}</option>`
+  const list = region ? (PROVINCES[region] || []) : ALL_PROVINCES
+  list.forEach(p => {
+    const o = document.createElement('option')
+    o.value = p; o.textContent = p
+    if (p === prev) o.selected = true
+    sel.appendChild(o)
+  })
+}
+
+// Cột "Địa điểm": điểm đến du lịch. Lọc theo tỉnh đang chọn → chỉ hiện điểm thuộc
+// tỉnh đó; chưa chọn tỉnh thì hiện theo vùng (hoặc tất cả).
+function populateDestFilter(region, province) {
   const sel  = document.getElementById('filterDest')
   const prev = sel.value
-  sel.innerHTML = '<option value="">Tất cả điểm đến</option>'
-  const list = region ? (PROVINCES[region] || []) : ALL_PROVINCES
+  sel.innerHTML = `<option value="">${t('filter_all_dest')}</option>`
+  const list = province ? (PROVINCE_DESTS[province] || [])
+             : region   ? (REGION_DESTS[region] || [])
+             :             ALL_DESTS
   list.forEach(d => {
     const o = document.createElement('option')
     o.value = d; o.textContent = d
     if (d === prev) o.selected = true
     sel.appendChild(o)
-    // Thành phố con (nếu có): cho chọn trực tiếp, thụt lề để phân cấp
-    ;(PROVINCE_CITIES[d] || []).forEach(city => {
-      const co = document.createElement('option')
-      co.value = city; co.textContent = '   ' + city
-      if (city === prev) co.selected = true
-      sel.appendChild(co)
-    })
   })
 }
 
 function onRegionChange() {
   const region = document.getElementById('filterRegion').value
   activeRegion = region
-  // Cập nhật dropdown điểm đến theo vùng, reset về tất cả
-  populateDestFilter(region)
+  // Vùng miền → lọc lại cả cột Tỉnh và Địa điểm, reset về tất cả
+  populateProvinceFilter(region)
+  populateDestFilter(region, '')
+  document.getElementById('filterProvince').value = ''
+  document.getElementById('filterDest').value = ''
+  applyFilters()
+}
+
+function onProvinceChange() {
+  const region   = document.getElementById('filterRegion').value
+  const province = document.getElementById('filterProvince').value
+  // Tỉnh → lọc lại cột Địa điểm, reset về tất cả
+  populateDestFilter(region, province)
   document.getElementById('filterDest').value = ''
   applyFilters()
 }
@@ -1006,7 +1045,9 @@ function setRegionFilter(region, btn) {
   document.querySelectorAll('#filterBar .fchip').forEach(b => b.classList.remove('active'))
   btn.classList.add('active')
   document.getElementById('filterRegion').value = region
-  populateDestFilter(region)
+  populateProvinceFilter(region)
+  populateDestFilter(region, '')
+  document.getElementById('filterProvince').value = ''
   document.getElementById('filterDest').value = ''
   applyFilters()
 }
@@ -1025,12 +1066,14 @@ function resetFilters() {
   document.getElementById('searchInput').value    = ''
   document.getElementById('searchClear').style.display = 'none'
   document.getElementById('filterRegion').value   = ''
+  document.getElementById('filterProvince').value = ''
   document.getElementById('filterDest').value     = ''
   document.getElementById('filterPriceMin').value = ''
   document.getElementById('filterPriceMax').value = ''
   document.getElementById('filterDays').value     = ''
   document.querySelectorAll('#filterBar .fchip').forEach((b, i) => b.classList.toggle('active', i === 0))
-  populateDestFilter('')
+  populateProvinceFilter('')
+  populateDestFilter('', '')
   loadTours(0)
 }
 
@@ -1197,10 +1240,10 @@ const I18N = {
     hero_sub:'Từ vé máy bay, khách sạn, hướng dẫn viên địa phương đến xe đón sân bay — chúng tôi lo tất cả.',
     hero_btn_tours:'Xem tất cả tour →', hero_btn_guides:'Gặp hướng dẫn viên',
     stat_tours:'Gói tour', stat_guides:'HDV chuyên nghiệp', stat_refund:'Hoàn cọc khi hủy sớm',
-    filter_region:'Vùng miền', filter_dest:'Điểm đến',
+    filter_search:'Tìm kiếm tour', filter_region:'Vùng miền', filter_province:'Tỉnh', filter_dest:'Địa điểm',
     filter_price_min:'Giá từ', filter_price_max:'Giá đến',
     filter_days:'Số ngày', filter_reset:'↺ Đặt lại', filter_no_limit:'Không giới hạn',
-    filter_all_region:'Tất cả vùng', filter_all_dest:'Tất cả điểm đến', filter_any_day:'Bất kỳ',
+    filter_all_region:'Tất cả vùng', filter_all_province:'Tất cả tỉnh', filter_all_dest:'Tất cả địa điểm', filter_any_day:'Bất kỳ',
     chip_all:'Tất cả', chip_north:'🏔 Miền Bắc', chip_central:'🏖 Miền Trung', chip_south:'🌊 Miền Nam',
     region_north:'Miền Bắc', region_central:'Miền Trung', region_south:'Miền Nam',
     show_per_page:'Hiển thị', per_page:'/trang', loading:'Đang tải...',
@@ -1228,10 +1271,10 @@ const I18N = {
     hero_sub:'From flights, hotels and local guides to airport transfers — we handle everything.',
     hero_btn_tours:'View all tours →', hero_btn_guides:'Meet our guides',
     stat_tours:'Tour packages', stat_guides:'Expert guides', stat_refund:'Refund if cancelled early',
-    filter_region:'Region', filter_dest:'Destination',
+    filter_search:'Search tours', filter_region:'Region', filter_province:'Province', filter_dest:'Location',
     filter_price_min:'Price from', filter_price_max:'Price to',
     filter_days:'Duration', filter_reset:'↺ Reset', filter_no_limit:'No limit',
-    filter_all_region:'All regions', filter_all_dest:'All destinations', filter_any_day:'Any',
+    filter_all_region:'All regions', filter_all_province:'All provinces', filter_all_dest:'All locations', filter_any_day:'Any',
     chip_all:'All', chip_north:'🏔 North', chip_central:'🏖 Central', chip_south:'🌊 South',
     region_north:'North Vietnam', region_central:'Central Vietnam', region_south:'South Vietnam',
     show_per_page:'Show', per_page:'/ page', loading:'Loading...',
@@ -1259,10 +1302,10 @@ const I18N = {
     hero_sub:'从机票、酒店、当地导游到机场接送——我们一站式搞定。',
     hero_btn_tours:'查看所有旅游 →', hero_btn_guides:'认识我们的导游',
     stat_tours:'旅游套餐', stat_guides:'专业导游', stat_refund:'提前取消可退订金',
-    filter_region:'地区', filter_dest:'目的地',
+    filter_search:'搜索旅游', filter_region:'地区', filter_province:'省份', filter_dest:'地点',
     filter_price_min:'价格从', filter_price_max:'价格至',
     filter_days:'天数', filter_reset:'↺ 重置', filter_no_limit:'不限制',
-    filter_all_region:'所有地区', filter_all_dest:'所有目的地', filter_any_day:'不限',
+    filter_all_region:'所有地区', filter_all_province:'所有省份', filter_all_dest:'所有地点', filter_any_day:'不限',
     chip_all:'全部', chip_north:'🏔 北部', chip_central:'🏖 中部', chip_south:'🌊 南部',
     region_north:'北部越南', region_central:'中部越南', region_south:'南部越南',
     show_per_page:'显示', per_page:'/ 页', loading:'加载中...',
@@ -1317,6 +1360,8 @@ function applyLang(){
     r.options[2].text=t('region_central')
     r.options[3].text=t('region_south')
   }
+  const pv=document.getElementById('filterProvince')
+  if(pv&&pv.options[0]) pv.options[0].text=t('filter_all_province')
   const d=document.getElementById('filterDest')
   if(d&&d.options[0]) d.options[0].text=t('filter_all_dest')
   const dy=document.getElementById('filterDays')
@@ -1348,7 +1393,8 @@ function setLang(lang){
 // INIT — chạy tất cả khi trang load
 // ══════════════════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', async () => {
-  populateDestFilter('') // load đủ 34 tỉnh ngay khi mở trang
+  populateProvinceFilter('') // 34 tỉnh
+  populateDestFilter('', '')  // tất cả địa điểm
   await Promise.all([loadTours(), loadGuides(), loadReviews()])
   applyLang()
 })
