@@ -721,17 +721,21 @@ const ALL_PROVINCES = [...PROVINCES.north, ...PROVINCES.central, ...PROVINCES.so
 // ⚠ Bảo trì: thêm tour ở điểm đến mới → thêm điểm vào đúng tỉnh ở đây.
 const PROVINCE_DESTS = {
   'Hà Nội':      ['Hà Nội'],
+  'Hải Phòng':   ['Cát Bà'],
   'Quảng Ninh':  ['Hạ Long'],
-  'Ninh Bình':   ['Ninh Bình'],
+  'Ninh Bình':   ['Ninh Bình', 'Cúc Phương'],
+  'Phú Thọ':     ['Mai Châu'],             // Mai Châu (Hòa Bình cũ) → Phú Thọ
+  'Tuyên Quang': ['Hà Giang'],             // Hà Giang (cũ) → Tuyên Quang
   'Lào Cai':     ['Sa Pa'],
+  'Thanh Hóa':   ['Pù Luông'],
   'Huế':         ['Huế'],
-  'Đà Nẵng':     ['Đà Nẵng', 'Hội An'],   // Hội An (Quảng Nam cũ) → Đà Nẵng
+  'Đà Nẵng':     ['Đà Nẵng', 'Hội An', 'Cù Lao Chàm'],   // Hội An/Cù Lao Chàm (Quảng Nam cũ) → Đà Nẵng
   'Khánh Hòa':   ['Nha Trang'],
-  'Đắk Lắk':     ['Buôn Ma Thuột'],
+  'Đắk Lắk':     ['Buôn Ma Thuột', 'Bản Đôn'],
   'Lâm Đồng':    ['Đà Lạt'],
   'Hồ Chí Minh': ['TP. Hồ Chí Minh'],
   'Cần Thơ':     ['Cần Thơ'],
-  'An Giang':    ['Phú Quốc'],             // Phú Quốc (Kiên Giang cũ) → An Giang
+  'An Giang':    ['Phú Quốc', 'Trà Sư'],   // Phú Quốc (Kiên Giang cũ)/Trà Sư → An Giang
 }
 // Điểm đến gộp theo vùng (lọc dropdown Địa điểm khi chỉ chọn Vùng miền)
 const REGION_DESTS = Object.fromEntries(
@@ -754,15 +758,15 @@ function getFilters() {
 // ── Sở thích (interests) — lọc client-side ──
 let activeInterests = []
 const DEST_INTEREST_MAP = {
-  beach:['Phú Quốc','Nha Trang','Đà Nẵng','Phan Thiết','Vũng Tàu','Mũi Né','Hạ Long','Quy Nhơn'],
-  mountain:['Sa Pa','Đà Lạt','Hà Giang','Cao Bằng','Điện Biên','Lào Cai','Yên Bái','Sơn La','Buôn Ma Thuột'],
-  culture:['Hội An','Huế','Hà Nội','Ninh Bình','Quảng Nam','Đồng Tháp','Mê Kông'],
+  beach:['Phú Quốc','Nha Trang','Đà Nẵng','Phan Thiết','Vũng Tàu','Mũi Né','Hạ Long','Quy Nhơn','Cù Lao Chàm','Cát Bà'],
+  mountain:['Sa Pa','Đà Lạt','Hà Giang','Cao Bằng','Điện Biên','Lào Cai','Yên Bái','Sơn La','Buôn Ma Thuột','Pù Luông','Mai Châu'],
+  culture:['Hội An','Huế','Hà Nội','Ninh Bình','Quảng Nam','Đồng Tháp','Mê Kông','Mai Châu','Bản Đôn','Cần Thơ','Trà Sư'],
   food:['Hội An','Hà Nội','Cần Thơ','Đà Nẵng','Hồ Chí Minh','Buôn Ma Thuột','Mê Kông'],
-  adventure:['Sa Pa','Hà Giang','Đà Lạt','Cao Bằng','Điện Biên','Buôn Ma Thuột'],
-  family:['Phú Quốc','Đà Lạt','Nha Trang','Hạ Long','Ninh Bình'],
+  adventure:['Sa Pa','Hà Giang','Đà Lạt','Cao Bằng','Điện Biên','Buôn Ma Thuột','Pù Luông','Cát Bà','Cúc Phương'],
+  family:['Phú Quốc','Đà Lạt','Nha Trang','Hạ Long','Ninh Bình','Cúc Phương','Cù Lao Chàm','Bản Đôn'],
   couple:['Hội An','Đà Lạt','Phú Quốc','Sa Pa','Hạ Long'],
-  wellness:['Đà Lạt','Phú Quốc','Nha Trang','Mũi Né'],
-  photography:['Hà Giang','Sa Pa','Hội An','Ninh Bình','Buôn Ma Thuột'],
+  wellness:['Đà Lạt','Phú Quốc','Nha Trang','Mũi Né','Pù Luông'],
+  photography:['Hà Giang','Sa Pa','Hội An','Ninh Bình','Buôn Ma Thuột','Pù Luông','Trà Sư'],
   festival:['Hội An','Huế','Hà Nội','Đà Nẵng','Buôn Ma Thuột'],
 }
 function tourMatchesInterests(tour){
