@@ -112,9 +112,10 @@ nav{background:var(--card);border-bottom:1px solid var(--border);padding:.9rem 2
 .hero-right{position:relative;display:flex;justify-content:center;align-items:center}
 .hero-img-wrap{position:relative;width:100%;max-width:480px}
 .hero-img{width:100%;height:400px;object-fit:cover;display:block}
-.hero-badge{position:absolute;bottom:-1rem;left:-1rem;background:var(--ink);color:#fff;padding:1.25rem 1.5rem}
-.hb-num{font-family:var(--serif);font-size:1.8rem;font-weight:700;line-height:1;color:#fff}
-.hb-label{font-size:.72rem;color:rgba(255,255,255,.5);font-family:var(--mono);letter-spacing:.08em;margin-top:.25rem}
+.hero-badge{position:absolute;bottom:-1rem;left:-1rem;background:var(--ink);color:#fff;padding:1.1rem 1.4rem;border-left:3px solid var(--gold);max-width:15rem;box-shadow:0 10px 30px rgba(17,17,24,.25)}
+.hb-num{font-family:var(--serif);font-size:1.5rem;font-weight:700;line-height:1.15;color:#fff}
+.hb-num em{color:var(--gold);font-style:italic}
+.hb-label{font-size:.66rem;color:rgba(255,255,255,.55);font-family:var(--mono);letter-spacing:.12em;margin-top:.45rem;text-transform:uppercase}
 
 /* ── MARQUEE ── */
 .marquee{background:var(--ink);overflow:hidden;padding:.85rem 0;white-space:nowrap}
@@ -425,11 +426,16 @@ footer{background:var(--ink);color:rgba(250,248,243,.55);padding:3rem 2rem 1.5re
   </div>
   <div class="hero-right">
     <div class="hero-img-wrap">
-      <img class="hero-img" src="https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=800&q=80" alt="Hội An đêm">
+      <!-- ĐỔI ẢNH HERO: sửa link trong src="..." bên dưới (giữ ?w=800&q=80) -->
+      <img class="hero-img" src="https://images.unsplash.com/photo-1573270689103-d7a4e42b609a?w=800&q=80" alt="Vịnh Hạ Long">
+      <!-- ====== ĐỔI SLOGAN Ở ĐÂY ======
+           Dòng 1 = chữ thường, phần trong <em>...</em> = chữ vàng gold.
+           Dòng ★ bên dưới là tên thương hiệu. Sửa chữ, giữ nguyên các thẻ. -->
       <div class="hero-badge">
-        <div class="hb-num">63<span style="font-size:1rem">+</span></div>
-        <div class="hb-label">Tỉnh thành VN</div>
+        <div class="hb-num">Cả Việt Nam<br><em>trong tầm tay</em></div>
+        <div class="hb-label">★ Baggio Travel</div>
       </div>
+      <!-- ====== HẾT SLOGAN ====== -->
     </div>
   </div>
 </section>
