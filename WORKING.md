@@ -143,7 +143,7 @@ Claude soạn bản nháp song ngữ VI/EN đầy đủ → chạy lên Supabase
 nhưng chủ shop chọn ACTIVE thẳng theo TỪNG batch (hỏi qua AskUserQuestion mỗi lần). Chi tiết
 vận hành: memory `tour-import-workflow` + `tour-catalog-design-decisions`.
 
-### 6a. 7 batch đã chạy production — 70 tour (day_tour, duration_days=1, 2026-07-14)
+### 6a. 8 batch đã chạy production — 80 tour (2026-07-14 → 07-15)
 | Batch | Slug | destination / region | File | Commit |
 |---|---|---|---|---|
 | TP.HCM | 10021→10030 | 'TP. Hồ Chí Minh' / south | `tours-hcmc-10.sql` | (đợt trước) |
@@ -153,6 +153,13 @@ vận hành: memory `tour-import-workflow` + `tour-catalog-design-decisions`.
 | Phú Quốc | 10061→10070 | 'Phú Quốc' / south | `tours-phu-quoc-10.sql` | `b8d99b1` |
 | Sa Pa | 10071→10080 | 'Sa Pa' / north | `tours-sa-pa-10.sql` | `46a086c` |
 | Hạ Long | 10081→10090 | 'Hạ Long' / north | `tours-ha-long-10.sql` | `cea1234` |
+| Bền vững | 10091→10100 | THEME eco, 10 điểm khác nhau | `tours-ben-vung-10.sql` | `04da6b7` |
+
+Batch 8 khác 7 batch trước: **CHỦ ĐỀ, không phải 1 TP** — 10 điểm eco trải khắp VN;
+gồm **4 tour NHIỀU NGÀY** (Pù Luông/Mai Châu/Hà Giang 3N/Mekong) nên file có INSERT lịch
+TAY (`generate_series` mỗi 3 ngày) vì `extend_day_tour_schedules()` chỉ phủ tour 1 ngày.
+Verify REST: 10/10 ACTIVE, lịch 60 (tour ngày) / 20 (tour nhiều ngày). 8 điểm mới đã thêm
+vào `PROVINCE_DESTS` + `DEST_INTEREST_MAP` (region khớp bucket tỉnh trong `PROVINCES`).
 
 File idempotent (`WHERE NOT EXISTS` theo slug). Filter fix `87f45dd`. Mỗi batch: verify (public
 hoặc REST đủ 10/10) → sitemap → commit → push (`origin/main`, repo `thanhphathung-web/dulich`).
@@ -189,5 +196,5 @@ clipboard Windows, `navigator.clipboard.readText()` treo renderer. → **Chủ s
 ### 6e. Việc còn treo (chương trình tour)
 1. **Rà giá thật + thay ảnh placeholder cho 70 tour AI soạn** trong CMS (đề xuất: xuất checklist
    → sinh SQL UPDATE hàng loạt).
-2. **sitemap.xml**: hiện 94 URL (4 tĩnh + 90 tour), khớp DB ACTIVE — batch sau nhớ cập nhật.
+2. **sitemap.xml**: hiện 104 URL (4 tĩnh + 100 tour), khớp DB ACTIVE — batch sau nhớ cập nhật.
 3. Batch sau: hỏi lại ACTIVE/DRAFT; nếu TP tên ≠ tỉnh thì thêm vào `PROVINCE_CITIES` (mục 6c).
