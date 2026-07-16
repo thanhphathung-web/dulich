@@ -183,6 +183,18 @@ nav{background:var(--card);border-bottom:1px solid var(--border);padding:.9rem 2
 .sf-search-wrap .sf-input{padding-right:2.5rem}
 .sf-search-clear{position:absolute;right:.75rem;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);font-size:1rem;line-height:1;padding:0;display:none}
 .sf-search-clear:hover{color:var(--ink)}
+/* Dropdown gợi ý tour thật khi gõ tìm kiếm */
+.sf-suggest{position:absolute;left:0;top:100%;margin-top:.25rem;min-width:340px;max-width:min(480px,92vw);width:max-content;background:var(--card);border:1px solid var(--border);box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:50;max-height:340px;overflow-y:auto;display:none}
+@media(max-width:520px){.sf-suggest{min-width:0;left:0;right:0;width:auto}}
+.sf-suggest.open{display:block}
+.sf-sug-item{display:flex;align-items:center;gap:.65rem;padding:.6rem .85rem;cursor:pointer;border-bottom:1px solid var(--border);text-align:left}
+.sf-sug-item:last-child{border-bottom:none}
+.sf-sug-item:hover,.sf-sug-item.active{background:var(--cream)}
+.sf-sug-thumb{width:44px;height:44px;object-fit:cover;flex-shrink:0;background:var(--surface2)}
+.sf-sug-txt{min-width:0;flex:1}
+.sf-sug-name{font-size:.85rem;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sf-sug-meta{font-size:.72rem;color:var(--muted);font-family:var(--mono);margin-top:.15rem}
+.sf-sug-empty{padding:.75rem .85rem;font-size:.82rem;color:var(--muted)}
 .sf-select option{background:#fff}
 .btn-search{background:var(--red);color:#fff;border:none;padding:.7rem 1.75rem;font-family:var(--font);font-weight:600;font-size:.9rem;cursor:pointer;transition:background .2s;white-space:nowrap;align-self:flex-end;height:42px}
 .btn-search:hover{background:#a82d22}
@@ -467,8 +479,10 @@ footer{background:var(--ink);color:rgba(250,248,243,.55);padding:3rem 2rem 1.5re
       <label class="sf-label" data-i18n="filter_search">Tìm kiếm tour</label>
       <input class="sf-input" id="searchInput" type="search"
         placeholder="Nhập tên tour, điểm đến..." autocomplete="off"
-        oninput="onSearchInput(this.value)">
+        oninput="onSearchInput(this.value)" onkeydown="onSearchKey(event)"
+        onfocus="if(this.value.trim())fetchSuggest(this.value)">
       <button class="sf-search-clear" id="searchClear" onclick="clearSearch()" title="Xóa">✕</button>
+      <div class="sf-suggest" id="searchSuggest"></div>
     </div>
     <div class="sf-group">
       <label class="sf-label" data-i18n="filter_region">Vùng miền</label>
@@ -981,16 +995,99 @@ function onSearchInput(val) {
   document.getElementById('searchClear').style.display = val ? 'block' : 'none'
   // Debounce 350ms — không query liên tục khi đang gõ
   clearTimeout(searchTimer)
-  searchTimer = setTimeout(() => applyFilters(), 350)
+  searchTimer = setTimeout(() => { applyFilters(); fetchSuggest(val) }, 350)
 }
 
 function clearSearch() {
   const input = document.getElementById('searchInput')
   input.value = ''
   document.getElementById('searchClear').style.display = 'none'
+  hideSuggest()
   input.focus()
   applyFilters()
 }
+
+// ── Dropdown gợi ý tour thật (autocomplete từ DB) ──
+let searchSuggestions = []   // cache bản ghi đầy đủ để openModal dùng lại
+let sugActive = -1           // chỉ số item đang chọn bằng phím ↑/↓
+const SUG_SELECT = 'id,name_vi,name_en,name_zh,slug,destination,region,duration_days,duration_nights,base_price,max_pax,cover_image,itinerary_vi,highlights_vi,includes_vi,itinerary_en,highlights_en,includes_en,itinerary_zh,highlights_zh,includes_zh,travel_styles,status,tour_schedules(available_slots,depart_date,status)'
+
+async function fetchSuggest(val) {
+  const s = (val || '').replace(/[,()*%]/g, ' ').trim()
+  if (s.length < 2) { hideSuggest(); return }
+  try {
+    const { data, error } = await sb.from('tours')
+      .select(SUG_SELECT)
+      .eq('status', 'ACTIVE')
+      .or(`name_vi.ilike.%${s}%,name_en.ilike.%${s}%,name_zh.ilike.%${s}%,destination.ilike.%${s}%`)
+      .order('base_price', { ascending: true })
+      .limit(6)
+    if (error) throw error
+    // Chỉ hiển thị nếu ô tìm kiếm vẫn còn nội dung (tránh race sau khi xóa)
+    if (!document.getElementById('searchInput').value.trim()) return
+    searchSuggestions = data || []
+    renderSuggest()
+  } catch (err) { console.error('fetchSuggest:', err); hideSuggest() }
+}
+
+function renderSuggest() {
+  const box = document.getElementById('searchSuggest')
+  sugActive = -1
+  if (!searchSuggestions.length) {
+    box.innerHTML = `<div class="sf-sug-empty">${L('no_tours') || 'Không tìm thấy tour phù hợp'}</div>`
+    box.classList.add('open')
+    return
+  }
+  box.innerHTML = searchSuggestions.map((t, i) => `
+    <div class="sf-sug-item" data-i="${i}" onmousedown="event.preventDefault();pickSuggest(${i})">
+      <img class="sf-sug-thumb" src="${t.cover_image || 'https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=120&q=60'}"
+        alt="" loading="lazy" onerror="this.style.visibility='hidden'">
+      <div class="sf-sug-txt">
+        <div class="sf-sug-name">${tourName(t)}</div>
+        <div class="sf-sug-meta">${t.destination} · ${t.duration_days}N${t.duration_nights}Đ · ${fmt(t.base_price)}đ</div>
+      </div>
+    </div>`).join('')
+  box.classList.add('open')
+}
+
+function hideSuggest() {
+  const box = document.getElementById('searchSuggest')
+  if (box) box.classList.remove('open')
+  sugActive = -1
+}
+
+function pickSuggest(i) {
+  const tour = searchSuggestions[i]
+  if (!tour) return
+  hideSuggest()
+  openModal(tour.id)
+}
+
+// Điều hướng dropdown bằng bàn phím: ↑ ↓ Enter Esc
+function onSearchKey(e) {
+  const box = document.getElementById('searchSuggest')
+  if (!box || !box.classList.contains('open')) return
+  const items = box.querySelectorAll('.sf-sug-item')
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+    e.preventDefault()
+    if (!items.length) return
+    sugActive += (e.key === 'ArrowDown' ? 1 : -1)
+    if (sugActive < 0) sugActive = items.length - 1
+    if (sugActive >= items.length) sugActive = 0
+    items.forEach((el, idx) => el.classList.toggle('active', idx === sugActive))
+    items[sugActive].scrollIntoView({ block: 'nearest' })
+  } else if (e.key === 'Enter') {
+    if (sugActive >= 0) { e.preventDefault(); pickSuggest(sugActive) }
+    else hideSuggest()
+  } else if (e.key === 'Escape') {
+    hideSuggest()
+  }
+}
+
+// Ẩn dropdown khi bấm ra ngoài ô tìm kiếm
+document.addEventListener('click', e => {
+  if (!e.target.closest('.sf-search-wrap')) hideSuggest()
+})
 
 // Cột "Tỉnh" (34): liệt kê tỉnh theo vùng (hoặc tất cả). Link xuống cột "Địa điểm".
 function populateProvinceFilter(region) {
@@ -1085,7 +1182,8 @@ function resetFilters() {
 // MODAL CHI TIẾT
 // ══════════════════════════════════════════════════════════════
 async function openModal(tourId) {
-  currentTour = allTours.find(t => t.id === tourId)
+  // Ưu tiên lưới hiện tại; nếu chọn từ dropdown gợi ý thì tour có thể chưa nằm trong trang
+  currentTour = allTours.find(t => t.id === tourId) || searchSuggestions.find(t => t.id === tourId)
   if (!currentTour) return
   const t = currentTour
   const inc = t.includes_vi || {}
