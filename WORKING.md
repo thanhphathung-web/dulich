@@ -198,3 +198,14 @@ clipboard Windows, `navigator.clipboard.readText()` treo renderer. → **Chủ s
    → sinh SQL UPDATE hàng loạt).
 2. **sitemap.xml**: hiện 104 URL (4 tĩnh + 100 tour), khớp DB ACTIVE — batch sau nhớ cập nhật.
 3. Batch sau: hỏi lại ACTIVE/DRAFT; nếu TP tên ≠ tỉnh thì thêm vào `PROVINCE_CITIES` (mục 6c).
+
+## 7. Phiên 2026-10-09 — Trang "Đốt Phong Long" (`/dot-phong-long`)
+- File mới `dot-phong-long.html` (1 file, không phụ thuộc Supabase): viết lá sớ (tên, năm sinh → can chi,
+  nam 7 vía / nữ 9 vía, chip điều xui + tự viết, điều ước) → nhấn giữ 0,9s để châm lửa → lửa canvas
+  (lửa/than/khói/tàn), lá sớ cháy từ dưới lên + chìm vào chậu, lời khấn hiện từng câu (tiếng mõ/chuông
+  tự tổng hợp WebAudio, có nút tắt) → đèn trời bay lên → quẻ (lời chúc, số/màu/hướng, gợi ý tour).
+- Không gửi dữ liệu đi đâu; localStorage chỉ lưu số lần đốt + bật/tắt âm thanh.
+- Đã thêm rewrite `/dot-phong-long` vào `vercel.json` + URL vào `sitemap.xml`.
+- Cạm bẫy khi test bằng Chrome tự động: tab chạy nền (`document.hidden=true`) → rAF dừng, ảnh chụp trễ
+  vài giây → không chụp được giữa lúc cháy; phải set trạng thái DOM thủ công để soi lá sớ.
+- Đã commit + push main (Vercel auto-deploy). Chưa làm: chưa gắn link từ trang chủ (nav/footer); chưa có ảnh OG riêng.

@@ -22,6 +22,7 @@
     { "source": "/tour-import", "destination": "/baggio-tour-import.html" },
     { "source": "/translate", "destination": "/baggio-translate.html" },
     { "source": "/account", "destination": "/baggio-account.html" },
-    { "source": "/chinh-sach", "destination": "/chinh-sach-hoan-huy.html" }
+    { "source": "/chinh-sach", "destination": "/chinh-sach-hoan-huy.html" },
+    { "source": "/dot-phong-long", "destination": "/dot-phong-long.html" }
   ]
 }
