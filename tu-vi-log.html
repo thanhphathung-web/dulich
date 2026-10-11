@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nhật ký Tử vi | Baggio Admin</title>
+<meta name="robots" content="noindex, nofollow">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+:root{--bg:#0e1020;--card:#171a30;--line:rgba(255,255,255,.1);--text:#ece8dc;--muted:#9a9484;--gold:#f2c76e;--red:#e0664f;--green:#6fcf97}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font:14px/1.5 system-ui,'Segoe UI',sans-serif;padding:20px}
+h1{font-size:1.3rem;margin-bottom:4px}
+.sub{color:var(--muted);font-size:.85rem;margin-bottom:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:14px}
+input,select,button{font:inherit;color:inherit;background:#0b0d1c;border:1px solid var(--line);border-radius:8px;padding:8px 10px;color-scheme:dark}
+button{cursor:pointer;background:#232850}
+button.pri{background:linear-gradient(135deg,#b72e23,#e0572a);border:0;font-weight:600}
+button:hover{filter:brightness(1.2)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:14px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px}
+.stat b{display:block;font-size:1.6rem;color:var(--gold)}
+.stat span{color:var(--muted);font-size:.78rem}
+.wrap{overflow:auto;border:1px solid var(--line);border-radius:12px}
+table{border-collapse:collapse;width:100%;min-width:900px;background:var(--card)}
+th,td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top;font-size:.82rem}
+th{position:sticky;top:0;background:#1d2140;color:var(--muted);font-weight:600;white-space:nowrap}
+tr:hover td{background:rgba(255,255,255,.03)}
+.tag{display:inline-block;padding:1px 8px;border-radius:99px;font-size:.72rem;border:1px solid var(--line)}
+.tag.submit{color:var(--green);border-color:var(--green)}.tag.cta{color:var(--gold);border-color:var(--gold)}.tag.tab{color:#8ab4ff}
+details summary{cursor:pointer;color:var(--muted)}
+pre{white-space:pre-wrap;word-break:break-word;font-size:.74rem;color:#cfc8b6;margin-top:4px}
+.err{color:#ff9b8a;margin-top:8px;min-height:1.2em}
+#app{display:none}
+</style>
+</head>
+<body>
+<div class="card" id="login" style="max-width:380px;margin:60px auto">
+  <h1>Nhật ký Tử vi / Thần số / Tướng số</h1>
+  <p class="sub">Đăng nhập tài khoản admin Baggio</p>
+  <div class="row" style="flex-direction:column;align-items:stretch">
+    <input id="em" type="email" placeholder="Email" autocomplete="username">
+    <input id="pw" type="password" placeholder="Mật khẩu" autocomplete="current-password">
+    <button class="pri" id="btnLogin">Đăng nhập</button>
+  </div>
+  <div class="err" id="loginErr"></div>
+</div>
+
+<div id="app">
+  <div class="row" style="justify-content:space-between">
+    <div><h1>Nhật ký Tử vi / Thần số / Tướng số</h1><p class="sub" id="meta"></p></div>
+    <div class="row"><button id="btnCsv">⬇ Xuất CSV</button><button id="btnReload">↻ Tải lại</button><button id="btnOut">Đăng xuất</button></div>
+  </div>
+  <div class="stats" id="stats"></div>
+  <div class="card row">
+    <input id="q" placeholder="Tìm tên / SĐT / IP / ngày sinh..." style="flex:1;min-width:200px">
+    <select id="fEvent"><option value="">Mọi sự kiện</option><option value="submit">Đã nhập &amp; xem (submit)</option><option value="view">Lượt vào (view)</option><option value="tab">Đổi tab</option><option value="cta">Bấm link tour</option></select>
+    <select id="fTool"><option value="">Mọi môn</option><option value="tuvi">Tử vi</option><option value="thansohoc">Thần số học</option><option value="tuongso">Tướng số</option></select>
+    <select id="fDays"><option value="1">Hôm nay</option><option value="7" selected>7 ngày</option><option value="30">30 ngày</option><option value="365">1 năm</option></select>
+  </div>
+  <div class="wrap"><table>
+    <thead><tr><th>Thời gian</th><th>Sự kiện</th><th>Môn</th><th>Tên</th><th>Ngày sinh</th><th>Giới</th><th>SĐT/Zalo</th><th>Kết quả / chi tiết</th><th>IP</th><th>Phiên</th></tr></thead>
+    <tbody id="rows"></tbody>
+  </table></div>
+  <p class="sub" style="margin-top:10px" id="foot"></p>
+</div>
+
+<script>
+const sb = supabase.createClient('https://lfnlezfphwjtdunyungi.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxmbmxlemZwaHdqdGR1bnl1bmdpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0NjkwNzcsImV4cCI6MjA5NjA0NTA3N30.fmjvqhyiPcjB6qT5GDtfzMfY-C-WXP4QUIk-YW7FhJg')
+const $=id=>document.getElementById(id)
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))
+const TOOL={tuvi:'Tử vi',thansohoc:'Thần số',tuongso:'Tướng số'}
+let ALL=[]
+
+async function enter(){
+  const {data:{session}}=await sb.auth.getSession()
+  if(!session){ $('login').style.display='';$('app').style.display='none'; return }
+  const {data:role}=await sb.rpc('staff_role')
+  if(role!=='admin'){ $('loginErr').textContent='Tài khoản này không có quyền admin.'; await sb.auth.signOut(); $('login').style.display='';$('app').style.display='none'; return }
+  $('login').style.display='none'; $('app').style.display='block'
+  load()
+}
+$('btnLogin').onclick=async()=>{
+  $('loginErr').textContent=''
+  const {error}=await sb.auth.signInWithPassword({email:$('em').value.trim(),password:$('pw').value})
+  if(error) $('loginErr').textContent='Sai email hoặc mật khẩu.'; else enter()
+}
+$('pw').addEventListener('keydown',e=>{ if(e.key==='Enter') $('btnLogin').click() })
+$('btnOut').onclick=async()=>{ await sb.auth.signOut(); location.reload() }
+$('btnReload').onclick=load
+;['q','fEvent','fTool'].forEach(i=>$(i).addEventListener('input',render))
+$('fDays').addEventListener('change',load)
+
+async function load(){
+  const since=new Date(Date.now()-(+$('fDays').value)*864e5).toISOString()
+  const {data,error}=await sb.from('fortune_logs').select('*').gte('created_at',since).order('created_at',{ascending:false}).limit(2000)
+  if(error){ $('foot').textContent='Lỗi tải: '+error.message; return }
+  ALL=data||[]; render()
+}
+function summ(r){
+  const o=r.result||{}, i=r.input||{}
+  if(r.event==='submit'){
+    if(r.tool==='tuvi') return `${o.canchi||''} · ${o.napam||''} · cung ${o.cung_phi||''} · sao ${o.sao||''} · năm ${i.year||''}: ${o.sao_nam||'?'}/5${o.tam_tai?' · Tam Tai':''}${o.kim_lau?' · Kim Lâu':''}`
+    if(r.tool==='thansohoc') return `Số chủ đạo ${o.chu_dao} · biểu đạt ${o.bieu_dat} · linh hồn ${o.linh_hon} · năm CN ${o.nam_ca_nhan}`
+    if(r.tool==='tuongso') return `Tài ${o.tai}/5 · Tình ${o.tinh}/5 · Nghiệp ${o.nghiep}/5<br><small>${esc((i.features||[]).join('; '))}</small>`
+  }
+  if(r.event==='cta') return 'Bấm: '+esc(i.cta||'')
+  if(r.event==='view') return esc(r.referrer?('từ '+r.referrer):'vào trực tiếp')+(i.utm?' · '+esc(i.utm):'')
+  return ''
+}
+function filtered(){
+  const q=$('q').value.trim().toLowerCase(), ev=$('fEvent').value, tl=$('fTool').value
+  return ALL.filter(r=>(!ev||r.event===ev)&&(!tl||r.tool===tl)&&(!q||[r.name,r.contact,r.ip,r.birth_date,r.session_id].join(' ').toLowerCase().includes(q)))
+}
+function render(){
+  const f=filtered()
+  const sessions=new Set(ALL.map(r=>r.session_id)).size
+  const subs=ALL.filter(r=>r.event==='submit')
+  const leads=new Set(subs.filter(r=>r.contact).map(r=>r.contact)).size
+  $('stats').innerHTML=[['Phiên truy cập',sessions],['Lượt vào trang',ALL.filter(r=>r.event==='view').length],['Lượt xem kết quả',subs.length],
+    ['Tử vi',subs.filter(r=>r.tool==='tuvi').length],['Thần số',subs.filter(r=>r.tool==='thansohoc').length],['Tướng số',subs.filter(r=>r.tool==='tuongso').length],
+    ['Để lại SĐT',leads],['Bấm link tour',ALL.filter(r=>r.event==='cta').length]].map(([l,n])=>`<div class="stat"><b>${n}</b><span>${l}</span></div>`).join('')
+  $('rows').innerHTML=f.slice(0,500).map(r=>`<tr>
+    <td>${new Date(r.created_at).toLocaleString('vi-VN')}</td>
+    <td><span class="tag ${r.event}">${r.event}</span></td><td>${TOOL[r.tool]||''}</td>
+    <td>${esc(r.name)}</td><td>${esc(r.birth_date)}${r.birth_time?'<br><small>'+esc(r.birth_time)+'</small>':''}</td><td>${esc(r.gender)}</td><td>${esc(r.contact)}</td>
+    <td>${summ(r)}<details><summary>JSON</summary><pre>${esc(JSON.stringify({input:r.input,result:r.result,ua:r.user_agent,screen:r.screen,lang:r.lang},null,1))}</pre></details></td>
+    <td>${esc(r.ip)}</td><td title="${esc(r.session_id)}">${esc((r.session_id||'').slice(0,6))}</td></tr>`).join('')||'<tr><td colspan="10" style="text-align:center;color:var(--muted)">Chưa có dữ liệu</td></tr>'
+  $('meta').textContent=`Hiển thị ${Math.min(f.length,500)} / ${f.length} dòng (đã tải ${ALL.length})`
+  $('foot').textContent='Dữ liệu cá nhân của khách — chỉ dùng nội bộ để tư vấn. Muốn xoá theo yêu cầu: Supabase → Table Editor → fortune_logs.'
+}
+$('btnCsv').onclick=()=>{
+  const cols=['created_at','event','tool','name','birth_date','birth_time','gender','contact','ip','session_id','referrer','page']
+  const cell=v=>'"'+String(v==null?'':v).replace(/"/g,'""')+'"'
+  const lines=[cols.concat(['input','result']).join(',')].concat(filtered().map(r=>cols.map(c=>cell(r[c])).concat([cell(JSON.stringify(r.input||'')),cell(JSON.stringify(r.result||''))]).join(',')))
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob(['﻿'+lines.join('\n')],{type:'text/csv;charset=utf-8'}))
+  a.download='nhat-ky-tu-vi_'+new Date().toISOString().slice(0,10)+'.csv'; a.click()
+}
+enter()
+</script>
+</body>
+</html>

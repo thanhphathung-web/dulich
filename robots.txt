@@ -14,5 +14,6 @@ Disallow: /api-docs
 Disallow: /schema
 Disallow: /email
 Disallow: /deploy
+Disallow: /tu-vi-log
 
 Sitemap: https://baggio.website/sitemap.xml

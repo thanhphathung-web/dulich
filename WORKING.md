@@ -209,3 +209,16 @@ clipboard Windows, `navigator.clipboard.readText()` treo renderer. → **Chủ s
 - Cạm bẫy khi test bằng Chrome tự động: tab chạy nền (`document.hidden=true`) → rAF dừng, ảnh chụp trễ
   vài giây → không chụp được giữa lúc cháy; phải set trạng thái DOM thủ công để soi lá sớ.
 - Đã commit + push main (Vercel auto-deploy). Chưa làm: chưa gắn link từ trang chủ (nav/footer); chưa có ảnh OG riêng.
+
+## 8. Phiên 2026-10-10 — Trang `/tu-vi` (Tử vi + Thần số học + Tướng số) + nhật ký
+- File mới: `tu-vi.html` (1 file, 3 tab), `tu-vi-log.html` (admin xem log, `/tu-vi-log`, noindex, chỉ role admin),
+  `supabase/fortune-logs.sql`. Đã thêm rewrite `vercel.json`, `sitemap.xml`, `robots.txt` (chặn /tu-vi-log),
+  nút "🔮 Xem tử vi" ở `/dot-phong-long`.
+- Tử vi: đổi dương→âm (thuật toán Hồ Ngọc Đức, đã test Tết 1990/2026), can chi, nạp âm, cung phi + hướng,
+  cung hoàng đạo, Cửu diệu theo tuổi mụ, Tam Tai/Kim Lâu/xung-hợp Thái Tuế → chấm sao năm. KHÔNG phải lá số 12 cung.
+- Thần số học: Pythagoras (số chủ đạo giữ 11/22/33, biểu đạt, linh hồn, nhân cách, năm cá nhân, biểu đồ ngày sinh).
+- Tướng số: khách tự chọn nét mặt/đường chỉ tay (không phân tích ảnh).
+- Nhật ký: bảng `fortune_logs` (ĐÃ tạo trên production). Khách chỉ INSERT (anon), admin mới SELECT/DELETE.
+  Ghi: view / tab / submit (tên, ngày-giờ sinh, giới, SĐT, kết quả) / cta + IP (trigger lấy từ header). Bắt buộc tích đồng ý.
+- Còn 1 dòng test `session_id='test-claude'` trong fortune_logs (xoá trong Table Editor).
+- Chưa commit/push. `/dot-phong-long` vẫn ghi "không lưu thông tin" — đúng vì trang đó không gửi gì.

@@ -23,6 +23,8 @@
     { "source": "/translate", "destination": "/baggio-translate.html" },
     { "source": "/account", "destination": "/baggio-account.html" },
     { "source": "/chinh-sach", "destination": "/chinh-sach-hoan-huy.html" },
-    { "source": "/dot-phong-long", "destination": "/dot-phong-long.html" }
+    { "source": "/dot-phong-long", "destination": "/dot-phong-long.html" },
+    { "source": "/tu-vi", "destination": "/tu-vi.html" },
+    { "source": "/tu-vi-log", "destination": "/tu-vi-log.html" }
   ]
 }
