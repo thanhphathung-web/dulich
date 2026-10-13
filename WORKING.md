@@ -222,3 +222,19 @@ clipboard Windows, `navigator.clipboard.readText()` treo renderer. → **Chủ s
   Ghi: view / tab / submit (tên, ngày-giờ sinh, giới, SĐT, kết quả) / cta + IP (trigger lấy từ header). Bắt buộc tích đồng ý.
 - Còn 1 dòng test `session_id='test-claude'` trong fortune_logs (xoá trong Table Editor).
 - Chưa commit/push. `/dot-phong-long` vẫn ghi "không lưu thông tin" — đúng vì trang đó không gửi gì.
+
+## 9. Phiên 2026-10-13 — Nền hero + ảnh xem trước link (OG)
+- `index.html` `#hero` (khoảng dòng 99): nền mới = 3 vệt sáng gradient + lớp chấm mờ, chỉnh nhanh qua biến
+  `--hero-glow1/2/3` và `--hero-photo` (đặt `url('...')` nếu muốn nền ảnh). Ảnh hero có bóng đổ + khối vàng.
+- Nút "Đăng nhập" (`.nav-login` → `/account`, i18n `nav_login`/`nav_account`) đã commit chung đợt này. Chưa test thật trên web.
+- `og-cover.jpg` thay mới: Vịnh Hạ Long 1200×630 + slogan + baggio.website (ảnh cũ là hẻm đèn lồng Nhật, sai chủ đề).
+  Tạo bằng Python/PIL từ ảnh Unsplash `photo-1573270689103-d7a4e42b609a`. Bản cũ: `og-cover_backup_261013.jpg` (chỉ ở máy).
+- Link ảnh trong `index.html` là `og-cover.jpg?v=3`. Muốn đổi ảnh OG lần sau: ghi đè file + tăng `?v=`.
+- Cạm bẫy:
+  - Zalo/Facebook cache ảnh theo URL → khách thấy ảnh cũ. Zalo: gửi link thêm `?v=N`; Facebook: Sharing Debugger → Scrape Again.
+  - Đừng curl link `?v=N` mới TRƯỚC khi Vercel deploy xong — CDN cache luôn ảnh cũ dưới URL đó (đã dính với v=2 → phải nhảy v=3).
+  - PIL: vẽ nhiều lớp gradient trên CÙNG một ảnh RGBA thì lớp sau ghi đè lớp trước (alpha 0 xoá hết) → mỗi lớp một ảnh riêng rồi `alpha_composite`.
+  - Georgia thiếu dấu ệ/ủ/ạ → dùng Times New Roman hoặc Segoe UI cho chữ tiếng Việt.
+- Commit `b4732c6` + commit đổi `?v=3`, đã push main (Vercel auto-deploy, đã kiểm tra ảnh mới lên web).
+- Chưa làm: ảnh OG riêng cho `/tu-vi` và `/dot-phong-long` (đang dùng chung ảnh Hạ Long); chưa gắn link `/dot-phong-long` từ trang chủ.
+- File backup chỉ ở máy, không commit: `index_backup_261010.html`, `index_backup_261013.html`, `og-cover_backup_261013.jpg`.
