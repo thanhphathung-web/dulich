@@ -19,15 +19,17 @@
 <meta property="og:title" content="Baggio Travel — Tour Du Lịch Việt Nam Chất Lượng">
 <meta property="og:description" content="Chuyên tour du lịch Việt Nam: Hội An, Đà Nẵng, Buôn Ma Thuột. Đặt tour trực tuyến, hướng dẫn viên bản địa, giá minh bạch.">
 <meta property="og:url" content="https://baggio.website/">
-<meta property="og:image" content="https://baggio.website/og-cover.jpg">
+<meta property="og:image" content="https://baggio.website/og-cover.jpg?v=2">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:alt" content="Baggio Travel — Khám phá Việt Nam theo cách của bạn, Vịnh Hạ Long">
 
 <!-- Twitter Card -->
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Baggio Travel — Tour Du Lịch Việt Nam Chất Lượng">
 <meta name="twitter:description" content="Chuyên tour du lịch Việt Nam: Hội An, Đà Nẵng, Buôn Ma Thuột. Đặt tour trực tuyến, hướng dẫn viên bản địa.">
-<meta name="twitter:image" content="https://baggio.website/og-cover.jpg">
+<meta name="twitter:image" content="https://baggio.website/og-cover.jpg?v=2">
 
 <!-- Structured data -->
 <script type="application/ld+json">
@@ -85,6 +87,8 @@ nav{background:var(--card);border-bottom:1px solid var(--border);padding:.9rem 2
 .nav-dd-inner a{display:block;padding:.35rem .5rem;font-size:.8rem;white-space:nowrap}
 .nav-cta{background:var(--red);color:#fff;font-size:.82rem;font-weight:600;padding:.5rem 1.2rem;border:none;cursor:pointer;text-decoration:none;transition:background .2s;display:inline-block}
 .nav-cta:hover{background:#a82d22}
+.nav-login{font-size:.82rem;font-weight:600;color:var(--ink);text-decoration:none;padding:.45rem 1rem;border:1px solid var(--border);background:transparent;transition:all .2s;display:inline-block;white-space:nowrap}
+.nav-login:hover{border-color:var(--red);color:var(--red)}
 .lang-switcher{display:flex;gap:2px;background:var(--paper);border:1px solid var(--border);border-radius:4px;padding:2px}
 .lang-btn{background:none;border:none;font-family:var(--mono);font-size:.65rem;font-weight:600;padding:.25rem .5rem;cursor:pointer;color:var(--muted);border-radius:3px;transition:all .15s;letter-spacing:.04em}
 .lang-btn:hover{color:var(--ink)}
@@ -93,7 +97,18 @@ nav{background:var(--card);border-bottom:1px solid var(--border);padding:.9rem 2
 .nav-zalo:hover{opacity:1}
 
 /* ── HERO ── */
-#hero{min-height:90vh;display:grid;grid-template-columns:1fr 1fr;align-items:center;padding:6rem 2rem;background:linear-gradient(135deg,var(--cream) 60%,var(--paper))}
+/* ===== NỀN HERO — chỉnh nhanh: đổi 4 biến này (màu / ảnh) ===== */
+#hero{--hero-glow1:rgba(197,55,43,.16);--hero-glow2:rgba(184,134,11,.20);--hero-glow3:rgba(26,107,94,.14);
+  --hero-photo:none; /* muốn nền ảnh: --hero-photo:url('LINK_ANH'); */
+  position:relative;isolation:isolate;overflow:hidden;min-height:90vh;display:grid;grid-template-columns:1fr 1fr;align-items:center;padding:6rem 2rem;
+  background:
+    radial-gradient(900px 500px at 8% 12%,var(--hero-glow2),transparent 60%),
+    radial-gradient(700px 520px at 95% 85%,var(--hero-glow1),transparent 60%),
+    radial-gradient(600px 420px at 55% 0%,var(--hero-glow3),transparent 65%),
+    linear-gradient(135deg,var(--cream) 55%,var(--paper))}
+#hero::before{content:'';position:absolute;inset:0;z-index:-1;pointer-events:none;background-image:radial-gradient(rgba(17,17,24,.09) 1px,transparent 1.2px);background-size:22px 22px;-webkit-mask-image:linear-gradient(100deg,#000,transparent 70%);mask-image:linear-gradient(100deg,#000,transparent 70%)}
+#hero::after{content:'';position:absolute;inset:0;z-index:-2;pointer-events:none;background:var(--hero-photo) center/cover no-repeat;opacity:.18}
+.hero-img{box-shadow:0 30px 60px -20px rgba(17,17,24,.35),18px 18px 0 -2px rgba(184,134,11,.25)}
 .hero-eyebrow{font-family:var(--mono);font-size:.68rem;letter-spacing:.2em;text-transform:uppercase;color:var(--red);margin-bottom:1.25rem;display:flex;align-items:center;gap:.6rem}
 .hero-eyebrow::before{content:'';width:28px;height:1px;background:var(--red)}
 .hero-title{font-family:var(--serif);font-size:clamp(2.8rem,5vw,4.8rem);font-weight:900;line-height:1.05;letter-spacing:-.03em;color:var(--ink);margin-bottom:1.5rem}
@@ -416,6 +431,7 @@ footer{background:var(--ink);color:rgba(250,248,243,.55);padding:3rem 2rem 1.5re
     <a href="https://zalo.me/0906306286" target="_blank" class="nav-zalo" title="Chat Zalo">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect width="24" height="24" rx="6" fill="#0068FF"/><text x="12" y="17" text-anchor="middle" font-size="11" font-weight="700" fill="#fff" font-family="Arial">Z</text></svg>
     </a>
+    <a href="/account" class="nav-login" id="navLogin" data-i18n="nav_login">Đăng nhập</a>
     <a href="booking.html" class="nav-cta" data-i18n="nav_book">Đặt tour ngay</a>
   </div>
 </nav>
@@ -687,6 +703,10 @@ footer{background:var(--ink);color:rgba(250,248,243,.55);padding:3rem 2rem 1.5re
 // SUPABASE CLIENT
 // ══════════════════════════════════════════════════════════════
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON)
+// Nút đăng nhập: đã đăng nhập thì đổi thành "Tài khoản"
+sb.auth.getSession().then(({data})=>{
+  if(data&&data.session){ const b=document.getElementById('navLogin'); if(b){ b.setAttribute('data-i18n','nav_account'); b.textContent=({en:'My account',zh:'我的账户'})[currentLang]||'Tài khoản' } }
+}).catch(()=>{})
 
 // ══════════════════════════════════════════════════════════════
 // STATE
@@ -1336,7 +1356,7 @@ function renderReviews(reviews) {
 // ══════════════════════════════════════════════════════
 const I18N = {
   vi: {
-    nav_tours:'Tour', nav_guides:'HDV', nav_reviews:'Đánh giá', nav_book:'Đặt tour ngay',
+    nav_tours:'Tour', nav_guides:'HDV', nav_reviews:'Đánh giá', nav_book:'Đặt tour ngay', nav_login:'Đăng nhập', nav_account:'Tài khoản',
     hero_eyebrow:'Tour trọn gói Việt Nam',
     hero_title:'Khám phá Việt Nam theo cách của bạn',
     hero_sub:'Từ vé máy bay, khách sạn, hướng dẫn viên địa phương đến xe đón sân bay — chúng tôi lo tất cả.',
@@ -1367,7 +1387,7 @@ const I18N = {
     filter_interests:'Sở thích:', int_beach:'🏖 Biển', int_mountain:'🏔 Núi', int_culture:'🏛 Văn hóa', int_food:'🍜 Ẩm thực', int_adventure:'🧗 Phiêu lưu', int_family:'👨‍👩‍👧 Gia đình', int_couple:'💑 Cặp đôi', int_wellness:'🧘 Nghỉ dưỡng', int_photography:'📸 Nhiếp ảnh', int_festival:'🎉 Lễ hội',
   },
   en: {
-    nav_tours:'Tours', nav_guides:'Guides', nav_reviews:'Reviews', nav_book:'Book Now',
+    nav_tours:'Tours', nav_guides:'Guides', nav_reviews:'Reviews', nav_book:'Book Now', nav_login:'Log in', nav_account:'My account',
     hero_eyebrow:'All-inclusive Vietnam Tours',
     hero_title:'Explore Vietnam your way',
     hero_sub:'From flights, hotels and local guides to airport transfers — we handle everything.',
@@ -1398,7 +1418,7 @@ const I18N = {
     filter_interests:'Interests:', int_beach:'🏖 Beach', int_mountain:'🏔 Mountain', int_culture:'🏛 Culture', int_food:'🍜 Food', int_adventure:'🧗 Adventure', int_family:'👨‍👩‍👧 Family', int_couple:'💑 Couple', int_wellness:'🧘 Resort', int_photography:'📸 Photo', int_festival:'🎉 Festival',
   },
   zh: {
-    nav_tours:'旅游', nav_guides:'导游', nav_reviews:'评价', nav_book:'立即预订',
+    nav_tours:'旅游', nav_guides:'导游', nav_reviews:'评价', nav_book:'立即预订', nav_login:'登录', nav_account:'我的账户',
     hero_eyebrow:'越南一站式旅游套餐',
     hero_title:'按您的方式探索越南',
     hero_sub:'从机票、酒店、当地导游到机场接送——我们一站式搞定。',
