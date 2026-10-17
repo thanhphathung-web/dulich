@@ -33,6 +33,10 @@ details summary{cursor:pointer;color:var(--muted)}
 pre{white-space:pre-wrap;word-break:break-word;font-size:.74rem;color:#cfc8b6;margin-top:4px}
 .err{color:#ff9b8a;margin-top:8px;min-height:1.2em}
 #app{display:none}
+.qa{max-width:520px;white-space:pre-wrap}
+.qa b{color:var(--gold);font-weight:600}
+.tag.ok{color:var(--green);border-color:var(--green)}.tag.limited,.tag.error,.tag.refusal{color:var(--red);border-color:var(--red)}
+h2{font-size:1.05rem;margin:22px 0 8px}
 </style>
 </head>
 <body>
@@ -56,7 +60,7 @@ pre{white-space:pre-wrap;word-break:break-word;font-size:.74rem;color:#cfc8b6;ma
   <div class="card row">
     <input id="q" placeholder="Tìm tên / SĐT / IP / ngày sinh..." style="flex:1;min-width:200px">
     <select id="fEvent"><option value="">Mọi sự kiện</option><option value="submit">Đã nhập &amp; xem (submit)</option><option value="view">Lượt vào (view)</option><option value="tab">Đổi tab</option><option value="cta">Bấm link tour</option></select>
-    <select id="fTool"><option value="">Mọi môn</option><option value="tuvi">Tử vi</option><option value="thansohoc">Thần số học</option><option value="tuongso">Tướng số</option></select>
+    <select id="fTool"><option value="">Mọi môn</option><option value="tuvi">Tử vi</option><option value="thansohoc">Thần số học</option><option value="tuongso">Tướng số</option><option value="hoi">Hỏi thầy</option></select>
     <select id="fDays"><option value="1">Hôm nay</option><option value="7" selected>7 ngày</option><option value="30">30 ngày</option><option value="365">1 năm</option></select>
   </div>
   <div class="wrap"><table>
@@ -64,14 +68,21 @@ pre{white-space:pre-wrap;word-break:break-word;font-size:.74rem;color:#cfc8b6;ma
     <tbody id="rows"></tbody>
   </table></div>
   <p class="sub" style="margin-top:10px" id="foot"></p>
+
+  <h2>🧙 Câu hỏi gửi "Hỏi thầy" (AI)</h2>
+  <p class="sub" id="chatMeta"></p>
+  <div class="wrap"><table>
+    <thead><tr><th>Thời gian</th><th>Trạng thái</th><th>Khách</th><th>Hỏi – Đáp</th><th>Token (vào/ra)</th><th>IP</th><th>Phiên</th></tr></thead>
+    <tbody id="chatRows"></tbody>
+  </table></div>
 </div>
 
 <script>
 const sb = supabase.createClient('https://lfnlezfphwjtdunyungi.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxmbmxlemZwaHdqdGR1bnl1bmdpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA0NjkwNzcsImV4cCI6MjA5NjA0NTA3N30.fmjvqhyiPcjB6qT5GDtfzMfY-C-WXP4QUIk-YW7FhJg')
 const $=id=>document.getElementById(id)
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))
-const TOOL={tuvi:'Tử vi',thansohoc:'Thần số',tuongso:'Tướng số'}
-let ALL=[]
+const TOOL={tuvi:'Tử vi',thansohoc:'Thần số',tuongso:'Tướng số',hoi:'Hỏi thầy'}
+let ALL=[], CHATS=[]
 
 async function enter(){
   const {data:{session}}=await sb.auth.getSession()
@@ -90,6 +101,7 @@ $('pw').addEventListener('keydown',e=>{ if(e.key==='Enter') $('btnLogin').click(
 $('btnOut').onclick=async()=>{ await sb.auth.signOut(); location.reload() }
 $('btnReload').onclick=load
 ;['q','fEvent','fTool'].forEach(i=>$(i).addEventListener('input',render))
+$('q').addEventListener('input',()=>renderChats())
 $('fDays').addEventListener('change',load)
 
 async function load(){
@@ -97,6 +109,23 @@ async function load(){
   const {data,error}=await sb.from('fortune_logs').select('*').gte('created_at',since).order('created_at',{ascending:false}).limit(2000)
   if(error){ $('foot').textContent='Lỗi tải: '+error.message; return }
   ALL=data||[]; render()
+  const c=await sb.from('fortune_chats').select('*').gte('created_at',since).order('created_at',{ascending:false}).limit(1000)
+  if(c.error){ $('chatMeta').textContent='Chưa tải được (đã chạy supabase/fortune-chats.sql chưa?): '+c.error.message; CHATS=[] }
+  else CHATS=c.data||[]
+  renderChats()
+}
+function renderChats(){
+  const q=$('q').value.trim().toLowerCase()
+  const f=CHATS.filter(r=>!q||[r.name,r.ip,r.birth_date,r.session_id,r.question].join(' ').toLowerCase().includes(q))
+  const ok=CHATS.filter(r=>r.status==='ok')
+  const tin=ok.reduce((a,r)=>a+(r.input_tokens||0),0), tout=ok.reduce((a,r)=>a+(r.output_tokens||0),0)
+  if(!$('chatMeta').textContent.startsWith('Chưa tải'))
+    $('chatMeta').textContent=`${CHATS.length} câu hỏi · ${new Set(CHATS.map(r=>r.session_id)).size} người hỏi · bị chặn do hỏi quá nhiều: ${CHATS.filter(r=>r.status==='limited').length} · token vào/ra: ${tin.toLocaleString('vi-VN')} / ${tout.toLocaleString('vi-VN')} (ước tính ~$${(tin*4/1e6+tout*20/1e6).toFixed(2)} theo giá Opus 5.5, chưa trừ cache)`
+  $('chatRows').innerHTML=f.slice(0,500).map(r=>`<tr>
+    <td>${new Date(r.created_at).toLocaleString('vi-VN')}</td><td><span class="tag ${esc(r.status)}">${esc(r.status)}</span></td>
+    <td>${esc(r.name)}<br><small>${esc(r.birth_date)} · ${esc(r.gender)} · câu ${r.turn||''}</small></td>
+    <td class="qa"><b>Hỏi:</b> ${esc(r.question)}${r.answer?`<details><summary>Thầy trả lời</summary><pre>${esc(r.answer)}</pre></details>`:''}</td>
+    <td>${r.input_tokens??''} / ${r.output_tokens??''}</td><td>${esc(r.ip)}</td><td title="${esc(r.session_id)}">${esc((r.session_id||'').slice(0,6))}</td></tr>`).join('')||'<tr><td colspan="7" style="text-align:center;color:var(--muted)">Chưa có câu hỏi</td></tr>'
 }
 function summ(r){
   const o=r.result||{}, i=r.input||{}
@@ -120,7 +149,7 @@ function render(){
   const leads=new Set(subs.filter(r=>r.contact).map(r=>r.contact)).size
   $('stats').innerHTML=[['Phiên truy cập',sessions],['Lượt vào trang',ALL.filter(r=>r.event==='view').length],['Lượt xem kết quả',subs.length],
     ['Tử vi',subs.filter(r=>r.tool==='tuvi').length],['Thần số',subs.filter(r=>r.tool==='thansohoc').length],['Tướng số',subs.filter(r=>r.tool==='tuongso').length],
-    ['Để lại SĐT',leads],['Bấm link tour',ALL.filter(r=>r.event==='cta').length]].map(([l,n])=>`<div class="stat"><b>${n}</b><span>${l}</span></div>`).join('')
+    ['Hỏi thầy',subs.filter(r=>r.tool==='hoi').length],['Để lại SĐT',leads],['Bấm link tour',ALL.filter(r=>r.event==='cta').length]].map(([l,n])=>`<div class="stat"><b>${n}</b><span>${l}</span></div>`).join('')
   $('rows').innerHTML=f.slice(0,500).map(r=>`<tr>
     <td>${new Date(r.created_at).toLocaleString('vi-VN')}</td>
     <td><span class="tag ${r.event}">${r.event}</span></td><td>${TOOL[r.tool]||''}</td>

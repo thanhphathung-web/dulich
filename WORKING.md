@@ -238,3 +238,27 @@ clipboard Windows, `navigator.clipboard.readText()` treo renderer. → **Chủ s
 - Commit `b4732c6` + commit đổi `?v=3`, đã push main (Vercel auto-deploy, đã kiểm tra ảnh mới lên web).
 - Chưa làm: ảnh OG riêng cho `/tu-vi` và `/dot-phong-long` (đang dùng chung ảnh Hạ Long); chưa gắn link `/dot-phong-long` từ trang chủ.
 - File backup chỉ ở máy, không commit: `index_backup_261010.html`, `index_backup_261013.html`, `og-cover_backup_261013.jpg`.
+
+## 10. Phiên 2026-10-17 — Tab "🧙 Hỏi thầy" trên `/tu-vi` (chat AI xem bói)
+- `tu-vi.html`: tab thứ 4 "Hỏi thầy" (nhãn MỚI). Khách nhập ngày sinh (+ tên, giờ, giới tuỳ chọn) → "Gặp thầy" → khung chat
+  với "Thầy Ba Gió". Lá số (can chi, nạp âm, cung phi, sao năm nay, hạn, số chủ đạo...) tính sẵn ở trình duyệt bằng
+  `analyzeTuVi`/`analyzeThan` (hàm `buildFacts`) rồi gửi kèm để AI trả lời khớp với các tab khác. Chữ chạy dần (stream).
+  Gợi ý câu hỏi sẵn; cuộc chat giữ trong `sessionStorage` (tải lại trang không mất); nút "Đổi người xem". Link thẳng: `/tu-vi?tab=hoi`.
+- Edge function mới `supabase/functions/fortune-chat/index.ts` (Deno): gọi Claude (`claude-opus-5-5`, effort low,
+  `fallbacks:"default"`), system prompt vai thầy bói + giới hạn (không phán bệnh/ngày chết, không cho số đề, không hù doạ
+  bắt cúng, khách tuyệt vọng → khuyên gọi người thân/115). Giới hạn chống phá: 20 câu/giờ/IP, 50 câu/ngày/IP, 500 câu/ngày
+  toàn trang (đổi bằng secret `FORTUNE_PER_IP_HOUR`, `FORTUNE_PER_IP_DAY`, `FORTUNE_PER_DAY`). `FORTUNE_MODEL=claude-sonnet-5-5` để rẻ hơn.
+- `supabase/fortune-chats.sql`: bảng `fortune_chats` (câu hỏi, câu trả lời, token, IP) — anon không đọc/ghi; chỉ function
+  (service role) ghi, admin xem. Đồng thời mở ràng buộc `fortune_logs.tool` thêm `'hoi'`.
+- `tu-vi-log.html`: thêm bảng "Câu hỏi gửi Hỏi thầy" + ước tính chi phí token; lọc môn "Hỏi thầy".
+- Đã test giao diện bằng bản copy có fetch giả lập (không ghi vào DB thật): desktop + mobile 390px OK.
+- Cạm bẫy: test giao diện trên localhost mà không mock fetch sẽ ghi dòng log thật vào `fortune_logs` production.
+- Backup chỉ ở máy: `tu-vi_backup_261017.html`, `tu-vi-log_backup_261017.html`.
+- Đã triển khai 2026-10-17: chạy SQL (qua Supabase MCP), deploy function `fortune-chat` (v2), chủ shop đã đặt secret
+  `ANTHROPIC_API_KEY`. Test thật bằng curl: trả lời đúng giọng, dựa lá số, từ chối số đề/tuổi thọ đúng giới hạn.
+  Thời gian ~15–20 giây/câu (AI suy nghĩ trước khi ra chữ). Chi phí đo được ~0,023–0,035 USD/câu (~600–900đ);
+  trần 500 câu/ngày ≈ tối đa ~15 USD/ngày.
+- Cạm bẫy: `usage.input_tokens` của Claude KHÔNG gồm phần cache → phải cộng `cache_creation_input_tokens` +
+  `cache_read_input_tokens` (đã sửa ở v2). Lệnh DELETE qua Supabase MCP bị chặn ("Invalid or expired requestState").
+- Còn treo: 2 dòng test `session_id='test-claude'` trong `fortune_chats` (+1 dòng cũ trong `fortune_logs`) — xoá trong Table Editor.
+  Muốn rẻ/nhanh hơn: thêm secret `FORTUNE_MODEL=claude-sonnet-5-5`.
