@@ -95,11 +95,19 @@ select.input option{background:#141630;color:var(--text)}
 .btn:hover{transform:translateY(-1px)}
 .err{min-height:1.2em;margin-top:8px;text-align:center;font-size:.8rem;color:#ff9b8a}
 
-#tsMode{margin-bottom:6px}
+#tsMode{margin-bottom:6px;grid-template-columns:repeat(3,1fr)}
 .chip.hide{border-style:dashed}
 .badge{display:inline-block;font-size:.68rem;border-radius:99px;padding:1px 8px;margin-left:6px;vertical-align:middle;border:1px solid}
 .badge.g{color:#9be3a8;border-color:rgba(155,227,168,.5)}.badge.n{color:#d8cfbd;border-color:rgba(216,207,189,.4)}.badge.w{color:#ffb38a;border-color:rgba(255,179,138,.5)}
 .mnote{font-size:.8rem;color:#cfc6b4;margin-top:3px}
+.mrow{margin:8px 0;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08)}
+.mcols{display:grid;grid-template-columns:1fr 1fr 1.3fr;gap:8px;margin-top:6px}
+.mcols .input{padding:8px 9px;font-size:.82rem}
+.mcard{margin:12px 0;padding:14px 16px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09)}
+.mcard p{margin:7px 0;font-size:.9rem;line-height:1.6}
+.mcard .mh{font-family:var(--serif);font-size:1.05rem}
+.mtip{border-top:1px dashed rgba(242,199,110,.3);padding-top:8px;color:#f3e9d0}
+@media(max-width:560px){.mcols{grid-template-columns:1fr}}
 .feat{margin-bottom:14px}
 .chips{display:flex;flex-wrap:wrap;gap:7px}
 .chip{border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);border-radius:99px;padding:6px 12px;font-size:.8rem;cursor:pointer;color:#d8cfbd}
@@ -219,16 +227,24 @@ footer a{color:var(--gold)}
     </div>
 
     <div id="faceBox" hidden>
-      <div class="seg" id="tsMode" role="group" aria-label="Chọn kiểu xem tướng"><button type="button" data-m="face" aria-pressed="true">Tướng mặt &amp; tay</button><button type="button" data-m="mole" aria-pressed="false">Nốt ruồi</button></div>
+      <div class="seg" id="tsMode" role="group" aria-label="Chọn kiểu xem tướng"><button type="button" data-m="face" aria-pressed="true">Tướng mặt</button><button type="button" data-m="hand" aria-pressed="false">Bàn tay</button><button type="button" data-m="mole" aria-pressed="false">Nốt ruồi</button></div>
       <div id="faceFeats">
-        <div class="sect">Chọn những nét bạn thấy giống mình (ít nhất 3)</div>
+        <div class="sect">Soi gương, chọn những nét mặt giống bạn (ít nhất 3, càng nhiều càng chi tiết)</div>
         <div id="feats"></div>
+        <p class="mnote">Nhập thêm <b>ngày sinh</b> ở trên (không bắt buộc) để thầy luận <b>vận theo tuổi</b> cho từng bộ phận trên mặt.</p>
+      </div>
+      <div id="handFeats-wrap" hidden>
+        <div class="sect">Nhìn lòng bàn tay, chọn những nét giống bạn (ít nhất 3)</div>
+        <div id="handFeats"></div>
       </div>
       <div id="moleBox" hidden>
-        <div class="sect">Bước 1 — Nốt ruồi của bạn trông thế nào?</div>
-        <div class="chips" id="moleQ" role="group" aria-label="Màu sắc nốt ruồi"></div>
-        <div class="sect">Bước 2 — Bạn có nốt ruồi ở đâu? (chọn một hoặc nhiều chỗ)</div>
+        <div class="sect">Bước 1 — Bạn có nốt ruồi ở đâu? (chọn một hoặc nhiều chỗ)</div>
         <div id="moles"></div>
+        <div id="moleDetailWrap" hidden>
+          <div class="sect">Bước 2 — Mô tả từng nốt ruồi (bên · cỡ · màu)</div>
+          <div id="moleDetail"></div>
+        </div>
+        <p class="mnote">Chọn giới tính và <b>ngày sinh</b> ở trên (không bắt buộc) để thầy luận thêm <b>vận theo tuổi</b> — mỗi điểm trên mặt ứng với một độ tuổi.</p>
       </div>
     </div>
 
@@ -454,154 +470,487 @@ function renderThan(r, f){
   <p class="disc">Quy đổi chữ cái theo hệ Pythagoras (không dấu, Y tính là nguyên âm). Số chủ đạo 11, 22, 33 được giữ nguyên.</p>`
 }
 
-// ═══════════════════════ TƯỚNG SỐ ═══════════════════════
-// [id, nhãn nhóm, [ [nhãn, mô tả, tài, tình, nghiệp], ... ]]
-const FACE = [
- ['mat','Khuôn mặt',[['Tròn đầy','Phúc hậu, dễ gần, tài lộc tích lũy chậm mà chắc.',1,1,0],['Vuông (chữ điền)','Ý chí kiên định, hợp việc quản lý, giữ lời hứa.',1,0,2],['Trái xoan','Hài hòa, duyên dáng, dễ được quý nhân giúp.',1,2,1],['Dài','Thích tự do, giỏi tư duy; vận trung niên mới rõ nét.',0,0,1],['Trái tim','Nhạy cảm, sáng tạo, tình cảm nồng nhiệt.',0,2,1]]],
- ['tran','Vầng trán',[['Cao, rộng','Thông minh, sớm gặp thời, học hành thuận lợi.',1,0,2],['Vừa phải','Cuộc đời ổn định, ít sóng gió lớn.',1,1,1],['Thấp, hẹp','Tự lực cánh sinh, hậu vận tốt hơn tiền vận.',1,0,0]]],
- ['may','Lông mày',[['Đậm, dài','Nghĩa khí, nhiều bạn bè anh em.',1,1,1],['Thanh, mảnh','Tinh tế, giàu tình cảm, đa cảm.',0,2,0],['Ngắn, thưa','Tự lập sớm, ít nhờ cậy, tính độc lập cao.',0,0,1]]],
- ['nhan','Đôi mắt',[['To, sáng','Thẳng thắn, có thần, ánh nhìn thuyết phục.',0,1,2],['Mắt phượng (dài, đuôi nhếch)','Quý tướng: thông minh, được trọng vọng.',1,1,2],['Nhỏ, sâu','Kín đáo, nhiều mưu lược, quan sát tốt.',1,0,1]]],
- ['mui','Chiếc mũi',[['Cao, thẳng','Tự trọng, tài vận tốt, sự nghiệp vững.',2,0,1],['Đầu mũi tròn đầy','Giữ của, dễ tích lũy, có lộc.',2,1,0],['Nhỏ, thấp','Tiền tài đến từ nỗ lực bền bỉ.',0,1,1]]],
- ['mieng','Miệng – môi',[['Môi đầy','Giàu tình cảm, hưởng phúc, ăn nói thu hút.',1,2,0],['Môi mỏng','Ăn nói sắc sảo, lý trí.',0,0,1],['Khóe môi cong lên','Lạc quan, nhiều người mến, dễ gặp may.',1,2,1]]],
- ['tai','Đôi tai',[['Dày, vành lớn','Phúc thọ, có phước, lộc đến sớm.',1,1,1],['Nhỏ, sát đầu','Độc lập, tự mình gây dựng.',0,0,1]]],
- ['cam','Cằm',[['Đầy đặn','Hậu vận sung túc, về già an nhàn.',2,1,0],['Nhọn','Nhanh trí, hơi bôn ba, hay thay đổi.',0,1,1],['Vuông','Bền chí, quyết tâm theo đến cùng.',1,0,1]]],
- ['sinh','Bàn tay: đường sinh đạo (quanh gò ngón cái)',[['Dài, sâu, rõ','Sức khỏe dồi dào, nền tảng sống vững.',1,1,1],['Ngắn, nhạt','Cần chú ý giữ gìn sức khỏe, sống điều độ.',0,0,0]]],
- ['tri','Bàn tay: đường trí đạo (ngang giữa lòng bàn tay)',[['Thẳng, dài','Tư duy logic, thực tế, hợp công việc chuyên môn.',1,0,2],['Cong xuống','Giàu trí tưởng tượng, hợp sáng tạo, nghệ thuật.',0,1,1]]],
- ['tam','Bàn tay: đường tâm đạo (ngang dưới các ngón)',[['Cong dài','Tình cảm phong phú, chung thủy, dễ mở lòng.',0,2,0],['Thẳng, ngắn','Lý trí trong tình yêu, trọng sự ổn định.',1,0,1]]]
+// ═══════════════════════ TƯỚNG SỐ: MẶT & TAY ═══════════════════════
+// Diễn giải theo tướng pháp cổ Trung Hoa (Ma Y Thần Tướng, Liễu Trang Tướng Pháp, Thần Tướng Toàn Biên): thập nhị cung trên mặt,
+// lưu niên (mỗi bộ phận ứng với độ tuổi ta), tam đình (thượng–trung–hạ đình), ngũ hành hình tay, các đường chỉ tay chính.
+// Lời giải tổng hợp & diễn đạt lại, KHÔNG trích nguyên văn. Mỗi nhóm: [id, nhãn, cung vị, tuổi ứng [từ,đến]|null, vùng, [lựa chọn]]
+// Mỗi lựa chọn: [nhãn, cách nhận biết, tổng quát, tài lộc, tình duyên, sự nghiệp, lời khuyên, [tài,tình,nghiệp 0-2]]
+const FACE=[
+ ['tran','Vầng trán','Cung Quan lộc — tiền vận, học hành',[15,30],'thuong',[
+  ['Cao, rộng, đầy đặn','Trán cao quá nửa lòng bàn tay chiều ngang, bóng, không lồi lõm','Thông minh, sớm gặp thời; tiền vận sáng, được bề trên và thầy cô nâng đỡ.','Tiền bạc đến sớm nhờ học vấn, chuyên môn và quý nhân.','Duyên đến sớm, người bạn đời có học thức.','Hợp quản lý, nghiên cứu, làm trong tổ chức lớn; thăng tiến nhanh tuổi 15–30.','Tận dụng tuổi trẻ để học và xây nền; đừng kiêu vì thuận lợi sớm.',[1,1,2]],
+  ['Vừa phải, phẳng','Trán cân đối với mặt, không quá cao thấp','Cuộc đời ổn định, ít sóng gió lớn; tiền vận bình thường, tự tạo cơ hội.','Thu nhập đều, tăng dần theo kinh nghiệm.','Tình cảm bình lặng, bền.','Làm việc đều tay, đáng tin; thành công nhờ kiên trì.','Chọn một lĩnh vực và đi sâu, đừng đổi hướng liên tục.',[1,1,1]],
+  ['Thấp, hẹp hoặc nhiều nếp','Trán thấp, tóc mọc thấp, hoặc có nếp ngang lộn xộn','Tiền vận vất vả, phải tự lực cánh sinh; hậu vận tốt hơn tiền vận.','Chậm có của, nhưng tự làm ra nên bền; sau 35 tuổi khá dần.','Tình cảm đến muộn hơn bạn bè cùng tuổi.','Ít nhờ vả được ai, phải tự học tự làm; chí khí rèn dần.','Đầu tư học nghề, tích lũy kinh nghiệm; chớ nản trong giai đoạn đầu.',[1,0,0]]]],
+ ['may','Lông mày','Cung Huynh đệ — anh em, bạn bè',[31,34],'trung',[
+  ['Đậm, dài, gọn','Mày vượt quá đuôi mắt, sợi đều và có thứ tự','Nghĩa khí, trọng tình bạn; anh em bạn bè giúp đỡ nhiều.','Làm ăn nhờ mối quan hệ và uy tín.','Tình cảm chân thành, trọng nghĩa.','Hợp làm việc nhóm, khởi nghiệp với bạn bè; tuổi 31–34 có người cùng chí hướng.','Chọn bạn kỹ khi làm ăn chung; giữ chữ tín.',[1,1,1]],
+  ['Thanh, mảnh, cong','Mày thưa nhẹ, cong như vầng trăng','Tinh tế, giàu tình cảm, tâm hồn nghệ sĩ.','Tiền đến nhờ tài hoa, sáng tạo hơn là cần cù.','Đa cảm, lãng mạn, dễ yêu và dễ tổn thương.','Hợp nghệ thuật, thiết kế, chăm sóc, tư vấn.','Giữ nhịp sống cân bằng; ghi nhớ chi tiêu để tiền không chảy theo cảm xúc.',[0,2,0]],
+  ['Ngắn, thưa, rối','Mày ngắn không tới đuôi mắt, sợi lộn xộn','Tự lập sớm, ít nhờ cậy anh em; tính độc lập cao nhưng hay một mình.','Tiền do tự làm; cần cẩn trọng khi hùn vốn.','Khó tâm sự, nên chủ động mở lòng.','Hợp làm việc độc lập, chuyên môn cao hơn làm việc nhóm.','Xây dựng mạng lưới quan hệ chủ động; đừng ôm hết việc một mình.',[0,0,1]]]],
+ ['nhan','Đôi mắt','Cung Phu thê & Điền trạch — duyên phận, nhà cửa',[35,40],'trung',[
+  ['To, sáng, có thần','Lòng đen rõ, ánh nhìn thẳng, tinh anh','Thẳng thắn, có thần, ánh nhìn thuyết phục; được tin tưởng.','Tiền đến nhờ uy tín và tài thuyết phục.','Duyên đẹp, người bạn đời tin cậy.','Hợp vị trí lãnh đạo, giao tiếp, giảng dạy.','Giữ sự thẳng thắn nhưng nhẹ nhàng; nghỉ ngơi đủ để mắt luôn có thần.',[1,1,2]],
+  ['Mắt phượng (dài, đuôi nhếch)','Mắt dài, mí mỏng, đuôi mắt hơi hướng lên','Quý tướng: thông minh, được trọng vọng, có phong thái.','Tài lộc khá, có lộc từ chức vị hoặc danh tiếng.','Đào hoa, duyên dáng; cần chọn lọc.','Hợp công việc có địa vị, tham mưu, tổ chức.','Giữ phẩm hạnh và danh dự; tránh tự cao.',[1,1,2]],
+  ['Nhỏ, sâu, kín đáo','Mắt nhỏ, mí sâu, ánh nhìn trầm','Kín đáo, nhiều mưu lược, quan sát tốt; ít bộc lộ.','Biết tính toán, giữ của tốt.','Tình cảm sâu nhưng khó nói; cần người kiên nhẫn.','Hợp nghiên cứu, phân tích, tài chính, kế toán, chiến lược.','Mở lòng với người đáng tin; chia sẻ để tránh dồn nén.',[1,0,1]]]],
+ ['mui','Chiếc mũi','Cung Tài bạch & Tật ách — tiền bạc, sức khỏe',[41,50],'trung',[
+  ['Cao, thẳng, sống mũi đầy','Sống mũi thẳng, đầu mũi tròn, không lệch','Tự trọng, tài vận tốt, sự nghiệp vững; đỉnh vận quanh 41–50.','Tiền tích lũy tốt, có nhà cửa, tài sản.','Hôn nhân vững, bạn đời đóng góp cho gia đình.','Hợp làm chủ, kinh doanh, quản lý; trung vận thịnh.','Dùng thời vận tốt để đầu tư nền tảng lâu dài (nhà, quỹ hưu trí).',[2,1,1]],
+  ['Đầu mũi tròn, đầy','Đầu mũi như quả tỏi, cánh mũi gọn','Giữ của, dễ tích lũy, có lộc.','Tiền vào đều, ít thất thoát; hợp tiết kiệm dài hạn.','Gia đình êm ấm, người bạn đời biết vun vén.','Hợp kinh doanh nhỏ, dịch vụ, bán lẻ.','Đừng cất tiền chết; cân đối giữa tiết kiệm và đầu tư.',[2,1,0]],
+  ['Nhỏ, thấp, mỏng','Sống mũi thấp, cánh mũi mỏng','Tiền tài đến từ nỗ lực bền bỉ, ít vận may bất ngờ.','Thu nhập dựa vào làm việc đều; không hợp đầu cơ.','Tình cảm cần chăm chút mới bền.','Càng làm càng khá; trung niên cần dự phòng.','Chăm sức khỏe tiêu hóa, hô hấp; lập quỹ dự phòng.',[0,1,1]]]],
+ ['nhantrung','Nhân trung','Cung Tử tức — con cái, thọ mạng',[51,51],'ha',[
+  ['Dài, sâu, rõ','Rãnh dưới mũi sâu, rõ viền','Sức sống tốt, thọ; con cái đông và hiếu thảo.','Hậu vận vững, không lo thiếu.','Hôn nhân bền, gia đình đầm ấm.','Làm việc bền bỉ, đến trung niên càng chín muồi.','Giữ nhịp sống điều độ để thọ lâu.',[1,2,0]],
+  ['Ngắn, nông, mờ','Rãnh nông, ngắn, khó nhìn thấy','Sức bền kém hơn, con cái đến muộn hoặc ít.','Không nên ôm việc quá sức; tiền cần quản lý chặt.','Cần dành thời gian chất lượng cho con cái, bạn đời.','Nên chọn công việc vừa sức, không quá áp lực.','Ngủ đủ, tập thể dục đều, khám sức khỏe sinh sản định kỳ.',[0,0,0]]]],
+ ['mieng','Miệng – môi','Cung Xuất nạp — ăn uống, lời nói',[57,60],'ha',[
+  ['Môi đầy, khóe cong lên','Môi đều, khóe miệng hướng lên','Giàu tình cảm, hưởng phúc, ăn nói thu hút; lạc quan, dễ gặp may.','Có lộc ăn uống, lộc từ giao tiếp.','Duyên đẹp, được nhiều người yêu mến.','Hợp bán hàng, truyền thông, ẩm thực, dịch vụ.','Giữ lời hứa; dùng tài ăn nói để làm điều thiện.',[1,2,1]],
+  ['Môi mỏng, khép chặt','Môi mỏng, ít lộ hàm răng khi nói','Ăn nói sắc sảo, lý trí, chặt chẽ.','Biết tính toán, ít hao phí.','Hơi lạnh lùng, cần ấm áp hơn trong lời nói.','Hợp pháp lý, kế toán, phân tích, thương lượng.','Nói lời mềm mỏng, khen ngợi người thân nhiều hơn.',[1,0,2]],
+  ['Rộng, đầy đặn','Miệng rộng, khóe rõ','Hào sảng, dám nghĩ dám làm; có tướng làm lớn.','Dễ có tiền nhưng cũng chi mạnh tay.','Chân thành, cởi mở.','Hợp kinh doanh, lãnh đạo, hoạt động xã hội.','Cân nhắc trước khi hứa; giữ kỷ luật chi tiêu.',[1,1,2]]]],
+ ['cam','Cằm','Cung Địa các & Nô bộc — hậu vận, thuộc hạ',[61,100],'ha',[
+  ['Đầy đặn, tròn','Cằm có thịt, hơi nâng lên','Hậu vận sung túc, về già an nhàn, con cháu quây quần.','Tuổi già có nhà cửa, tiền tích lũy; càng lớn tuổi tài càng vững.','Hôn nhân bền theo năm tháng.','Thành công muộn nhưng chắc; thuộc hạ trung thành.','Chuẩn bị tài chính hưu trí từ sớm để hưởng trọn hậu vận.',[2,1,0]],
+  ['Vuông, bền','Cằm vuông, xương rõ','Bền chí, quyết tâm theo đến cùng; ý chí mạnh.','Ổn định, nhất là bất động sản, nông nghiệp.','Chung thủy, nhưng có phần bảo thủ.','Hợp công việc cần bền chí: xây dựng, quản lý, quân đội.','Học cách linh hoạt, chấp nhận ý kiến mới.',[1,1,1]],
+  ['Nhọn, lẹm','Cằm nhỏ, thon nhọn hoặc lẹm','Nhanh trí, hơi bôn ba, hay thay đổi; hậu vận cần chủ động.','Tiền kiếm nhanh nhưng dễ biến động; cần tích lũy sớm.','Hay thay đổi trong tình cảm; cần ổn định.','Hợp việc sáng tạo, linh hoạt, đi nhiều.','Lập kế hoạch hậu vận sớm: bảo hiểm, nhà ở, quỹ hưu.',[0,1,1]]]],
+ ['tai','Đôi tai','Cung Thái tuế — thơ ấu, phúc thọ',[1,14],'thuong',[
+  ['Dày, vành lớn, dái tai đầy','Tai dày, dái tai tròn, nằm trên tầm mắt','Phúc thọ, có phước, lộc đến sớm; được gia đình đỡ đầu.','Thừa hưởng phúc gia đình; có của chìm.','Hôn nhân êm đềm.','Học hành thuận lợi, có nền tảng.','Hiếu thảo, biết ơn — phúc càng dày.',[1,1,1]],
+  ['Nhỏ, sát đầu, mỏng','Tai nhỏ, ép vào đầu','Độc lập, tự mình gây dựng; ít nhờ gia đình.','Tiền do tự làm; càng lớn càng vững.','Cần chủ động trong tình cảm.','Tự lập sớm, hợp khởi nghiệp.','Nuôi dưỡng sức khỏe; giữ gìn thận, tai.',[0,0,1]]]],
+ ['quyen','Gò má','Cung Quyền lực',[46,50],'trung',[
+  ['Cao, đầy, hài hòa','Xương gò má nổi nhẹ, có thịt','Có quyền uy, được trọng dụng ở tuổi trung niên.','Tiền theo chức quyền; thu nhập tăng.','Bạn đời hỗ trợ; gia đình có tiếng nói.','Hợp vị trí quản lý, lãnh đạo.','Dùng quyền để giúp người, tránh áp đặt.',[1,0,2]],
+  ['Lép, thấp','Gò má phẳng, thiếu thịt','Ít quyền lực chính thức, nhưng linh hoạt, dễ hòa đồng.','Tiền đều đặn, không phô trương.','Dễ gần, sống tình cảm.','Hợp vai trò hỗ trợ, chuyên gia hơn lãnh đạo.','Xây dựng uy tín bằng chuyên môn.',[1,1,0]],
+  ['Cao nhưng nhọn, lộ xương','Xương gò má nhô, ít thịt','Tính mạnh, khó nhường nhịn; dễ nhiều thị phi.','Tiền kiếm được nhưng dễ hao vì đối đầu.','Dễ va chạm cái tôi với bạn đời.','Làm việc mạnh mẽ nhưng cần mềm mỏng hơn.','Hạ cái tôi, nhẫn nại; tránh tranh cãi ngoài lề.',[0,0,1]]]],
+ ['mat','Hình dáng khuôn mặt','Tổng quan ngũ hành diện',null,'tong',[
+  ['Tròn đầy','Mặt tròn, má đầy','Phúc hậu, dễ gần, tài lộc tích lũy chậm mà chắc.','Của cải đến từ từ, bền.','Gần gũi, ấm áp.','Hợp dịch vụ, nghề cần sự thân thiện.','Giữ ngoại hình khỏe mạnh để phúc tướng tròn đầy.',[1,1,0]],
+  ['Vuông (chữ điền)','Trán, hàm cùng rộng, góc cạnh','Ý chí kiên định, hợp quản lý, giữ lời hứa.','Giữ tiền tốt, hợp bất động sản.','Chung thủy nhưng hơi cứng.','Hợp lãnh đạo, kỹ thuật, quân đội.','Mềm mỏng hơn trong lời nói.',[1,0,2]],
+  ['Trái xoan','Trán rộng vừa, hàm thon','Hài hòa, duyên dáng, dễ được quý nhân giúp.','Tài lộc hài hòa.','Duyên đẹp, dễ được yêu.','Hợp nghề đa năng, ngoại giao.','Chọn mục tiêu rõ để tận dụng sự hài hòa.',[1,2,1]],
+  ['Dài','Mặt dài, trán và cằm dài','Thích tự do, giỏi tư duy; vận trung niên mới rõ nét.','Tiền đến muộn nhưng ổn.','Cầu toàn, kén chọn.','Hợp nghiên cứu, học thuật, nghệ thuật.','Kiên nhẫn chờ thời, đừng vội so sánh.',[0,0,1]],
+  ['Trái tim','Trán rộng, cằm nhọn','Nhạy cảm, sáng tạo, tình cảm nồng nhiệt.','Tiền theo cảm hứng, nên có kế hoạch.','Lãng mạn, đa cảm.','Hợp sáng tạo, nghệ thuật, truyền thông.','Tập quản lý tài chính, ổn định thu nhập.',[0,2,1]]]]
+]
+const HAND=[
+ ['dang','Hình bàn tay','Ngũ hành thủ — tính cách tổng quát',null,'tay',[
+  ['Vuông, chắc','Lòng tay vuông, ngón vừa và chắc','Thực tế, kiên định, đáng tin; thuộc hành Thổ/Kim.','Giữ tiền tốt, ưa tài sản hữu hình.','Chung thủy, bền bỉ.','Hợp quản lý, kỹ thuật, xây dựng, tài chính.','Cởi mở với ý tưởng mới.',[1,1,1]],
+  ['Dài, thon','Ngón dài, lòng tay thon','Tinh tế, hay suy nghĩ, thích cái đẹp; thuộc hành Mộc/Thủy.','Tiền theo ý tưởng, sáng tạo.','Lãng mạn, nhạy cảm.','Hợp nghệ thuật, nghiên cứu, thiết kế.','Biến ý tưởng thành việc làm cụ thể.',[0,1,1]],
+  ['Mềm, hồng hào','Tay mềm, da hồng, ngón nhọn','Nhiệt tình, hướng ngoại, giàu năng lượng; thuộc hành Hỏa.','Kiếm tiền nhanh, tiêu cũng nhanh.','Nồng nhiệt, dễ yêu.','Hợp bán hàng, truyền thông, diễn thuyết.','Học kiên nhẫn; tiết kiệm trước khi tiêu.',[1,1,1]],
+  ['Dày, to, thô','Tay dày, ngón ngắn thô','Chịu khó, sức bền cao, thật thà.','Tiền từ lao động chân chính.','Chân thành, giản dị.','Hợp nông nghiệp, sản xuất, thủ công.','Nâng tay nghề và học thêm kỹ năng quản lý.',[1,1,1]]]],
+ ['sinh','Đường sinh đạo','Quanh gò ngón cái — sức sống',null,'tay',[
+  ['Dài, sâu, rõ','Vòng quanh gò ngón cái, liền nét','Sức khỏe dồi dào, nền tảng sống vững.','Có sức làm việc để tạo của cải.','Gia đình ổn định.','Bền bỉ, chịu áp lực tốt.','Duy trì thói quen tập luyện.',[1,1,1]],
+  ['Ngắn, nhạt, đứt đoạn','Đường mờ, ngắn, có điểm đứt','Cần chú ý giữ gìn sức khỏe, sống điều độ.','Tránh làm quá sức; nghỉ ngơi hợp lý.','Chăm sóc bản thân và người thân.','Chọn công việc ít áp lực.','Khám sức khỏe định kỳ, ăn ngủ đúng giờ.',[0,0,0]]]],
+ ['tri','Đường trí đạo','Ngang giữa lòng bàn tay — tư duy',null,'tay',[
+  ['Thẳng, dài','Đường ngang rõ, ít uốn','Tư duy logic, thực tế, tập trung.','Biết tính toán, giữ tiền tốt.','Lý trí trong tình cảm.','Hợp chuyên môn: kế toán, kỹ sư, pháp lý.','Thêm sáng tạo và cảm xúc vào quyết định.',[1,0,2]],
+  ['Cong xuống','Đường uốn về cuối bàn tay','Giàu trí tưởng tượng, hợp sáng tạo, nghệ thuật.','Tiền đến từ ý tưởng, sáng tạo.','Lãng mạn, mơ mộng.','Hợp thiết kế, viết lách, nghệ thuật.','Giữ kế hoạch tài chính thực tế.',[0,1,1]],
+  ['Ngắn hoặc nhiều nhánh','Đường ngắn, chia nhánh','Nhanh nhẹn, đa tài nhưng dễ phân tán.','Nhiều nguồn thu nhỏ.','Hay thay đổi.','Hợp việc đa nhiệm.','Chọn một mục tiêu chính để đi đến cùng.',[0,0,1]]]],
+ ['tam','Đường tâm đạo','Ngang dưới các ngón — tình cảm',null,'tay',[
+  ['Cong, dài','Đường cong lên giữa ngón trỏ và giữa','Tình cảm phong phú, chung thủy, dễ mở lòng.','Dễ chi cho người thương.','Yêu sâu sắc, hôn nhân bền.','Hợp nghề chăm sóc, giáo dục.','Cân bằng giữa trái tim và lý trí.',[0,2,0]],
+  ['Thẳng, ngắn','Đường thẳng dừng sớm','Lý trí trong tình yêu, trọng sự ổn định.','Quản lý tiền chặt chẽ.','Ít bày tỏ, thực tế.','Hợp công việc phân tích.','Biểu lộ tình cảm nhiều hơn.',[1,0,1]],
+  ['Nhiều nhánh, đứt','Đường chia nhiều nhánh nhỏ','Cảm xúc thay đổi, có thể trải nhiều mối tình.','Tiền dễ chi theo cảm xúc.','Duyên nhiều, cần chọn lọc.','Cần giữ tâm ổn khi làm việc.','Chọn người đồng hành hợp giá trị sống.',[0,1,0]]]],
+ ['van','Đường vận mệnh','Dọc giữa lòng tay — con đường đời',null,'tay',[
+  ['Thẳng, rõ, dài','Từ cổ tay lên gò ngón giữa','Có định hướng rõ, sự nghiệp ổn định, ít bị cản trở.','Tiền theo sự nghiệp, tăng đều.','Hôn nhân ổn định.','Thành công nhờ mục tiêu bền bỉ.','Giữ mục tiêu và kỷ luật.',[1,1,2]],
+  ['Đứt đoạn, nhiều nhánh','Đường bị ngắt hoặc rẽ nhánh','Cuộc đời nhiều ngã rẽ, thay đổi nghề, nơi ở.','Thu nhập biến động theo giai đoạn.','Tình cảm có lúc thay đổi.','Linh hoạt, học nhiều nghề.','Chuẩn bị quỹ dự phòng trước mỗi lần chuyển hướng.',[0,0,1]],
+  ['Mờ hoặc không có','Gần như không thấy','Tự do, không bị ràng buộc, tự do chọn hướng đi.','Tiền theo nỗ lực từng giai đoạn.','Tự do trong tình cảm.','Hợp việc tự do, phi truyền thống.','Tự đặt mục tiêu dài hạn.',[0,1,0]]]],
+ ['thaiduong','Đường thái dương','Dưới ngón áp út — danh tiếng',null,'tay',[
+  ['Rõ, dài','Đường dọc dưới ngón áp út','Có danh tiếng, được công nhận, thành tựu.','Tiền kèm danh; có thể có nhiều nguồn.','Được yêu mến.','Hợp nghệ thuật, truyền thông, lãnh đạo.','Xây thương hiệu cá nhân.',[1,1,2]],
+  ['Không có hoặc rất mờ','Không thấy','Làm việc thầm lặng, không cần danh tiếng.','Tiền theo công sức.','Giản dị, đời sống bình yên.','Hợp chuyên môn.','Chủ động giới thiệu thành quả.',[1,0,0]]]],
+ ['hon','Đường hôn nhân','Nếp nhỏ cạnh bàn tay dưới ngón út',null,'tay',[
+  ['Một đường rõ, dài','Một nếp rõ, thẳng','Hôn nhân bền, một người đồng hành lâu dài.','Hai người cùng vun vén.','Tình duyên ổn, chung thủy.','Gia đình là hậu phương vững.','Dành thời gian chất lượng cho nhau.',[1,2,0]],
+  ['Hai đường trở lên','Nhiều nếp song song','Duyên nhiều, có thể có hơn một mối quan hệ quan trọng.','Tiền chia cho nhiều mối quan hệ.','Cần dứt khoát.','Giữ cân bằng công việc và gia đình.','Trung thực và rõ ràng trong tình cảm.',[0,1,0]],
+  ['Mờ, ngắn','Nếp nhỏ, nhạt','Duyên đến muộn, hoặc thích tự do.','Quản lý tài chính cá nhân tốt.','Cần chủ động mở lòng.','Tập trung sự nghiệp trước.','Tham gia hoạt động xã hội để mở rộng quan hệ.',[1,0,1]]]],
+ ['gomkim','Gò Kim tinh','Gốc ngón cái — sức sống, tình cảm',null,'tay',[
+  ['Đầy đặn, hồng','Gò nổi, có thịt','Tình cảm nồng nhiệt, năng lượng dồi dào.','Hào phóng, tiền dễ ra.','Duyên mạnh.','Nhiệt huyết trong công việc.','Dành năng lượng cho điều có ý nghĩa.',[0,2,1]],
+  ['Lép, phẳng','Gò thấp, ít thịt','Điềm tĩnh, ít bộc lộ, năng lượng vừa phải.','Tiết kiệm.','Tình cảm kín đáo.','Làm việc đều đặn.','Tập thể dục để tăng sinh lực.',[1,0,0]]]],
+ ['ngoncai','Ngón cái','Ý chí và lý trí',null,'tay',[
+  ['Chắc, đầu to','Ngón cái đầy đặn, đầu tròn to','Ý chí mạnh, quyết đoán, tự chủ.','Giữ tiền, kỷ luật chi tiêu tốt.','Chung thủy nhưng cứng.','Hợp lãnh đạo, kinh doanh.','Mềm hơn khi nghe ý kiến khác.',[1,0,2]],
+  ['Thon, mềm dẻo','Ngón thon, đầu nhỏ, cong được','Linh hoạt, dễ thích nghi, nhạy bén.','Tiền theo cơ hội, dễ biến động.','Dễ cảm thông, mềm mỏng.','Hợp ngoại giao, tư vấn.','Giữ nguyên tắc khi quyết định quan trọng.',[0,1,1]]]]
 ]
 const FSUM = {
  tai:['Tiền bạc cần nhiều nỗ lực, nên học cách quản lý.','Tài vận trung bình, đều đặn nếu chăm chỉ.','Tài vận khá, có nguồn thu ổn định.','Tài vận tốt, dễ tích lũy.','Tài lộc dồi dào, có phúc về tiền bạc.'],
  tinh:['Tình duyên đến muộn, nên chủ động mở lòng.','Tình cảm bình lặng, cần thêm sự chia sẻ.','Tình duyên ổn, có người đồng hành.','Tình duyên đẹp, được yêu thương.','Duyên nồng nhiệt, đào hoa vượng.'],
  nghiep:['Cần thử nhiều hướng đi để tìm thế mạnh.','Sự nghiệp từ từ, thành công nhờ kiên trì.','Sự nghiệp ổn định, có cơ hội thăng tiến.','Sự nghiệp tốt, có tố chất dẫn dắt.','Có tướng làm lãnh đạo, thành công sớm.']
 }
-function buildFeats(){
-  const box=document.getElementById('feats')
-  box.innerHTML=FACE.map(g=>`<div class="feat"><div class="label">${g[1]}</div><div class="chips" data-f="${g[0]}">${g[2].map((o,i)=>`<button type="button" class="chip" data-i="${i}" aria-pressed="false">${o[0]}</button>`).join('')}</div></div>`).join('')
-  box.addEventListener('click',e=>{
+const FSET={face:{data:FACE,box:'feats'},hand:{data:HAND,box:'handFeats'}}
+function buildFeats(kind){
+  const {data,box}=FSET[kind], el=document.getElementById(box)
+  el.innerHTML=data.map(g=>`<div class="feat"><div class="label">${g[1]}${g[3]?` <small>· ${g[2].replace(/^Cung /,'')}</small>`:''}</div><div class="chips" data-f="${g[0]}">${g[5].map((o,i)=>`<button type="button" class="chip" data-i="${i}" aria-pressed="false" title="${esc(o[1])}">${o[0]}</button>`).join('')}</div></div>`).join('')
+  el.addEventListener('click',e=>{
     const b=e.target.closest('.chip'); if(!b)return
     const on=b.getAttribute('aria-pressed')==='true'
     b.parentElement.querySelectorAll('.chip').forEach(x=>x.setAttribute('aria-pressed','false'))
     b.setAttribute('aria-pressed',on?'false':'true')
   })
 }
-function pickedFeats(){
+function pickedFeats(kind){
   const out=[]
-  document.querySelectorAll('#feats .chips').forEach(c=>{
+  document.querySelectorAll('#'+FSET[kind].box+' .chips').forEach(c=>{
     const p=c.querySelector('.chip[aria-pressed="true"]'); if(p) out.push([c.dataset.f,+p.dataset.i])
   })
   return out
 }
-function analyzeTuong(picks){
-  const items=picks.map(([id,i])=>{ const g=FACE.find(x=>x[0]===id); return {g:g[1],o:g[2][i]} })
-  const avg=k=>items.reduce((a,x)=>a+x.o[k],0)/items.length
-  const st=a=>Math.max(2,Math.min(5,Math.round(2+a*2)))
-  const s={tai:st(avg(2)),tinh:st(avg(3)),nghiep:st(avg(4))}
-  return {items,s}
+function ageText(rng,kind,age){
+  const [a,b]=rng, r=b>=100?'từ '+a+' tuổi trở đi':a===b?a+' tuổi':'khoảng '+a+'–'+b+' tuổi'
+  if(!age) return `Bộ phận này ứng với ${r} (tuổi ta). Nhập ngày sinh để biết bạn đang ở giai đoạn nào.`
+  const adv=kind===1?'đây là lúc nên chủ động nắm cơ hội.':kind===0?'nên giữ tâm thế bình ổn, quan sát rồi hành động.':'nên thận trọng việc lớn, giữ sức khỏe, tránh quyết định vội.'
+  if(age>=a&&age<=b) return `Bộ phận này ứng với ${r} — bạn đang ở đúng giai đoạn này (${age} tuổi ta): ${adv}`
+  if(age<a) return `Bộ phận này ứng với ${r}. Còn khoảng ${a-age} năm nữa bạn bước vào giai đoạn này, hãy chuẩn bị từ sớm.`
+  return `Bộ phận này ứng với ${r}; giai đoạn đó bạn đã đi qua (hiện ${age} tuổi ta) — hãy nhìn lại để rút kinh nghiệm.`
+}
+function analyzeTuong(kind,picks,f){
+  const data=FSET[kind].data
+  const items=picks.map(([id,i])=>{ const g=data.find(x=>x[0]===id); return {g,o:g[5][i],avg:g[5][i][7].reduce((a,x)=>a+x,0)/3} })
+  const avg=k=>items.reduce((a,x)=>a+x.o[7][k],0)/items.length
+  const st=a=>Math.max(2,Math.min(5,Math.round(2+a*1.5)))
+  const age=f.dob&&kind==='face'?(new Date().getFullYear()-new Date(f.dob).getFullYear()+1):0
+  const zones={thuong:[],trung:[],ha:[]}
+  items.forEach(x=>{ if(zones[x.g[4]]) zones[x.g[4]].push(x.avg) })
+  return {kind,items,age,zones,s:{tai:st(avg(0)),tinh:st(avg(1)),nghiep:st(avg(2))}}
 }
 function renderTuong(r, f){
+  const face=r.kind==='face'
+  const kindOf=a=>a>=1.2?1:a<=0.4?-1:0
+  const zl={thuong:['Thượng đình (trán) — tuổi 15–30','Tiền vận'],trung:['Trung đình (mày → mũi) — tuổi 31–50','Trung vận'],ha:['Hạ đình (nhân trung → cằm) — tuổi 51 trở đi','Hậu vận']}
+  const zvote=a=>a>=1.2?'rất thuận lợi':a>=0.7?'khá ổn định':'còn nhiều thử thách, cần nỗ lực'
+  const tam=face?Object.entries(r.zones).filter(([k,v])=>v.length).map(([k,v])=>{const a=v.reduce((x,y)=>x+y,0)/v.length;return `<li><b>${zl[k][0]}:</b> ${zl[k][1]} ${zvote(a)}.</li>`}).join(''):''
+  const card=x=>{
+    const g=x.g,o=x.o,k=kindOf(x.avg),b=MOLE_KIND[k]
+    return `<div class="mcard"><div class="mh"><b>${g[1]} — ${o[0]}</b><span class="badge ${b[0]}">${b[1]}</span></div>
+      <div class="mnote">Nhận biết: ${esc(o[1])}${g[3]?' · '+g[2]:''}</div>
+      <p><b>Tổng quát.</b> ${o[2]}</p>
+      <p><b>💰 Tài lộc.</b> ${o[3]}</p>
+      <p><b>❤️ Tình duyên.</b> ${o[4]}</p>
+      <p><b>💼 Sự nghiệp.</b> ${o[5]}</p>
+      ${g[3]?`<p><b>🕒 Vận theo tuổi.</b> ${ageText(g[3],k,r.age)}</p>`:''}
+      <p class="mtip"><b>Lời khuyên:</b> ${o[6]}</p></div>`
+  }
+  const tuoi=r.age?TUOI_MOC.find(t=>r.age>=t[0]&&r.age<=t[1]):null
+  const hand=!face?`<div class="quote">Theo tướng pháp, nam xem tay trái (bẩm sinh), nữ xem tay phải; tay còn lại cho thấy phần vận do chính mình tạo nên. Nếu hai tay khác nhau, tay "thuận" phản ánh nỗ lực của bạn.</div>`:''
   return `
-  <h2>Luận tướng</h2>
+  <h2>${face?'Luận tướng mặt':'Luận tướng bàn tay'}</h2>
   <div class="hl">${f.name?esc(f.name)+' — ':''}Tổng quan vận trình</div>
   <div class="stars-row"><span class="nm">Tài lộc</span>${stars(r.s.tai)}<span class="tx">${FSUM.tai[r.s.tai-1]}</span></div>
   <div class="stars-row"><span class="nm">Tình duyên</span>${stars(r.s.tinh)}<span class="tx">${FSUM.tinh[r.s.tinh-1]}</span></div>
   <div class="stars-row"><span class="nm">Sự nghiệp</span>${stars(r.s.nghiep)}<span class="tx">${FSUM.nghiep[r.s.nghiep-1]}</span></div>
-  <div class="sect">Chi tiết từng nét</div>
-  <ul>${r.items.map(x=>`<li><b>${x.g} — ${x.o[0]}:</b> ${x.o[1]}</li>`).join('')}</ul>
-  <div class="quote">"Tướng tùy tâm sinh" — nét mặt có thể đổi theo cách bạn sống. Mỉm cười nhiều, làm việc thiện và đi nhiều nơi là cách dễ nhất để "đổi tướng".</div>
+  ${tuoi?`<p>Bạn đang ${r.age} tuổi ta, thuộc giai đoạn <b>${tuoi[2]}</b>.</p>`:''}
+  ${tam?`<div class="sect">Vận trình theo tam đình</div><ul>${tam}</ul>`:''}
+  ${hand}
+  <div class="sect">Luận từng nét</div>
+  ${r.items.map(card).join('')}
+  <div class="quote">"Tướng tùy tâm sinh" — nét mặt, đường tay có thể đổi theo cách bạn sống. Mỉm cười nhiều, làm việc thiện và đi nhiều nơi là cách dễ nhất để "đổi tướng".</div>
   ${tourCta('Thiện tâm','Tour bền vững, về với cộng đồng và thiên nhiên giúp tích phúc, nạp lại năng lượng.')}
-  <p class="disc">Phần này do bạn tự đối chiếu nét mặt/bàn tay, không phân tích ảnh. Chỉ mang tính tham khảo.</p>`
+  <div class="sect">Cơ sở luận giải</div>
+  <p class="disc">${face?'Tổng hợp theo thập nhị cung, lưu niên và tam đình':'Tổng hợp theo ngũ hành hình tay và các đường chỉ tay chính'} trong sách tướng pháp cổ Trung Hoa như <i>Ma Y Thần Tướng</i>, <i>Liễu Trang Tướng Pháp</i>, <i>Thần Tướng Toàn Biên</i>. Lời giải được diễn đạt lại, không trích nguyên văn; các sách có thể xếp tuổi và luận khác nhau ở từng chi tiết. Phần này do bạn tự đối chiếu nét mặt/bàn tay, không phân tích ảnh. Chỉ mang tính tham khảo.</p>`
 }
 
 // ═══════════════════════ NỐT RUỒI (相痣) ═══════════════════════
-// Diễn giải theo ba nguyên tắc "tướng chí" trong các sách tướng pháp cổ Trung Hoa (Ma Y Thần Tướng, Liễu Trang Tướng Pháp,
-// Thần Tướng Toàn Biên): (1) VỊ TRÍ – nốt ruồi nằm ở cung vị nào; (2) HÌNH SẮC – đen bóng/đỏ tươi, nổi, viền rõ là tốt,
-// xám mờ, phẳng, viền nhòe là xấu; (3) ẨN – LỘ – ruồi ở chỗ kín (lòng bàn tay/chân, nách, trong tóc, trong chân mày...) phần nhiều là cát.
-// Lời giải tổng hợp & diễn đạt lại bằng tiếng Việt, KHÔNG trích nguyên văn. Mỗi mục:
-// [id, nhóm, nhãn, luận giải, tài, tình, nghiệp (0-2), loại (1 cát / 0 trung / -1 cần lưu ý), ẩn (1 = vị trí kín)]
+// Diễn giải theo các nguyên tắc "tướng chí" trong sách tướng pháp cổ Trung Hoa (Ma Y Thần Tướng, Liễu Trang Tướng Pháp,
+// Thần Tướng Toàn Biên): (1) VỊ TRÍ – cung vị; (2) HÌNH SẮC – đen bóng/đỏ tươi, tròn, nổi, viền rõ là tốt; xám mờ, phẳng,
+// méo, viền nhòe là xấu; (3) ẨN – LỘ – ruồi ở chỗ kín phần nhiều là cát; (4) TẢ – HỮU – "nam tả nữ hữu"; (5) LƯU NIÊN –
+// mỗi điểm trên mặt ứng với một độ tuổi (tuổi ta). Lời giải tổng hợp & diễn đạt lại, KHÔNG trích nguyên văn.
+// Mỗi mục: [id, nhóm, nhãn, loại (1 cát / 0 trung / -1 lưu ý), ẩn, tuổi ứng [từ,đến]|null, [tài,tình,nghiệp 0-2],
+//           tổng quát, tài lộc, tình duyên, sự nghiệp, lời khuyên]
 const MOLE_GROUPS=[['mat','Khuôn mặt'],['dau','Đầu – cổ'],['than','Thân mình'],['tay','Tay'],['chan','Chân']]
 const MOLE=[
- ['tran','mat','Giữa trán','Chí lớn, có chính kiến, hợp việc dẫn dắt người khác; tuổi trẻ hơi vất vả, càng về sau càng vững.',1,0,2,0,0],
- ['andg','mat','Ấn đường (giữa hai chân mày)','Người cẩn trọng, hay suy tính; tâm tính điềm đạm nhưng dễ lo xa, nên tập buông bớt.',1,0,1,0,0],
- ['may','mat','Trong lông mày (ẩn)','Ruồi lẩn trong chân mày là dạng ẩn quý: thông minh, tài hoa, anh em bạn bè giúp đỡ.',1,1,2,1,1],
- ['ngu','mat','Đuôi mắt','Đào hoa, tình cảm phong phú, được người khác giới để ý; duyên nhiều thì lo cũng nhiều, cần dứt khoát trong tình cảm.',0,2,0,0,0],
- ['duoimat','mat','Dưới mắt (lệ đường)','Giàu cảm xúc, dễ rơi lệ; có lúc phải bận lòng vì con cái hoặc người thân. Giữ tinh thần thoải mái là cách tốt nhất.',0,1,0,-1,0],
- ['mi','mat','Mí mắt','Nhạy cảm, trực giác tốt, tình cảm kín đáo nhưng sâu.',0,1,1,0,1],
- ['quyen','mat','Gò má','Có quyền lực, thích nắm quyền chủ động; cần đề phòng thị phi và tiểu nhân.',1,0,2,-1,0],
- ['songmui','mat','Sống mũi','Tài vận lên xuống thất thường; nên giữ sức khỏe tiêu hóa, tránh đầu tư mạo hiểm.',0,0,0,-1,0],
- ['daumui','mat','Đầu mũi','Có duyên với tiền nhưng dễ vào dễ ra, thích hưởng thụ; nên có quỹ tiết kiệm riêng.',1,1,0,0,0],
- ['canhmui','mat','Cánh mũi','Chi tiêu rộng tay, tiền dễ hao tán; cần lập kế hoạch chi tiêu rõ ràng.',0,0,1,-1,0],
- ['nhantrung','mat','Nhân trung (rãnh dưới mũi)','Con cái đông đúc nhưng dễ vất vả vì con; vận trung niên có thử thách rồi mới ổn định.',0,1,0,0,0],
- ['moi','mat','Quanh miệng – môi','Có lộc ăn uống, ăn nói khéo, hợp nghề dịch vụ, ẩm thực, kinh doanh.',2,1,1,1,0],
- ['cam','mat','Cằm','Hậu vận sung túc, về già có nhà cửa, con cháu quây quần.',2,1,0,1,0],
- ['tai','mat','Tai (vành tai, dái tai)','Thông minh, phúc thọ; ruồi ở dái tai là người có phúc, được bề trên đỡ đầu.',1,1,1,1,0],
- ['toc','dau','Trong tóc / chân tóc (ẩn)','Ruồi ẩn dưới tóc thường được coi là quý: thông minh, có phúc ngầm, gặp hung hóa cát.',1,1,2,1,1],
- ['gay','dau','Gáy (ẩn)','Ẩn mà bền: nhiều phúc, được quý nhân nâng đỡ, hậu vận tốt.',1,0,1,1,1],
- ['cotruoc','dau','Cổ phía trước','Dễ gặp trắc trở khi ăn nói, hay phải giải thích; cần học cách diễn đạt rõ ràng, thẳng thắn.',0,0,1,-1,0],
- ['cobenh','dau','Hai bên cổ','Đa cảm, thích tự do, ham đi đây đó, khó ngồi yên một chỗ.',0,1,0,0,0],
- ['nguc','than','Ngực','Tấm lòng rộng, hay giúp người nhưng dễ bị lợi dụng; tình cảm sâu sắc.',0,2,0,0,1],
- ['bung','than','Bụng – quanh rốn','Tướng hưởng phúc: đủ ăn đủ mặc, làm ăn thuận lợi, đời sống thoải mái.',2,1,0,1,1],
- ['lung','than','Lưng','Tự lập, gánh nhiều trách nhiệm; vất vả sớm nhưng bền chí, càng làm càng vững.',0,0,2,0,1],
- ['vai','than','Vai','Hay gánh vác cho gia đình, lo cho người khác; trách nhiệm nặng nhưng được tin cậy.',0,0,2,0,0],
- ['nach','than','Nách (ẩn)','Ẩn chí: có quý nhân, gặp việc khó vẫn có người đỡ.',1,0,2,1,1],
- ['hong','than','Eo – hông','Giàu tình cảm, thích cuộc sống an nhàn; dễ vướng chuyện tình cảm nếu không tỉnh táo.',0,2,0,0,1],
- ['canhtay','tay','Cánh tay trên','Hướng ngoại, hay giúp người, được bạn bè quý mến.',1,1,1,0,0],
- ['khuyu','tay','Khuỷu tay','Số hay đi xa, thích khám phá; cơ hội thường đến ở nơi xa quê.',1,0,1,0,0],
- ['congtay','tay','Cổ tay','Khéo tay, biết kiếm tiền bằng tay nghề; hợp nghề thủ công, kỹ thuật, kế toán.',2,0,1,1,0],
- ['mutay','tay','Mu bàn tay','Kiếm tiền được nhưng hay hao hụt; cần giữ tiền chắc tay.',1,0,0,-1,0],
- ['longtay','tay','Lòng bàn tay (ẩn)','Ẩn chí quý: giỏi nắm bắt cơ hội, giữ được của, có chí lập nghiệp.',2,0,2,1,1],
- ['ngontay','tay','Ngón tay','Khéo léo, nhạy bén, nhưng tiền dễ chảy qua tay; nên ưu tiên đầu tư dài hạn.',1,0,0,0,0],
- ['dui','chan','Đùi','Sức bền tốt, hợp việc đi lại, hay có chuyến đi dài; ruồi mặt trong đùi thiên về tình cảm sâu đậm.',1,1,0,0,0],
- ['goi','chan','Đầu gối','Vất vả bôn ba, hay lặn lội; càng nỗ lực càng có thành quả. Nên chú ý khớp gối.',0,0,1,-1,0],
- ['bapchan','chan','Bắp chân – cẳng chân','Năng động, thích đi nhiều; bôn ba lúc trẻ, trung niên dần ổn định.',0,0,1,0,0],
- ['matca','chan','Mắt cá – mu bàn chân','Hay đi xa, nơi ở nhiều thay đổi; hợp du lịch, làm ăn xa quê.',1,0,1,0,0],
- ['longchan','chan','Lòng bàn chân (ẩn)','Dân gian gọi là ruồi quý: chí lớn, nhiều may mắn, thành tựu đến từ nỗ lực.',2,1,2,1,1]
+ ['tran','mat','Giữa trán',0,0,[15,30],[1,0,2],
+  'Trán là "cung quan lộc" thời thanh xuân. Ruồi giữa trán cho thấy người có chí lớn, có chính kiến riêng, không thích đi theo lối mòn.',
+  'Tiền vận chưa rộng, phải tự mình lập thân; từ sau 30 tuổi tài vận mới khá lên rõ.',
+  'Hơi cứng đầu trong tình cảm, dễ va chạm cái tôi; người đồng hành cần hiểu và để bạn có không gian riêng.',
+  'Hợp vị trí dẫn dắt, tự khởi nghiệp hơn làm thuê lâu dài. Có thể bất đồng với cấp trên nếu phải làm theo ý người khác.',
+  'Học cách lắng nghe và nhường bước khi cần; đừng nóng vội ở tuổi 15–30, thành quả đến muộn nhưng chắc.'],
+ ['andg','mat','Ấn đường (giữa hai chân mày)',0,0,[28,30],[1,0,1],
+  'Ấn đường là "mệnh cung" — nơi hội tụ khí sắc của cả đời. Ruồi ở đây cho thấy người cẩn trọng, hay suy tính, trọng danh dự.',
+  'Tiền bạc đủ dùng, nhưng hay lo xa nên khó cảm thấy "đủ".',
+  'Chọn bạn đời kỹ, đến muộn nhưng bền; dễ lo nghĩ nên cần người biết chia sẻ.',
+  'Tuổi 28–30 là bước ngoặt: nên cân nhắc kỹ trước khi đổi việc hay đầu tư lớn.',
+  'Tập thiền, đi bộ, du lịch thư giãn để giải tỏa lo âu; tránh trì hoãn quyết định vì suy nghĩ quá nhiều.'],
+ ['may','mat','Trong lông mày (ẩn)',1,1,[31,34],[1,1,2],
+  'Ruồi lẩn trong chân mày là dạng "ẩn chí" — sách xưa xếp vào tướng thông minh, tài hoa, có phúc ngầm.',
+  'Tiền đến từ trí tuệ, chuyên môn và các mối quan hệ; ít khi thiếu thốn kéo dài.',
+  'Anh em bạn bè quý mến, đời sống tình cảm hài hòa; hay được người thân giúp đỡ.',
+  'Làm việc trí óc, nghiên cứu, tư vấn, sáng tạo rất hợp; tuổi 31–34 có cơ hội thăng tiến.',
+  'Biết ơn và đáp lễ những người đã giúp mình — phúc ngầm càng được nuôi dưỡng.'],
+ ['ngu','mat','Đuôi mắt',0,0,[35,40],[0,2,0],
+  'Đuôi mắt (cung "thê/phu") là chỗ xem duyên phận. Ruồi ở đây là tướng đào hoa, ánh mắt có duyên, dễ gây thiện cảm.',
+  'Tiền bạc có khi đến từ các mối quan hệ, nhưng cũng dễ hao vì tình cảm hoặc giao tế.',
+  'Duyên nhiều, được người khác giới để ý; cũng vì vậy dễ rối chuyện tình cảm, nhiều lần mới tìm được người hợp.',
+  'Hợp nghề tiếp xúc con người: dịch vụ, bán hàng, truyền thông, du lịch.',
+  'Rõ ràng, dứt khoát trong chuyện tình cảm; giữ chữ tín để đào hoa thành đào hoa tốt.'],
+ ['duoimat','mat','Dưới mắt (lệ đường)',-1,0,[38,40],[0,1,0],
+  'Vùng dưới mắt là "cung nam nữ" (con cái). Ruồi ở đây — hay gọi là "ruồi lệ" — cho thấy người nhiều cảm xúc, dễ rơi nước mắt.',
+  'Tiền bạc không phải điều gây lo; chi tiêu nhiều cho con cái, gia đình.',
+  'Tình cảm sâu nhưng dễ buồn vì chuyện nhà cửa, con cái hoặc người thân; có thể muộn con hoặc phải bận lòng nhiều vì con.',
+  'Công việc ổn khi tinh thần ổn; tâm trạng ảnh hưởng nhiều đến hiệu suất.',
+  'Ngủ đủ, giữ tinh thần thoải mái; chia sẻ với người thân thay vì giữ trong lòng.'],
+ ['mi','mat','Mí mắt',0,1,[35,40],[0,1,1],
+  'Mắt là "cửa sổ tâm hồn" nên ruồi ở mí mắt (gần như ẩn) thiên về người nhạy cảm, trực giác tốt, tình cảm kín đáo.',
+  'Tiền bạc cần được quản lý bằng lý trí, đừng để cảm xúc dẫn lối khi chi tiêu.',
+  'Yêu sâu sắc nhưng ít bày tỏ; cần người kiên nhẫn đọc được tâm tư.',
+  'Hợp nghề đòi hỏi tinh tế: nghệ thuật, chăm sóc, tư vấn, thiết kế.',
+  'Mạnh dạn nói điều mình nghĩ; tin trực giác nhưng kiểm chứng bằng thông tin thực.'],
+ ['quyen','mat','Gò má',-1,0,[46,50],[1,0,2],
+  'Gò má là "cung quyền lực". Ruồi ở đây cho thấy người ham nắm quyền chủ động, không thích bị chi phối.',
+  'Tiền theo quyền: giữ vị trí cao thì tiền vào dễ, mất vị trí thì tài vận giảm.',
+  'Có phần áp đặt, dễ khiến người bên cạnh ngại; cần mềm mỏng hơn.',
+  'Tuổi 46–50 là thời quyền lực lên cao nhưng cũng dễ gặp thị phi, tiểu nhân đố kỵ.',
+  'Công khai, minh bạch trong công việc; đừng để lời nói nặng lời làm mất lòng cộng sự.'],
+ ['songmui','mat','Sống mũi',-1,0,[41,44],[0,0,0],
+  'Sống mũi (sơn căn – niên thượng – thọ thượng) ứng với "cung tật ách": sức khỏe và biến động trung niên.',
+  'Tài vận lên xuống thất thường quanh tuổi 41–44; không hợp đầu tư mạo hiểm, vay nợ lớn.',
+  'Vợ chồng dễ có thời kỳ lạnh nhạt vì áp lực cuộc sống; cần chủ động quan tâm nhau.',
+  'Giai đoạn dễ gặp thay đổi lớn; giữ vị trí hiện tại ổn hơn là nhảy việc liều lĩnh.',
+  'Khám sức khỏe định kỳ (tiêu hóa, gan mật); quỹ dự phòng ít nhất 6 tháng chi tiêu.'],
+ ['daumui','mat','Đầu mũi',0,0,[48,50],[1,1,0],
+  'Đầu mũi (chuẩn đầu) là "cung tài bạch" — nơi xem tiền bạc. Ruồi ở đây cho thấy người có duyên với tiền nhưng thích hưởng thụ.',
+  'Tiền vào dễ nhưng ra cũng dễ; nếu không có quỹ tiết kiệm tách riêng thì khó giữ.',
+  'Hào phóng, chiều chuộng người mình thương; được yêu mến.',
+  'Hợp kinh doanh, buôn bán, dịch vụ; tuổi 48–50 là mốc cần quản lý tài chính chặt.',
+  'Tự động trích tiết kiệm đầu tháng; tránh cho vay, bảo lãnh tiền bạc.'],
+ ['canhmui','mat','Cánh mũi',-1,0,[49,50],[0,0,1],
+  'Cánh mũi (lan đài – đình úy) là "kho chứa" của cải. Ruồi ở đây bị xem là chỗ tiền dễ thất thoát.',
+  'Chi tiêu rộng tay, tiền khó giữ; dễ hao vì mua sắm, giao tế, hoặc bị người khác nhờ vả.',
+  'Tình cảm bình thường; chuyện tiền bạc có thể gây bất hòa trong gia đình.',
+  'Nên có người đáng tin giúp quản lý sổ sách; đặc biệt hợp nghề có kỷ luật tài chính như kế toán.',
+  'Lập ngân sách tháng, ghi chép chi tiêu; hạn chế mua trả góp và vay tiêu dùng.'],
+ ['nhantrung','mat','Nhân trung (rãnh dưới mũi)',0,0,[51,51],[0,1,0],
+  'Nhân trung là "cung con cái và thọ mạng". Ruồi ở đây thường luận về con cái và sức khỏe sinh sản.',
+  'Tiền bạc đủ dùng, phần lớn dành cho con cái, gia đình.',
+  'Con cái đông đúc hoặc rất gắn bó, nhưng dễ vất vả vì con; vợ chồng cần cùng nhau nuôi dạy.',
+  'Trung niên có nhiều thử thách rồi mới ổn định; kiên trì sẽ qua.',
+  'Giữ gìn sức khỏe sinh sản, khám sức khỏe định kỳ; dành thời gian chất lượng cho con.'],
+ ['moi','mat','Quanh miệng – môi',1,0,[57,60],[2,1,1],
+  'Miệng là "cung xuất nạp" (ăn uống và lời nói). Ruồi quanh miệng trong sách xưa là tướng "lộc ăn", ăn nói khéo.',
+  'Tiền đến từ lời nói và ăn uống: kinh doanh ẩm thực, dịch vụ, thương lượng, bán hàng rất thuận.',
+  'Nói chuyện duyên dáng nên dễ có người yêu mến; tránh lời nói vô tình làm tổn thương.',
+  'Làm nghề cần giao tiếp, thuyết phục thì thành công; tuổi 57–60 hưởng thành quả lời nói đã gieo.',
+  'Giữ lời hứa, nói điều thiện — ruồi ở miệng càng tốt khi lời nói đi đôi với việc làm.'],
+ ['cam','mat','Cằm',1,0,[61,100],[2,1,0],
+  'Cằm (địa các) là "cung điền trạch và hậu vận". Ruồi ở đây là dấu hiệu tuổi già yên ổn.',
+  'Hậu vận có nhà đất, tích lũy; càng lớn tuổi tiền bạc càng vững.',
+  'Về già có bạn đời, con cháu quây quần; tình cảm bền chặt dần theo năm tháng.',
+  'Công việc trung niên chắc chắn; nghề bất động sản, nông nghiệp, di sản rất hợp.',
+  'Đầu tư dài hạn (nhà đất, bảo hiểm, quỹ hưu trí) ngay từ bây giờ để hưởng trọn hậu vận.'],
+ ['tai','mat','Tai (vành tai, dái tai)',1,0,[1,14],[1,1,1],
+  'Tai là "cung phúc thọ" và thời thơ ấu. Ruồi ở tai, nhất là dái tai, trong sách xưa là tướng có phúc, thông minh, thọ.',
+  'Tiền bạc nhờ phúc của gia đình, quý nhân nâng đỡ; hay gặp may khi cần.',
+  'Duyên lành, người bạn đời hiền hậu; đời sống gia đình hòa thuận.',
+  'Học hành thuận lợi, được thầy cô hoặc người lớn đỡ đầu; hợp nghề giáo dục, nghiên cứu.',
+  'Hiếu thảo với cha mẹ, giúp đỡ người yếu thế — phúc càng dày thêm.'],
+ ['toc','dau','Trong tóc / chân tóc (ẩn)',1,1,null,[1,1,2],
+  'Ruồi ẩn dưới tóc là "ẩn chí quý" — người có trí tuệ, phúc ngầm, gặp hung hóa cát.',
+  'Tiền không ồ ạt nhưng bền; khi khó khăn thường có đường lui.',
+  'Tình cảm kín đáo, ít phô trương, bền chặt.',
+  'Giỏi lập kế hoạch, hợp nghề cần suy nghĩ chiến lược, quản lý.',
+  'Giữ khiêm tốn; đừng khoe khoang, để phúc ngầm tích lũy.'],
+ ['gay','dau','Gáy (ẩn)',1,1,null,[1,0,1],
+  'Gáy là chỗ khuất sau lưng nên ruồi ở đây thuộc dạng ẩn: bền bỉ, có quý nhân phía sau.',
+  'Tiền đến chậm nhưng chắc, nhất là khi có người đỡ đầu hoặc hợp tác lâu dài.',
+  'Tình cảm bền lâu, chung thủy; không phô trương.',
+  'Giữ được vị trí lâu dài; càng nhiều tuổi càng được trọng dụng.',
+  'Giữ mối quan hệ với người từng giúp đỡ; làm việc đều đặn, không bỏ dở.'],
+ ['cotruoc','dau','Cổ phía trước',-1,0,null,[0,0,1],
+  'Cổ trước gắn với cổ họng — "cửa" của lời nói. Ruồi ở đây thường luận là hay vướng chuyện ăn nói.',
+  'Tiền bạc chịu ảnh hưởng của cách giao tiếp; dễ mất cơ hội vì nói chưa rõ.',
+  'Dễ bị hiểu lầm vì nói ít hoặc nói thẳng; cần diễn đạt mềm hơn.',
+  'Hợp việc kỹ thuật, chuyên môn hơn việc đối ngoại; nếu làm đối ngoại cần chuẩn bị kỹ.',
+  'Viết ra trước khi nói điều quan trọng; giữ ấm cổ họng, tránh lạnh đột ngột.'],
+ ['cobenh','dau','Hai bên cổ',0,0,null,[0,1,0],
+  'Hai bên cổ là nơi luận về tính cách phóng khoáng, thích tự do, khó ngồi yên một chỗ.',
+  'Tiền không ổn định bằng việc nhưng hay có thu nhập phụ từ nhiều nguồn.',
+  'Thích tự do, ngại ràng buộc; cần người đồng hành chấp nhận lối sống của mình.',
+  'Hợp công việc linh hoạt, đi lại nhiều: du lịch, bán hàng, truyền thông.',
+  'Đi nhiều nơi để nạp năng lượng; đặt ra mục tiêu dài hạn để không bị phân tán.'],
+ ['nguc','than','Ngực',0,1,null,[0,2,0],
+  'Ngực ứng với "tâm". Ruồi ở đây cho thấy người rộng lượng, tình cảm sâu đậm, hay nghĩ cho người khác.',
+  'Dễ cho đi quá nhiều, bị người khác lợi dụng; cần phân định rõ chuyện tiền bạc.',
+  'Yêu hết lòng, chung thủy; cũng vì thế dễ tổn thương khi bị phụ lòng.',
+  'Hợp nghề phục vụ cộng đồng: y tế, giáo dục, tư vấn, thiện nguyện.',
+  'Học cách nói "không" khi cần; giữ lại một phần cho bản thân.'],
+ ['bung','than','Bụng – quanh rốn',1,1,null,[2,1,0],
+  'Bụng chứa "kho phúc". Ruồi ở bụng hoặc quanh rốn là dạng ẩn quý — tướng hưởng phúc, ăn nên làm ra.',
+  'Tiền bạc đủ đầy, không lo thiếu; hợp làm ăn ổn định, tích lũy dài hạn.',
+  'Cuộc sống hôn nhân thoải mái, ít sóng gió; coi trọng ăn uống, sum họp gia đình.',
+  'Công việc thuận lợi, nhất là nghề liên quan đến đời sống: thực phẩm, nhà đất, dịch vụ.',
+  'Giữ ăn uống điều độ; ruồi bụng càng tốt khi không chạy theo hưởng thụ quá mức.'],
+ ['lung','than','Lưng',0,1,null,[0,0,2],
+  'Lưng là "chỗ dựa". Ruồi ở lưng cho thấy người tự lập, hay gánh vác, ít khi nhờ cậy ai.',
+  'Tiền do tự mình làm ra, càng làm càng khá; ít dựa vào may rủi.',
+  'Ít bộc lộ yếu đuối nên người bên cạnh khó biết khi bạn cần giúp.',
+  'Kiên trì và chịu trách nhiệm: hợp vị trí quản lý, nghề kỹ thuật, xây dựng.',
+  'Cho phép mình nghỉ ngơi và nhờ giúp đỡ; chú ý cột sống, tư thế ngồi.'],
+ ['vai','than','Vai',0,0,null,[0,0,2],
+  'Vai là nơi gánh vác. Ruồi ở vai nói lên người có trách nhiệm nặng với gia đình hoặc tổ chức.',
+  'Tiền vào đều nhưng phần lớn dành lo cho người khác.',
+  'Quan tâm bạn đời, người thân; đôi khi quên chăm sóc chính mình.',
+  'Được tin cậy giao việc lớn; càng gánh càng trưởng thành.',
+  'Phân chia trách nhiệm hợp lý; đừng ôm hết việc về mình.'],
+ ['nach','than','Nách (ẩn)',1,1,null,[1,0,2],
+  'Nách là chỗ kín nên ruồi ở đây thuộc "ẩn chí". Sách xưa coi là dấu hiệu có quý nhân phù trợ.',
+  'Lúc khó khăn thường có người giúp tiền bạc hoặc cơ hội.',
+  'Duyên đến nhẹ nhàng, được người bạn đời hỗ trợ.',
+  'Gặp khó khăn trong công việc vẫn có người đỡ; hợp làm trong tổ chức có người dẫn dắt.',
+  'Biết ơn quý nhân và giữ liên lạc thường xuyên.'],
+ ['hong','than','Eo – hông',0,1,null,[0,2,0],
+  'Eo và hông là vùng luận về tình cảm, sinh lực. Ruồi kín ở đây thiên về giàu tình cảm, thích an nhàn.',
+  'Tiền bạc ổn nếu không để tình cảm chi phối chi tiêu.',
+  'Tình cảm nồng nàn, dễ vướng chuyện yêu đương nếu không tỉnh táo.',
+  'Hợp công việc ổn định, môi trường thoải mái hơn công việc cạnh tranh gay gắt.',
+  'Rõ ràng trong các mối quan hệ; chú ý sức khỏe vùng bụng dưới, thận.'],
+ ['canhtay','tay','Cánh tay trên',0,0,null,[1,1,1],
+  'Cánh tay là "tay chân của mình" — luận về anh em, bạn bè, người hỗ trợ.',
+  'Có nguồn thu nhờ bạn bè, đối tác giới thiệu.',
+  'Hướng ngoại, được nhiều người quý mến; tình cảm cởi mở.',
+  'Làm việc nhóm tốt, hợp vai trò kết nối.',
+  'Giữ chữ tín trong hợp tác; chọn bạn kỹ khi làm ăn chung.'],
+ ['khuyu','tay','Khuỷu tay',0,0,null,[1,0,1],
+  'Khuỷu tay là khớp nối nên ruồi ở đây gắn với "dịch mã" — đi xa, thay đổi chỗ ở, làm việc.',
+  'Cơ hội kiếm tiền thường ở nơi xa quê hoặc nhờ công việc đi lại.',
+  'Duyên có thể đến khi đi xa; hôn nhân với người khác vùng miền.',
+  'Hợp nghề di chuyển nhiều: du lịch, vận tải, xuất nhập khẩu, hướng dẫn viên.',
+  'Chủ động đi học, đi làm xa khi có cơ hội; đừng ngại thay đổi môi trường.'],
+ ['congtay','tay','Cổ tay',1,0,null,[2,0,1],
+  'Cổ tay là nơi "tay nghề" thể hiện. Ruồi ở đây là dấu hiệu khéo tay, biết kiếm tiền bằng kỹ năng.',
+  'Tiền đến từ tay nghề, tính toán chi li; hợp kế toán, thủ công, kỹ thuật, thủ quỹ.',
+  'Chăm lo gia đình bằng hành động thiết thực hơn lời nói.',
+  'Làm việc tỉ mỉ, chính xác nên được tin tưởng giao việc.',
+  'Nâng cao tay nghề liên tục; học thêm kỹ năng số để mở rộng thu nhập.'],
+ ['mutay','tay','Mu bàn tay',-1,0,null,[1,0,0],
+  'Mu bàn tay lộ rõ nên ruồi ở đây là "ruồi lộ": tiền vào được nhưng khó giữ.',
+  'Có khả năng kiếm tiền nhưng dễ hao hụt vì chi tiêu hoặc cho mượn.',
+  'Hay giúp đỡ người thân, đôi khi quên lo cho mình.',
+  'Làm việc khá, nhưng cần kiểm soát dòng tiền trong kinh doanh.',
+  'Mở tài khoản tiết kiệm riêng; hạn chế cho vay hoặc đứng tên bảo lãnh.'],
+ ['longtay','tay','Lòng bàn tay (ẩn)',1,1,null,[2,0,2],
+  'Lòng bàn tay là chỗ kín nhất của tay. Ruồi ở đây được sách xưa xếp vào "tướng giữ của, nắm quyền".',
+  'Biết nắm bắt cơ hội kiếm tiền và giữ được tiền; ít khi trắng tay.',
+  'Tình cảm kín đáo, chắc chắn; thường chọn người bạn đời kỹ.',
+  'Có chí lập nghiệp, quyết đoán; hợp kinh doanh, quản lý.',
+  'Đầu tư vào tài sản bền vững; tránh khoe của, giữ kín kế hoạch tài chính.'],
+ ['ngontay','tay','Ngón tay',0,0,null,[1,0,0],
+  'Ngón tay là phần khéo léo nhất. Ruồi ở ngón tay luận về tay nghề nhưng tiền dễ chảy qua tay.',
+  'Kiếm tiền nhanh nhưng tiêu cũng nhanh; cần kế hoạch tài chính dài hạn.',
+  'Khéo chiều người thương; thích tặng quà, chăm sóc.',
+  'Hợp nghề thủ công, nghệ thuật, kỹ thuật.',
+  'Chọn kênh tiết kiệm tự động; ưu tiên đầu tư dài hạn thay vì lướt sóng.'],
+ ['dui','chan','Đùi',0,0,null,[1,1,0],
+  'Đùi là trụ cột của đôi chân: ruồi ở đây gắn với sức bền, năng lượng, và hay đi xa.',
+  'Tiền kiếm nhờ sự chịu khó, đi lại, làm việc thực địa.',
+  'Ruồi mặt trong đùi thiên về tình cảm sâu đậm, nồng nhiệt, kín đáo.',
+  'Hợp công việc vận động, đi lại, thực địa, thể thao.',
+  'Giữ thói quen vận động; chọn công việc vừa sức để bền lâu.'],
+ ['goi','chan','Đầu gối',-1,0,null,[0,0,1],
+  'Đầu gối là khớp chịu lực: ruồi ở đây luận về bôn ba, lặn lội, và cần lưu ý sức khỏe khớp.',
+  'Tiền phải đánh đổi bằng sức lực; không có "của dễ".',
+  'Tình duyên có thể phải trải qua thử thách, xa cách trước khi ổn định.',
+  'Làm việc vất vả lúc đầu, càng nỗ lực càng có thành quả.',
+  'Khám xương khớp định kỳ; không nên gắng sức quá mức khi còn trẻ.'],
+ ['bapchan','chan','Bắp chân – cẳng chân',0,0,null,[0,0,1],
+  'Cẳng chân gắn với việc đi và làm. Ruồi ở đây là tướng năng động, thích khám phá.',
+  'Thu nhập tăng dần theo kinh nghiệm; trẻ vất vả, trung niên khá hơn.',
+  'Hay chu du nên duyên đến muộn hoặc ở nơi xa.',
+  'Phù hợp công việc di chuyển, thực tế, ngoài trời.',
+  'Tận dụng tuổi trẻ để đi học, đi làm nhiều nơi, tích lũy kinh nghiệm.'],
+ ['matca','chan','Mắt cá – mu bàn chân',0,0,null,[1,0,1],
+  'Mắt cá và mu bàn chân là chỗ nối giữa chân và đất: luận về đi xa, đổi chỗ ở.',
+  'Cơ hội tiền bạc ở nơi xa hoặc nhờ làm việc với nước ngoài, vùng khác.',
+  'Duyên có thể đến khi đi xa; hôn nhân khác vùng miền.',
+  'Hợp du lịch, xuất nhập khẩu, làm việc quốc tế.',
+  'Học ngoại ngữ, mở rộng quan hệ; đừng ngại thay đổi nơi sống khi có cơ hội tốt.'],
+ ['longchan','chan','Lòng bàn chân (ẩn)',1,1,null,[2,1,2],
+  'Lòng bàn chân là chỗ kín nhất, "nơi tiếp đất". Dân gian và sách tướng xưa xếp ruồi ở đây vào hàng quý tướng — chí lớn, tay trắng làm nên.',
+  'Tiền tài do tự mình gây dựng, về sau càng vững; ít bị phá sản triệt để.',
+  'Tình cảm chung thủy, hiếm khi phụ lòng người.',
+  'Chí lớn, bền bỉ, nhiều may mắn trong thời điểm quyết định; hợp làm chủ.',
+  'Giữ kín kế hoạch lớn; tập trung mục tiêu dài hạn và đừng bỏ cuộc giữa chừng.']
 ]
-// [id, nhãn, hệ số cộng vào điểm]
-const MOLE_Q=[['tot','Đen bóng hoặc đỏ tươi, hơi nổi, viền rõ',0.4],['thuong','Nâu nhạt, bình thường',0],['xau','Xám, mờ, phẳng, viền nhòe',-0.3]]
+const MOLE_COL={tot:['Đen bóng / đỏ tươi',0.4],nau:['Nâu nhạt',0],xam:['Xám, mờ, phẳng',-0.3]}
 const MOLE_KIND={1:['g','Cát'],0:['n','Trung bình'],'-1':['w','Cần lưu ý']}
-function moleQNote(q,kind){
-  if(q==='tot') return kind===1?'Nốt ruồi sáng, nổi nên càng tăng vượng khí cho vị trí này.':kind===0?'Màu đẹp, nổi giúp nghiêng về mặt tích cực.':'Màu sáng, rõ giúp giảm bớt điểm bất lợi.'
-  if(q==='xau') return kind===1?'Màu mờ, phẳng nên sức tốt chỉ ở mức vừa phải.':kind===0?'Màu mờ nên ý nghĩa nhạt hơn, ít ảnh hưởng.':'Màu xám mờ khiến điểm cần lưu ý rõ hơn — nên sống điều độ, giữ gìn.'
+const TUOI_MOC=[[0,15,'thơ ấu'],[15,30,'thanh xuân'],[31,40,'lập nghiệp'],[41,50,'trung niên'],[51,60,'tiền hậu vận'],[61,100,'hậu vận']]
+const SIDE_LBL={L:'Bên trái',R:'Bên phải',M:'Chính giữa / không rõ'}
+const SIZE_LBL={s:'Nhỏ li ti',m:'Vừa',l:'To, nổi rõ'}
+function colNote(c,k){
+  if(c==='tot') return k===1?'Màu đen bóng/đỏ tươi nên càng tăng vượng khí cho vị trí này.':k===0?'Màu đẹp giúp nghiêng về mặt tích cực.':'Màu sáng, rõ giúp giảm bớt điểm bất lợi.'
+  if(c==='xam') return k===1?'Màu xám mờ nên sức tốt chỉ ở mức vừa phải.':k===0?'Màu mờ khiến ý nghĩa nhạt đi.':'Màu xám mờ khiến điểm cần lưu ý rõ hơn — nên sống điều độ, giữ gìn.'
   return ''
 }
-let moleQ='thuong'
+function sizeNote(sz,k){
+  if(sz==='s') return 'Cỡ nhỏ: ảnh hưởng nhẹ, mang tính gợi ý.'
+  if(sz==='l') return k===-1?'Cỡ to nổi rõ nên điểm lưu ý ở đây cần để tâm hơn.':'Cỡ to nổi rõ nên ý nghĩa vị trí này mạnh hơn bình thường.'
+  return ''
+}
+function sideNote(side,gender,hasSide){
+  if(!hasSide||side==='M') return ''
+  const chinh=(gender==='nam'&&side==='L')||(gender==='nu'&&side==='R')
+  return chinh?'Theo quy tắc "nam tả nữ hữu", đây là bên "chính" của bạn — ruồi ứng nghiệm rõ.':'Đây là bên "phụ" theo quy tắc "nam tả nữ hữu" — ruồi ứng nghiệm nhẹ hơn.'
+}
+function ageNote(m,age){
+  if(!m[5]) return ''
+  const [a,b]=m[5], rng=b>=100?'từ '+a+' tuổi trở đi':a===b?a+' tuổi':'khoảng '+a+'–'+b+' tuổi'
+  if(!age) return `Vị trí này ứng với ${rng} (tuổi ta). Nhập ngày sinh để biết bạn đang ở giai đoạn nào.`
+  const adv=m[3]===1?'đây là lúc nên chủ động nắm cơ hội.':m[3]===0?'nên giữ tâm thế bình ổn, quan sát rồi hành động.':'nên thận trọng việc lớn, giữ sức khỏe, tránh quyết định vội.'
+  if(age>=a&&age<=b) return `Vị trí này ứng với ${rng} — bạn đang ở đúng giai đoạn này (${age} tuổi ta): ${adv}`
+  if(age<a) return `Vị trí này ứng với ${rng}. Còn khoảng ${a-age} năm nữa bạn bước vào giai đoạn này, hãy chuẩn bị từ sớm.`
+  return `Vị trí này ứng với ${rng}; giai đoạn đó bạn đã đi qua (hiện ${age} tuổi ta) — hãy nhìn lại để rút kinh nghiệm.`
+}
+// ── Giao diện nhập: chọn vị trí → mỗi vị trí hiện thêm 3 ô (bên, cỡ, màu) ──
+const MOLE_STATE={}   // id -> {side,size,col}
 function buildMoles(){
-  $('moleQ').innerHTML=MOLE_Q.map(q=>`<button type="button" class="chip" data-q="${q[0]}" aria-pressed="${q[0]===moleQ}">${q[1]}</button>`).join('')
-  $('moleQ').addEventListener('click',e=>{
-    const b=e.target.closest('.chip'); if(!b)return
-    moleQ=b.dataset.q
-    $('moleQ').querySelectorAll('.chip').forEach(x=>x.setAttribute('aria-pressed',String(x===b)))
-  })
-  $('moles').innerHTML=MOLE_GROUPS.map(g=>`<div class="feat"><div class="label">${g[1]}</div><div class="chips" data-g="${g[0]}">${MOLE.filter(m=>m[1]===g[0]).map(m=>`<button type="button" class="chip${m[8]?' hide':''}" data-id="${m[0]}" aria-pressed="false">${m[2]}</button>`).join('')}</div></div>`).join('')+'<p class="mnote">Viền nét đứt = vị trí kín (ẩn). Có thể chọn nhiều chỗ; màu sắc ở bước 1 áp dụng chung cho tất cả.</p>'
+  $('moles').innerHTML=MOLE_GROUPS.map(g=>`<div class="feat"><div class="label">${g[1]}</div><div class="chips" data-g="${g[0]}">${MOLE.filter(m=>m[1]===g[0]).map(m=>`<button type="button" class="chip${m[4]?' hide':''}" data-id="${m[0]}" aria-pressed="false">${m[2]}</button>`).join('')}</div></div>`).join('')+'<p class="mnote">Viền nét đứt = vị trí kín (ẩn). Chọn nhiều chỗ được.</p>'
   $('moles').addEventListener('click',e=>{
     const b=e.target.closest('.chip'); if(!b)return
-    b.setAttribute('aria-pressed',String(b.getAttribute('aria-pressed')!=='true'))
+    const on=b.getAttribute('aria-pressed')!=='true'
+    b.setAttribute('aria-pressed',String(on))
+    if(on) MOLE_STATE[b.dataset.id]=MOLE_STATE[b.dataset.id]||{side:'M',size:'m',col:'nau'}; else delete MOLE_STATE[b.dataset.id]
+    renderMoleForm()
+  })
+  $('moleDetail').addEventListener('change',e=>{
+    const s=e.target.closest('select'); if(!s)return
+    MOLE_STATE[s.dataset.id][s.dataset.k]=s.value
   })
 }
-function pickedMoles(){ return [...document.querySelectorAll('#moles .chip[aria-pressed="true"]')].map(b=>b.dataset.id) }
-function analyzeMole(ids,q){
-  const items=ids.map(id=>MOLE.find(m=>m[0]===id))
-  const adj=MOLE_Q.find(x=>x[0]===q)[2]
-  const avg=k=>items.reduce((a,m)=>a+m[k],0)/items.length+adj
-  const st=a=>Math.max(2,Math.min(5,Math.round(2+a*2)))
-  return {items,q,s:{tai:st(avg(4)),tinh:st(avg(5)),nghiep:st(avg(6))}}
+function renderMoleForm(){
+  const ids=Object.keys(MOLE_STATE)
+  $('moleDetailWrap').hidden=!ids.length
+  const opt=(o,cur)=>Object.entries(o).map(([k,v])=>`<option value="${k}"${k===cur?' selected':''}>${v}</option>`).join('')
+  const colLbl={tot:'Đen bóng / đỏ tươi, nổi',nau:'Nâu nhạt, bình thường',xam:'Xám, mờ, phẳng'}
+  $('moleDetail').innerHTML=ids.map(id=>{
+    const m=MOLE.find(x=>x[0]===id),st=MOLE_STATE[id]
+    const sel=(k,o)=>`<select class="input" data-id="${id}" data-k="${k}" aria-label="${m[2]} — ${k}">${opt(o,st[k])}</select>`
+    return `<div class="mrow"><b>${m[2]}</b><div class="mcols">${sel('side',SIDE_LBL)}${sel('size',SIZE_LBL)}${sel('col',colLbl)}</div></div>`
+  }).join('')
+}
+function pickedMoles(){ return Object.keys(MOLE_STATE).map(id=>Object.assign({id},MOLE_STATE[id])) }
+function analyzeMole(picks,f){
+  const items=picks.map(p=>({m:MOLE.find(x=>x[0]===p.id),p}))
+  const sc=(k)=>items.reduce((a,x)=>a+x.m[6][k]+MOLE_COL[x.p.col][1],0)/items.length
+  const st=a=>Math.max(2,Math.min(5,Math.round(2+a*1.5)))
+  const age=f.dob?(new Date().getFullYear()-new Date(f.dob).getFullYear()+1):0
+  return {items,age,s:{tai:st(sc(0)),tinh:st(sc(1)),nghiep:st(sc(2))}}
 }
 function renderMole(r,f){
-  const qn=MOLE_Q.find(x=>x[0]===r.q)[1]
-  const hidden=r.items.filter(m=>m[8]).length
+  const n=r.items.length, cat=r.items.filter(x=>x.m[3]===1).length, luu=r.items.filter(x=>x.m[3]===-1).length, an=r.items.filter(x=>x.m[4]).length
+  const best=Object.entries({'tài lộc':r.s.tai,'tình duyên':r.s.tinh,'sự nghiệp':r.s.nghiep}).sort((a,b)=>b[1]-a[1])[0][0]
+  const weak=Object.entries({'tài lộc':r.s.tai,'tình duyên':r.s.tinh,'sự nghiệp':r.s.nghiep}).sort((a,b)=>a[1]-b[1])[0][0]
+  const bestV=Math.max(r.s.tai,r.s.tinh,r.s.nghiep), weakV=Math.min(r.s.tai,r.s.tinh,r.s.nghiep)
+  const tone=cat>luu?'thiên về cát: nhiều dấu hiệu phúc và quý nhân':luu>cat?'thiên về cần giữ gìn: một số điểm cần thận trọng nhưng đều có cách hóa giải':'khá cân bằng: có cả điểm thuận lợi lẫn điểm cần để tâm'
+  const tuoi=r.age?TUOI_MOC.find(t=>r.age>=t[0]&&r.age<=t[1]):null
+  const card=({m,p})=>{
+    const k=MOLE_KIND[m[3]], hasSide=!['tran','andg','nhantrung','cam','songmui','daumui','moi','cotruoc','bung'].includes(m[0])
+    const notes=[sideNote(p.side,f.gender,hasSide),colNote(p.col,m[3]),sizeNote(p.size,m[3])].filter(Boolean)
+    const an=ageNote(m,r.age)
+    return `<div class="mcard"><div class="mh"><b>${m[2]}</b><span class="badge ${k[0]}">${k[1]}</span>${m[4]?'<span class="badge n">ẩn</span>':''}</div>
+      <div class="mnote">${hasSide?SIDE_LBL[p.side]+' · ':''}${SIZE_LBL[p.size]} · ${MOLE_COL[p.col][0]}</div>
+      <p><b>Tổng quát.</b> ${m[7]}</p>
+      <p><b>💰 Tài lộc.</b> ${m[8]}</p>
+      <p><b>❤️ Tình duyên.</b> ${m[9]}</p>
+      <p><b>💼 Sự nghiệp.</b> ${m[10]}</p>
+      ${an?`<p><b>🕒 Vận theo tuổi.</b> ${an}</p>`:''}
+      ${notes.length?`<p class="mnote">${notes.join(' ')}</p>`:''}
+      <p class="mtip"><b>Lời khuyên:</b> ${m[11]}</p></div>`
+  }
   return `
   <h2>Luận tướng nốt ruồi</h2>
-  <div class="hl">${f.name?esc(f.name)+' — ':''}${r.items.length} nốt ruồi</div>
+  <div class="hl">${f.name?esc(f.name)+' — ':''}${n} nốt ruồi</div>
   <div class="stars-row"><span class="nm">Tài lộc</span>${stars(r.s.tai)}<span class="tx">${FSUM.tai[r.s.tai-1]}</span></div>
   <div class="stars-row"><span class="nm">Tình duyên</span>${stars(r.s.tinh)}<span class="tx">${FSUM.tinh[r.s.tinh-1]}</span></div>
   <div class="stars-row"><span class="nm">Sự nghiệp</span>${stars(r.s.nghiep)}<span class="tx">${FSUM.nghiep[r.s.nghiep-1]}</span></div>
-  <div class="sect">Chi tiết từng vị trí <small>(hình sắc: ${esc(qn.toLowerCase())})</small></div>
-  <ul>${r.items.map(m=>{const k=MOLE_KIND[m[7]],n=moleQNote(r.q,m[7]);return `<li><b>${m[2]}</b><span class="badge ${k[0]}">${k[1]}</span>${m[8]?'<span class="badge n">ẩn</span>':''}<br>${m[3]}${n?'<div class="mnote">'+n+'</div>':''}</li>`}).join('')}</ul>
-  ${hidden?`<div class="quote">Bạn có <b>${hidden}</b> nốt ruồi ở vị trí kín. Theo tướng pháp cổ, ruồi ẩn là "phúc ngầm" — quý hơn ruồi lộ ra ngoài.</div>`:''}
+  <div class="sect">Nhận định tổng hợp</div>
+  <p>Bố cục ruồi của bạn ${tone}. Có <b>${cat}</b> vị trí cát, <b>${luu}</b> vị trí cần lưu ý${an?`, và <b>${an}</b> nốt ở chỗ kín (phúc ngầm)`:''}.
+  ${bestV===weakV?'Ba mặt tài lộc, tình duyên, sự nghiệp của bạn khá đều nhau.':`Điểm mạnh nổi bật là <b>${best}</b>; phần nên chủ động bồi đắp là <b>${weak}</b>.`}
+  ${tuoi?`Bạn đang ${r.age} tuổi ta, thuộc giai đoạn <b>${tuoi[2]}</b>.`:''}
+  ${f.gender==='nam'?'Với nam giới, ruồi bên trái là bên "chính".':'Với nữ giới, ruồi bên phải là bên "chính".'}</p>
+  <div class="sect">Luận từng vị trí</div>
+  ${r.items.map(card).join('')}
   <div class="quote">"Tướng tùy tâm sinh" — nốt ruồi chỉ là một dấu hiệu, cách sống mới quyết định vận. Mỉm cười, làm việc thiện và đi nhiều nơi là cách dễ nhất để "đổi vận".</div>
   <div class="sect">Cơ sở luận giải</div>
-  <p class="disc">Tổng hợp theo ba nguyên tắc xem ruồi trong các sách tướng pháp cổ Trung Hoa như <i>Ma Y Thần Tướng</i>, <i>Liễu Trang Tướng Pháp</i>, <i>Thần Tướng Toàn Biên</i>: (1) vị trí – cung vị; (2) hình sắc – đen bóng, đỏ tươi, nổi là tốt; xám mờ, phẳng là xấu; (3) ẩn – lộ. Lời giải được diễn đạt lại, không trích nguyên văn, và các sách có thể luận khác nhau ở từng chi tiết.</p>
-  <p class="disc"><b>Lưu ý sức khỏe:</b> nếu nốt ruồi mới xuất hiện, to nhanh, đổi màu, chảy máu hoặc ngứa, hãy đi khám da liễu — việc này quan trọng hơn mọi lời luận tướng.</p>
+  <p class="disc">Tổng hợp theo các nguyên tắc xem ruồi trong sách tướng pháp cổ Trung Hoa như <i>Ma Y Thần Tướng</i>, <i>Liễu Trang Tướng Pháp</i>, <i>Thần Tướng Toàn Biên</i>: vị trí – cung vị; hình sắc; ẩn – lộ; nam tả nữ hữu; lưu niên (tuổi ứng với từng điểm trên mặt). Lời giải được diễn đạt lại, không trích nguyên văn; các sách có thể xếp tuổi và luận khác nhau ở từng chi tiết.</p>
+  <p class="disc"><b>Lưu ý sức khỏe:</b> nếu nốt ruồi mới xuất hiện, to nhanh, đổi màu, méo viền, chảy máu hoặc ngứa, hãy đi khám da liễu — việc này quan trọng hơn mọi lời luận tướng.</p>
   ${tourCta('Thiện tâm','Tour bền vững, về với cộng đồng và thiên nhiên giúp tích phúc, nạp lại năng lượng.')}`
 }
 
@@ -611,7 +960,7 @@ let tool='tuvi', gender='nam', tsMode='face'
 const nowY=new Date().getFullYear()
 $('year').innerHTML=[nowY-1,nowY,nowY+1,nowY+2].map(y=>`<option value="${y}"${y===nowY?' selected':''}>${y} (${canChi(y)})</option>`).join('')
 $('dob').max=new Date().toISOString().slice(0,10)
-buildFeats()
+buildFeats('face'); buildFeats('hand')
 buildMoles()
 
 function setTool(t, fromUser){
@@ -620,13 +969,14 @@ function setTool(t, fromUser){
   document.querySelectorAll('.res').forEach(s=>s.classList.toggle('on',s.id==='res-'+t && (t==='hoi' ? !!chat : s.innerHTML.trim()!=='')))
   $('form').hidden = t==='hoi' && !!chat
   $('faceBox').hidden = t!=='tuongso'
-  $('faceFeats').hidden = tsMode==='mole'
+  $('faceFeats').hidden = tsMode!=='face'
+  $('handFeats-wrap').hidden = tsMode!=='hand'
   $('moleBox').hidden = tsMode!=='mole'
   $('yearField').hidden = t==='tuongso' || t==='hoi'
-  $('dob').closest('.field').hidden = t==='tuongso'
+  $('dob').closest('.field').hidden = t==='tuongso' && tsMode==='hand'
   $('tob').closest('.field').hidden = t!=='tuvi' && t!=='hoi'
   $('nameHint').textContent = t==='thansohoc' ? '(bắt buộc — tính số từ tên)' : t==='hoi' ? '(tuỳ chọn — để thầy luận thêm theo tên)' : '(tuỳ chọn)'
-  $('go').textContent = t==='tuongso' && tsMode==='mole' ? 'Xem nốt ruồi' : {tuvi:'Xem tử vi',thansohoc:'Xem thần số học',tuongso:'Xem tướng',hoi:'Gặp thầy'}[t]
+  $('go').textContent = t==='tuongso' ? {face:'Xem tướng mặt',hand:'Xem bàn tay',mole:'Xem nốt ruồi'}[tsMode] : {tuvi:'Xem tử vi',thansohoc:'Xem thần số học',tuongso:'Xem tướng',hoi:'Gặp thầy'}[t]
   $('err').textContent=''
   if(fromUser) logEvent('tab',t)
 }
@@ -654,7 +1004,7 @@ $('form').addEventListener('submit',e=>{
   if(tool==='thansohoc' && !/[A-Za-zÀ-ỹ]{2}/.test(name)) return err('Thần số học cần họ và tên đầy đủ của bạn.')
   let picks=[], moles=[]
   if(tool==='tuongso' && tsMode==='mole'){ moles=pickedMoles(); if(moles.length<1) return err('Hãy chọn ít nhất 1 vị trí nốt ruồi của bạn.') }
-  else if(tool==='tuongso'){ picks=pickedFeats(); if(picks.length<3) return err('Hãy chọn ít nhất 3 nét bạn thấy giống mình.') }
+  else if(tool==='tuongso'){ picks=pickedFeats(tsMode); if(picks.length<3) return err('Hãy chọn ít nhất 3 nét bạn thấy giống mình.') }
   if(!$('consent').checked) return err('Hãy tích đồng ý lưu thông tin để xem kết quả.')
   err('')
   const f={name,dob,tob,gender,contact,year}
@@ -673,13 +1023,14 @@ $('form').addEventListener('submit',e=>{
     summary={chu_dao:r.life,bieu_dat:r.nn.expression,linh_hon:r.nn.soul,nhan_cach:r.nn.personality,ngay_sinh:r.birthday,nam_ca_nhan:r.py}
   }else if(tsMode==='mole'){
     // ghi vào tool 'tuongso' (bảng log chỉ cho phép 3 giá trị), phân biệt bằng input.sub
-    const r=analyzeMole(moles,moleQ); html=renderMole(r,f)
-    input.sub='notruoi'; input.mau=moleQ
-    input.features=r.items.map(m=>'Nốt ruồi: '+m[2])
+    const r=analyzeMole(moles,f); html=renderMole(r,f)
+    input.sub='notruoi'; input.moles=moles
+    input.features=r.items.map(x=>'Nốt ruồi: '+x.m[2]+' ('+x.p.side+'/'+x.p.size+'/'+x.p.col+')')
     summary={tai:r.s.tai,tinh:r.s.tinh,nghiep:r.s.nghiep}
   }else{
-    const r=analyzeTuong(picks); html=renderTuong(r,f)
-    input.features=picks.map(([id,i])=>FACE.find(x=>x[0]===id)[1]+': '+FACE.find(x=>x[0]===id)[2][i][0])
+    const r=analyzeTuong(tsMode,picks,f); html=renderTuong(r,f)
+    input.sub=tsMode==='hand'?'bantay':'tuongmat'
+    input.features=r.items.map(x=>x.g[1]+': '+x.o[0])
     summary={tai:r.s.tai,tinh:r.s.tinh,nghiep:r.s.nghiep}
   }
   const box=$('res-'+tool); box.innerHTML=html; box.classList.add('on')
