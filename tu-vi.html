@@ -624,6 +624,7 @@ function renderTuong(r, f){
   <div class="sect">Luận từng nét</div>
   ${r.items.map(card).join('')}
   <div class="quote">"Tướng tùy tâm sinh" — nét mặt, đường tay có thể đổi theo cách bạn sống. Mỉm cười nhiều, làm việc thiện và đi nhiều nơi là cách dễ nhất để "đổi tướng".</div>
+  ${askBtn()}
   ${tourCta('Thiện tâm','Tour bền vững, về với cộng đồng và thiên nhiên giúp tích phúc, nạp lại năng lượng.')}
   <div class="sect">Cơ sở luận giải</div>
   <p class="disc">${face?'Tổng hợp theo thập nhị cung, lưu niên và tam đình':'Tổng hợp theo ngũ hành hình tay và các đường chỉ tay chính'} trong sách tướng pháp cổ Trung Hoa như <i>Ma Y Thần Tướng</i>, <i>Liễu Trang Tướng Pháp</i>, <i>Thần Tướng Toàn Biên</i>. Lời giải được diễn đạt lại, không trích nguyên văn; các sách có thể xếp tuổi và luận khác nhau ở từng chi tiết. Phần này do bạn tự đối chiếu nét mặt/bàn tay, không phân tích ảnh. Chỉ mang tính tham khảo.</p>`
@@ -948,6 +949,7 @@ function renderMole(r,f){
   <div class="sect">Luận từng vị trí</div>
   ${r.items.map(card).join('')}
   <div class="quote">"Tướng tùy tâm sinh" — nốt ruồi chỉ là một dấu hiệu, cách sống mới quyết định vận. Mỉm cười, làm việc thiện và đi nhiều nơi là cách dễ nhất để "đổi vận".</div>
+  ${askBtn()}
   <div class="sect">Cơ sở luận giải</div>
   <p class="disc">Tổng hợp theo các nguyên tắc xem ruồi trong sách tướng pháp cổ Trung Hoa như <i>Ma Y Thần Tướng</i>, <i>Liễu Trang Tướng Pháp</i>, <i>Thần Tướng Toàn Biên</i>: vị trí – cung vị; hình sắc; ẩn – lộ; nam tả nữ hữu; lưu niên (tuổi ứng với từng điểm trên mặt). Lời giải được diễn đạt lại, không trích nguyên văn; các sách có thể xếp tuổi và luận khác nhau ở từng chi tiết.</p>
   <p class="disc"><b>Lưu ý sức khỏe:</b> nếu nốt ruồi mới xuất hiện, to nhanh, đổi màu, méo viền, chảy máu hoặc ngứa, hãy đi khám da liễu — việc này quan trọng hơn mọi lời luận tướng.</p>
@@ -973,7 +975,7 @@ function setTool(t, fromUser){
   $('handFeats-wrap').hidden = tsMode!=='hand'
   $('moleBox').hidden = tsMode!=='mole'
   $('yearField').hidden = t==='tuongso' || t==='hoi'
-  $('dob').closest('.field').hidden = t==='tuongso' && tsMode==='hand'
+  $('dob').closest('.field').hidden = false
   $('tob').closest('.field').hidden = t!=='tuvi' && t!=='hoi'
   $('nameHint').textContent = t==='thansohoc' ? '(bắt buộc — tính số từ tên)' : t==='hoi' ? '(tuỳ chọn — để thầy luận thêm theo tên)' : '(tuỳ chọn)'
   $('go').textContent = t==='tuongso' ? {face:'Xem tướng mặt',hand:'Xem bàn tay',mole:'Xem nốt ruồi'}[tsMode] : {tuvi:'Xem tử vi',thansohoc:'Xem thần số học',tuongso:'Xem tướng',hoi:'Gặp thầy'}[t]
@@ -1023,12 +1025,12 @@ $('form').addEventListener('submit',e=>{
     summary={chu_dao:r.life,bieu_dat:r.nn.expression,linh_hon:r.nn.soul,nhan_cach:r.nn.personality,ngay_sinh:r.birthday,nam_ca_nhan:r.py}
   }else if(tsMode==='mole'){
     // ghi vào tool 'tuongso' (bảng log chỉ cho phép 3 giá trị), phân biệt bằng input.sub
-    const r=analyzeMole(moles,f); html=renderMole(r,f)
+    const r=analyzeMole(moles,f); html=renderMole(r,f); setLastTuong('nốt ruồi',r.items,r,f)
     input.sub='notruoi'; input.moles=moles
     input.features=r.items.map(x=>'Nốt ruồi: '+x.m[2]+' ('+x.p.side+'/'+x.p.size+'/'+x.p.col+')')
     summary={tai:r.s.tai,tinh:r.s.tinh,nghiep:r.s.nghiep}
   }else{
-    const r=analyzeTuong(tsMode,picks,f); html=renderTuong(r,f)
+    const r=analyzeTuong(tsMode,picks,f); html=renderTuong(r,f); setLastTuong(tsMode==='hand'?'bàn tay':'tướng mặt',r.items,r,f)
     input.sub=tsMode==='hand'?'bantay':'tuongmat'
     input.features=r.items.map(x=>x.g[1]+': '+x.o[0])
     summary={tai:r.s.tai,tinh:r.s.tinh,nghiep:r.s.nghiep}
@@ -1042,10 +1044,33 @@ document.addEventListener('click',e=>{
   const a=e.target.closest('a[data-cta]'); if(a) logEvent('cta',tool,{input:{cta:a.dataset.cta,href:a.getAttribute('href')}})
 })
 
+// ═══════════════════════ HỎI THẦY TIẾP SAU KHI XEM TƯỚNG ═══════════════════════
+let lastTuong=null   // {loai, tomtat, sao, f}
+function askBtn(){
+  return '<div class="cta"><p><b>Muốn hỏi thêm?</b> Thầy đã nhớ kết quả bạn vừa xem — bạn cứ hỏi tiếp, hỏi liên tục, thầy trả lời theo đúng nét tướng của bạn.</p><button type="button" class="btn" data-askthay="1">🧙 Hỏi thầy tiếp về kết quả này</button></div>'
+}
+function setLastTuong(loai,items,r,f){
+  const sao='Tài lộc '+r.s.tai+'/5, tình duyên '+r.s.tinh+'/5, sự nghiệp '+r.s.nghiep+'/5'
+  let tomtat
+  if(loai==='nốt ruồi') tomtat=items.map(x=>x.m[2]+' ('+SIDE_LBL[x.p.side]+', '+SIZE_LBL[x.p.size]+', '+MOLE_COL[x.p.col][0]+'): '+x.m[7]).join(' | ')
+  else tomtat=items.map(x=>x.g[1]+' — '+x.o[0]+': '+x.o[2]).join(' | ')
+  lastTuong={loai,sao,tomtat:tomtat.slice(0,1100),f}
+}
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-askthay]'); if(!b||!lastTuong) return
+  const f=lastTuong.f
+  if(!f.dob){ setTool('tuongso',false); $('err').textContent='Để hỏi thầy, hãy nhập ngày sinh (dương lịch) ở trên rồi bấm "Xem" lại một lần nhé.'; $('dob').scrollIntoView({behavior:'smooth',block:'center'}); $('dob').focus(); return }
+  const facts=buildFacts(f)
+  facts.vua_xem_tuong={loai:lastTuong.loai,diem:lastTuong.sao,chi_tiet:lastTuong.tomtat}
+  startChat({name:f.name,dob:f.dob,tob:f.tob,gender:f.gender,facts})
+  logEvent('submit','hoi',{name:f.name||null,birth_date:f.dob,birth_time:f.tob||null,gender:f.gender,contact:f.contact||null,input:{name:f.name,dob:f.dob,from:'tuongso',loai:lastTuong.loai},result:{canchi:facts.tuoi,menh:facts.nap_am}})
+})
+
 // ═══════════════════════ HỎI THẦY (chat AI) ═══════════════════════
 // Gọi edge function Supabase `fortune-chat` (giữ khoá Claude ở server). Lá số tính sẵn ở đây rồi gửi kèm.
 const CHAT_URL = SUPABASE_URL+'/functions/v1/fortune-chat'
 const SUGG = ['Năm nay tình duyên của tôi thế nào?','Công việc, tiền bạc năm nay ra sao?','Tôi hợp với tuổi nào để kết hôn, làm ăn?','Tháng nào tốt để đi du lịch xa?','Gieo cho tôi một quẻ đầu tháng','Đêm qua tôi mơ thấy rắn, điềm gì vậy thầy?']
+const SUGG_TUONG=['Điểm xấu trong kết quả của tôi có cách hóa giải không?','Dựa vào tướng của tôi, năm nay nên làm gì?','Tướng tôi hợp làm nghề gì, kinh doanh gì?','Về tình duyên, tôi nên lưu ý điều gì?']
 let chat=null, busy=false
 
 function buildFacts(f){
@@ -1085,11 +1110,12 @@ function stick(force){ const l=$('chatLog'); if(force || l.scrollHeight-l.scroll
 function saveChat(){ try{ chat ? sessionStorage.setItem('bg_hoi',JSON.stringify(chat)) : sessionStorage.removeItem('bg_hoi') }catch(_){} }
 function renderSugg(){
   if(!chat || busy){ $('chatSugg').innerHTML=''; return }
-  const asked=chat.history.map(m=>m.content), left=SUGG.filter(x=>!asked.includes(x))
+  const asked=chat.history.map(m=>m.content), left=(chat.profile.facts.vua_xem_tuong?SUGG_TUONG.concat(SUGG):SUGG).filter(x=>!asked.includes(x))
   $('chatSugg').innerHTML=left.slice(0,chat.history.length?3:6).map(x=>'<button type="button">'+esc(x)+'</button>').join('')
 }
 function greeting(p){
   const fx=p.facts, na=fx.nap_am.split(' — ')
+  if(fx.vua_xem_tuong) return (p.name?'Chào '+p.name+'. ':'Chào bạn. ')+'Thầy đã nhớ kết quả xem **'+fx.vua_xem_tuong.loai+'** của bạn ('+fx.vua_xem_tuong.diem+') và lá số tuổi **'+fx.tuoi+'**.\n\nBạn muốn hỏi thêm điều gì — hóa giải điểm xấu, vận theo tuổi, tình duyên, công danh, hay nên đi chuyến nào hợp? Cứ hỏi liên tục, thầy trả lời tiếp.'
   return (p.name?'Chào '+p.name+'. ':'Chào bạn. ')+'Thầy đã xem qua lá số: tuổi **'+fx.tuoi+'**, '+na[1]+' (**'+na[0]+'**), năm nay sao **'+fx.sao_chieu_menh.split(' — ')[0]+'** chiếu mệnh.\n\nCó điều gì băn khoăn — tình duyên, công danh, tiền bạc, nhà cửa, ngày tốt, giấc mơ... — cứ hỏi thầy.'
 }
 function paintChat(){
