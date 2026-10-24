@@ -262,3 +262,10 @@ clipboard Windows, `navigator.clipboard.readText()` treo renderer. → **Chủ s
   `cache_read_input_tokens` (đã sửa ở v2). Lệnh DELETE qua Supabase MCP bị chặn ("Invalid or expired requestState").
 - Còn treo: 2 dòng test `session_id='test-claude'` trong `fortune_chats` (+1 dòng cũ trong `fortune_logs`) — xoá trong Table Editor.
   Muốn rẻ/nhanh hơn: thêm secret `FORTUNE_MODEL=claude-sonnet-5-5`.
+
+## 11. Phiên 2026-10-24 — Xem nốt ruồi trong tab "Tướng số" (`/tu-vi`)
+- Thêm nút chuyển "Tướng mặt & tay | Nốt ruồi" trong tab Tướng số. Nốt ruồi: chọn màu/hình dạng (đen bóng-đỏ tươi / nâu nhạt / xám mờ) + chọn nhiều vị trí (35 vị trí: mặt, đầu-cổ, thân, tay, chân) → sao Tài/Tình/Nghiệp + luận từng vị trí + nhắc đi khám da liễu nếu ruồi đổi bất thường.
+- Cơ sở: 3 nguyên tắc (vị trí – hình sắc – ẩn/lộ) tổng hợp từ Ma Y Thần Tướng, Liễu Trang Tướng Pháp, Thần Tướng Toàn Biên. Lời giải do AI diễn đạt lại từ kiến thức chung, KHÔNG đối chiếu từng câu với sách gốc.
+- Nhật ký: ghi vào tool `tuongso` với `input.sub='notruoi'` (bảng `fortune_logs` có check constraint chỉ 3 giá trị, nên không thêm tool mới → không cần chạy SQL).
+- Backup: `tu-vi_backup_261024.html` (không git add). Đã test trên localhost (stub fetch, không ghi log thật).
+- Chưa làm: chưa commit/push; `tu-vi-log.html` hiện hiển thị lượt nốt ruồi như "Tướng số" (có danh sách vị trí) — chưa tách riêng.
